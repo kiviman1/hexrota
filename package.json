@@ -1,10 +1,10 @@
 {
   "name": "hexrota",
-  "version": "8.0.1",
+  "version": "8.1.0",
   "private": true,
   "description": "Telefon ve masaüstünde oynanabilir, iki öğretici ve on bölümlü altıgen eşleştirme web uygulaması.",
   "scripts": {
-    "test": "node check-levels.mjs && node check-engine.mjs && node check-tutorials.mjs && node check-audio.cjs && node check-ui.cjs && node check-input.cjs && node check-menu.cjs && node check-pwa.cjs && node check-game-shell.cjs"
+    "test": "node check-levels.mjs && node check-engine.mjs && node check-tutorials.mjs && node check-audio.cjs && node check-ui.cjs && node check-input.cjs && node check-menu.cjs && node check-pwa.cjs && node check-game-shell.cjs && node check-score.cjs"
   },
   "devDependencies": {
     "jsdom": "31.0.1"

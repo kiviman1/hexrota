@@ -14,13 +14,13 @@
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="./style.css?v=9">
-  <script src="./engine.js?v=9" defer></script>
-  <script src="./levels.js?v=9" defer></script>
-  <script src="./tutorials.js?v=9" defer></script>
-  <script src="./audio.js?v=9" defer></script>
-  <script src="./app.js?v=9" defer></script>
-  <script src="./pwa.js?v=9" defer></script>
+  <link rel="stylesheet" href="./style.css?v=10">
+  <script src="./engine.js?v=10" defer></script>
+  <script src="./levels.js?v=10" defer></script>
+  <script src="./tutorials.js?v=10" defer></script>
+  <script src="./audio.js?v=10" defer></script>
+  <script src="./app.js?v=10" defer></script>
+  <script src="./pwa.js?v=10" defer></script>
 </head>
 <body>
   <svg class="icon-library" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -84,7 +84,7 @@
         <section class="game-card" aria-label="Altıgen eşleştirme oyunu">
           <header class="game-topbar" aria-label="Bölüm hedefleri">
             <div class="scoreboard" aria-label="Puan hedefi, bölüm ve kalan hamle">
-              <div class="score-target metric hud-score"><span id="score-goal-label">HEDEF PUAN</span><div class="score-pair"><strong id="sum">0</strong><span>/</span><strong id="target">15</strong></div><div class="score-track" aria-hidden="true"><span id="score-progress"></span></div></div>
+              <div class="score-target metric hud-score"><span id="score-goal-label">HEDEF PUAN</span><div class="score-pair"><strong id="sum">0</strong><span>/</span><strong id="target">15</strong></div><div class="score-track" aria-hidden="true"><span id="score-progress"></span></div><span id="score-receipt" class="score-receipt" aria-hidden="true"></span></div>
               <div class="level-emblem"><svg class="emblem-leaf icon" aria-hidden="true"><use href="#i-leaf"/></svg><span class="level-tag" id="level-tag">ÖĞREN 01</span><h2 id="level-name" class="sr-only">İlk eşleşmen</h2><span class="difficulty sr-only" id="difficulty">Öğretici</span></div>
               <div class="moves-badge metric"><span>HAMLE</span><strong id="moves-left">5</strong><svg class="moves-symbol icon" aria-hidden="true"><use href="#i-moves"/></svg></div>
             </div>
@@ -118,11 +118,12 @@
     <nav class="app-navigation" aria-label="Ana gezinme"><button type="button" data-nav="home"><svg class="icon"><use href="#i-home"/></svg><span>Ana menü</span></button><button type="button" data-nav="journey"><svg class="icon"><use href="#i-map"/></svg><span>Bölümler</span></button><button type="button" data-nav="records"><svg class="icon"><use href="#i-records"/></svg><span>Kayıtlar</span></button><button type="button" data-settings><svg class="icon"><use href="#i-settings"/></svg><span>Ayarlar</span></button></nav>
     <footer><span>Biraz düşün. Biraz yeşert.</span><span>HEXROTA <i aria-hidden="true">✳</i> 2 + 10</span><span>İlerlemen otomatik kaydedilir.</span></footer>
   </div>
+  <div id="score-effects" aria-hidden="true"></div>
   <dialog id="help-dialog" class="modal help-modal">
     <button class="modal-close icon-button" type="button" aria-label="Kapat" data-close><svg class="icon"><use href="#i-close"/></svg></button>
     <div class="modal-symbol"><svg class="icon"><use href="#i-swap"/></svg></div><span class="eyebrow">BASİT BİR FİKİR, ÇOK İHTİMAL</span><h2>Eşleşmeyi gör.</h2><p class="modal-description">Hamlelerin bitmeden hedef puana ulaş ve bütün zemini yeşile dönüştür. İkisini de tamamlamalısın.</p>
     <div class="axis-guide"><svg viewBox="0 0 270 100" role="img" aria-label="Eşleşmeler üç yönde oluşur: dikey ve iki çapraz eksen"><g fill="none" stroke-width="2" stroke-linecap="round"><path d="M43 17v66" stroke="#b8a7d4"/><path d="m111 23 52 54" stroke="#d2b78b"/><path d="m193 77 52-54" stroke="#9ebccf"/></g><g fill="#eee6f7" stroke="#d0bfdf"><path d="m43 6 11 6v13l-11 6-11-6V12Z"/><path d="m43 38 11 6v13l-11 6-11-6V44Z"/><path d="m43 70 11 6v13l-11 6-11-6V76Z"/></g><g fill="#f4e5c9" stroke="#ddc291"><path d="m111 10 11 6v13l-11 6-11-6V16Z"/><path d="m137 38 11 6v13l-11 6-11-6V44Z"/><path d="m163 66 11 6v13l-11 6-11-6V72Z"/></g><g fill="#e3edf5" stroke="#b6cedf"><path d="m193 66 11 6v13l-11 6-11-6V72Z"/><path d="m219 38 11 6v13l-11 6-11-6V44Z"/><path d="m245 10 11 6v13l-11 6-11-6V16Z"/></g><g text-anchor="middle" font-family="Arial,sans-serif" font-size="13" fill="#465a50"><text x="43" y="24">1</text><text x="43" y="56">1</text><text x="43" y="88">1</text><text x="111" y="28">2</text><text x="137" y="56">2</text><text x="163" y="84">2</text><text x="193" y="84">4</text><text x="219" y="56">4</text><text x="245" y="28">4</text></g></svg><span>En az 3 aynı sayı · 3 düz eksen</span></div>
-    <ol class="rules"><li><span>1</span><div><strong>İki komşunun yerini değiştir.</strong><p>Bir taşı, ardından komşusunu seç. Sürükleyerek de değiştirebilirsin. Üçlü oluşmazsa hamlen harcanmaz.</p></div></li><li><span>2</span><div><strong>Eşleştir, zemini yeşert.</strong><p>Eşleşen sayılar puana eklenir. Zemin yeşil kalır; boşluklara yukarıdan yeni taşlar gelir. Zincirler ek hamle harcamaz.</p></div></li><li><span>3</span><div><strong>İki hedefi birlikte tamamla.</strong><p>Puan hedefine ulaş ve tüm zemini boya. “2” işaretli zeminlerin yeşillenmesi için iki ayrı eşleşme gerekir.</p></div></li></ol>
+    <ol class="rules"><li><span>1</span><div><strong>İki komşunun yerini değiştir.</strong><p>Bir taşı, ardından komşusunu seç. Sürükleyerek de değiştirebilirsin. Üçlü oluşmazsa hamlen harcanmaz.</p></div></li><li><span>2</span><div><strong>Eşleştir, zemini yeşert.</strong><p>Eşleşen sayılar toplanır: 3 + 3 + 3 = 9 puan. Puanın üstteki göstergeye taşınır. Zemin yeşil kalır; boşluklara yukarıdan yeni taşlar gelir. Zincirler ek hamle harcamaz.</p></div></li><li><span>3</span><div><strong>İki hedefi birlikte tamamla.</strong><p>Puan hedefine ulaş ve tüm zemini boya. “2” işaretli zeminlerin yeşillenmesi için iki ayrı eşleşme gerekir.</p></div></li></ol>
     <div class="help-shortcuts"><span><kbd>R</kbd> Yeniden</span><span><kbd>H</kbd> İpucu</span><span><kbd>↵</kbd> Taş seç</span></div><button class="primary-button" type="button" data-close>Anladım <svg class="icon"><use href="#i-arrow"/></svg></button>
   </dialog>
   <dialog id="win-dialog" class="modal win-modal">

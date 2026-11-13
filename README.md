@@ -98,3 +98,10 @@ Ayarlar içinden bağlantı paylaşılabilir, destekleyen cihazlarda tam ekran a
 Sürüm 8'de oyun alanı görünür ekran yüksekliğini kullanır. Oyun sırasında site başlığı, bölüm şeridi ve genel gezinme gizlenir; üstte puan/hedef, bölüm arması ve hamle, altta zemin ilerlemesi ve beş oyun kontrolü bulunur. Bölüm seçimi ana menüdeki patikadan yapılır. Dikey ve yatay yerleşimler, güvenli alanlar ve tarayıcı çubuklarının yüksekliği hesaba katılır. Görüntü boyutu değişikliği tahtayı veya hamle kaydını yeniden başlatmaz.
 
 Uygulamada pinch, çift dokunma ve klavye/tekerlek yakınlaştırma hareketleri engellenir. Tek dokunuşlar, taş takası ve ayar pencerelerindeki kaydırma korunur. Tarayıcının kendi adres ve sistem çubuklarını gizlemek için desteklenen cihazlarda ana ekrana ekleme veya tam ekran seçeneği kullanılabilir.
+
+
+## Puanın tahtadan göstergeye taşınması
+
+Eşleşmenin sayıları bir hesap satırında gösterilir (örneğin 3 + 3 + 3 = 9). Kazanılan puan kartı, eşleşmenin konumundan üstteki puan göstergesine uçar; görünen sayaç kart ulaştığında artar ve gösterge kısa bir vurgu verir. Son hamlede kazanılan toplam küçük bir rozet olarak kalır. Zincirler sıra numarasıyla gösterilir; bu sunum bir puan çarpanı eklemez.
+
+Oyun motoru sonucu önceden hesaplayıp kaydeder. Uçan kart yalnızca bu sonucu gösterir; puanı yeniden hesaplayıp kayda eklemez. Uzun zincirlerin son dalgaları tek kartta birleştirilir, her puan bir kez göstergeye aktarılır. Azaltılmış harekette, sunumu geçmede, ekran değişiminde veya animasyon hatasında gerçek toplam doğrudan gösterilir. Sunum yine 1,2 saniyeyle sınırlıdır.

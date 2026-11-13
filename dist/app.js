@@ -72,6 +72,9 @@
   }
   ['resize','orientationchange','pageshow'].forEach(name=>window.addEventListener(name,syncAppHeight,{passive:true}));
   document.addEventListener('fullscreenchange',syncAppHeight);
+  const settleViewport=()=>{if(presentation)finishPresentation(presentation);};
+  window.addEventListener('resize',settleViewport,{passive:true});window.addEventListener('orientationchange',settleViewport,{passive:true});
+  appViewport?.addEventListener?.('resize',settleViewport,{passive:true});
   appViewport?.addEventListener?.('resize',syncAppHeight,{passive:true});
   syncAppHeight();
   function preventZoom(event){if(event.cancelable)event.preventDefault();}
@@ -166,6 +169,7 @@
     const previousScreen=screen;
     if(!['home','journey','game','records'].includes(next))next='home';
     if(presentation)finishPresentation(presentation);
+    if(next!=='game')clearScoreReceipt();
     cancelPresentation();cancelHint();stopPointer();clearTimeout(terminalTimer);epoch++;
     if(engine)persist();closeAllDialogs();paused=false;screen=next;
     for(const name of ['home','journey','game','records']){const node=$(name+'-screen');node.hidden=name!==screen;node.inert=name!==screen;}
@@ -219,6 +223,7 @@
     }
   }
   function loadLevel(index, fresh=false) {
+    clearScoreReceipt();
     cancelPresentation();cancelHint();epoch++;clearTimeout(terminalTimer);stopPointer();busy=false;
     active=canOpen(index)?index:0;
     try {engine=new window.HexMatch(levels[active],fresh?null:saved.boards[active]||null);}
@@ -264,9 +269,7 @@
     $('board').innerHTML=boardMarkup(display,options.matching||[],options.falling||[]);
     if(focused!==undefined)$('board').querySelector(`[data-index="${focused}"]`)?.focus?.({preventScroll:true});
     const covered=display.layers.filter(n=>n===0).length,total=levels[active].cells.length;
-    $('sum').textContent=display.score;
-    $('score-progress').style.width=`${Math.min(1,display.score/levels[active].target)*100}%`;
-    $('score-goal-label').textContent=display.score>=levels[active].target?'HEDEF TAMAM':'HEDEF PUAN';
+    renderScore(presentation?.scoreDisplay??display.score);
     $('moves-left').textContent=display.movesLeft;
     $('moves-left').closest('.moves-badge')?.classList.toggle('low',display.movesLeft<=3);
     $('move-counter').textContent=`${levels[active].moves-display.movesLeft} / ${levels[active].moves} HAMLE`;
@@ -287,7 +290,7 @@
     else if(engine.status==='won') {text='Hedef tamam, bütün zemin yeşil. Başardın!';status.classList.add('success');}
     else if(engine.status==='lost'){text='Hamleler bitti. Aynı tahtada yeni bir plan deneyebilirsin.';status.classList.add('error');}
     else if(selected!==null)text='Şimdi komşu bir taşı seç. Üç aynı sayıyı hizala.';
-    else if(engine.score>=levels[active].target)text=`Puan hedefi tamam! ${total-covered} zemini daha yeşile boya.`;
+    else if(display.score>=levels[active].target)text=`Puan hedefi tamam! ${total-covered} zemini daha yeşile boya.`;
     else text='Bir taş seç; komşusuyla değiştirip üçlüyü oluştur.';
     $('status-text').textContent=text;
     renderCoach();
@@ -301,21 +304,89 @@
     $('coach-text').textContent=busy?(steps[Math.max(0,engine.turn-1)].afterText||'Güzel! Şimdi taşların nasıl düştüğünü izle.'):step?.text||'Hazırsın!';
     $('coach-progress').style.width=`${engine.turn/steps.length*100}%`;
   }
+  function renderScore(value){
+    $('sum').textContent=value;
+    $('score-progress').style.width=`${Math.min(1,value/levels[active].target)*100}%`;
+    $('score-goal-label').textContent=value>=levels[active].target?'HEDEF TAMAM':'HEDEF PUAN';
+  }
+  function scoreEquation(frame){
+    const values=frame.matched.map(index=>frame.before[index]);
+    const counts=new Map();for(const value of values)counts.set(value,(counts.get(value)||0)+1);
+    const terms=values.length<=5?values.join(' + '):[...counts].map(([value,count])=>count===1?String(value):`${count} × ${value}`).join(' + ');
+    return `${terms} = ${frame.scoreGain}`;
+  }
+  function clearScoreReceipt(){
+    const receipt=$('score-receipt');if(receipt)receipt.textContent='';
+    $('sum')?.closest('.hud-score')?.classList.remove('score-arrival');
+  }
+  function countScore(job,target){
+    const from=job.scoreDisplay;
+    if(job.controller.signal.aborted||presentation!==job)return Promise.resolve();
+    if(typeof requestAnimationFrame!=='function'){job.scoreDisplay=target;renderScore(target);return Promise.resolve();}
+    return new Promise(resolve=>{
+      const start=performance.now();let frame;
+      const done=()=>{cancelAnimationFrame(frame);job.controller.signal.removeEventListener('abort',done);resolve();};
+      const step=now=>{
+        if(job.controller.signal.aborted||presentation!==job){done();return;}
+        const progress=Math.min(1,(now-start)/80),value=Math.round(from+(target-from)*(1-Math.pow(1-progress,3)));
+        job.scoreDisplay=value;renderScore(value);
+        if(progress<1)frame=requestAnimationFrame(step);else done();
+      };
+      job.controller.signal.addEventListener('abort',done,{once:true});frame=requestAnimationFrame(step);
+    });
+  }
+  async function flyScore(job,frame,{wave,gain,destination,extra=0,totalWaves=1}){
+    let packet;
+    const signal=job.controller.signal;
+    const remove=()=>packet?.remove();
+    try{
+      if(signal.aborted||presentation!==job)return;
+      let layer=$('score-effects');
+      if(!layer){layer=document.createElement('div');layer.id='score-effects';layer.setAttribute('aria-hidden','true');document.body.appendChild(layer);}
+      const positions=geometry().positions,center=frame.matched.reduce((p,index)=>({x:p.x+positions[index].x/frame.matched.length,y:p.y+positions[index].y/frame.matched.length}),{x:0,y:0});
+      const board=$('board'),rect=board.getBoundingClientRect(),view=geometry();let origin;
+      try{const point=board.createSVGPoint();point.x=center.x;point.y=center.y;origin=point.matrixTransform(board.getScreenCTM());}catch(_){}
+      if(!origin||!Number.isFinite(origin.x)||!Number.isFinite(origin.y)){const scale=Math.min(rect.width/view.width,rect.height/view.height);origin={x:rect.left+rect.width/2+center.x*scale,y:rect.top+rect.height/2+center.y*scale};}
+      const viewportWidth=window.innerWidth||390,viewportHeight=Number(appViewport?.height)||window.innerHeight||700;
+      const target=$('sum').getBoundingClientRect(),hud=$('sum').closest('.hud-score'),hudRect=hud?.getBoundingClientRect();
+      const end={x:target.width?target.left+target.width/2:64,y:target.height?target.top+target.height/2:64};
+      packet=document.createElement('div');packet.className='score-packet';packet.dataset.gain=String(gain);packet.dataset.wave=String(wave);packet.dataset.destinationScore=String(destination);
+      const chain=document.createElement('span');chain.className='score-packet-chain';chain.textContent=wave===1?'EŞLEŞME':extra?`${wave}–${totalWaves}. ZİNCİR`:`${wave}. ZİNCİR`;
+      const amount=document.createElement('strong');amount.className='score-packet-gain';amount.textContent=`+${gain}`;
+      const equation=document.createElement('span');equation.className='score-packet-math';equation.textContent=extra?`${frame.scoreGain} + ${extra} = ${gain}`:scoreEquation(frame);
+      packet.append(chain,amount,equation);packet.style.translate='-50% -50%';packet.style.maxWidth=Math.max(80,Math.min(220,viewportWidth-24))+'px';layer.appendChild(packet);
+      const packetRect=packet.getBoundingClientRect(),halfWidth=(packetRect.width||Math.min(220,viewportWidth-24))/2,halfHeight=(packetRect.height||90)/2;
+      const maxY=Math.max(halfHeight+12,viewportHeight-halfHeight-12),minY=Math.min(maxY,viewportWidth>viewportHeight?halfHeight+12:(hudRect?.bottom||80)+halfHeight+10);
+      const start={x:Math.max(halfWidth+12,Math.min(viewportWidth-halfWidth-12,origin.x)),y:Math.max(minY,Math.min(maxY,origin.y))};
+      packet.style.left=start.x+'px';packet.style.top=start.y+'px';
+      const dx=end.x-start.x,dy=end.y-start.y;
+      signal.addEventListener('abort',remove,{once:true});
+      animateElement(job,packet,[{transform:'translate(0px,0px) scale(.76)',opacity:0},{transform:'translate(0px,-10px) scale(1.06)',opacity:1,offset:.16},{transform:'translate(0px,-14px) scale(1)',opacity:1,offset:.35},{transform:`translate(${dx*.35-18}px,${dy*.6-22}px) scale(.7)`,opacity:1,offset:.72},{transform:`translate(${dx}px,${dy}px) scale(.16)`,opacity:0}],{duration:400,easing:'cubic-bezier(.22,.68,.4,1)',fill:'forwards'});
+      await pause(400,job);
+      if(signal.aborted||presentation!==job||!canAnimate())return;
+      packet.dataset.arrived='true';hud?.classList.add('score-arrival');
+      const receipt=$('score-receipt');if(receipt)receipt.textContent=`+${gain}`;
+      animateElement(job,hud,[{transform:'scale(1)'},{transform:'scale(1.065)',offset:.4},{transform:'scale(1)'}],{duration:160,easing:'ease-out'});
+      await countScore(job,destination);
+    }finally{signal.removeEventListener('abort',remove);remove();}
+  }
   const canAnimate=()=>!document.hidden&&!reduceMotion()&&typeof window.Element.prototype.animate==='function';
   function cancelPresentation() {
     const job=presentation;presentation=null;busy=false;
-    if(job){clearTimeout(job.watchdog);job.controller.abort();for(const a of job.animations)try{a.cancel?.();}catch(_){}}
+    if(job){clearTimeout(job.watchdog);job.controller.abort();for(const a of job.animations)try{a.cancel?.();}catch(_){}clearScoreReceipt();}
   }
   function finishPresentation(job) {
     if(!job||presentation!==job||job.token!==epoch)return;
     cancelPresentation();
     const result=job.result;
-    comboText=`${result.frames.length>1?`${result.frames.length} zincir · `:''}+${result.scoreGain} puan${result.reshuffled?' · Karıştırıldı':''}`;
+    comboText=result.frames.length===1?`${scoreEquation(result.frames[0])} puan`:`${result.frames.length} zincir · ${result.frames.length<=4?result.frames.map(frame=>frame.scoreGain).join(' + ')+' = ':''}${result.scoreGain} puan`;
+    if(result.reshuffled)comboText+=' · Karıştırıldı';
     try{renderLevels();render();persist();}
     catch(_){persist();}
     finally{
       busy=false;$('board').setAttribute('aria-busy','false');$('board-stage').classList.remove('busy');$('reset').disabled=false;$('skip-animation').hidden=true;
     }
+    const receipt=$('score-receipt');if(receipt)receipt.textContent=`+${result.scoreGain}`;
     if(result.reshuffled)toast('Eşleşme kalmadı; sayılar karıştırıldı. Zemin ve hamlelerin korundu.');
     if(screen==='game'&&!paused&&engine.status!=='playing'&&!document.hidden){
       terminalTimer=setTimeout(()=>{if(job.token===epoch&&screen==='game'&&!paused&&!document.hidden&&!topDialog())showResult();},80);
@@ -350,8 +421,7 @@
       }
     }
     const centroid=frame.matched.reduce((p,i)=>({x:p.x+positions[i].x/frame.matched.length,y:p.y+positions[i].y/frame.matched.length}),{x:0,y:0});
-    const label=svgNode('text',{class:'fx-score',x:centroid.x,y:centroid.y-15,'text-anchor':'middle'});label.textContent=`+${frame.scoreGain}`;layer.appendChild(label);
-    animateElement(job,label,[{transform:'translate(0px,0px)',opacity:0},{transform:'translate(0px,-10px)',opacity:1,offset:.2},{transform:'translate(0px,-36px)',opacity:0}],{duration:205,easing:'ease-out',fill:'forwards'});
+    const label=svgNode('text',{class:'fx-score',x:centroid.x,y:centroid.y-15,'text-anchor':'middle'});label.textContent=scoreEquation(frame);label.style.display='none';layer.appendChild(label);
   }
   function fallingGems(job,frame){
     const positions=geometry().positions,cells=levels[active].cells,minQ=Math.min(...cells.map(c=>c.q));let longest=0;
@@ -369,7 +439,7 @@
   }
   async function presentSwap(job,a,b,before){
     if(!canAnimate())return;
-    render(before);
+    render(before,{message:'Taşlar yer değiştiriyor…'});
     const pos=geometry().positions,dx=pos[b].x-pos[a].x,dy=pos[b].y-pos[a].y;
     for(const [index,x,y]of[[a,dx,dy],[b,-dx,-dy]])animateElement(job,$('board').querySelector(`[data-index="${index}"] .gem`),[{transform:'translate(0px,0px)'},{transform:`translate(${x}px,${y}px)`}],{duration:155,easing:'cubic-bezier(.2,.7,.3,1)',fill:'forwards'});
     await pause(160,job);
@@ -379,13 +449,16 @@
     for(let i=0;i<Math.min(2,frames.length);i++){
       if(job.controller.signal.aborted||presentation!==job||!canAnimate())return;
       const f=frames[i],prior=i?frames[i-1]:null,score=before.score+frames.slice(0,i).reduce((n,frame)=>n+frame.scoreGain,0);
-      comboText=`${i?`Zincir ×${i+1} · `:''}+${f.scoreGain} puan`;
+      const extra=i===1?frames.slice(2).reduce((sum,frame)=>sum+frame.scoreGain,0):0,gain=f.scoreGain+extra;
+      comboText=`${i?`${i+1}. zincir · `:''}${scoreEquation(f)} puan${extra?` · Devamı +${extra}`:''}`;
       render({values:f.before,layers:prior?prior.layers:before.layers,score,movesLeft:engine.movesLeft},{message:i?'Bir hamle, yeni bir zincir!':'Üçlü tamam. Şimdi zemine bak.'});
+      const task=flyScore(job,f,{wave:i+1,gain,destination:score+gain,extra,totalWaves:frames.length}).catch(()=>{});job.scoreTasks.push(task);
       matchEffects(job,f);tone(Math.min(5,i+1));await pause(205,job);
       if(job.controller.signal.aborted||presentation!==job)return;
       render({values:f.after,layers:f.layers,score:score+f.scoreGain,movesLeft:engine.movesLeft},{falling:f.falls.map(x=>x.to),message:'Taşlar aşağı kayıyor; zemin yerinde kalıyor.'});
       const duration=fallingGems(job,f);await pause(duration+5,job);
     }
+    await Promise.all(job.scoreTasks);
   }
   function invalidSwap(a,b){
     if(!canAnimate())return;
@@ -397,7 +470,7 @@
     if(engine.status!=='playing')return;
     const guide=guidedStep();
     if(guide&&!samePair(a,b,guide.pair)){selected=null;hinted=guide.pair;render();toast('Bu adımda parlayan iki taşı değiştir. Hamlen harcanmadı.');return;}
-    cancelHint();
+    clearScoreReceipt();cancelHint();
     const checkpoint=engine.snapshot(),before={values:engine.values.slice(),layers:engine.layers.slice(),score:engine.score,movesLeft:engine.movesLeft};
     let result;
     try{result=engine.swap(a,b);}catch(_){
@@ -410,7 +483,7 @@
       toast(engine.adjacent(a,b)?'Üçlü oluşmadı. Hamlen duruyor.':'Sadece komşu iki taşı değiştirebilirsin.');
       return;
     }
-    const job={token:++epoch,result,controller:new AbortController(),animations:[],watchdog:null};
+    const job={token:++epoch,result,controller:new AbortController(),animations:[],watchdog:null,scoreDisplay:before.score,scoreTasks:[]};
     presentation=job;busy=true;selected=null;hinted=null;comboText='';
     try{
       markCompleted(true);persist();renderLevels();
@@ -465,7 +538,7 @@
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=9');
+            job.worker=new Worker('./hint-worker.js?v=10');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:levels[active],snapshot:engine.snapshot()});
