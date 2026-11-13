@@ -68,7 +68,7 @@ function mount({motion='none',current=2,done=[0,1],boards={}}={}){
     assert.equal(d.querySelectorAll('#board .floor-green').length,game.covered,message+' ground');
   }
   function isBusy(){return board.getAttribute('aria-busy')==='true';}
-  async function idle(timeout=1400){const start=Date.now();while(isBusy()&&Date.now()-start<timeout)await pause(10);await pause(5);assert(!isBusy(),'presentation releases board before timeout');}
+  async function idle(timeout=3600){const start=Date.now();while(isBusy()&&Date.now()-start<timeout)await pause(10);await pause(5);assert(!isBusy(),'presentation releases board before timeout');}
   function assertUnlocked(){assert.equal(board.getAttribute('aria-busy'),'false');assert.equal(d.getElementById('reset').disabled,false);}
   return {dom,w,d,board,index:current,level:all(w)[current],errors,captureCalls,activeCaptures,animations,send,tap,click,setHit,readSave,assertState,isBusy,idle,assertUnlocked,close:()=>dom.window.close()};
 }
@@ -117,10 +117,13 @@ test('nonzero presentation supports skip and a strict total duration bound',asyn
     f.tap(pair[0]);f.tap(pair[1]);game.swap(...pair);
     assert(f.isBusy(),'test actually enters the animated path');
     assert(f.animations.length>0,'test actually calls the animation API');
+    const swaps=f.animations.filter(a=>a.target.classList.contains('gem')&&Array.isArray(a.frames)&&a.frames.length===2&&a.frames[0].transform==='translate(0px,0px)');
+    assert.equal(swaps.length,2,'both swapped stones visibly slide');
+    assert(swaps.every(a=>a.options.duration>=280),'the swap remains on screen long enough to follow');
     const skip=f.d.getElementById('skip-animation');assert(skip&&!skip.hidden,'visible skip control during effects');
     f.click('skip-animation');await f.idle(150);f.assertUnlocked();f.assertState(game,'skipped presentation');
-    f.click('reset');const start=Date.now();f.tap(pair[0]);f.tap(pair[1]);await f.idle(1400);
-    assert(Date.now()-start<1400,'long chains finish within the bounded presentation budget');
+    f.click('reset');const start=Date.now();f.tap(pair[0]);f.tap(pair[1]);await f.idle(3600);
+    assert(Date.now()-start<3600,'long chains finish within the bounded presentation budget');
     f.assertState(game,'natural presentation completion');
   }finally{f.close();}
 });
@@ -209,6 +212,7 @@ test('burst feedback and exact survivor falls preserve visible tile identity',as
       });return !!fallAnimation;
     },'same-valued survivor animates from its real previous coordinate');
     assert(fallAnimation.frames.every(frame=>frame.opacity===undefined||frame.opacity>0),'surviving gem stays visible rather than fading in');
+    assert(fallAnimation.options.duration>=280,'surviving stones fall at a readable pace');
     f.click('skip-animation');await f.idle(150);
   }finally{f.close();}
 });

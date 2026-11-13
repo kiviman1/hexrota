@@ -49,7 +49,7 @@ Her oyun dalgası gerçek taş kimliğiyle düşüş verisi taşır. Aynı sayı
 
 Tahta sabit SVG üzerinde pointer capture kullanır. Parmağın aynı taş üzerindeki küçük kayması takası iptal etmez; sürükleme bırakılan hücreye göre değerlendirilir. İnce SVG boşluklarında sınırlı dokunma toleransı vardır.
 
-Oyun sonucu animasyondan önce tek kez hesaplanıp kaydedilir. Sunum hata verse bile kontroller açılır; toplam süre 1,2 saniyeyle sınırlıdır. Uzun zincirlerin ilk iki dalgası tam hareketle gösterilir; bütün oyun dalgaları hesaplanır. Kalan zincirler son puan ve zeminde eksiksiz görünür. Animasyonu geç düğmesi veya tahtaya dokunmak sonuca geçer. Yeniden başlatma ve açık bölüm seçimi sunumu iptal eder; eski beklemeler yeni tahtayı değiştiremez. Sekme gizlenince sunum tamamlanır.
+Oyun sonucu animasyondan önce tek kez hesaplanıp kaydedilir. Sunum hata verse bile kontroller açılır; toplam süre 3,3 saniyeyle sınırlıdır. Uzun zincirlerin ilk iki dalgası tam hareketle gösterilir; bütün oyun dalgaları hesaplanır. Kalan zincirler son puan ve zeminde eksiksiz görünür. Animasyonu geç düğmesi veya tahtaya dokunmak sonuca geçer. Yeniden başlatma ve açık bölüm seçimi sunumu iptal eder; eski beklemeler yeni tahtayı değiştiremez. Sekme gizlenince sunum tamamlanır.
 
 Destekleyen tarayıcılarda ipucu Web Worker'da aranır. İşçi açılamazsa kısa süre ve tek derinlikle yerel aramaya dönülür. Hamle/tahta değişince eski ipucu sonuçları iptal edilir. Kaydedilmiş durumlar hamle geçmişi tekrar oynatılarak doğrulanır.
 
@@ -104,4 +104,7 @@ Uygulamada pinch, çift dokunma ve klavye/tekerlek yakınlaştırma hareketleri 
 
 Takasın ardından eşleşen taşların rakamları yüzeyden yükselir ve aynı noktaya toplanır. Her rakam vardıkça ara toplam artar; son toplam büyük bir sayı olarak ışık halkası ve parçacıklarla patlar. Ardından yalnızca toplam üstteki puan göstergesine uçar; sayaç varışta artar. Kutu veya hesap kartı kullanılmaz. Son hamlede kazanılan toplam küçük bir rozet olarak kalır; zincirler sıra numarasıyla gösterilir. Bu sunum bir puan çarpanı eklemez.
 
-Oyun motoru sonucu önceden hesaplayıp kaydeder. Hareketli rakamlar yalnızca bu sonucu gösterir; puanı yeniden hesaplayıp kayda eklemez. Uzun zincirlerin son dalgaları tek toplamda birleştirilir; kalan zincir puanları ayrıca toplanarak her puan bir kez göstergeye aktarılır. Azaltılmış harekette, sunumu geçmede, ekran değişiminde veya animasyon hatasında gerçek toplam doğrudan gösterilir. Sunum yine 1,2 saniyeyle sınırlıdır.
+Oyun motoru sonucu önceden hesaplayıp kaydeder. Hareketli rakamlar yalnızca bu sonucu gösterir; puanı yeniden hesaplayıp kayda eklemez. Uzun zincirlerin son dalgaları tek toplamda birleştirilir; kalan zincir puanları ayrıca toplanarak her puan bir kez göstergeye aktarılır. Azaltılmış harekette, sunumu geçmede, ekran değişiminde veya animasyon hatasında gerçek toplam doğrudan gösterilir. Sunum yine 3,3 saniyeyle sınırlıdır.
+
+
+Hareket süreleri `app.js` içindeki `motion` ayarlarında birlikte tanımlanır. Takas 300 ms, taş düşüşü 380 ms (sütun gecikmesi en çok 70 ms), rakamların toplanması 240–420 ms sürer. Toplamın büyümesi ve ekranda beklemesi 340 ms, hedefe uçuşu 380 ms'dir. Tek dalga yaklaşık 1,6 saniyede, iki dalga yaklaşık 2,9 saniyede tamamlanır; ikinci dalga öncekinin puanı göstergeye ulaştıktan sonra başlar. Atla ve azaltılmış hareket seçenekleri beklemeden gerçek sonuca geçer.

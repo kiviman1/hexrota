@@ -11,7 +11,7 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const tests=[],unhandled=[],browserErrors=[];
 process.on('unhandledRejection',error=>unhandled.push(error?.message||String(error)));
 function test(name,run){tests.push({name,run});}
-async function until(check,message,timeout=1450){const start=Date.now();while(!check()&&Date.now()-start<timeout)await wait(5);assert(check(),message);}
+async function until(check,message,timeout=3600){const start=Date.now();while(!check()&&Date.now()-start<timeout)await wait(5);assert(check(),message);}
 const reference={window:{},performance};vm.createContext(reference);
 for(const file of ['engine.js','levels.js','tutorials.js'])vm.runInContext(source(file),reference);
 const campaign=reference.window.HEX_LEVELS[0];
@@ -106,6 +106,10 @@ test('matched digits merge into a popped total before the total flies to the HUD
   assert.equal(packet.querySelector('.score-packet-gain').textContent,'+9');
   assert(f.d.querySelector('.score-burst-ring')&&f.d.querySelector('.score-burst-spark'),'a visible ring and sparks emphasize the summed total');
   assert.equal(f.score(),10,'the popped total has not yet reached the HUD');
+  await wait(240);
+  assert.equal(packet.dataset.phase,'pop','the completed total stays readable before it starts flying');
+  assert.equal(packet.querySelector('.score-packet-gain').textContent,'+9','the finished sum remains visible during the hold');
+  assert.equal(f.score(),10,'holding the total does not prematurely credit the HUD');
   await until(()=>packet.dataset.phase==='fly','the popped total begins its separate flight');
   assert.equal(f.score(),10,'credit waits until the flight lands');
   await f.idle();f.exact();f.clean();assert(f.node('score-receipt').textContent.includes('9'),'the earned total remains readable after arrival');
@@ -121,6 +125,9 @@ test('long chains account for every point exactly once without introducing a mul
  const f=mount({which:chain});try{
   assert.equal(chain.result.frames.length,4);assert.equal(chain.result.scoreGain,40);f.move();await f.idle();f.exact();f.clean();
   assert.equal(f.packets.length,2,'the bounded presentation combines unseen waves into a receipt');
+  assert(f.packets.every(packet=>f.phases.some(event=>event.node===packet.node&&event.phase==='arrived')),'the safety deadline cannot truncate either visible receipt');
+  const firstArrival=f.phases.findIndex(event=>event.node===f.packets[0].node&&event.phase==='arrived'),secondCollect=f.phases.findIndex(event=>event.node===f.packets[1].node&&event.phase==='collect');
+  assert(secondCollect>firstArrival,'each chain remains readable until its total reaches the HUD');
   assert.deepEqual(f.packets.map(packet=>packet.gain),[5,35],'the second packet includes all remaining waves');
   assert.equal(f.packets.reduce((total,packet)=>total+packet.gain,0),40);
   assert.equal(f.packets.at(-1).destination,59,'the destination is the actual engine score');

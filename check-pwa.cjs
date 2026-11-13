@@ -65,7 +65,7 @@ test('manifest and home-screen icons describe an installable scoped app',()=>{
  assert.equal(document.querySelector('link[rel="manifest"]').getAttribute('href'),'./manifest.webmanifest');
  const apple=document.querySelector('link[rel="apple-touch-icon"]');assert(apple);assert.deepEqual(pngSize(path.resolve(root,apple.getAttribute('href'))),[180,180]);
  assert(document.querySelector('meta[name="application-name"][content="Hexrota"]'));
- assert(document.querySelector('script[src="./pwa.js?v=11"]'));
+ assert(document.querySelector('script[src="./pwa.js?v=12"]'));
 });
 
 test('native installation runs only after a click and can be dismissed',async()=>{
@@ -125,7 +125,7 @@ test('service-worker updates wait for explicit approval and never reload an acti
  const offline=mount({sw:true,swFailure:true});try{await settle();assert(!offline.node('share-game').disabled,'worker registration failure keeps online controls usable');}finally{offline.close();}
 });
 
-const gameBody='<!doctype html><html><meta name="application-name" content="Hexrota"><section id="home-screen"></section><script src="./app.js?v=11"></script></html>';
+const gameBody='<!doctype html><html><meta name="application-name" content="Hexrota"><section id="home-screen"></section><script src="./app.js?v=12"></script></html>';
 const response=(body,type='text/html',status=200)=>new Response(body,{status,headers:{'Content-Type':type}});
 function worker(options={}){
  const listeners=new Map(),stores=new Map(),requests=[],messages={skip:0,claim:0};let network=async()=>{throw new TypeError('Offline');};
@@ -138,7 +138,7 @@ function worker(options={}){
  const context={self,caches:cacheStorage,URL,Request,Response,Headers,Promise,console,fetch:async request=>{requests.push(key(request));return network(request);}};
  vm.createContext(context);vm.runInContext(read('sw.js'),context);
  async function emit(type,data={}){const pending=[];let answer;const event={...data,waitUntil(value){pending.push(Promise.resolve(value));},respondWith(value){answer=Promise.resolve(value);}};listeners.get(type)?.(event);await Promise.all(pending);return answer?{handled:true,response:await answer}:{handled:false};}
- return {stores,requests,messages,cacheStorage,setNetwork(value){network=value;},emit,async fetch(url,opts={}){return emit('fetch',{request:{url:new URL(url,'https://game.test/demo/').href,method:opts.method||'GET',mode:opts.navigate?'navigate':'cors',headers:new Headers()}});},async seed(url,res,name='hexrota-shell-v11'){await(await cacheStorage.open(name)).put(url,res);}};
+ return {stores,requests,messages,cacheStorage,setNetwork(value){network=value;},emit,async fetch(url,opts={}){return emit('fetch',{request:{url:new URL(url,'https://game.test/demo/').href,method:opts.method||'GET',mode:opts.navigate?'navigate':'cors',headers:new Headers()}});},async seed(url,res,name='hexrota-shell-v12'){await(await cacheStorage.open(name)).put(url,res);}};
 }
 
 test('offline navigation serves only previously validated game HTML',async()=>{
@@ -154,25 +154,25 @@ test('offline navigation serves only previously validated game HTML',async()=>{
 
 test('worker scope excludes API, authentication, foreign, mutation and query navigation requests',async()=>{
  const sw=worker();sw.setNetwork(async()=>response('should not fetch'));
- for(const [url,options] of [['https://other.test/demo/app.js?v=11',{}],['https://game.test/elsewhere/app.js?v=11',{}],['api/progress',{}],['login',{navigate:true}],['./?token=secret',{navigate:true}],['app.js?v=12',{}],['app.js?v=11&session=private',{}],['app.js?v=11',{method:'POST'}]]){
+ for(const [url,options] of [['https://other.test/demo/app.js?v=12',{}],['https://game.test/elsewhere/app.js?v=12',{}],['api/progress',{}],['login',{navigate:true}],['./?token=secret',{navigate:true}],['app.js?v=13',{}],['app.js?v=12&session=private',{}],['app.js?v=12',{method:'POST'}]]){
   const result=await sw.fetch(url,options);assert.equal(result.handled,false,url+' is left to the browser');
  }
  assert.equal(sw.requests.length,0);assert.equal(sw.stores.size,0);
 });
 
 test('versioned asset cache requires correct content types and preserves exact query keys',async()=>{
- const sw=worker();sw.setNetwork(async()=>response('window.testVersion=11;','application/javascript'));await sw.fetch('app.js?v=11');
- sw.setNetwork(async()=>{throw new Error('Offline');});assert.equal(await(await sw.fetch('app.js?v=11')).response.text(),'window.testVersion=11;');
- assert.equal((await sw.fetch('app.js?v=12')).handled,false);await assert.rejects(sw.fetch('app.js'),/Offline/,'unversioned requests cannot reuse versioned bytes');
- const auth=worker();auth.setNetwork(async()=>response('<h1>Login</h1>','text/html'));const res=await auth.fetch('app.js?v=11');assert.equal(await res.response.text(),'<h1>Login</h1>','online auth response is not disguised as a cache hit');
- auth.setNetwork(async()=>{throw new Error('Offline');});await assert.rejects(auth.fetch('app.js?v=11'),/Offline/,'login HTML under a script URL is never cached');
- const redirect=worker();redirect.setNetwork(async()=>{const res=response('evil','application/javascript');Object.defineProperty(res,'redirected',{value:true});return res;});await redirect.fetch('app.js?v=11');assert.equal([...redirect.stores.values()].reduce((count,data)=>count+data.size,0),0);
+ const sw=worker();sw.setNetwork(async()=>response('window.testVersion=12;','application/javascript'));await sw.fetch('app.js?v=12');
+ sw.setNetwork(async()=>{throw new Error('Offline');});assert.equal(await(await sw.fetch('app.js?v=12')).response.text(),'window.testVersion=12;');
+ assert.equal((await sw.fetch('app.js?v=13')).handled,false);await assert.rejects(sw.fetch('app.js'),/Offline/,'unversioned requests cannot reuse versioned bytes');
+ const auth=worker();auth.setNetwork(async()=>response('<h1>Login</h1>','text/html'));const res=await auth.fetch('app.js?v=12');assert.equal(await res.response.text(),'<h1>Login</h1>','online auth response is not disguised as a cache hit');
+ auth.setNetwork(async()=>{throw new Error('Offline');});await assert.rejects(auth.fetch('app.js?v=12'),/Offline/,'login HTML under a script URL is never cached');
+ const redirect=worker();redirect.setNetwork(async()=>{const res=response('evil','application/javascript');Object.defineProperty(res,'redirected',{value:true});return res;});await redirect.fetch('app.js?v=12');assert.equal([...redirect.stores.values()].reduce((count,data)=>count+data.size,0),0);
 });
 
 test('cache quota and unavailable storage cannot discard successful online responses',async()=>{
  for(const options of [{putFails:true},{openFails:true}]){
   const sw=worker(options);sw.setNetwork(async request=>new URL(request.url).pathname.endsWith('.js')?response('const playable=true;','text/javascript'):response(gameBody));
-  const asset=await sw.fetch('app.js?v=11');assert.equal(asset.response.status,200);assert.equal(await asset.response.text(),'const playable=true;');
+  const asset=await sw.fetch('app.js?v=12');assert.equal(asset.response.status,200);assert.equal(await asset.response.text(),'const playable=true;');
   assert.equal(await(await sw.fetch('./',{navigate:true})).response.text(),gameBody);
   sw.setNetwork(async()=>{throw new Error('Offline');});assert.equal((await sw.fetch('./',{navigate:true})).response.status,503);
  }
@@ -187,8 +187,8 @@ test('install preloads only safe scoped assets, activation preserves other apps,
   return response('missing','text/plain',404);
  });
  await sw.emit('install');assert.equal(sw.messages.skip,0);assert(sw.requests.length>0);assert(sw.requests.every(url=>url.startsWith('https://game.test/demo/')));
- for(const [name,data] of sw.stores)for(const [url,res] of data){assert(url.endsWith('style.css?v=11'));assert.equal(res.headers.get('Content-Type'),'text/css');}
- await sw.seed('old',response('old'),'hexrota-shell-v1');await sw.seed('other',response('other'),'another-app-v1');await sw.emit('activate');assert(!sw.stores.has('hexrota-shell-v1'));assert(sw.stores.has('another-app-v1'));assert(sw.stores.has('hexrota-shell-v11'));assert.equal(sw.messages.claim,1);assert.equal(sw.messages.skip,0);
+ for(const [name,data] of sw.stores)for(const [url,res] of data){assert(url.endsWith('style.css?v=12'));assert.equal(res.headers.get('Content-Type'),'text/css');}
+ await sw.seed('old',response('old'),'hexrota-shell-v1');await sw.seed('other',response('other'),'another-app-v1');await sw.emit('activate');assert(!sw.stores.has('hexrota-shell-v1'));assert(sw.stores.has('another-app-v1'));assert(sw.stores.has('hexrota-shell-v12'));assert.equal(sw.messages.claim,1);assert.equal(sw.messages.skip,0);
  await sw.emit('message',{data:{type:'SKIP_WAITING'}});assert.equal(sw.messages.skip,1);
  const warm=worker();warm.setNetwork(async()=>response(gameBody));await warm.emit('message',{data:{type:'CACHE_APP'}});warm.setNetwork(async()=>{throw new Error('Offline');});assert.equal(await(await warm.fetch('./',{navigate:true})).response.text(),gameBody,'explicit shell warming validates and stores the real game');
 });

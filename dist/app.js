@@ -5,6 +5,7 @@
   const levels=[...tutorials,...window.HEX_LEVELS];
   const tutorialCount=tutorials.length,campaignCount=window.HEX_LEVELS.length;
   const key = 'hexrota-match-v5';
+  const motion={swap:300,digit:240,spread:180,collectPulse:100,pop:200,hold:140,flight:380,count:140,arrival:220,burst:220,ring:300,particle:320,matchPause:430,fall:380,fallStagger:70,columnDelay:16,invalid:280,budget:3300};
   let migrated=false;
   const pad = n => String(n).padStart(2, '0');
   const icon = name => `<svg class="icon" aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -328,7 +329,7 @@
       const done=()=>{cancelAnimationFrame(frame);job.controller.signal.removeEventListener('abort',done);resolve();};
       const step=now=>{
         if(job.controller.signal.aborted||presentation!==job){done();return;}
-        const progress=Math.min(1,(now-start)/80),value=Math.round(from+(target-from)*(1-Math.pow(1-progress,3)));
+        const progress=Math.min(1,(now-start)/motion.count),value=Math.round(from+(target-from)*(1-Math.pow(1-progress,3)));
         job.scoreDisplay=value;renderScore(value);
         if(progress<1)frame=requestAnimationFrame(step);else done();
       };
@@ -369,12 +370,12 @@
       if(extra)sources.push({index:null,value:extra,point:{x:start.x+35,y:Math.min(viewportHeight-24,start.y+42)}});
       const batches=new Map();
       for(const [order,source]of sources.entries()){
-        const delay=sources.length>1?Math.round(order/(sources.length-1)*6)*10:0,at=110+delay;
+        const delay=sources.length>1?Math.round(order/(sources.length-1)*6)*(motion.spread/6):0,at=motion.digit+delay;
         const digit=add('score-digit'+(source.index===null?' score-digit-extra':''),source.point);digit.style.zIndex='3';digit.dataset.value=String(source.value);
         if(source.index===null){digit.dataset.source='chains';digit.textContent=`+${source.value}`;}
         else{digit.dataset.index=String(source.index);digit.textContent=String(source.value);const original=board.querySelector(`[data-index="${source.index}"] .hex-number`);if(original)original.style.opacity='0';}
         const dx=start.x-source.point.x,dy=start.y-source.point.y;
-        animateElement(job,digit,[{transform:'translate(0px,0px) scale(1)',opacity:1},{transform:`translate(${dx*.25}px,${dy*.25-12}px) scale(1.2)`,opacity:1,offset:.3},{transform:`translate(${dx}px,${dy}px) scale(.5)`,opacity:0}],{duration:110,delay,easing:'cubic-bezier(.35,.02,.68,1)',fill:'both'});
+        animateElement(job,digit,[{transform:'translate(0px,0px) scale(1)',opacity:1},{transform:`translate(${dx*.25}px,${dy*.25-12}px) scale(1.2)`,opacity:1,offset:.3},{transform:`translate(${dx}px,${dy}px) scale(.5)`,opacity:0}],{duration:motion.digit,delay,easing:'cubic-bezier(.35,.02,.68,1)',fill:'both'});
         if(!batches.has(at))batches.set(at,[]);batches.get(at).push({value:source.value,digit});
       }
       let elapsed=0,collected=0;
@@ -382,23 +383,23 @@
         await pause(at-elapsed,job);if(!current())return;elapsed=at;
         for(const source of batch){collected+=source.value;source.digit.remove();}
         amount.style.opacity='1';amount.textContent=`+${collected}`;packet.dataset.collected=String(collected);
-        animateElement(job,amount,[{transform:'scale(.8)'},{transform:'scale(1.08)',offset:.45},{transform:'scale(1)'}],{duration:55,easing:'ease-out'});
+        animateElement(job,amount,[{transform:'scale(.8)'},{transform:'scale(1.08)',offset:.45},{transform:'scale(1)'}],{duration:motion.collectPulse,easing:'ease-out'});
       }
       amount.textContent=`+${gain}`;packet.dataset.phase='pop';
-      animateElement(job,packet,[{transform:'scale(.75)',opacity:1},{transform:'scale(1.3)',opacity:1,offset:.42},{transform:'scale(1)',opacity:1}],{duration:90,easing:'cubic-bezier(.2,.9,.35,1)',fill:'forwards'});
+      animateElement(job,packet,[{transform:'scale(.75)',opacity:1},{transform:'scale(1.3)',opacity:1,offset:.42},{transform:'scale(1)',opacity:1}],{duration:motion.pop,easing:'cubic-bezier(.2,.9,.35,1)',fill:'forwards'});
       const ring=add('score-burst-ring',start);
-      animateElement(job,ring,[{transform:'scale(.3)',opacity:.95},{transform:'scale(1.65)',opacity:0}],{duration:170,easing:'ease-out',fill:'forwards'});
+      animateElement(job,ring,[{transform:'scale(.3)',opacity:.95},{transform:'scale(1.65)',opacity:0}],{duration:motion.pop+motion.hold,easing:'ease-out',fill:'forwards'});
       for(let i=0;i<10;i++){
         const spark=add('score-burst-spark',start),angle=i*Math.PI/5,distance=42+(i%3)*12;
-        animateElement(job,spark,[{transform:'translate(0px,0px) scale(1)',opacity:1},{transform:`translate(${Math.cos(angle)*distance}px,${Math.sin(angle)*distance}px) scale(.15) rotate(100deg)`,opacity:0}],{duration:180,easing:'ease-out',fill:'forwards'});
+        animateElement(job,spark,[{transform:'translate(0px,0px) scale(1)',opacity:1},{transform:`translate(${Math.cos(angle)*distance}px,${Math.sin(angle)*distance}px) scale(.15) rotate(100deg)`,opacity:0}],{duration:motion.pop+motion.hold,easing:'ease-out',fill:'forwards'});
       }
-      await pause(90,job);if(!current())return;
+      await pause(motion.pop+motion.hold,job);if(!current())return;
       packet.dataset.phase='fly';chain.style.opacity='0';const dx=end.x-start.x,dy=end.y-start.y;
-      animateElement(job,packet,[{transform:'translate(0px,0px) scale(1)',opacity:1},{transform:`translate(${dx*.38-14}px,${dy*.6-16}px) scale(.8)`,opacity:1,offset:.6},{transform:`translate(${dx}px,${dy}px) scale(.18)`,opacity:0}],{duration:180,easing:'cubic-bezier(.3,.1,.5,1)',fill:'forwards'});
-      await pause(180,job);if(!current())return;
+      animateElement(job,packet,[{transform:'translate(0px,0px) scale(1)',opacity:1},{transform:`translate(${dx*.38-14}px,${dy*.6-16}px) scale(.8)`,opacity:1,offset:.6},{transform:`translate(${dx}px,${dy}px) scale(.18)`,opacity:0}],{duration:motion.flight,easing:'cubic-bezier(.3,.1,.5,1)',fill:'forwards'});
+      await pause(motion.flight,job);if(!current())return;
       packet.dataset.phase='arrived';packet.dataset.arrived='true';hud?.classList.add('score-arrival');
       const receipt=$('score-receipt');if(receipt)receipt.textContent=`+${gain}`;
-      animateElement(job,hud,[{transform:'scale(1)'},{transform:'scale(1.065)',offset:.4},{transform:'scale(1)'}],{duration:160,easing:'ease-out'});
+      animateElement(job,hud,[{transform:'scale(1)'},{transform:'scale(1.065)',offset:.4},{transform:'scale(1)'}],{duration:motion.arrival,easing:'ease-out'});
       await countScore(job,destination);
     }finally{signal.removeEventListener('abort',remove);remove();}
   }
@@ -443,13 +444,13 @@
     const inks=['#b5a4da','#e9c37f','#dfaa95','#8bb8d5','#cfabc6'];
     for(const [order,index]of frame.matched.entries()){
       const p=positions[index],gem=$('board').querySelector(`[data-index="${index}"] .gem`);
-      animateElement(job,gem,[{transform:'scale(1)',opacity:1},{transform:'scale(1.12)',opacity:1,offset:.25},{transform:'scale(.45)',opacity:0}],{duration:160,easing:'cubic-bezier(.3,.1,.4,1)',fill:'forwards'});
-      if(order<12){const ring=svgNode('circle',{class:'fx-ring',cx:p.x,cy:p.y,r:15});layer.appendChild(ring);animateElement(job,ring,[{r:'15px',opacity:.8},{r:'49px',opacity:0}],{duration:195,easing:'ease-out',fill:'forwards'});}
+      animateElement(job,gem,[{transform:'scale(1)',opacity:1},{transform:'scale(1.12)',opacity:1,offset:.25},{transform:'scale(.45)',opacity:0}],{duration:motion.burst,easing:'cubic-bezier(.3,.1,.4,1)',fill:'forwards'});
+      if(order<12){const ring=svgNode('circle',{class:'fx-ring',cx:p.x,cy:p.y,r:15});layer.appendChild(ring);animateElement(job,ring,[{r:'15px',opacity:.8},{r:'49px',opacity:0}],{duration:motion.ring,easing:'ease-out',fill:'forwards'});}
       for(let k=0;k<5&&particles<48;k++,particles++){
         const angle=(k*72+order*31)*Math.PI/180,distance=27+(k%3)*10;
         const dot=svgNode(k%2?'circle':'rect',k%2?{class:'fx-particle',cx:p.x,cy:p.y,r:2.5}:{class:'fx-particle',x:p.x-2,y:p.y-2,width:4,height:4,rx:1});
         dot.style.fill=inks[(frame.before[index]-1)%inks.length];layer.appendChild(dot);
-        animateElement(job,dot,[{transform:'translate(0px,0px) scale(1)',opacity:1},{transform:`translate(${Math.cos(angle)*distance}px,${Math.sin(angle)*distance-8}px) scale(.35)`,opacity:0}],{duration:200,easing:'ease-out',fill:'forwards'});
+        animateElement(job,dot,[{transform:'translate(0px,0px) scale(1)',opacity:1},{transform:`translate(${Math.cos(angle)*distance}px,${Math.sin(angle)*distance-8}px) scale(.35)`,opacity:0}],{duration:motion.particle,easing:'ease-out',fill:'forwards'});
       }
     }
     const centroid=frame.matched.reduce((p,i)=>({x:p.x+positions[i].x/frame.matched.length,y:p.y+positions[i].y/frame.matched.length}),{x:0,y:0});
@@ -462,7 +463,7 @@
       let origin;
       if(fall.spawn){const column=cells.map((c,i)=>({c,i})).filter(x=>x.c.q===cell.q).sort((a,b)=>a.c.r-b.c.r);origin={x:destination.x,y:positions[column[0].i].y-Math.sqrt(3)*44*(fall.spawnCount-fall.spawnOrder)};}
       else origin=positions[fall.from];
-      const dx=origin.x-destination.x,dy=origin.y-destination.y,delay=Math.min(50,(cell.q-minQ)*12),duration=195;
+      const dx=origin.x-destination.x,dy=origin.y-destination.y,delay=Math.min(motion.fallStagger,(cell.q-minQ)*motion.columnDelay),duration=motion.fall;
       const node=$('board').querySelector(`[data-index="${fall.to}"] .gem`);
       animateElement(job,node,[{transform:`translate(${dx}px,${dy}px)`,opacity:fall.spawn?0:1},{transform:'translate(0px,2.5px)',opacity:1,offset:.82},{transform:'translate(0px,-1px)',opacity:1,offset:.94},{transform:'translate(0px,0px)',opacity:1}],{duration,delay,easing:'cubic-bezier(.22,.72,.28,1)',fill:'both'});
       longest=Math.max(longest,duration+delay);
@@ -473,8 +474,8 @@
     if(!canAnimate())return;
     render(before,{message:'Taşlar yer değiştiriyor…'});
     const pos=geometry().positions,dx=pos[b].x-pos[a].x,dy=pos[b].y-pos[a].y;
-    for(const [index,x,y]of[[a,dx,dy],[b,-dx,-dy]])animateElement(job,$('board').querySelector(`[data-index="${index}"] .gem`),[{transform:'translate(0px,0px)'},{transform:`translate(${x}px,${y}px)`}],{duration:155,easing:'cubic-bezier(.2,.7,.3,1)',fill:'forwards'});
-    await pause(160,job);
+    for(const [index,x,y]of[[a,dx,dy],[b,-dx,-dy]])animateElement(job,$('board').querySelector(`[data-index="${index}"] .gem`),[{transform:'translate(0px,0px)'},{transform:`translate(${x}px,${y}px)`}],{duration:motion.swap,easing:'cubic-bezier(.2,.7,.3,1)',fill:'forwards'});
+    await pause(motion.swap+5,job);
     const frames=job.result.frames;
     // Resolve every wave in the engine; animate the first two so long chains
     // never delay input indefinitely. The final authoritative state follows.
@@ -485,16 +486,16 @@
       comboText=`${i?`${i+1}. zincir · `:''}${scoreEquation(f)} puan${extra?` · Devamı +${extra}`:''}`;
       render({values:f.before,layers:prior?prior.layers:before.layers,score,movesLeft:engine.movesLeft},{message:i?'Bir hamle, yeni bir zincir!':'Üçlü tamam. Şimdi zemine bak.'});
       const task=flyScore(job,f,{wave:i+1,gain,destination:score+gain,extra,totalWaves:frames.length}).catch(()=>{});job.scoreTasks.push(task);
-      matchEffects(job,f);tone(Math.min(5,i+1));await pause(205,job);
+      matchEffects(job,f);tone(Math.min(5,i+1));await pause(motion.matchPause,job);
       if(job.controller.signal.aborted||presentation!==job)return;
       render({values:f.after,layers:f.layers,score:score+f.scoreGain,movesLeft:engine.movesLeft},{falling:f.falls.map(x=>x.to),message:'Taşlar aşağı kayıyor; zemin yerinde kalıyor.'});
-      const duration=fallingGems(job,f);await pause(duration+5,job);
+      const duration=fallingGems(job,f);await Promise.all([pause(duration+10,job),task]);
     }
     await Promise.all(job.scoreTasks);
   }
   function invalidSwap(a,b){
     if(!canAnimate())return;
-    try{const positions=geometry().positions;for(const [from,to]of[[a,b],[b,a]]){const dx=(positions[to].x-positions[from].x)*.25,dy=(positions[to].y-positions[from].y)*.25;$('board').querySelector(`[data-index="${from}"] .gem`)?.animate([{transform:'translate(0px,0px)'},{transform:`translate(${dx}px,${dy}px)`,offset:.4},{transform:'translate(0px,0px)'}],{duration:190,easing:'ease-out'});}}catch(_){}
+    try{const positions=geometry().positions;for(const [from,to]of[[a,b],[b,a]]){const dx=(positions[to].x-positions[from].x)*.25,dy=(positions[to].y-positions[from].y)*.25;$('board').querySelector(`[data-index="${from}"] .gem`)?.animate([{transform:'translate(0px,0px)'},{transform:`translate(${dx}px,${dy}px)`,offset:.4},{transform:'translate(0px,0px)'}],{duration:motion.invalid,easing:'ease-out'});}}catch(_){}
   }
   async function performSwap(a,b) {
     if(!gameInputAllowed())return;
@@ -520,7 +521,7 @@
     try{
       markCompleted(true);persist();renderLevels();
       if(saved.preferences.haptics&&typeof navigator.vibrate==='function')try{navigator.vibrate(12);}catch(_){}
-      job.watchdog=setTimeout(()=>finishPresentation(job),1200);
+      job.watchdog=setTimeout(()=>finishPresentation(job),motion.budget);
       await presentSwap(job,a,b,before);
     }catch(_){/* Presentation failure must never lock committed game state. */}
     finally{finishPresentation(job);}
@@ -570,7 +571,7 @@
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=11');
+            job.worker=new Worker('./hint-worker.js?v=12');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:levels[active],snapshot:engine.snapshot()});
