@@ -1,5 +1,7 @@
 # Hexrota — üçlü eşleştirme
 
+**Oyna:** https://hexrota.vercel.app/
+
 Telefon ve masaüstü için Türkçe altıgen sayı bulmacası. Sınırlı hamle, kalıcı yeşil zemin, çift katmanlı zeminler, dokunma/sürükleme kontrolleri, ipucu, ses ve yerel kayıt içerir. Sade üçlü eşleştirme kuralları kullanılır.
 
 ## Menü ve ekran akışı
@@ -82,7 +84,7 @@ Testler üç ekseni, geçersiz takasta durumun korunmasını, kesişimlerin tek 
 
 ## Web uygulaması ve Vercel
 
-`dist/` doğrudan HTTPS üzerinden yayınlanır. `vercel.json` framework algılamasını ve gereksiz derleme/kurulumu kapatır, çıktı dizinini `dist` olarak seçer. Ortam değişkeni veya sunucu gerekmez. GitHub deposunun `main` dalı Vercel projesine bağlandığında yeni gönderimler otomatik dağıtılır.
+`dist/` doğrudan HTTPS üzerinden yayınlanır. `vercel.json` framework algılamasını ve gereksiz derleme/kurulumu kapatır, çıktı dizinini `dist` olarak seçer. Ortam değişkeni veya sunucu gerekmez. `kiviman1/hexrota` GitHub deposunun `main` dalı Vercel’deki `hexrota` projesine bağlıdır; yeni gönderimler otomatik olarak üretim adresine dağıtılır.
 
 Ayarlar içinden bağlantı paylaşılabilir, destekleyen cihazlarda tam ekran açılabilir ve ana ekrana ekleme yönergesi görülebilir. Kurulabilir tarayıcılarda yerel kurulum istemi kullanılır; iPhone/iPad'de Safari'nin Paylaş → Ana Ekrana Ekle yolu açıklanır. Güvenli alan boşlukları ve uygulama simgeleri telefon ekranlarını destekler.
 
