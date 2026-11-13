@@ -7,10 +7,10 @@
   <meta name="description" content="Komşu altıgenleri değiştir, aynı üç sayıyı eşleştir. Sınırlı hamlede hedef puana ulaş ve tüm zemini yeşile dönüştür.">
   <title>Hexrota — Üçünü eşleştir. Alanı yeşert.</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-  <link rel="stylesheet" href="./style.css?v=2">
-  <script src="./levels.js?v=2" defer></script>
-  <script src="./engine.js?v=2" defer></script>
-  <script src="./app.js?v=2" defer></script>
+  <link rel="stylesheet" href="./style.css?v=3">
+  <script src="./levels.js?v=3" defer></script>
+  <script src="./engine.js?v=3" defer></script>
+  <script src="./app.js?v=3" defer></script>
 </head>
 <body>
   <svg class="icon-library" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -26,6 +26,8 @@
       <symbol id="i-hex" viewBox="0 0 24 24"><path d="m12 2 9 5v10l-9 5-9-5V7Z"/></symbol>
       <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.3 9a2.7 2.7 0 0 1 5.4 0c0 2-2.7 2-2.7 4m0 3v.1"/></symbol>
       <symbol id="i-swap" viewBox="0 0 24 24"><path d="M4 8h15m-4-4 4 4-4 4M20 16H5m4-4-4 4 4 4"/></symbol>
+      <symbol id="i-ring" viewBox="0 0 24 24"><path d="m12 2 8.7 5v10L12 22l-8.7-5V7Z"/><circle cx="12" cy="12" r="4.3"/><path d="M12 2v3m8.7 2-2.6 1.5m2.6 8.5-2.6-1.5M12 22v-3m-8.7-2 2.6-1.5M3.3 7l2.6 1.5"/></symbol>
+      <symbol id="i-sprout" viewBox="0 0 24 24"><path d="M5 21c3-7 7-10 13-15M11 14C5 14 3 10 3 6c6 0 9 3 8 8Zm3-4c-1-5 2-8 7-8 0 5-2 8-7 8Z"/></symbol>
       <symbol id="i-moves" viewBox="0 0 24 24"><path d="m13 2-8 12h6l-1 8 9-13h-6Z"/></symbol>
     </defs>
   </svg>
@@ -65,19 +67,27 @@
           <div class="board-stage" id="board-stage">
             <div class="stage-top"><span id="level-note">Bir taşı seç, komşusuyla değiştir.</span><span id="move-counter">0 / 10 HAMLE</span></div>
             <div class="board-wrap"><svg id="board" role="group" aria-label="Sayıları eşleştirmek için iki komşu altıgen seç"></svg><div id="last-combo" class="combo-feedback" aria-live="polite"></div></div>
-            <div class="board-status" id="board-status" aria-live="polite"><span class="status-dot"></span><span id="status-text">Yan yana aynı üç sayıyı oluştur.</span><button id="continue" class="continue-button" hidden>Devam et →</button></div>
+            <div id="special-preview" class="special-preview" aria-live="polite" hidden></div>
+            <div class="board-status" id="board-status" aria-live="polite"><span class="status-dot"></span><span id="status-text">Yan yana aynı üç sayıyı oluştur.</span><button id="continue" class="continue-button" hidden>Devam et →</button><button id="skip-animation" class="skip-animation" hidden>Animasyonu geç <span aria-hidden="true">↠</span></button></div>
             <div class="board-legend"><span><i class="legend-hex untouched"></i> Boyanacak zemin</span><span><i class="legend-hex painted"></i> Yeşil zemin</span><span><i class="legend-hex double">2</i> İki katlı zemin</span></div>
           </div>
           <div class="game-toolbar">
             <div class="coverage"><div class="coverage-icon"><svg class="icon"><use href="#i-hex"/></svg></div><div><strong id="coverage">0 / 19</strong><span>zemin yeşil</span></div><div class="mini-progress"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="14"/><circle id="coverage-ring" cx="18" cy="18" r="14"/></svg></div></div>
             <div class="tool-actions"><button id="reset" class="tool-button" title="Aynı bölümü yeniden başlat (R)"><svg class="icon"><use href="#i-reset"/></svg><span>Yeniden</span></button><button id="hint" class="hint-button" title="Bir eşleşme öner (H)"><svg class="icon"><use href="#i-bulb"/></svg><span>İpucu</span></button></div>
           </div>
+          <p id="power-tip" class="power-tip">Büyük eşleşmelerden özel taşlar doğar. Etkilerini eksik zeminlere yönlendir.</p>
         </section>
       </div>
       <section class="quick-guide" aria-label="Oyunun kuralları">
         <div><span class="guide-number">01</span><p><strong>İki komşuyu değiştir.</strong><span>Düz bir çizgide aynı üç sayıyı oluştur.</span></p></div>
         <div><span class="guide-number">02</span><p><strong>Eşleştir, zemini yeşert.</strong><span>Yeni sayılar düşer; zincirler aynı hamleye dahildir.</span></p></div>
         <div><span class="guide-number">03</span><p><strong>Hamlelerini iyi kullan.</strong><span>Hedef puan ve tamamen yeşil bir alan: ikisi birden.</span></p></div>
+      </section>
+      <section class="special-guide" aria-label="Özel taşları keşfet">
+        <div class="special-guide-intro"><span class="eyebrow">EŞLEŞMEDEN DOĞAN GÜÇLER</span><p>Yeşile giden iki yeni yol.</p></div>
+        <div class="special-card"><span class="special-icon ring-icon"><svg class="icon" aria-hidden="true"><use href="#i-ring"/></svg></span><p><strong>Halka <span>4 aynı sayı</span></strong><span>Merkezini ve altı komşusunu birlikte temizler.</span></p></div>
+        <div class="special-card"><span class="special-icon sprout-icon"><svg class="icon" aria-hidden="true"><use href="#i-sprout"/></svg></span><p><strong>Filiz <span>5’li veya kesişen eşleşme</span></strong><span>Eksik zemine doğru kısa bir yol açar. Konumunu iyi seç.</span></p></div>
+        <p class="special-guide-note">Özel taşı bir komşusuyla değiştirerek çalıştır. Eşleştiğinde de etkinleşir.</p>
       </section>
     </main>
     <footer><span>Az kural. Çok olasılık.</span><span>HEXROTA <i>✳</i> İLK 10 BÖLÜM</span><span>Her değişim bir karar.</span></footer>
@@ -89,7 +99,13 @@
       <svg viewBox="0 0 264 100" role="img" aria-label="Üç düz eşleşme yönü"><g stroke-linecap="round" stroke-width="2" fill="none"><path d="M44 16v68" stroke="#a592be"/><path d="m105 25 54 50" stroke="#c4a478"/><path d="m190 75 54-50" stroke="#88a3b7"/></g><g fill="#eee6fa" stroke="#d9c9eb"><path d="m44 8 10 6v12l-10 6-10-6V14Z"/><path d="m44 38 10 6v12l-10 6-10-6V44Z"/><path d="m44 68 10 6v12l-10 6-10-6V74Z"/></g><g fill="#f4e7cf" stroke="#e3cba2"><path d="m105 13 10 6v12l-10 6-10-6V19Z"/><path d="m132 38 10 6v12l-10 6-10-6V44Z"/><path d="m159 63 10 6v12l-10 6-10-6V69Z"/></g><g fill="#e4ecf3" stroke="#c4d5e2"><path d="m190 63 10 6v12l-10 6-10-6V69Z"/><path d="m217 38 10 6v12l-10 6-10-6V44Z"/><path d="m244 13 10 6v12l-10 6-10-6V19Z"/></g><g text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#665b71"><text x="44" y="24">1</text><text x="44" y="54">1</text><text x="44" y="84">1</text><text x="105" y="29">2</text><text x="132" y="54">2</text><text x="159" y="79">2</text><text x="190" y="79">4</text><text x="217" y="54">4</text><text x="244" y="29">4</text></g></svg>
       <span>3 veya daha fazla aynı sayı · 3 düz eksen</span>
     </div>
-    <ol class="rules"><li><span>1</span><div><strong>Bir taşı seç, komşusunu seç.</strong><p>İki komşu taşı dokunarak veya birini diğerine sürükleyerek değiştir. Eşleşme oluşturmayan değişim geri döner ve hamle harcamaz.</p></div></li><li><span>2</span><div><strong>Üçlüleri ve zincirleri yakala.</strong><p>Aynı sayıdan en az üçü düz çizgide eşleşince kaybolur ve değerleri puanına eklenir. Yukarıdan yeni sayılar düşer. Bir değişimin bütün zincirleri yalnızca bir hamle harcar.</p></div></li><li><span>3</span><div><strong>Taşlar değişir, yeşil zemin kalır.</strong><p>Eşleşen taşların altındaki zemin yeşile döner. 2 işaretli zemin iki ayrı eşleşmede boyanır. Hedef puana ulaşmak ve bütün zemini yeşertmek için hamlelerini planla.</p></div></li></ol>
+    <ol class="rules"><li><span>1</span><div><strong>Bir taşı seç, komşusunu seç.</strong><p>İki komşu taşı dokunarak veya birini diğerine sürükleyerek değiştir. Normal taşlarda eşleşme oluşturmayan değişim geri döner ve hamle harcamaz.</p></div></li><li><span>2</span><div><strong>Üçlüleri ve zincirleri yakala.</strong><p>Aynı sayıdan en az üçü düz çizgide eşleşince kaybolur ve değerleri puanına eklenir. Yukarıdan yeni sayılar düşer. Bir değişimin bütün zincirleri yalnızca bir hamle harcar.</p></div></li><li><span>3</span><div><strong>Taşlar değişir, yeşil zemin kalır.</strong><p>Eşleşen taşların altındaki zemin yeşile döner. 2 işaretli zemin iki ayrı eşleşmede boyanır. Hedef puana ulaşmak ve bütün zemini yeşertmek için hamlelerini planla.</p></div></li></ol>
+    <section class="special-help" aria-label="Halka ve Filiz nasıl çalışır">
+      <h3>Eşleşmeyi büyüt, bir güç kazan.</h3>
+      <div class="special-help-row"><span class="special-icon ring-icon"><svg class="icon" aria-hidden="true"><use href="#i-ring"/></svg></span><p><strong>Halka · düz 4’lü</strong>Aynı sayıdan dördünü bir çizgide eşleştir. Halka çalışınca kendisini ve çevresindeki altı komşuyu temizler.</p></div>
+      <div class="special-help-row"><span class="special-icon sprout-icon"><svg class="icon" aria-hidden="true"><use href="#i-sprout"/></svg></span><p><strong>Filiz · 5’li veya kesişen eşleşme</strong>Düz 5’li ya da iki eksende kesişen üçlüler bir Filiz oluşturur. Filiz, yeşil olmayan zemine doğru en fazla üç adım ilerleyerek kendisi dahil dört taşı temizler.</p></div>
+      <p class="special-help-note">Özel taşlar kendi kurduğun ilk eşleşmeden doğar; devamındaki zincirler puan ve zemin kazandırır. Özel taşı bir komşusuyla değiştirmek onu çalıştırır ve bir hamle harcar; ayrıca üçlü oluşturman gerekmez. Eşleşme veya başka bir özel taşın etkisi de onu çalıştırır. Filiz’i eksik zemine yaklaştırmak etkisini artırır.</p>
+    </section>
     <div class="help-shortcuts"><span><kbd>R</kbd> Yeniden başla</span><span><kbd>H</kbd> İpucu</span><span><kbd>↵</kbd> Taş seç</span></div><button class="primary-button" data-close>Eşleştirmeye hazırım <svg class="icon"><use href="#i-arrow"/></svg></button>
   </dialog>
   <dialog id="win-dialog" class="modal win-modal">
