@@ -20,14 +20,22 @@ function mount(state,legacy,options={}){
  if(legacy)w.localStorage.setItem('hexrota-v1',JSON.stringify(legacy));
  for(const v of [2,3,4])if(options['v'+v])w.localStorage.setItem('hexrota-match-v'+v,JSON.stringify(options['v'+v]));
  if(options.Worker)w.Worker=options.Worker;
- for(const file of ['levels.js','engine.js','tutorials.js','app.js'])w.eval(fs.readFileSync(root+file,'utf8'));
+ for(const file of ['levels.js','engine.js','tutorials.js','audio.js','app.js'])w.eval(fs.readFileSync(root+file,'utf8'));
+ if(options.launch!==false)enterStage(w,readSave(w).current);
  return dom;
 }
 function click(w,selector){const node=w.document.querySelector(selector);assert(node,selector+' exists');node.dispatchEvent(new w.MouseEvent('click',{bubbles:true,detail:0}));}
+function startPending(w){const dialog=w.document.getElementById('pregame-dialog');if(dialog?.open)click(w,'#pregame-start');}
+function enterStage(w,index){
+ const nav=w.document.querySelector('[data-nav="journey"]');assert(nav,'journey navigation exists');nav.click();
+ const node=w.document.querySelector(`[data-stage="${index}"]`);assert(node&&!node.disabled,'stage '+index+' is accessible');node.click();
+ assert(w.document.getElementById('pregame-dialog').open,'stage preview opens');startPending(w);
+ assert.equal(w.document.getElementById('game-screen').hidden,false,'game entered through preview');
+}
 function tile(w,index){return w.document.querySelector(`#board [data-index="${index}"]`);}
 function select(w,index){click(w,`#board [data-index="${index}"]`);}
 async function swap(w,pair){select(w,pair[0]);select(w,pair[1]);await settle();}
-function numbers(w){return [...w.document.querySelectorAll('.hex-number')].map(node=>+node.textContent);}
+function numbers(w){return [...w.document.querySelectorAll('#board .hex-number')].map(node=>+node.textContent);}
 function readSave(w){return JSON.parse(w.localStorage.getItem(key));}
 function assertClassicShell(w){
  assert.equal(w.document.querySelector('.special-guide,.special-preview,#power-tip,.intro-test-link,.power-symbol,.power-ring,.power-sprout'),null,'classic shell has no removed features');
@@ -38,7 +46,7 @@ function assertBoard(w,game,message){
  assert.equal(+d.getElementById('moves-left').textContent,game.movesLeft,message+' moves');
  assert.deepEqual(numbers(w),Array.from(game.values),message+' values');
  assertClassicShell(w);
- assert.equal(d.querySelectorAll('.floor-green').length,game.covered,message+' covered count');
+ assert.equal(d.querySelectorAll('#board .floor-green').length,game.covered,message+' covered count');
  assert.equal(d.getElementById('coverage').textContent,`${game.covered} / ${game.total}`,message+' coverage label');
  for(let i=0;i<game.total;i++){
   const cell=tile(w,i),left=game.layers[i],initial=game.level.cells[i].layers||1;
@@ -66,7 +74,7 @@ function fakeWorkers(){
 }
 function assertLegalHint(w){
  const save=readSave(w),level=all(w)[save.current],game=new w.HexMatch(level,save.boards[save.current]);
- const pair=[...w.document.querySelectorAll('.hinted')].map(node=>+node.dataset.index);
+ const pair=[...w.document.querySelectorAll('#board .hinted')].map(node=>+node.dataset.index);
  assert.equal(pair.length,2,'fallback produces a pair');
  assert(game.legalMoves().some(p=>p.includes(pair[0])&&p.includes(pair[1])),'fallback hint is currently legal');
  assert.equal(w.document.getElementById('hint').disabled,false,'hint button returns to ready');
@@ -110,17 +118,17 @@ const campaignState=()=>({current:2,done:[0,1],boards:{},sound:false});
   for(const next of level.solution){assert(shadow.swap(...next).ok);await swap(w,next);assertBoard(w,shadow,'stage '+n);}
   assert.equal(shadow.status,'won');await until(()=>d.getElementById('win-dialog').open,'victory '+n);
   assert.equal(d.getElementById('completed').textContent,`${Math.max(0,n-1)} / 10`,'tutorial completion does not inflate campaign count');
-  if(n<11)click(w,'#next');
+  if(n<11){click(w,'#next');startPending(w);}
  }
  const saved=readSave(w);assert.equal(saved.done.length,12);
- const restored=mount(saved),rw=restored.window,rd=rw.document;
+ const restored=mount(saved,null,{launch:false}),rw=restored.window,rd=rw.document;
  assert.equal(rd.getElementById('completed').textContent,'10 / 10');
  assert.equal(rd.querySelector('[data-level="0"] .level-number').textContent,'T1','completed tutorials remain identifiable on mobile');
  assert.equal(rd.querySelector('[data-level="1"] .level-number').textContent,'T2');
  assert.equal(rd.querySelector('[data-level="2"] .level-number').textContent,'01','completed chapters keep their numbers');
  assert.equal(rd.querySelectorAll('.level-button:disabled').length,0);
- assert.equal(rd.getElementById('continue').hidden,false);
- click(rw,'#continue');assert(rd.getElementById('win-dialog').open);click(rw,'#review');
+ assert.equal(rd.getElementById('home-screen').hidden,false,'completed journey returns to home on reload');
+ enterStage(rw,11);assert.equal(+rd.getElementById('moves-left').textContent,rw.HEX_LEVELS[9].moves,'starting a completed stage explicitly replays it');
  // A legal but unplanned sequence can exhaust the finite campaign budget.
  const level=w.HEX_LEVELS[9];let losing;
  for(let policy=0;policy<20&&!losing;policy++){
@@ -141,14 +149,14 @@ const campaignState=()=>({current:2,done:[0,1],boards:{},sound:false});
  const middle=mount(state);assertBoard(middle.window,game,'mid-turn restore');
  state.boards[11].score+=1;const corrupt=mount(state);assert.equal(+corrupt.window.document.getElementById('sum').textContent,0);
  // Explicit tutorial skip opens campaign one. Replay never clears campaign progress.
- const skipped=mount(),sw=skipped.window;click(sw,'#coach-skip');await settle();
+ const skipped=mount(),sw=skipped.window;click(sw,'#coach-skip');startPending(sw);await settle();
  assert.equal(readSave(sw).current,2);assert.deepEqual(readSave(sw).done,[0,1]);
  assert.equal(sw.document.getElementById('completed').textContent,'0 / 10');
  assert(sw.document.getElementById('tutorial-coach').hidden);
  const first=sw.HEX_LEVELS[0];await swap(sw,first.solution[0]);const campaignBefore=readSave(sw).boards[2];
- click(sw,'#tutorial-replay');await settle();assert.equal(readSave(sw).current,0);
+ click(sw,'#tutorial-replay');startPending(sw);await settle();assert.equal(readSave(sw).current,0);
  assert.deepEqual(readSave(sw).boards[2],campaignBefore,'replaying tutorial preserves an in-progress campaign board');
- const replayed=mount(saved),pw=replayed.window;click(pw,'#tutorial-replay');await settle();
+ const replayed=mount(saved),pw=replayed.window;click(pw,'#tutorial-replay');startPending(pw);await settle();
  assert.equal(readSave(pw).current,0);assert.equal(pw.document.getElementById('completed').textContent,'10 / 10');
  assert.deepEqual(readSave(pw).done.filter(i=>i>=2),saved.done.filter(i=>i>=2),'tutorial replay preserves completed campaign stages');
  // Previous classic checkpoints shift by two and remain valid, without resetting progress.
@@ -176,7 +184,7 @@ const campaignState=()=>({current:2,done:[0,1],boards:{},sound:false});
   const worker=instances[0];assert(worker.url.includes('hint-worker.js'));assert(worker.payload.snapshot);
   if(cancel==='turn'){await swap(fw,next);shadow.swap(...next);}else click(fw,'#reset');
   worker.reply({pair:next});await settle();assert(worker.terminated);
-  assert.equal(fd.querySelectorAll('.hinted').length,0,'late hint cannot override new revision');
+  assert.equal(fd.querySelectorAll('#board .hinted').length,0,'late hint cannot override new revision');
   assertBoard(fw,shadow,'stale worker '+cancel);assert.equal(fd.getElementById('hint').disabled,false);
  }
  class UnavailableWorker{constructor(){throw new Error('Worker blocked');}}

@@ -44,7 +44,11 @@ function mount({motion='none',current=2,done=[0,1],boards={}}={}){
     w.Element.prototype.getAnimations=()=>animations;
   }
   if(storageKey)w.localStorage.setItem(storageKey,JSON.stringify({current,done,boards,sound:false}));
-  for(const file of ['levels.js','engine.js','tutorials.js','app.js'])w.eval(fs.readFileSync(root+file,'utf8'));
+  for(const file of ['levels.js','engine.js','tutorials.js','audio.js','app.js'])w.eval(fs.readFileSync(root+file,'utf8'));
+  d.querySelector('[data-nav="journey"]').click();
+  const stage=d.querySelector(`[data-stage="${current}"]`);assert(stage&&!stage.disabled,'fixture stage is accessible');stage.click();
+  assert(d.getElementById('pregame-dialog').open,'fixture uses real stage preview');d.getElementById('pregame-start').click();
+  assert.equal(d.getElementById('game-screen').hidden,false,'fixture enters visible game');
   let hit=null;
   d.elementFromPoint=()=>typeof hit==='number'?d.querySelector(`#board [data-index="${hit}"]`):hit;
   const board=d.getElementById('board');
@@ -61,7 +65,7 @@ function mount({motion='none',current=2,done=[0,1],boards={}}={}){
   function assertState(game,message){
     assert.equal(+d.getElementById('sum').textContent,game.score,message+' score');
     assert.equal(+d.getElementById('moves-left').textContent,game.movesLeft,message+' moves');
-    assert.equal(d.querySelectorAll('.floor-green').length,game.covered,message+' ground');
+    assert.equal(d.querySelectorAll('#board .floor-green').length,game.covered,message+' ground');
   }
   function isBusy(){return board.getAttribute('aria-busy')==='true';}
   async function idle(timeout=1400){const start=Date.now();while(isBusy()&&Date.now()-start<timeout)await pause(10);await pause(5);assert(!isBusy(),'presentation releases board before timeout');}
@@ -128,7 +132,7 @@ test('a tap during a cascade reveals the committed result without an extra move'
     assert.notEqual(f.w.getComputedStyle(f.board).pointerEvents,'none','busy board remains hit-testable for the reveal tap');
     f.tap(0,{id:7});await f.idle(150);f.assertState(game,'fast-forward tap');
     assert.equal(f.readSave().boards[f.index].turn,1,'fast-forward touch does not initiate the next turn');
-    assert.equal(f.d.querySelectorAll('.selected').length,0,'the reveal tap is consumed');
+    assert.equal(f.d.querySelectorAll('#board .selected').length,0,'the reveal tap is consumed');
   }finally{f.close();}
 });
 
@@ -146,10 +150,11 @@ test('backgrounding fast-forwards once and late awaits do not redraw old frames'
     f.d.dispatchEvent(new f.w.Event('visibilitychange'));
     await pause(250);f.assertUnlocked();f.assertState(game,'foreground result');
     assert.equal(f.board.innerHTML,after,'late presentation work cannot restore stale frames');
+    assert(f.d.getElementById('pause-dialog').open,'backgrounded game returns paused');f.click('pause-continue');f.assertState(game,'resume after background');
   }finally{f.close();}
 });
 
-test('reset and unlocked level navigation cancel presentation without stale persistence',async()=>{
+test('reset and level preview navigation cancel presentation without stale persistence',async()=>{
   const f=mount({motion:'normal',done:[0,1,2]});try{
     const level=f.level,pair=level.solution[0];
     f.tap(pair[0]);f.tap(pair[1]);assert(f.isBusy());
@@ -158,7 +163,9 @@ test('reset and unlocked level navigation cancel presentation without stale pers
     await pause(250);assert.equal(f.readSave().boards[f.index].turn,0,'cancelled animation cannot resave the old turn');
     f.tap(pair[0]);f.tap(pair[1]);assert(f.isBusy());
     const next=f.d.querySelector('[data-level="3"]');assert(next&&!next.disabled,'unlocked navigation remains available');next.click();
-    await f.idle(150);const game=new f.w.HexMatch(all(f.w)[3]);
+    await f.idle(150);assert(f.d.getElementById('pregame-dialog').open,'navigation shows objective preview');
+    assert.equal(f.readSave().current,f.index,'preview does not choose a new active board');
+    f.click('pregame-start');const game=new f.w.HexMatch(all(f.w)[3]);
     f.assertState(game,'new level');await pause(250);f.assertState(game,'after stale await');
     assert.equal(f.readSave().current,3,'old animation cannot switch or persist the previous active level');
   }finally{f.close();}

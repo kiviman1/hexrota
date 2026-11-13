@@ -2,6 +2,19 @@
 
 Telefon ve masaüstü için Türkçe altıgen sayı bulmacası. Sınırlı hamle, kalıcı yeşil zemin, çift katmanlı zeminler, dokunma/sürükleme kontrolleri, ipucu, ses ve yerel kayıt içerir. Sade üçlü eşleştirme kuralları kullanılır.
 
+## Menü ve ekran akışı
+
+Oyun ana menüyle açılır. **Oyna** sıradaki açık bölümün hedeflerini gösterir; geçerli, yarım kalmış bir kayıt varsa **Devam et** aynı tahtayı ve hamle sayısını doğrudan açar. Bütün bölümler tamamlandığında ana eylem yeniden oynamak için bölüm patikasına götürür.
+
+- Ana menü: Oyna/Devam Et, öğrenme, bölüm seçimi, ayarlar ve kişisel kayıtlar.
+- Bölümler: T1/T2 ve 01–10 etiketli özgün patika; açık, tamamlanmış ve kilitli duraklar.
+- Bölüm öncesi: puan, yeşertilecek alan ve hamle bütçesi. Bir durağa bakıp vazgeçmek aktif tahtayı değiştirmez; Başla veya Devam Et değişikliği uygular.
+- Oyun/duraklatma: devam, yeniden başlatma, ayarlar ve ana menü. Arka plana geçiş oyunu duraklatır. Geç kalan efekt ve ipucu sonuçları menülerin üzerine geri gelmez.
+- Sonuçlar: sonraki bölüm, tekrar deneme, patika veya ana menü.
+- Kayıtlar: gerçekten doğrulanmış kazanmalardan en iyi bölüm puanı ve kalan hamle; bilinmeyen eski sonuçlar “—” olarak gösterilir.
+
+Ayarlar; gerçek ses efektleri, yerel üretilen arka plan müziği, ortak ses düzeyi, cihaza göre/azaltılmış/standart hareket ve destekleyen cihazlarda titreşim içerir. Ses ilk kullanıcı etkileşiminden önce başlamaz. İlerlemeyi sıfırlama ayrı onay ister; ses ve hareket tercihleri korunur. Başka uygulamaların localStorage verisine veya eski sürüm anahtarlarına dokunulmaz.
+
 ## 2 öğretici + 10 bölüm
 
 Yeni oyuncu iki kısa, oynanabilir öğreticiyle başlar. İlkinde 7 altıgen üzerinde komşu takası, üç eşleşme ekseni ve yeşil zemin; ikincisinde 9 altıgen üzerinde çift katman, doğal zincir ve puan/zemin hedeflerinin birlikte tamamlanması öğretilir. Her adımda gerçek bir takas yapılır; sıradaki çift vurgulanır. Yanlış öğretici hamlesi tahta veya bütçe değiştirmez. Öğreticiler atlanabilir veya yolculuk bölümünden yeniden oynanabilir.
@@ -40,7 +53,7 @@ Destekleyen tarayıcılarda ipucu Web Worker'da aranır. İşçi açılamazsa k�
 
 ## Kayıt ve sürüm geçişi
 
-Kayıtlar `hexrota-match-v5` anahtarındadır. Sürüm 4'ten geçişte mevcut 10 bölümün indeksleri iki kaydırılır; hamle geçmişleri, tamamlanan bölümler ve ses tercihi korunur. Mevcut oyuncular için öğreticiler tamamlanmış sayılır ve tekrar oynanabilir. Daha eski eşleştirme sürümlerinden ilerleme/ses tercihi taşınır, uyumsuz tahta yeniden başlar. Yeni oyuncular T1'den başlar. Önceki kayıt anahtarlarına dokunulmaz.
+Kayıtlar `hexrota-match-v5` anahtarındadır. Sürüm 4'ten geçişte mevcut 10 bölümün indeksleri iki kaydırılır; hamle geçmişleri, tamamlanan bölümler ve ses tercihi korunur. Mevcut oyuncular için öğreticiler tamamlanmış sayılır ve tekrar oynanabilir. Daha eski eşleştirme sürümlerinden ilerleme/ses tercihi taşınır, uyumsuz tahta yeniden başlar. Yeni oyuncular ana menüde Oyna ile T1'e başlar. Sürüm 6 aynı v5 kayıt anahtarını ve aynı oyun kurallarını korur; ek olarak tercihleri ve gözlenen en iyi sonuçları saklar. Önceki kayıt anahtarlarına dokunulmaz.
 
 ## Çalıştırma ve dosyalar
 
@@ -51,6 +64,7 @@ Derleme veya sunucu tarafı kod gerekmez. `dist/` dizinini statik olarak sun. Ö
 - `dist/engine.js`: DOM'dan bağımsız eşleştirme, kontrollü yenileme, düşüş, zincirler, puan ve zemin.
 - `dist/app.js`: Giriş kontrolleri, iptal edilebilir sunum, arayüz, yerel kayıt ve ses.
 - `dist/hint-worker.js`: Giriş ve çizim akışından ayrı çalışan ipucu araması.
+- `dist/audio.js`: Kullanıcı etkileşiminden sonra başlayan, iptal edilebilir yerel ses/müzik katmanı.
 - `dist/style.css`: Duyarlı tasarım ve azaltılmış hareket desteği.
 - `generate-levels.cjs`: Tekrarlanabilir bölüm üretimi, çözüm araması ve kabul denetimleri.
 - `balance-report.json`: Sabit deneme politikalarıyla ölçülen kaba zorluk ve zincir istatistikleri.
@@ -63,4 +77,4 @@ R: aynı bölümü yeniden başlat; H: ipucu; Enter/Space: taş seç; ok tuşlar
 
 Node.js 22.22.2+ veya 24.15.0+ kullan. `npm install` ardından `npm test`. Üretimde harici bağımlılık veya font servisi kullanılmaz; jsdom yalnızca geliştirme testidir.
 
-Testler üç ekseni, geçersiz takasta durumun korunmasını, kesişimlerin tek sayılmasını, çift zemini, düşüşü, kontrollü yenilemeyi, zincirleri, karıştırmayı, ipucunu, son hamlede kazanmayı, kaybetmeyi ve kayıt doğrulamayı kapsar. İki öğretici ve on bölüm DOM üzerinden oynanıp açılır. Yönlendirmeler, yanlış hamlede bütçenin korunması, öğreticileri atlama/yeniden oynama, eski kayıtların iki indeks kaydırılarak korunması ve gerçek başlangıçtan düşüş verisi doğrulanır. Gerçek pointer olaylarıyla parmak kayması, capture/iptal, animasyon hatası, süre sınırı, sekme değişimi, eski zamanlayıcılar ve Worker hataları kontrol edilir. DOM testleri fiziksel cihaz ve görsel tarayıcı testinin yerine geçmez.
+Testler üç ekseni, geçersiz takasta durumun korunmasını, kesişimlerin tek sayılmasını, çift zemini, düşüşü, kontrollü yenilemeyi, zincirleri, karıştırmayı, ipucunu, son hamlede kazanmayı, kaybetmeyi ve kayıt doğrulamayı kapsar. İki öğretici ve on bölüm DOM üzerinden oynanıp açılır. Yönlendirmeler, yanlış hamlede bütçenin korunması, öğreticileri atlama/yeniden oynama, eski kayıtların iki indeks kaydırılarak korunması ve gerçek başlangıçtan düşüş verisi doğrulanır. Gerçek pointer olaylarıyla parmak kayması, capture/iptal, animasyon hatası, süre sınırı, sekme değişimi, eski zamanlayıcılar ve Worker hataları kontrol edilir. Menü testleri ana ekran, devam etme, ön izleme iptali, ayarlar, onaylı sıfırlama, iç içe pencere geri/Escape sırası, arka planda duraklama ve sonuç ekranı geçişlerini kapsar. Ses katmanı sahte AudioContext ile döngü çoğalması, görünürlük, hata ve kapanış davranışına karşı kontrol edilir. DOM testleri fiziksel cihaz ve görsel tarayıcı testinin yerine geçmez.
