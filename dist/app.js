@@ -336,35 +336,67 @@
     });
   }
   async function flyScore(job,frame,{wave,gain,destination,extra=0,totalWaves=1}){
-    let packet;
-    const signal=job.controller.signal;
-    const remove=()=>packet?.remove();
+    const signal=job.controller.signal,nodes=new Set();
+    const remove=()=>{for(const node of nodes)node.remove();};
+    const current=()=>!signal.aborted&&presentation===job&&canAnimate();
     try{
-      if(signal.aborted||presentation!==job)return;
+      if(!current())return;
       let layer=$('score-effects');
       if(!layer){layer=document.createElement('div');layer.id='score-effects';layer.setAttribute('aria-hidden','true');document.body.appendChild(layer);}
-      const positions=geometry().positions,center=frame.matched.reduce((p,index)=>({x:p.x+positions[index].x/frame.matched.length,y:p.y+positions[index].y/frame.matched.length}),{x:0,y:0});
-      const board=$('board'),rect=board.getBoundingClientRect(),view=geometry();let origin;
-      try{const point=board.createSVGPoint();point.x=center.x;point.y=center.y;origin=point.matrixTransform(board.getScreenCTM());}catch(_){}
-      if(!origin||!Number.isFinite(origin.x)||!Number.isFinite(origin.y)){const scale=Math.min(rect.width/view.width,rect.height/view.height);origin={x:rect.left+rect.width/2+center.x*scale,y:rect.top+rect.height/2+center.y*scale};}
-      const viewportWidth=window.innerWidth||390,viewportHeight=Number(appViewport?.height)||window.innerHeight||700;
+      const positions=geometry().positions,view=geometry(),board=$('board'),rect=board.getBoundingClientRect();
+      const center=frame.matched.reduce((p,index)=>({x:p.x+positions[index].x/frame.matched.length,y:p.y+positions[index].y/frame.matched.length}),{x:0,y:0});
+      let matrix;try{matrix=board.getScreenCTM();}catch(_){}
+      const onScreen=position=>{
+        try{const point=board.createSVGPoint();point.x=position.x;point.y=position.y;const mapped=point.matrixTransform(matrix);if(Number.isFinite(mapped.x)&&Number.isFinite(mapped.y))return mapped;}catch(_){}
+        const scale=Math.min(rect.width/view.width,rect.height/view.height);
+        return {x:rect.left+rect.width/2+position.x*scale,y:rect.top+rect.height/2+position.y*scale};
+      };
+      const origin=onScreen(center),viewportWidth=window.innerWidth||390,viewportHeight=Number(appViewport?.height)||window.innerHeight||700;
       const target=$('sum').getBoundingClientRect(),hud=$('sum').closest('.hud-score'),hudRect=hud?.getBoundingClientRect();
       const end={x:target.width?target.left+target.width/2:64,y:target.height?target.top+target.height/2:64};
-      packet=document.createElement('div');packet.className='score-packet';packet.dataset.gain=String(gain);packet.dataset.wave=String(wave);packet.dataset.destinationScore=String(destination);
-      const chain=document.createElement('span');chain.className='score-packet-chain';chain.textContent=wave===1?'EŞLEŞME':extra?`${wave}–${totalWaves}. ZİNCİR`:`${wave}. ZİNCİR`;
-      const amount=document.createElement('strong');amount.className='score-packet-gain';amount.textContent=`+${gain}`;
-      const equation=document.createElement('span');equation.className='score-packet-math';equation.textContent=extra?`${frame.scoreGain} + ${extra} = ${gain}`:scoreEquation(frame);
-      packet.append(chain,amount,equation);packet.style.translate='-50% -50%';packet.style.maxWidth=Math.max(80,Math.min(220,viewportWidth-24))+'px';layer.appendChild(packet);
-      const packetRect=packet.getBoundingClientRect(),halfWidth=(packetRect.width||Math.min(220,viewportWidth-24))/2,halfHeight=(packetRect.height||90)/2;
-      const maxY=Math.max(halfHeight+12,viewportHeight-halfHeight-12),minY=Math.min(maxY,viewportWidth>viewportHeight?halfHeight+12:(hudRect?.bottom||80)+halfHeight+10);
+      const add=(className,point)=>{
+        const node=document.createElement('div');node.className=className;node.style.left=point.x+'px';node.style.top=point.y+'px';node.style.translate='-50% -50%';nodes.add(node);layer.appendChild(node);return node;
+      };
+      const packet=add('score-packet',origin);packet.style.zIndex='2';packet.dataset.gain=String(gain);packet.dataset.wave=String(wave);packet.dataset.destinationScore=String(destination);packet.dataset.phase='collect';
+      const chain=document.createElement('span');chain.className='score-packet-chain';chain.textContent=wave===1?'':extra?`${wave}–${totalWaves}. ZİNCİR`:`${wave}. ZİNCİR`;
+      const amount=document.createElement('strong');amount.className='score-packet-gain';amount.textContent=`+${gain}`;packet.append(chain,amount);
+      const packetRect=packet.getBoundingClientRect(),halfWidth=(packetRect.width||120)/2,halfHeight=(packetRect.height||70)/2;
+      const maxY=Math.max(halfHeight+12,viewportHeight-halfHeight-12),minY=Math.min(maxY,viewportWidth>viewportHeight?halfHeight+12:(hudRect?.bottom||80)+halfHeight+8);
       const start={x:Math.max(halfWidth+12,Math.min(viewportWidth-halfWidth-12,origin.x)),y:Math.max(minY,Math.min(maxY,origin.y))};
-      packet.style.left=start.x+'px';packet.style.top=start.y+'px';
-      const dx=end.x-start.x,dy=end.y-start.y;
+      packet.style.left=start.x+'px';packet.style.top=start.y+'px';amount.textContent='';amount.style.opacity='0';
       signal.addEventListener('abort',remove,{once:true});
-      animateElement(job,packet,[{transform:'translate(0px,0px) scale(.76)',opacity:0},{transform:'translate(0px,-10px) scale(1.06)',opacity:1,offset:.16},{transform:'translate(0px,-14px) scale(1)',opacity:1,offset:.35},{transform:`translate(${dx*.35-18}px,${dy*.6-22}px) scale(.7)`,opacity:1,offset:.72},{transform:`translate(${dx}px,${dy}px) scale(.16)`,opacity:0}],{duration:400,easing:'cubic-bezier(.22,.68,.4,1)',fill:'forwards'});
-      await pause(400,job);
-      if(signal.aborted||presentation!==job||!canAnimate())return;
-      packet.dataset.arrived='true';hud?.classList.add('score-arrival');
+      const sources=frame.matched.map(index=>({index,value:frame.before[index],point:onScreen(positions[index])}));
+      if(extra)sources.push({index:null,value:extra,point:{x:start.x+35,y:Math.min(viewportHeight-24,start.y+42)}});
+      const batches=new Map();
+      for(const [order,source]of sources.entries()){
+        const delay=sources.length>1?Math.round(order/(sources.length-1)*6)*10:0,at=110+delay;
+        const digit=add('score-digit'+(source.index===null?' score-digit-extra':''),source.point);digit.style.zIndex='3';digit.dataset.value=String(source.value);
+        if(source.index===null){digit.dataset.source='chains';digit.textContent=`+${source.value}`;}
+        else{digit.dataset.index=String(source.index);digit.textContent=String(source.value);const original=board.querySelector(`[data-index="${source.index}"] .hex-number`);if(original)original.style.opacity='0';}
+        const dx=start.x-source.point.x,dy=start.y-source.point.y;
+        animateElement(job,digit,[{transform:'translate(0px,0px) scale(1)',opacity:1},{transform:`translate(${dx*.25}px,${dy*.25-12}px) scale(1.2)`,opacity:1,offset:.3},{transform:`translate(${dx}px,${dy}px) scale(.5)`,opacity:0}],{duration:110,delay,easing:'cubic-bezier(.35,.02,.68,1)',fill:'both'});
+        if(!batches.has(at))batches.set(at,[]);batches.get(at).push({value:source.value,digit});
+      }
+      let elapsed=0,collected=0;
+      for(const [at,batch]of batches){
+        await pause(at-elapsed,job);if(!current())return;elapsed=at;
+        for(const source of batch){collected+=source.value;source.digit.remove();}
+        amount.style.opacity='1';amount.textContent=`+${collected}`;packet.dataset.collected=String(collected);
+        animateElement(job,amount,[{transform:'scale(.8)'},{transform:'scale(1.08)',offset:.45},{transform:'scale(1)'}],{duration:55,easing:'ease-out'});
+      }
+      amount.textContent=`+${gain}`;packet.dataset.phase='pop';
+      animateElement(job,packet,[{transform:'scale(.75)',opacity:1},{transform:'scale(1.3)',opacity:1,offset:.42},{transform:'scale(1)',opacity:1}],{duration:90,easing:'cubic-bezier(.2,.9,.35,1)',fill:'forwards'});
+      const ring=add('score-burst-ring',start);
+      animateElement(job,ring,[{transform:'scale(.3)',opacity:.95},{transform:'scale(1.65)',opacity:0}],{duration:170,easing:'ease-out',fill:'forwards'});
+      for(let i=0;i<10;i++){
+        const spark=add('score-burst-spark',start),angle=i*Math.PI/5,distance=42+(i%3)*12;
+        animateElement(job,spark,[{transform:'translate(0px,0px) scale(1)',opacity:1},{transform:`translate(${Math.cos(angle)*distance}px,${Math.sin(angle)*distance}px) scale(.15) rotate(100deg)`,opacity:0}],{duration:180,easing:'ease-out',fill:'forwards'});
+      }
+      await pause(90,job);if(!current())return;
+      packet.dataset.phase='fly';chain.style.opacity='0';const dx=end.x-start.x,dy=end.y-start.y;
+      animateElement(job,packet,[{transform:'translate(0px,0px) scale(1)',opacity:1},{transform:`translate(${dx*.38-14}px,${dy*.6-16}px) scale(.8)`,opacity:1,offset:.6},{transform:`translate(${dx}px,${dy}px) scale(.18)`,opacity:0}],{duration:180,easing:'cubic-bezier(.3,.1,.5,1)',fill:'forwards'});
+      await pause(180,job);if(!current())return;
+      packet.dataset.phase='arrived';packet.dataset.arrived='true';hud?.classList.add('score-arrival');
       const receipt=$('score-receipt');if(receipt)receipt.textContent=`+${gain}`;
       animateElement(job,hud,[{transform:'scale(1)'},{transform:'scale(1.065)',offset:.4},{transform:'scale(1)'}],{duration:160,easing:'ease-out'});
       await countScore(job,destination);
@@ -379,7 +411,7 @@
     if(!job||presentation!==job||job.token!==epoch)return;
     cancelPresentation();
     const result=job.result;
-    comboText=result.frames.length===1?`${scoreEquation(result.frames[0])} puan`:`${result.frames.length} zincir · ${result.frames.length<=4?result.frames.map(frame=>frame.scoreGain).join(' + ')+' = ':''}${result.scoreGain} puan`;
+    comboText=`+${result.scoreGain} puan${result.frames.length>1?` · ${result.frames.length} zincir`:''}`;
     if(result.reshuffled)comboText+=' · Karıştırıldı';
     try{renderLevels();render();persist();}
     catch(_){persist();}
@@ -538,7 +570,7 @@
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=10');
+            job.worker=new Worker('./hint-worker.js?v=11');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:levels[active],snapshot:engine.snapshot()});

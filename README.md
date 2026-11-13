@@ -102,6 +102,6 @@ Uygulamada pinch, çift dokunma ve klavye/tekerlek yakınlaştırma hareketleri 
 
 ## Puanın tahtadan göstergeye taşınması
 
-Eşleşmenin sayıları bir hesap satırında gösterilir (örneğin 3 + 3 + 3 = 9). Kazanılan puan kartı, eşleşmenin konumundan üstteki puan göstergesine uçar; görünen sayaç kart ulaştığında artar ve gösterge kısa bir vurgu verir. Son hamlede kazanılan toplam küçük bir rozet olarak kalır. Zincirler sıra numarasıyla gösterilir; bu sunum bir puan çarpanı eklemez.
+Takasın ardından eşleşen taşların rakamları yüzeyden yükselir ve aynı noktaya toplanır. Her rakam vardıkça ara toplam artar; son toplam büyük bir sayı olarak ışık halkası ve parçacıklarla patlar. Ardından yalnızca toplam üstteki puan göstergesine uçar; sayaç varışta artar. Kutu veya hesap kartı kullanılmaz. Son hamlede kazanılan toplam küçük bir rozet olarak kalır; zincirler sıra numarasıyla gösterilir. Bu sunum bir puan çarpanı eklemez.
 
-Oyun motoru sonucu önceden hesaplayıp kaydeder. Uçan kart yalnızca bu sonucu gösterir; puanı yeniden hesaplayıp kayda eklemez. Uzun zincirlerin son dalgaları tek kartta birleştirilir, her puan bir kez göstergeye aktarılır. Azaltılmış harekette, sunumu geçmede, ekran değişiminde veya animasyon hatasında gerçek toplam doğrudan gösterilir. Sunum yine 1,2 saniyeyle sınırlıdır.
+Oyun motoru sonucu önceden hesaplayıp kaydeder. Hareketli rakamlar yalnızca bu sonucu gösterir; puanı yeniden hesaplayıp kayda eklemez. Uzun zincirlerin son dalgaları tek toplamda birleştirilir; kalan zincir puanları ayrıca toplanarak her puan bir kez göstergeye aktarılır. Azaltılmış harekette, sunumu geçmede, ekran değişiminde veya animasyon hatasında gerçek toplam doğrudan gösterilir. Sunum yine 1,2 saniyeyle sınırlıdır.

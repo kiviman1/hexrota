@@ -21,7 +21,7 @@ const simple=fixture(1),chain=fixture(2);
 function mount({motion='full',which=simple}={}){
  const vc=new VirtualConsole();vc.on('jsdomError',error=>browserErrors.push(error.message));
  const dom=new JSDOM(source('index.html'),{url:'https://hexrota-score.example/',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});
- const w=dom.window,d=w.document,animations=[],packets=[],samples=[];
+ const w=dom.window,d=w.document,animations=[],packets=[],digits=[],phases=[],mergeSamples=[],samples=[];
  w.matchMedia=()=>({matches:motion==='reduce',addEventListener(){},removeEventListener(){}});
  w.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};
  w.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');this.dispatchEvent(new w.Event('close'));};
@@ -38,7 +38,7 @@ function mount({motion='full',which=simple}={}){
   return {x,y,left:x,top:y,width,height,right:x+width,bottom:y+height,toJSON(){return this;}};
  };
  if(motion!=='reduce')w.Element.prototype.animate=function(frames,options={}){
-  if(motion==='throw'&&this.classList.contains('score-packet'))throw new Error('Score animation API failure');
+  if((motion==='throw'&&this.classList.contains('score-packet'))||(motion==='digitThrow'&&this.classList.contains('score-digit'))||(motion==='burstThrow'&&this.classList.contains('score-burst-ring')))throw new Error('Score animation API failure');
   let promise,resolve,reject,timer;
   const animation={target:this,frames,options,cancelled:false,
    get finished(){if(!promise)promise=new Promise((yes,no)=>{resolve=yes;reject=no;timer=w.setTimeout(yes,(Number(options.duration)||0)+(Number(options.delay)||0));});return promise;},
@@ -52,11 +52,24 @@ function mount({motion='full',which=simple}={}){
  w.localStorage.setItem(key,JSON.stringify({current:2,done:[0,1,2],boards:{2:which.checkpoint},sound:false,preferences:{motion:motion==='reduce'?'reduce':'full'}}));
  const observed=new WeakSet();
  const observer=new w.MutationObserver(records=>{
-  for(const record of records)for(const added of record.addedNodes){if(added.nodeType!==1)continue;for(const node of [added,...added.querySelectorAll('.score-packet')])if(node.matches?.('.score-packet')&&!observed.has(node)){
-   observed.add(node);packets.push({node,gain:+node.dataset.gain,wave:node.dataset.wave,destination:+node.dataset.destinationScore,chain:node.querySelector('.score-packet-chain')?.textContent||'',math:node.querySelector('.score-packet-math')?.textContent||'',gainText:node.querySelector('.score-packet-gain')?.textContent||''});
-  }}
+  for(const record of records){
+   for(const added of record.addedNodes||[]){
+    if(added.nodeType!==1)continue;
+    for(const node of [added,...added.querySelectorAll('.score-packet,.score-digit')]){
+     if(observed.has(node))continue;
+     if(node.matches?.('.score-packet')){
+      observed.add(node);packets.push({node,gain:+node.dataset.gain,wave:node.dataset.wave,destination:+node.dataset.destinationScore,chain:node.querySelector('.score-packet-chain')?.textContent||''});
+      phases.push({node,phase:node.dataset.phase,score:+d.getElementById('sum').textContent});
+     }else if(node.matches?.('.score-digit')){
+      observed.add(node);digits.push({node,wave:packets.at(-1)?.wave,value:+node.dataset.value,index:node.dataset.index,source:node.dataset.source,left:parseFloat(node.style.left),top:parseFloat(node.style.top)});
+     }
+    }
+   }
+   if(record.type==='attributes'&&record.attributeName==='data-phase'&&record.target.matches('.score-packet'))phases.push({node:record.target,phase:record.target.dataset.phase,score:+d.getElementById('sum').textContent});
+  }
+  for(const packet of packets){const text=packet.node.querySelector('.score-packet-gain')?.textContent||'';if(text){const value=Number(text.replace(/^\+/,''));if(Number.isFinite(value)&&mergeSamples.filter(s=>s.node===packet.node).at(-1)?.value!==value)mergeSamples.push({node:packet.node,value});}}
   samples.push(+d.getElementById('sum')?.textContent||0);
- });observer.observe(d.body,{childList:true,subtree:true});
+ });observer.observe(d.body,{childList:true,subtree:true,attributes:true,attributeFilter:['data-phase']});
  for(const file of ['engine.js','levels.js','tutorials.js','app.js'])w.eval(source(file));
  const node=id=>{const n=d.getElementById(id);assert(n,'#'+id+' exists');return n;};
  const click=id=>node(id).click(),save=()=>JSON.parse(w.localStorage.getItem(key));
@@ -64,26 +77,43 @@ function mount({motion='full',which=simple}={}){
  function move(){for(const index of which.pair){const tile=d.querySelector(`#board [data-index="${index}"]`);tile.dispatchEvent(new w.MouseEvent('click',{bubbles:true,detail:0}));}}
  const score=()=>+node('sum').textContent,busy=()=>node('board').getAttribute('aria-busy')==='true';
  const idle=()=>until(()=>!busy(),'score presentation releases input within the existing budget');
- const clean=(receipt)=>{assert.equal(d.querySelectorAll('.score-packet').length,0,'no flying packets remain');assert.equal(d.querySelectorAll('.score-arrival').length,0,'no stale HUD pulse');if(receipt!==undefined&&d.getElementById('score-receipt'))assert.equal(node('score-receipt').textContent,receipt,'gain label belongs to the current move');};
+ const clean=(receipt)=>{assert.equal(d.querySelectorAll('.score-packet,.score-digit,.score-burst-ring,.score-burst-spark').length,0,'no merge digits, totals or bursts remain');assert.equal(d.querySelectorAll('.score-arrival').length,0,'no stale HUD pulse');if(receipt!==undefined&&d.getElementById('score-receipt'))assert.equal(node('score-receipt').textContent,receipt,'gain label belongs to the current move');};
  function exact(){assert.equal(score(),which.expected.score,'HUD equals the engine result');assert.deepEqual(save().boards[2],which.expected,'saved checkpoint stays the exact engine result');assert.equal(+node('moves-left').textContent,which.expected.movesLeft,'all flights spend only the original move');}
- return {w,d,node,click,move,save,score,busy,idle,clean,exact,animations,packets,samples,which,close(){observer.disconnect();dom.window.close();}};
+ return {w,d,node,click,move,save,score,busy,idle,clean,exact,animations,packets,digits,phases,mergeSamples,samples,which,close(){observer.disconnect();dom.window.close();}};
 }
 
-test('earned points show the calculation, fly to the HUD and count up only after arrival',async()=>{
+test('matched digits merge into a popped total before the total flies to the HUD',async()=>{
  const f=mount();try{
   assert.equal(f.score(),10);f.move();assert(f.busy());
   assert.equal(f.save().boards[2].score,19,'engine score is committed before visual feedback');
-  await until(()=>f.d.querySelector('.score-packet'),'matched points create a flying packet');
+  await until(()=>f.d.querySelector('.score-packet'),'a match starts the merge presentation');
   const packet=f.d.querySelector('.score-packet');
+  assert.equal(packet.dataset.phase,'collect');
   assert.equal(+packet.dataset.gain,9);assert.equal(+packet.dataset.destinationScore,19);
-  const math=packet.querySelector('.score-packet-math').textContent.replace(/\s/g,'');
-  assert(/3\+3\+3|3[×x]3/.test(math),'three threes explain the nine earned points');
-  assert.equal(f.score(),10,'HUD does not jump to the final value before the points arrive');
-  await wait(180);assert.equal(f.score(),10,'points remain uncredited during flight');
-  await until(()=>f.d.querySelector('.score-arrival')||f.node('score-receipt').textContent,'receipt visibly acknowledges arrival');
+  assert.equal(packet.querySelector('.score-packet-math'),null,'no formula card substitutes for the animated addition');
+  await until(()=>f.d.querySelectorAll('.score-digit').length===3,'all three matched values are lifted');
+  const pieces=f.digits.filter(d=>d.wave==='1');
+  assert.deepEqual(pieces.map(d=>d.value),[3,3,3]);
+  assert.equal(new Set(pieces.map(d=>d.index)).size,3,'each matched stone supplies its own number');
+  for(const digit of pieces){
+   const tile=f.d.querySelector(`#board [data-index="${digit.index}"]`),xy=tile.getAttribute('transform').match(/-?\d*\.?\d+(?:e[-+]?\d+)?/gi).map(Number);
+   assert(Math.abs(digit.left-(xy[0]+195))<.01,'number starts at its actual stone x coordinate');
+   assert(Math.abs(digit.top-(xy[1]+350))<.01,'number starts at its actual stone y coordinate');
+   assert(f.animations.some(a=>a.target===digit.node),'each lifted number actually animates');
+  }
+  assert.equal(f.score(),10,'the HUD stays unchanged while the values gather');
+  await until(()=>packet.dataset.phase==='pop','the completed addition enters its burst phase');
+  assert.equal(packet.querySelector('.score-packet-gain').textContent,'+9');
+  assert(f.d.querySelector('.score-burst-ring')&&f.d.querySelector('.score-burst-spark'),'a visible ring and sparks emphasize the summed total');
+  assert.equal(f.score(),10,'the popped total has not yet reached the HUD');
+  await until(()=>packet.dataset.phase==='fly','the popped total begins its separate flight');
+  assert.equal(f.score(),10,'credit waits until the flight lands');
   await f.idle();f.exact();f.clean();assert(f.node('score-receipt').textContent.includes('9'),'the earned total remains readable after arrival');
-  assert(f.samples.some(value=>value>10&&value<19),'count-up visibly passes through intermediate values');
-  assert(f.animations.some(a=>a.target.classList.contains('score-packet')),'flight uses the animation API');
+  assert.deepEqual(f.phases.filter(p=>p.node===packet).map(p=>p.phase).filter((phase,index,all)=>!index||phase!==all[index-1]),['collect','pop','fly','arrived'],'collect, sum burst and flight are distinct ordered stages');
+  assert.deepEqual(f.mergeSamples.filter(p=>p.node===packet).map(p=>p.value),[3,6,9],'the collected values visibly accumulate');
+  assert(f.phases.filter(p=>p.node===packet&&p.phase!=='arrived').every(p=>p.score===10),'no earlier stage credits the HUD');
+  assert(f.samples.some(value=>value>10&&value<19),'HUD count-up visibly passes through intermediate values');
+  assert(f.animations.some(a=>a.target===packet),'the summed total uses the flight animation');
  }finally{f.close();}
 });
 
@@ -97,7 +127,10 @@ test('long chains account for every point exactly once without introducing a mul
   const displayed=f.samples.filter(value=>value>=19);assert(displayed.every((value,index)=>value<=59&&(!index||value>=displayed[index-1])),'HUD count-up never regresses or overshoots the committed total');
   assert(f.packets[1].chain.includes('2')&&f.packets[1].chain.includes('4'),'chain range identifies combined waves');
   assert(!/[×x]\s*\d/i.test(f.packets[1].chain),'the chain caption does not imply a score multiplier');
-  assert(/29/.test(f.packets[1].math),'the additional 20+9 points are explained in the combined receipt');
+  const groups=f.packets.map(packet=>f.digits.filter(d=>d.wave===packet.wave));
+  assert.deepEqual(groups.map(group=>group.reduce((total,digit)=>total+digit.value,0)),[5,35],'every visible merge adds up to its actual earned total');
+  const extra=groups[1].filter(d=>d.source==='chains');assert.deepEqual(extra.map(d=>d.value),[29],'the remaining 20+9 points have an explicit collected component');
+  for(const [index,group]of groups.entries()){const expected=chain.result.frames[index].matched.map(i=>chain.result.frames[index].before[i]).sort((a,b)=>a-b);assert.deepEqual(group.filter(d=>d.source!=='chains').map(d=>d.value).sort((a,b)=>a-b),expected,'individual stones contribute exactly once before chain aggregation');}
  }finally{f.close();}
 });
 
@@ -130,7 +163,7 @@ test('reset during count-up cancels the pending score animation frames',async()=
 });
 
 test('reduced motion and failed flight APIs still settle the exact earned total',async()=>{
- for(const motion of ['reduce','throw']){
+ for(const motion of ['reduce','throw','digitThrow','burstThrow']){
   const f=mount({motion});try{
    const start=Date.now();f.move();await f.idle();f.exact();f.clean();
    if(motion==='reduce'){assert(Date.now()-start<180,'reduced motion does not wait for decorative movement');assert.equal(f.packets.length,0);assert.equal(f.animations.length,0);}
@@ -148,4 +181,4 @@ test('a swap without a match creates no score receipt and consumes no move',asyn
  }finally{f.close();}
 });
 
-(async()=>{let failed=0;for(const {name,run}of tests){try{await run();console.log('✓ '+name);}catch(error){failed++;console.error('✗ '+name+'\n'+error.stack);}}await wait(20);if(unhandled.length||browserErrors.length){failed++;console.error({unhandled,browserErrors});}if(failed)process.exitCode=1;else console.log('Score checks passed: explained arithmetic, receipt count-up, exact chain totals, interruption cleanup, reduced motion and failure safety.');})().catch(error=>{console.error(error);process.exitCode=1;});
+(async()=>{let failed=0;for(const {name,run}of tests){try{await run();console.log('✓ '+name);}catch(error){failed++;console.error('✗ '+name+'\n'+error.stack);}}await wait(20);if(unhandled.length||browserErrors.length){failed++;console.error({unhandled,browserErrors});}if(failed)process.exitCode=1;else console.log('Score checks passed: real number collection, running addition, sum burst, ordered HUD flight, exact chain totals, interruption cleanup and failure safety.');})().catch(error=>{console.error(error);process.exitCode=1;});
