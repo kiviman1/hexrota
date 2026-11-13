@@ -1,0 +1,8 @@
+{
+  "name":"hexrota",
+  "version":"1.0.0",
+  "private":true,
+  "description":"İlk 10 bölümlük oynanabilir altıgen sayı bulmacası.",
+  "scripts":{"test":"node check-levels.mjs && node check-engine.mjs && node check-ui.cjs"},
+  "devDependencies":{"jsdom":"31.0.1"}
+}

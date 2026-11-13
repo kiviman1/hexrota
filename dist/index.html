@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f7f8f2">
+  <meta name="description" content="Bir rota çiz, bütün altıgenleri yeşile dönüştür ve hedef toplamı yakala. Hexrota'nın ilk 10 bölümünü keşfet.">
+  <title>Hexrota — Bir rota. Tam toplam.</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="stylesheet" href="./style.css">
+  <script src="./levels.js" defer></script>
+  <script src="./engine.js" defer></script>
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <svg class="icon-library" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+      <symbol id="i-undo" viewBox="0 0 24 24"><path d="m9 5-5 5 5 5M4 10h9a6 6 0 0 1 0 12" transform="translate(0 -2)"/></symbol>
+      <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 8M3 4v6h6"/></symbol>
+      <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6m-5 3h4M8.5 14.5a6 6 0 1 1 7 0c-.9.6-1.5 1.5-1.5 3.5h-4c0-2-.6-2.9-1.5-3.5ZM12 2V0m9 8h2M1 8h2m15-5 1.5-1.5M6 3 4.5 1.5"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24"><rect x="6" y="10" width="12" height="10" rx="3"/><path d="M9 10V7a3 3 0 0 1 6 0v3"/></symbol>
+      <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+      <symbol id="i-sound" viewBox="0 0 24 24"><path d="m11 5-6 4H2v6h3l6 4V5Zm4 4a5 5 0 0 1 0 6m3-9a9 9 0 0 1 0 12"/></symbol>
+      <symbol id="i-muted" viewBox="0 0 24 24"><path d="m11 5-6 4H2v6h3l6 4V5Zm5 4 6 6m0-6-6 6"/></symbol>
+      <symbol id="i-hex" viewBox="0 0 24 24"><path d="m12 2 9 5v10l-9 5-9-5V7Z"/></symbol>
+      <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.3 9a2.7 2.7 0 0 1 5.4 0c0 2-2.7 2-2.7 4m0 3v.1"/></symbol>
+    </defs>
+  </svg>
+  <div class="site-shell">
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="Hexrota ana sayfa">
+        <svg class="brand-mark" viewBox="0 0 44 44" aria-hidden="true"><path d="m22 2 18 10v20L22 42 4 32V12Z" fill="currentColor"/><path d="m14 17 8-4 8 4v9l-8 5-8-5Z" fill="none" stroke="#d5f69e" stroke-width="2.5"/><circle cx="14" cy="17" r="3" fill="#d5f69e"/><circle cx="30" cy="26" r="3" fill="#d5f69e"/></svg>
+        <span>hexrota<span class="brand-dot">.</span></span>
+      </a>
+      <div class="header-center"><span class="live-dot"></span> HER HAMLE BİR BAĞLANTI</div>
+      <nav class="header-actions" aria-label="Yardım ve ses">
+        <button id="sound" class="icon-button" aria-label="Sesi aç" aria-pressed="false" title="Sesi aç"><svg class="icon"><use href="#i-muted"/></svg></button>
+        <button id="help" class="help-button"><svg class="icon"><use href="#i-help"/></svg><span>Nasıl oynanır?</span></button>
+      </nav>
+    </header>
+    <main>
+      <section class="intro" aria-labelledby="page-title">
+        <div><div class="eyebrow"><span class="little-spark">✳</span> SAYILARIN BİR YOLU VAR</div><h1 id="page-title">Bir rota. <span>Tam toplam.</span></h1><p>Altıgenleri birleştir. Her yeri yeşile dönüştür. Hedefi tam tuttur.</p></div>
+        <div class="intro-art" aria-hidden="true"><svg viewBox="0 0 208 80"><path d="m35 40 66-17 68 24" fill="none" stroke="#b6c7a7" stroke-width="2" stroke-dasharray="3 5"/><g fill="#e7eddc" stroke="#cbd5bf"><path d="m35 14 23 13v26L35 66 12 53V27Z"/><path d="m101 0 23 13v26l-23 13-23-13V13Z"/><path d="m169 21 23 13v26l-23 13-23-13V34Z" fill="#c6ef91" stroke="#8da66e"/></g><g fill="#365033" font-family="Arial,sans-serif" font-size="19" text-anchor="middle"><text x="35" y="47">2</text><text x="101" y="33">4</text><text x="169" y="54">6</text></g></svg><span>BİRLEŞTİR VE KEŞFET</span></div>
+      </section>
+      <div class="play-layout">
+        <aside class="journey" aria-label="Bölüm seçimi">
+          <div class="journey-heading"><div class="eyebrow">YOLCULUĞUN</div><div class="journey-title">Küçük başla.<br><span>Ustalığa ilerle.</span></div></div>
+          <nav id="levels" class="level-list" aria-label="10 bölüm"></nav>
+          <div class="journey-progress"><div><span>Tamamlanan</span><strong id="completed">0 / 10</strong></div><div class="progress-track"><span id="journey-fill"></span></div><p><span class="save-dot"></span> İlerlemen otomatik kaydedilir</p></div>
+        </aside>
+        <section class="game-card" aria-label="Altıgen oyun tahtası">
+          <div class="game-topbar">
+            <div class="game-level"><span class="level-tag" id="level-tag">BÖLÜM 01</span><div><h2 id="level-name">İlk Bağ</h2><span class="difficulty" id="difficulty">Isınma</span></div></div>
+            <div class="scoreboard"><div class="score-current"><span>TOPLAMIN</span><strong id="sum">0</strong></div><span class="score-divider">/</span><div class="score-target"><span><svg class="icon"><use href="#i-hex"/></svg> HEDEF</span><strong id="target">13</strong></div></div>
+          </div>
+          <div class="board-stage" id="board-stage">
+            <div class="stage-top"><span id="level-note">İlk adım için herhangi bir altıgene dokun.</span><span id="move-counter">0 HAMLE</span></div>
+            <div class="board-wrap"><svg id="board" role="group" aria-label="Oyun altıgenleri"></svg></div>
+            <div class="board-status" id="board-status" aria-live="polite"><span class="status-dot"></span><span id="status-text">Bir altıgen seç ve rotanı başlat.</span><button id="continue" class="continue-button" hidden>Devam et →</button></div>
+            <div class="board-legend"><span><i class="legend-hex untouched"></i> Bekliyor</span><span><i class="legend-hex painted"></i> Ziyaret edildi</span><span><i class="legend-hex double">2×</i> Çift kullanım</span></div>
+          </div>
+          <div class="game-toolbar">
+            <div class="coverage"><div class="coverage-icon"><svg class="icon"><use href="#i-hex"/></svg></div><div><strong id="coverage">0 / 7</strong><span>altıgen yeşil</span></div><div class="mini-progress"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="14"/><circle id="coverage-ring" cx="18" cy="18" r="14"/></svg></div></div>
+            <div class="tool-actions"><button id="undo" class="tool-button" disabled title="Son hamleyi geri al (Z)"><svg class="icon"><use href="#i-undo"/></svg><span>Geri al</span></button><button id="reset" class="tool-button" title="Bölümü yeniden başlat (R)"><svg class="icon"><use href="#i-reset"/></svg><span>Yeniden</span></button><button id="hint" class="hint-button"><svg class="icon"><use href="#i-bulb"/></svg><span>İpucu</span></button></div>
+          </div>
+        </section>
+      </div>
+      <section class="quick-guide" aria-label="Oyunun kuralları"><div><span class="guide-number">01</span><p><strong>Bir yerden başla.</strong><span>Komşu altıgenlere dokunarak ilerle.</span></p></div><div><span class="guide-number">02</span><p><strong>Tüm alanı yeşile boya.</strong><span>2× işaretli taşlara tekrar uğrayabilirsin.</span></p></div><div><span class="guide-number">03</span><p><strong>Hedefi tam yakala.</strong><span>Her ziyaret, sayıyı toplamına ekler.</span></p></div></section>
+    </main>
+    <footer><span>Az kural. Çok olasılık.</span><span>HEXROTA <i>✳</i> İLK 10 BÖLÜM</span><span>Acele yok, doğru rota var.</span></footer>
+  </div>
+  <dialog id="help-dialog" class="modal help-modal">
+    <button class="modal-close icon-button" aria-label="Kapat" data-close><svg class="icon"><use href="#i-close"/></svg></button>
+    <div class="modal-symbol"><svg class="icon"><use href="#i-hex"/></svg></div><div class="eyebrow">BASİT KURALLAR, İYİ BİR BULMACA</div><h2>Rotanı bul.</h2><p class="modal-description">Bütün altıgenler yeşil olduğunda ve toplamın hedefe tam eşit olduğunda bölüm tamamlanır.</p>
+    <ol class="rules"><li><span>1</span><div><strong>İstediğin altıgenden başla.</strong><p>Ardından sadece son seçtiğin taşa komşu olan bir taşa dokun. İstersen sürükleyerek de ilerleyebilirsin.</p></div></li><li><span>2</span><div><strong>Her taşın üzerinden geç.</strong><p>Normal taşlar bir kez, 2× işaretli taşlar en fazla iki kez kullanılabilir. Her ziyarette taşın değeri toplama eklenir.</p></div></li><li><span>3</span><div><strong>Hedef toplamı tam tuttur.</strong><p>Tüm alanı yeşile boyamak tek başına yetmez. Bazı çift kullanımlı taşlara yeniden uğraman gerekecek.</p></div></li></ol>
+    <div class="help-shortcuts"><span><kbd>Z</kbd> Geri al</span><span><kbd>R</kbd> Yeniden başla</span><span><kbd>H</kbd> İpucu</span></div><button class="primary-button" data-close>Rotamı çizmeye hazırım <svg class="icon"><use href="#i-arrow"/></svg></button>
+  </dialog>
+  <dialog id="win-dialog" class="modal win-modal">
+    <div id="confetti" aria-hidden="true"></div><div class="victory-mark"><svg viewBox="0 0 86 94" aria-hidden="true"><path d="m43 3 39 22v44L43 91 4 69V25Z"/><path d="m26 47 12 12 24-27"/></svg></div><div class="eyebrow" id="win-eyebrow">ROTA TAMAMLANDI</div><h2 id="win-title">Tam isabet!</h2><p id="win-description">Her altıgen yeşil, her sayı yerli yerinde.</p><div class="win-stats"><div><span>HEDEF TOPLAM</span><strong id="win-total"></strong></div><div><span>HAMLE</span><strong id="win-moves"></strong></div><div><span>YEŞİL ALAN</span><strong>%100</strong></div></div><button id="next" class="primary-button">Sonraki bölüm <svg class="icon"><use href="#i-arrow"/></svg></button><button id="review" class="text-button">Rotamı incele</button>
+  </dialog>
+  <div id="toast" class="toast" role="status"></div>
+</body>
+</html>
