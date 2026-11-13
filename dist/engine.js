@@ -96,16 +96,26 @@
       return refill;
     }
     _gravity(matched){
-      const removed=new Set(matched);
-      // Compact all columns before selecting any replacement. This preserves
-      // natural matches among surviving falling tiles and inspects all axes.
+      const removed=new Set(matched),falls=[],spawnSlots=new Map();
+      // Track tile identities before compaction: equal numbers can still move
+      // between distinct cells and need their actual origin for animation.
+      // This metadata never consumes RNG or participates in game decisions.
       for(const column of this.topology.columns){
-        const survivors=column.filter(i=>!removed.has(i)).map(i=>this.values[i]);
-        const next=Array(column.length-survivors.length).fill(null).concat(survivors);
+        const survivors=column.filter(i=>!removed.has(i)).map(from=>({from,value:this.values[from]}));
+        const missing=column.length-survivors.length;
+        const next=Array(missing).fill(null).concat(survivors.map(tile=>tile.value));
+        survivors.forEach((tile,j)=>{
+          const to=column[missing+j];
+          if(tile.from!==to)falls.push({from:tile.from,to,value:tile.value,spawn:false});
+        });
+        for(let j=0;j<missing;j++)spawnSlots.set(column[j],{spawnOrder:j,spawnCount:missing});
         column.forEach((index,j)=>{this.values[index]=next[j];});
       }
+      // Compact every column before selecting replacements, preserving natural
+      // survivor matches and the existing deterministic controlled-fill order.
       const compacted=this.values.slice(),refill=this._fillVacancies();
-      return {compacted,refill};
+      for(const tile of refill)falls.push({from:null,to:tile.index,value:tile.value,spawn:true,...spawnSlots.get(tile.index)});
+      return {compacted,refill,falls};
     }
     _stableBoard(){
       // Bounded, match-aware construction rather than unrestricted refill.

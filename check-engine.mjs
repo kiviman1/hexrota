@@ -1,10 +1,58 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
 const context={window:{},performance};vm.createContext(context);
 for(const file of ['engine.js','levels.js'])vm.runInContext(fs.readFileSync(new URL('dist/'+file,import.meta.url),'utf8'),context);
 const {HexMatch,HEX_LEVELS}=context.window;
 const plain=value=>JSON.parse(JSON.stringify(value));
+// Independent column identity oracle: values alone cannot identify equal gems.
+function assertFallMetadata(level,frame){
+ const n=level.cells.length,removed=new Set(frame.matched),destinations=new Set(),byFrom=new Map();
+ assert(Array.isArray(frame.falls),'Every gravity wave exposes its tile motion');
+ assert(frame.falls.length<=n,'At most one incoming/moving gem per destination');
+ const reconstructed=plain(frame.before);
+ for(const i of removed)reconstructed[i]=null;
+ for(const fall of frame.falls){
+  assert(Number.isInteger(fall.to)&&fall.to>=0&&fall.to<n,'Motion destination is a board cell');
+  assert(!destinations.has(fall.to),'Motion destinations are unique');destinations.add(fall.to);
+  assert.equal(fall.value,frame.after[fall.to],'Motion carries the destination gem value');
+  if(fall.spawn){
+   assert.equal(fall.from,null,'New gems enter from outside the board');
+   assert(Number.isInteger(fall.spawnOrder)&&fall.spawnOrder>=0);
+   assert(Number.isInteger(fall.spawnCount)&&fall.spawnCount>fall.spawnOrder);
+  }else{
+   assert(Number.isInteger(fall.from)&&fall.from>=0&&fall.from<n);
+   assert(!removed.has(fall.from),'A cleared gem cannot survive as a moving origin');
+   assert(!byFrom.has(fall.from),'A surviving gem moves at most once');byFrom.set(fall.from,fall);
+   assert.notEqual(fall.from,fall.to,'Static survivors are omitted from motion');
+   assert.equal(level.cells[fall.from].q,level.cells[fall.to].q,'Survivors stay in their gravity column');
+   assert(level.cells[fall.from].r<level.cells[fall.to].r,'Survivors move down, never upward');
+   assert.equal(fall.value,frame.before[fall.from],'Moving identity retains its original value');
+   reconstructed[fall.from]=null;
+  }
+ }
+ const columns=new Map();
+ level.cells.forEach((cell,i)=>{if(!columns.has(cell.q))columns.set(cell.q,[]);columns.get(cell.q).push(i);});
+ for(const column of columns.values()){
+  column.sort((a,b)=>level.cells[a].r-level.cells[b].r);
+  const survivors=column.filter(i=>!removed.has(i)),missing=column.length-survivors.length;
+  survivors.forEach((from,j)=>{
+   const to=column[missing+j];
+   if(from===to)assert(!byFrom.has(from),'Unmoved survivor has no false movement');
+   else assert.equal(byFrom.get(from)?.to,to,'Each individual survivor keeps its column order');
+  });
+  column.slice(0,missing).forEach((to,j)=>{
+   const entry=frame.falls.find(f=>f.to===to);
+   assert(entry?.spawn,'Every new top slot has a spawn entry');
+   assert.equal(entry.spawnOrder,j,'Spawn order is top-to-bottom, zero-based');
+   assert.equal(entry.spawnCount,missing,'Spawn count is the number entering this column');
+  });
+ }
+ assert.equal(frame.falls.filter(f=>f.spawn).length,removed.size,'Exactly one new gem replaces each cleared gem');
+ for(const fall of frame.falls)reconstructed[fall.to]=fall.value;
+ assert.deepEqual(reconstructed,plain(frame.after),'Static gems plus identity motions reproduce the exact wave output');
+}
 const cells=[];
 for(let q=-2;q<=2;q++)for(let r=-2;r<=2;r++)if(Math.max(Math.abs(q),Math.abs(r),Math.abs(q+r))<=2)cells.push({q,r,layers:2});
 const at=(q,r)=>cells.findIndex(c=>c.q===q&&c.r===r);
@@ -70,6 +118,7 @@ assert.equal(ar.scoreGain,ar.frames.reduce((n,f)=>n+f.scoreGain,0));
 assert.equal(a.score,ar.scoreGain);
 assert.equal(a.turn,1);assert.equal(a.movesLeft,cascadeLevel.moves-1,'An entire cascade costs one move');
 for(const frame of ar.frames){
+ assertFallMetadata(cascadeLevel,frame);
  assert.equal(new Set(frame.matched).size,frame.matched.length);
  assert.equal(frame.scoreGain,frame.matched.reduce((n,i)=>n+frame.before[i],0));
  const removed=new Set(frame.matched);
@@ -118,6 +167,12 @@ for(const _ of removed){let x=expectedRng;x^=x<<13;x^=x>>>17;x^=x<<5;expectedRng
 const gravityResult=gravityOnly._gravity(removed);
 assert.equal(gravityOnly.rngState,expectedRng,'Each replacement consumes exactly one random draw');
 assert.equal(gravityResult.refill.length,removed.length);
+const emptyGravity=new HexMatch(cascadeLevel),emptyBefore=JSON.stringify(emptyGravity.snapshot());
+assert.equal(emptyGravity._gravity([]).falls.length,0,'No cleared gems means no false movement');
+assert.equal(JSON.stringify(emptyGravity.snapshot()),emptyBefore,'Motion collection cannot change a no-op gravity state');
+const duplicates=new HexMatch(cascadeLevel);duplicates.values.fill(2);
+const duplicateBefore=plain(duplicates.values),duplicateMotion=duplicates._gravity(removed);
+assertFallMetadata(cascadeLevel,{matched:removed,before:duplicateBefore,after:plain(duplicates.values),...duplicateMotion});
 // All four values can be blocked at one slot; fallback must be finite and minimal.
 const blocked=new HexMatch({...base,palette:[1,2,3,4]});
 for(const [q,r,value]of[[-2,0,1],[-1,0,1],[1,0,2],[2,0,2],[0,-2,3],[0,-1,3],[0,1,4],[0,2,4]])blocked.values[at(q,r)]=value;
@@ -173,16 +228,21 @@ const hintBefore=JSON.stringify(dead.snapshot()),hint=dead.hint({maxMs:1,maxDept
 assert(hint?.pair);assert(dead.legalMoves().some(p=>p[0]===hint.pair[0]&&p[1]===hint.pair[1]));
 assert.equal(JSON.stringify(dead.snapshot()),hintBefore,'Hint search cannot mutate gameplay');
 // Authored levels prove reproducible solutions and valid hints at every canonical prefix.
+const campaignStateHash=createHash('sha256');
 let checkedLevels=0;
 for(const [n,level] of (HEX_LEVELS||[]).entries()){
  if(!Array.isArray(level.initial))continue;
  const game=new HexMatch(level);assert.equal(game.findMatches().length,0);assert(game.legalMoves().length>0);
+ campaignStateHash.update(JSON.stringify(game.snapshot())+'\n');
  for(const pair of level.solution){
   const before=JSON.stringify(game.snapshot()),suggested=game.hint();
   assert(suggested?.pair,`L${n+1} has a hint`);
   assert.deepEqual(plain(suggested.pair),plain(pair));
   assert.equal(JSON.stringify(game.snapshot()),before);
-  assert.equal(game.swap(...pair).ok,true,`L${n+1} solution move is legal`);
+  const result=game.swap(...pair);
+  assert.equal(result.ok,true,`L${n+1} solution move is legal`);
+  for(const frame of result.frames)assertFallMetadata(level,frame);
+  campaignStateHash.update(JSON.stringify(game.snapshot())+'\n');
   assert.equal(game.findMatches().length,0);
  }
  assert.equal(game.status,'won',`L${n+1} wins`);assert.equal(game.covered,level.cells.length);assert(game.score>=level.target);
@@ -190,4 +250,7 @@ for(const [n,level] of (HEX_LEVELS||[]).entries()){
  game.reset();assert.equal(game.movesLeft,level.moves);assert.equal(game.score,0);assert.deepEqual(plain(game.values),plain(level.initial));
  checkedLevels++;
 }
-console.log(`Classic engine checks passed: three axes, no-op rollback, controlled refills, surviving gravity chains, deterministic state, replay validation, last-move victory, dead-board recovery, bounded hints and ${checkedLevels} authored solutions.`);
+// Captured before adding motion metadata: every original campaign checkpoint,
+// including its RNG and future history, must remain byte-for-byte identical.
+assert.equal(campaignStateHash.digest('hex'),'6053f83797a11bee25c86b7e2f8b18cf03e6e1bbfa1716c9442a325f45153dea','Visual metadata cannot alter any campaign game state');
+console.log(`Classic engine checks passed: three axes, no-op rollback, controlled refills, surviving gravity chains, exact tile motion, unchanged campaign snapshots, deterministic state, replay validation, last-move victory, dead-board recovery, bounded hints and ${checkedLevels} authored solutions.`);

@@ -2,6 +2,12 @@
 
 Telefon ve masaüstü için Türkçe altıgen sayı bulmacası. Sınırlı hamle, kalıcı yeşil zemin, çift katmanlı zeminler, dokunma/sürükleme kontrolleri, ipucu, ses ve yerel kayıt içerir. Sade üçlü eşleştirme kuralları kullanılır.
 
+## 2 öğretici + 10 bölüm
+
+Yeni oyuncu iki kısa, oynanabilir öğreticiyle başlar. İlkinde 7 altıgen üzerinde komşu takası, üç eşleşme ekseni ve yeşil zemin; ikincisinde 9 altıgen üzerinde çift katman, doğal zincir ve puan/zemin hedeflerinin birlikte tamamlanması öğretilir. Her adımda gerçek bir takas yapılır; sıradaki çift vurgulanır. Yanlış öğretici hamlesi tahta veya bütçe değiştirmez. Öğreticiler atlanabilir veya yolculuk bölümünden yeniden oynanabilir.
+
+Ardından aynı kontrollü yenileme algoritmasını kullanan mevcut 10 bölüm gelir; bölüm verileri ve çözüm dizileri değiştirilmemiştir. Yolculuk etiketleri T1, T2, 01…10'dur. Kampanya ilerleme sayacı yalnızca 10 ana bölümü sayar.
+
 ## Oynanış
 
 İki komşu taşı değiştir. Altıgenin üç düz ekseninden birinde aynı sayıdan en az üçü yan yana gelirse eşleşir. Eşleşen taşların değerleri puana eklenir; taşlar silinir, sütundaki üst taşlar aşağı düşer ve boşluklara yeni sayılar gelir. Eşleşme oluşturmayan takas geri döner; tahta, zemin, puan, hamle ve rastgele sayı üreticisi değişmez.
@@ -18,23 +24,30 @@ Bölüm üreticisi eşleşmesiz ve birden fazla geçerli başlangıcı olan taht
 
 Rastgele geçerli hamle denemeleri kaba zorluk kontrolüdür; insan oyun testinin veya strateji kanıtının yerine geçmez. Hamle bütçeleri ve zemin yerleşimi sonraki oynama deneyimiyle ayarlanabilir.
 
+## Görsel ve hareket sistemi
+
+Krem/orman yeşili arayüz, oyun alanını ve üç sabit hedef göstergesini öne çıkarır: puan, hedef, kalan hamle. Yeşil zemin taşlardan ayrı kalır. Masaüstünde bölüm listesi, telefonda kaydırılabilen kısa yolculuk şeridi kullanılır.
+
+Her oyun dalgası gerçek taş kimliğiyle düşüş verisi taşır. Aynı sayılı taşlar bile sütundaki asıl başlangıç hücresinden hedefine kayar; yeni taşlar sütunun üstünden girer. Eşleşmeler kısa büyüme, parçacıklar, ışık halkası ve puan yazısıyla gösterilir. Düşüşte sütun gecikmesi ve hafif yerleşme vardır. Bu veriler oyun kurallarını, tohumları veya checkpoint sonuçlarını değiştirmez.
+
 ## Dokunma ve animasyon güvenilirliği
 
 Tahta sabit SVG üzerinde pointer capture kullanır. Parmağın aynı taş üzerindeki küçük kayması takası iptal etmez; sürükleme bırakılan hücreye göre değerlendirilir. İnce SVG boşluklarında sınırlı dokunma toleransı vardır.
 
-Oyun sonucu animasyondan önce tek kez hesaplanıp kaydedilir. Sunum hata verse bile kontroller açılır; toplam süre 1 saniyeyle sınırlıdır. Uzun zincirlerin önemli dalgaları gösterilirken bütün oyun dalgaları hesaplanır. Animasyonu geç düğmesi veya tahtaya dokunmak sonuca geçer. Yeniden başlatma ve açık bölüm seçimi sunumu iptal eder; eski beklemeler yeni tahtayı değiştiremez. Sekme gizlenince sunum tamamlanır.
+Oyun sonucu animasyondan önce tek kez hesaplanıp kaydedilir. Sunum hata verse bile kontroller açılır; toplam süre 1,2 saniyeyle sınırlıdır. Uzun zincirlerin ilk iki dalgası tam hareketle gösterilir; bütün oyun dalgaları hesaplanır. Kalan zincirler son puan ve zeminde eksiksiz görünür. Animasyonu geç düğmesi veya tahtaya dokunmak sonuca geçer. Yeniden başlatma ve açık bölüm seçimi sunumu iptal eder; eski beklemeler yeni tahtayı değiştiremez. Sekme gizlenince sunum tamamlanır.
 
 Destekleyen tarayıcılarda ipucu Web Worker'da aranır. İşçi açılamazsa kısa süre ve tek derinlikle yerel aramaya dönülür. Hamle/tahta değişince eski ipucu sonuçları iptal edilir. Kaydedilmiş durumlar hamle geçmişi tekrar oynatılarak doğrulanır.
 
 ## Kayıt ve sürüm geçişi
 
-Kayıtlar `hexrota-match-v4` anahtarındadır. Önceki eşleştirme sürümlerindeki tamamlanan bölümler, seçili bölüm ve ses tercihi korunur; değişen kurallar nedeniyle mevcut tahta yeni başlangıçla açılır. Önceki anahtarlara dokunulmaz. İlk rota oyununun kazanımları eşleştirme bölümlerini otomatik açmaz.
+Kayıtlar `hexrota-match-v5` anahtarındadır. Sürüm 4'ten geçişte mevcut 10 bölümün indeksleri iki kaydırılır; hamle geçmişleri, tamamlanan bölümler ve ses tercihi korunur. Mevcut oyuncular için öğreticiler tamamlanmış sayılır ve tekrar oynanabilir. Daha eski eşleştirme sürümlerinden ilerleme/ses tercihi taşınır, uyumsuz tahta yeniden başlar. Yeni oyuncular T1'den başlar. Önceki kayıt anahtarlarına dokunulmaz.
 
 ## Çalıştırma ve dosyalar
 
 Derleme veya sunucu tarafı kod gerekmez. `dist/` dizinini statik olarak sun. Örneğin yerel geliştirmede `python3 -m http.server 8000 --directory dist`.
 
-- `dist/levels.js`: Başlangıçlar, tohumlar, hamle bütçeleri ve doğrulanmış çözümler.
+- `dist/levels.js`: 10 ana bölümün başlangıçları, tohumları, bütçeleri ve çözümleri.
+- `dist/tutorials.js`: İki küçük öğretici, yönlendirme adımları ve doğrulanmış çözümler.
 - `dist/engine.js`: DOM'dan bağımsız eşleştirme, kontrollü yenileme, düşüş, zincirler, puan ve zemin.
 - `dist/app.js`: Giriş kontrolleri, iptal edilebilir sunum, arayüz, yerel kayıt ve ses.
 - `dist/hint-worker.js`: Giriş ve çizim akışından ayrı çalışan ipucu araması.
@@ -50,4 +63,4 @@ R: aynı bölümü yeniden başlat; H: ipucu; Enter/Space: taş seç; ok tuşlar
 
 Node.js 22.22.2+ veya 24.15.0+ kullan. `npm install` ardından `npm test`. Üretimde harici bağımlılık veya font servisi kullanılmaz; jsdom yalnızca geliştirme testidir.
 
-Testler üç ekseni, geçersiz takasta durumun korunmasını, kesişimlerin tek sayılmasını, çift zemini, düşüşü, kontrollü yenilemeyi, zincirleri, karıştırmayı, ipucunu, son hamlede kazanmayı, kaybetmeyi ve kayıt doğrulamayı kapsar. On bölüm DOM üzerinden oynanıp açılır. Gerçek pointer olaylarıyla parmak kayması, capture/iptal, animasyon hatası, süre sınırı, sekme değişimi, eski zamanlayıcılar ve Worker hataları kontrol edilir. DOM testleri fiziksel cihaz ve görsel tarayıcı testinin yerine geçmez.
+Testler üç ekseni, geçersiz takasta durumun korunmasını, kesişimlerin tek sayılmasını, çift zemini, düşüşü, kontrollü yenilemeyi, zincirleri, karıştırmayı, ipucunu, son hamlede kazanmayı, kaybetmeyi ve kayıt doğrulamayı kapsar. İki öğretici ve on bölüm DOM üzerinden oynanıp açılır. Yönlendirmeler, yanlış hamlede bütçenin korunması, öğreticileri atlama/yeniden oynama, eski kayıtların iki indeks kaydırılarak korunması ve gerçek başlangıçtan düşüş verisi doğrulanır. Gerçek pointer olaylarıyla parmak kayması, capture/iptal, animasyon hatası, süre sınırı, sekme değişimi, eski zamanlayıcılar ve Worker hataları kontrol edilir. DOM testleri fiziksel cihaz ve görsel tarayıcı testinin yerine geçmez.

@@ -1,10 +1,10 @@
 {
   "name": "hexrota",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "private": true,
-  "description": "Kontrollü yenileme ve doğrulanmış bölümlerle sade altıgen üçlü eşleştirme bulmacası.",
+  "description": "Oynanabilir iki öğretici, on bölüm ve belirgin eşleşme/düşüş efektleriyle altıgen sayı bulmacası.",
   "scripts": {
-    "test": "node check-levels.mjs && node check-engine.mjs && node check-ui.cjs && node check-input.cjs"
+    "test": "node check-levels.mjs && node check-engine.mjs && node check-tutorials.mjs && node check-ui.cjs && node check-input.cjs"
   },
   "devDependencies": {
     "jsdom": "31.0.1"
