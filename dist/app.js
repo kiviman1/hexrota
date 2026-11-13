@@ -2,267 +2,291 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const levels = window.HEX_LEVELS;
-  const key = 'hexrota-v1';
+  const key = 'hexrota-match-v2';
   const pad = n => String(n).padStart(2, '0');
-  const icons = name => `<svg class="icon" aria-hidden="true"><use href="#i-${name}"/></svg>`;
-  let saved = {current:0, done:[], routes:{}, sound:false};
+  const icon = name => `<svg class="icon" aria-hidden="true"><use href="#i-${name}"/></svg>`;
+  const reduceMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
+  let saved = {current:0,done:[],boards:{},sound:false};
   try {
     const raw = JSON.parse(localStorage.getItem(key));
     if (raw && typeof raw === 'object') {
-      saved.done = Array.isArray(raw.done) ? [...new Set(raw.done.filter(n => Number.isInteger(n) && n >= 0 && n < 10))] : [];
-      saved.current = Number.isInteger(raw.current) && raw.current >= 0 && raw.current < 10 ? raw.current : 0;
-      saved.routes = {};
-      if (raw.routes && typeof raw.routes === 'object') for (let i=0;i<10;i++) {
-        if (Array.isArray(raw.routes[i]) && raw.routes[i].length <= 46) saved.routes[i] = raw.routes[i];
-      }
+      saved.done = Array.isArray(raw.done) ? [...new Set(raw.done.filter(i => Number.isInteger(i) && i>=0 && i<levels.length))] : [];
+      saved.current = Number.isInteger(raw.current) && raw.current>=0 && raw.current<levels.length ? raw.current : 0;
       saved.sound = raw.sound === true;
+      if (raw.boards && typeof raw.boards === 'object') for(let i=0;i<levels.length;i++) {
+        if (raw.boards[i] && typeof raw.boards[i] === 'object') saved.boards[i]=raw.boards[i];
+      }
+    } else {
+      // Sound preference survives the mechanic change; old route progress stays separate.
+      const previous = JSON.parse(localStorage.getItem('hexrota-v1'));
+      saved.sound = previous?.sound === true;
     }
-  } catch (_) { /* Storage is optional, the game remains playable. */ }
-  let active = saved.current, engine, hinted = null, dragging = false, dragLast = null, activePointer = null;
-  let toastTimer, winTimer, audio;
-  const difficulty = ['Isınma','Isınma','Keşif','Keşif','Düşünce','Düşünce','Zorlu','Zorlu','Ustalık','Ustalık'];
-  const persist = () => {
-    saved.current = active;
-    saved.routes[active] = engine.path.slice();
-    try { localStorage.setItem(key, JSON.stringify(saved)); } catch (_) {}
-  };
-  function notify(message) {
-    $('toast').textContent = message;
-    $('toast').classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => $('toast').classList.remove('show'), 3000);
+  } catch (_) {}
+  let active=saved.current, engine, selected=null, hinted=null, busy=false, focusIndex=0;
+  let pointer=null, toastTimer, terminalTimer, audio, epoch=0, comboText='';
+  const difficulty=['Isınma','Isınma','Keşif','Keşif','Planlama','Planlama','Zorlu','Zorlu','Ustalık','Ustalık'];
+  const canOpen = i => i===0 || saved.done.includes(i-1) || saved.done.includes(i);
+  function persist() {
+    saved.current=active;
+    saved.boards[active]=engine.snapshot();
+    try {localStorage.setItem(key,JSON.stringify(saved));} catch (_) {}
   }
+  function toast(message) {
+    $('toast').textContent=message; $('toast').classList.add('show');
+    clearTimeout(toastTimer); toastTimer=setTimeout(()=>$('toast').classList.remove('show'),3300);
+  }
+  function stopPointer() {pointer=null;}
   function openModal(id) {
-    stopDrag();
-    const dialog = $(id);
-    if (!dialog.open) dialog.showModal();
+    stopPointer();
+    const dialog=$(id);
+    if(!dialog.open) dialog.showModal();
     document.body.classList.add('modal-open');
   }
-  function closeModal(dialog) { dialog.close(); }
-  document.querySelectorAll('dialog').forEach(dialog => {
-    dialog.addEventListener('close', () => {
-      if (![...document.querySelectorAll('dialog')].some(d => d.open)) document.body.classList.remove('modal-open');
+  function closeModal(dialog) {if(dialog.open)dialog.close();}
+  document.querySelectorAll('dialog').forEach(dialog=>{
+    dialog.addEventListener('close',()=>{
+      if(!document.querySelector('dialog[open]'))document.body.classList.remove('modal-open');
     });
-    dialog.addEventListener('click', e => {
-      if (e.target === dialog) {
-        const r = dialog.getBoundingClientRect();
-        if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) closeModal(dialog);
-      }
+    dialog.addEventListener('click',e=>{
+      if(e.target!==dialog)return;
+      const r=dialog.getBoundingClientRect();
+      if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeModal(dialog);
     });
-    dialog.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', () => closeModal(dialog)));
+    dialog.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal(dialog)));
   });
-  function sound(value = 2, win = false) {
-    if (!saved.sound) return;
+  function tone(value=2,victory=false) {
+    if(!saved.sound)return;
     try {
-      audio ||= new (window.AudioContext || window.webkitAudioContext)();
-      if (audio.state === 'suspended') audio.resume();
-      const play = (frequency, offset = 0) => {
-        const osc = audio.createOscillator(), gain = audio.createGain(), time = audio.currentTime + offset;
-        osc.type = 'sine'; osc.frequency.value = frequency;
-        gain.gain.setValueAtTime(0, time); gain.gain.linearRampToValueAtTime(.06, time + .012); gain.gain.exponentialRampToValueAtTime(.001, time + .2);
-        osc.connect(gain); gain.connect(audio.destination); osc.start(time); osc.stop(time + .21);
+      audio ||= new (window.AudioContext||window.webkitAudioContext)();
+      if(audio.state==='suspended')audio.resume();
+      const play=(f,delay=0)=>{
+        const o=audio.createOscillator(),g=audio.createGain(),t=audio.currentTime+delay;
+        o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.055,t+.012);g.gain.exponentialRampToValueAtTime(.001,t+.2);
+        o.connect(g);g.connect(audio.destination);o.start(t);o.stop(t+.21);
       };
-      if (win) [523.25,659.25,783.99,1046.5].forEach((f,i) => play(f,i*.09));
-      else play(280 + value * 35);
+      if(victory)[523.25,659.25,783.99,1046.5].forEach((f,i)=>play(f,i*.09));else play(300+value*60);
     } catch (_) {}
   }
   function renderSound() {
-    $('sound').innerHTML = icons(saved.sound ? 'sound' : 'muted');
-    $('sound').setAttribute('aria-pressed', String(saved.sound));
-    $('sound').setAttribute('aria-label', saved.sound ? 'Sesi kapat' : 'Sesi aç');
-    $('sound').title = saved.sound ? 'Sesi kapat' : 'Sesi aç';
+    $('sound').innerHTML=icon(saved.sound?'sound':'muted');
+    $('sound').setAttribute('aria-pressed',String(saved.sound));
+    $('sound').setAttribute('aria-label',saved.sound?'Sesi kapat':'Sesi aç');
+    $('sound').title=saved.sound?'Sesi kapat':'Sesi aç';
   }
-  function unlocked(i) { return i === 0 || saved.done.includes(i - 1) || saved.done.includes(i); }
   function renderLevels() {
-    $('levels').innerHTML = levels.map((l,i) => {
-      const done = saved.done.includes(i), selected = i === active, locked = !unlocked(i);
-      return `<button class="level-button${selected ? ' active' : ''}${done ? ' done' : ''}" data-level="${i}" ${locked ? 'disabled' : ''} ${selected ? 'aria-current="step"' : ''} aria-label="Bölüm ${i+1}: ${l.name}${done ? ', tamamlandı' : ''}${locked ? ', kilitli' : ''}" title="${l.name}${locked ? ' — Önce bir önceki bölümü tamamla' : ''}"><span class="level-number">${done && !selected ? icons('check') : pad(i+1)}</span><span class="level-copy">${l.name}</span>${locked ? '<svg class="icon level-status-icon"><use href="#i-lock"/></svg>' : ''}</button>`;
+    $('levels').innerHTML=levels.map((l,i)=>{
+      const done=saved.done.includes(i),current=i===active,locked=!canOpen(i);
+      return `<button class="level-button${current?' active':''}${done?' done':''}" data-level="${i}" ${locked||busy?'disabled':''} ${current?'aria-current="step"':''} aria-label="Bölüm ${i+1}: ${l.name}${done?', tamamlandı':''}${locked?', kilitli':''}" title="${l.name}${locked?' — Önceki bölümü tamamla':''}"><span class="level-number">${done&&!current?icon('check'):pad(i+1)}</span><span class="level-copy">${l.name}</span>${locked?'<svg class="icon level-status-icon"><use href="#i-lock"/></svg>':''}</button>`;
     }).join('');
-    $('completed').textContent = `${saved.done.length} / 10`;
-    $('journey-fill').style.width = `${saved.done.length * 10}%`;
+    $('completed').textContent=`${saved.done.length} / ${levels.length}`;
+    $('journey-fill').style.width=`${saved.done.length/levels.length*100}%`;
   }
-  function loadLevel(index) {
-    clearTimeout(winTimer);
-    active = index;
-    if (!unlocked(active)) active = 0;
-    let route = saved.routes[active];
-    try { engine = new window.HexEngine(levels[active], Array.isArray(route) ? route : []); }
-    catch (_) { engine = new window.HexEngine(levels[active]); }
-    hinted = null;
-    $('level-tag').textContent = `BÖLÜM ${pad(active + 1)}`;
-    $('level-name').textContent = levels[active].name;
-    $('difficulty').textContent = difficulty[active];
-    $('target').textContent = levels[active].target;
-    $('level-note').textContent = levels[active].subtitle;
-    renderLevels(); render(); persist();
+  function markCompleted() {
+    if(engine.status==='won'&&!saved.done.includes(active)){
+      saved.done.push(active);saved.done.sort((a,b)=>a-b);
+    }
   }
-  function boardMarkup() {
-    const level = levels[active], step = 44, radius = 40;
-    let positions = level.cells.map(c => ({x:1.5 * step * c.q, y:Math.sqrt(3) * step * (c.r + c.q / 2)}));
-    const xs = positions.map(c => c.x), ys = positions.map(c => c.y);
-    const cx = (Math.max(...xs) + Math.min(...xs))/2, cy = (Math.max(...ys) + Math.min(...ys))/2;
-    positions = positions.map(p => ({x:p.x-cx, y:p.y-cy}));
-    const width = Math.max(500,Math.max(...xs)-Math.min(...xs)+2*radius+50);
-    const height = Math.max(340,Math.max(...ys)-Math.min(...ys)+Math.sqrt(3)*radius+38);
-    $('board').setAttribute('viewBox', `${-width/2} ${-height/2} ${width} ${height}`);
-    const points = Array.from({length:6},(_,i) => `${(radius*Math.cos(i*Math.PI/3)).toFixed(3)},${(radius*Math.sin(i*Math.PI/3)).toFixed(3)}`).join(' ');
-    const last = engine.path.at(-1), neighbors = last === undefined ? [] : engine.neighbors[last];
-    const line = engine.path.length > 1 ? `<polyline class="route-line" points="${engine.path.map(i => `${positions[i].x},${positions[i].y}`).join(' ')}"/>` : '';
-    return `<defs><filter id="tile-shadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="3" stdDeviation="1" flood-color="#3d5031" flood-opacity=".055"/></filter></defs>${line}${level.cells.map((c,i) => {
-      const count = engine.counts[i], current = i === last;
-      const legal = engine.status === 'playing' && count < c.cap && (last === undefined || neighbors.includes(i));
-      const p = positions[i];
-      const classes = ['hex-tile',count ? 'visited' : '',count === 2 ? 'used-twice' : '',current ? 'current' : '',hinted === i ? 'hinted' : '',legal ? 'legal' : ''].filter(Boolean).join(' ');
-      return `<g transform="translate(${p.x},${p.y})" class="${classes}" data-index="${i}" role="button" tabindex="0" aria-label="${c.value} değerinde altıgen; ${count}/${c.cap} kullanım${current ? '; son taş' : ''}${hinted === i ? '; ipucu' : ''}" aria-disabled="${!legal}"><polygon class="hex-shape" points="${points}"/><text class="hex-number" text-anchor="middle" x="0" y="${c.cap===2 ? -5 : count ? -3 : 0}">${c.value}</text>${c.cap===2 ? `<text class="hex-badge" text-anchor="middle" x="0" y="19">${count ? `${count}/2` : '2×'}</text>` : count ? '<path class="tile-check" d="m-4 17 3 3 6-7"/>' : ''}${current ? '<circle class="hex-current-dot" cx="23" cy="-14" r="2.6"/>' : ''}</g>`;
+  function loadLevel(index, fresh=false) {
+    epoch++;clearTimeout(terminalTimer);stopPointer();busy=false;
+    active=canOpen(index)?index:0;
+    try {engine=new window.HexMatch(levels[active],fresh?null:saved.boards[active]||null);}
+    catch (_) {engine=new window.HexMatch(levels[active]);}
+    selected=null;hinted=null;focusIndex=0;comboText='';
+    $('level-tag').textContent=`BÖLÜM ${pad(active+1)}`;
+    $('level-name').textContent=levels[active].name;
+    $('difficulty').textContent=difficulty[active];
+    $('target').textContent=levels[active].target;
+    $('level-note').textContent=levels[active].subtitle;
+    markCompleted();renderLevels();render();persist();
+  }
+  function geometry() {
+    const step=44,radius=40;
+    let positions=levels[active].cells.map(c=>({x:1.5*step*c.q,y:Math.sqrt(3)*step*(c.r+c.q/2)}));
+    const xs=positions.map(p=>p.x),ys=positions.map(p=>p.y);
+    const cx=(Math.min(...xs)+Math.max(...xs))/2,cy=(Math.min(...ys)+Math.max(...ys))/2;
+    positions=positions.map(p=>({x:p.x-cx,y:p.y-cy}));
+    const width=Math.max(370,Math.max(...xs)-Math.min(...xs)+radius*2+24);
+    const height=Math.max(300,Math.max(...ys)-Math.min(...ys)+radius*Math.sqrt(3)+26);
+    return {positions,radius,width,height};
+  }
+  function boardMarkup(state,matching=[],falling=[]) {
+    const {positions,radius,width,height}=geometry();
+    $('board').setAttribute('viewBox',`${-width/2} ${-height/2} ${width} ${height}`);
+    const poly=r=>Array.from({length:6},(_,i)=>`${(r*Math.cos(i*Math.PI/3)).toFixed(3)},${(r*Math.sin(i*Math.PI/3)).toFixed(3)}`).join(' ');
+    const outer=poly(radius),inner=poly(radius*.78),matched=new Set(matching),dropped=new Set(falling);
+    const interactive=!busy&&engine.status==='playing';
+    return `<defs><filter id="tile-shadow" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="0" dy="2" stdDeviation="1" flood-color="#3d5031" flood-opacity=".06"/></filter></defs>${levels[active].cells.map((c,i)=>{
+      const left=state.layers[i],green=left===0,partial=left>0&&left<(c.layers||1);
+      const classes=['hex-tile',`value-${state.values[i]}`,green?'floor-green':partial?'floor-partial':'floor-untouched',c.layers===2?'layered':'',selected===i?'selected':'',hinted?.includes(i)?'hinted':'',selected!==null&&engine.adjacent(selected,i)?'neighbor':'',matched.has(i)?'matching':'',dropped.has(i)?'falling':''].filter(Boolean).join(' ');
+      const p=positions[i],ground=green?'zemin yeşil':`${left} eşleşme gerekiyor`;
+      return `<g transform="translate(${p.x},${p.y})" class="${classes}" data-index="${i}" role="button" tabindex="${i===focusIndex?0:-1}" aria-label="${state.values[i]} sayısı, ${ground}${selected===i?', seçili':''}${hinted?.includes(i)?', ipucu':''}" aria-pressed="${selected===i}" aria-disabled="${!interactive}"><polygon class="floor-shape" points="${outer}"/><g class="gem"><polygon class="gem-shape" points="${inner}"/><text class="hex-number" text-anchor="middle" x="0" y="0">${state.values[i]}</text></g>${green?'<path class="floor-mark" d="m-4 29 3 3 6-7"/>':c.layers===2?`<text class="layer-count" text-anchor="middle" x="0" y="31">${left}</text>`:''}</g>`;
     }).join('')}`;
   }
-  function render() {
-    const focused = document.activeElement?.closest?.('[data-index]')?.dataset.index;
-    $('board').innerHTML = boardMarkup();
-    if (focused !== undefined) $('board').querySelector(`[data-index="${focused}"]`)?.focus({preventScroll:true});
-    $('sum').textContent = engine.sum;
-    document.querySelector('.score-current').classList.toggle('over', engine.status === 'over');
-    $('coverage').textContent = `${engine.covered} / ${levels[active].cells.length}`;
-    $('coverage-ring').style.strokeDashoffset = String(87.965 * (1-engine.covered / levels[active].cells.length));
-    $('move-counter').textContent = `${engine.path.length} HAMLE`;
-    $('undo').disabled = engine.path.length === 0;
-    $('hint').disabled = engine.status === 'won';
-    $('continue').hidden = engine.status !== 'won';
-    const status = $('board-status');
-    status.className = 'board-status';
-    let message = 'Bir altıgen seç ve rotanı başlat.';
-    if (engine.status === 'won') {
-      message = 'Tam isabet! Bütün altıgenler yeşil, hedef tamam.';
-      status.classList.add('success');
-    } else if (engine.status === 'over') {
-      message = `Hedefi ${engine.sum-levels[active].target} aştın. Bir hamle geri alabilirsin.`;
-      status.classList.add('error');
-    } else if (engine.status === 'stuck') {
-      message = 'Bu rota kapandı. Geri alıp başka bir yol dene.';
-      status.classList.add('error');
-    } else if (engine.covered === levels[active].cells.length) {
-      message = `Her yer yeşil! Hedef için ${levels[active].target-engine.sum} daha gerekiyor.`;
-    } else if (engine.path.length) {
-      message = `${levels[active].cells.length-engine.covered} altıgen kaldı. Komşu bir taştan devam et.`;
-    }
-    $('status-text').textContent = message;
+  function render(state=null,options={}) {
+    const display=state||{values:engine.values,layers:engine.layers,score:engine.score,movesLeft:engine.movesLeft};
+    const focused=document.activeElement?.closest?.('[data-index]')?.dataset.index;
+    $('board').innerHTML=boardMarkup(display,options.matching||[],options.falling||[]);
+    if(focused!==undefined)$('board').querySelector(`[data-index="${focused}"]`)?.focus?.({preventScroll:true});
+    const covered=display.layers.filter(n=>n===0).length,total=levels[active].cells.length;
+    $('sum').textContent=display.score;
+    $('moves-left').textContent=display.movesLeft;
+    $('moves-left').closest('.moves-badge')?.classList.toggle('low',display.movesLeft<=3);
+    $('move-counter').textContent=`${levels[active].moves-display.movesLeft} / ${levels[active].moves} HAMLE`;
+    $('coverage').textContent=`${covered} / ${total}`;
+    $('coverage-ring').style.strokeDashoffset=String(87.965*(1-covered/total));
+    $('hint').disabled=busy||engine.status!=='playing';
+    $('reset').disabled=busy;
+    $('continue').hidden=busy||engine.status==='playing';
+    $('continue').textContent=engine.status==='lost'?'Yeniden dene →':'Devam et →';
+    $('board').setAttribute('aria-busy',String(busy));
+    $('board-stage').classList.toggle('busy',busy);
+    $('last-combo').textContent=comboText;
+    const status=$('board-status');status.className='board-status';
+    let text;
+    if(options.message)text=options.message;
+    else if(engine.status==='won') {text='Hedef tamam, bütün zemin yeşil. Başardın!';status.classList.add('success');}
+    else if(engine.status==='lost'){text='Hamleler bitti. Aynı tahtada yeni bir plan deneyebilirsin.';status.classList.add('error');}
+    else if(selected!==null)text='Şimdi komşu bir taşı seç. Üç aynı sayıyı hizala.';
+    else if(engine.score>=levels[active].target)text=`Puan hedefi tamam! ${total-covered} zemini daha yeşile boya.`;
+    else text='Bir taş seç; komşusuyla değiştirip üçlüyü oluştur.';
+    $('status-text').textContent=text;
   }
-  function select(index, quiet = false) {
-    if (engine.status === 'won') return;
-    const result = engine.add(index);
-    if (!result.ok) {
-      const messages = {neighbor:'Sadece son seçtiğin altıgene komşu bir taşa gidebilirsin.',used:'Bu taşın kullanım hakkı bitti. Başka bir komşu seç.',over:'Hedefi aştın. Devam etmek için bir hamle geri al.'};
-      if (!quiet) {
-        if (messages[result.reason]) notify(messages[result.reason]);
-        const tile = $('board').querySelector(`[data-index="${index}"]`);
+  const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+  const canAnimate=()=>!reduceMotion()&&typeof window.Element.prototype.animate==='function';
+  async function swapMotion(a,b,before) {
+    if(!canAnimate())return;
+    render(before);
+    const positions=geometry().positions,dx=positions[b].x-positions[a].x,dy=positions[b].y-positions[a].y;
+    for(const [index,x,y] of [[a,dx,dy],[b,-dx,-dy]]) {
+      $('board').querySelector(`[data-index="${index}"] .gem`)?.animate([{transform:'translate(0px,0px)'},{transform:`translate(${x}px,${y}px)`}],{duration:170,easing:'ease-in-out',fill:'forwards'});
+    }
+    await wait(175);
+  }
+  async function performSwap(a,b) {
+    if(busy||engine.status!=='playing')return;
+    const before={values:engine.values.slice(),layers:engine.layers.slice(),score:engine.score,movesLeft:engine.movesLeft};
+    const result=engine.swap(a,b);
+    if(!result.ok) {
+      selected=null;hinted=null;render();
+      toast(engine.adjacent(a,b)?'Bu takas üçlü oluşturmuyor. Hamlen harcanmadı.':'Sadece komşu iki taşın yerini değiştirebilirsin.');
+      for(const i of [a,b]){
+        const tile=$('board').querySelector(`[data-index="${i}"]`);
         tile?.classList.add('hex-error');
-        setTimeout(() => tile?.classList.remove('hex-error'), 400);
+        setTimeout(()=>tile?.classList.remove('hex-error'),350);
       }
       return;
     }
-    hinted = null;
-    sound(levels[active].cells[index].value);
-    render(); persist();
-    if (engine.status === 'won') {
-      if (!saved.done.includes(active)) saved.done.push(active);
-      saved.done.sort((a,b) => a-b);
-      persist(); renderLevels();
-      const winningEngine = engine;
-      winTimer = setTimeout(() => { if (engine === winningEngine && engine.status === 'won') showVictory(); }, 550);
+    const token=++epoch;busy=true;selected=null;hinted=null;comboText='';
+    markCompleted();persist();renderLevels();
+    await swapMotion(a,b,before);
+    let score=before.score,layers=before.layers;
+    for(let i=0;i<result.frames.length;i++) {
+      if(token!==epoch)return;
+      const frame=result.frames[i];
+      const fast=result.frames.length>5&&i>=3,clearTime=fast?65:180,fallTime=fast?45:120;
+      $('board').style.setProperty('--clear-duration',`${clearTime}ms`);
+      $('board').style.setProperty('--fall-duration',`${fallTime}ms`);
+      comboText=`${i>0?`Zincir ×${i+1} · `:''}+${frame.scoreGain} puan`;
+      render({values:frame.before,layers,score,movesLeft:engine.movesLeft},{matching:frame.matched,message:i?'Zincirleme eşleşme! Tek hamle, yeni fırsatlar.':'Eşleşti! Sayılar gidiyor, zemin yeşilleniyor.'});
+      tone(Math.min(5,i+1));
+      if(canAnimate())await wait(clearTime);
+      if(token!==epoch)return;
+      score+=frame.scoreGain;layers=frame.layers;
+      const changed=frame.after.map((v,j)=>v!==frame.before[j]||frame.matched.includes(j)?j:-1).filter(j=>j>=0);
+      render({values:frame.after,layers,score,movesLeft:engine.movesLeft},{falling:changed,message:'Yeni sayılar yerleşiyor…'});
+      if(canAnimate())await wait(fallTime);
     }
+    if(token!==epoch)return;
+    busy=false;
+    comboText=`${result.frames.length>1?`${result.frames.length} zincir · `:''}+${result.scoreGain} puan${result.reshuffled?' · Tahta karıştırıldı':''}`;
+    renderLevels();render();persist();
+    if(result.reshuffled)toast('Eşleşme kalmadı; sayılar karıştırıldı. Zemin ve hamlelerin korundu.');
+    if(engine.status!=='playing') {
+      terminalTimer=setTimeout(()=>{if(token===epoch&&!document.querySelector('dialog[open]'))showResult();},canAnimate()?450:0);
+    }
+  }
+  function select(index) {
+    if(busy||engine.status!=='playing')return;
+    focusIndex=index;hinted=null;
+    if(selected===index){selected=null;render();return;}
+    if(selected!==null&&engine.adjacent(selected,index)) {const a=selected;performSwap(a,index);return;}
+    selected=index;render();
   }
   function showVictory() {
-    const final = active === levels.length-1;
-    $('win-eyebrow').textContent = final ? '10 BÖLÜMLÜK YOLCULUK TAMAMLANDI' : `BÖLÜM ${pad(active+1)} TAMAMLANDI`;
-    $('win-title').textContent = final ? 'Usta işi bir rota.' : 'Tam isabet!';
-    $('win-description').textContent = final ? 'Bütün rotaları keşfettin. Sayılar artık senin dilini konuşuyor.' : 'Her altıgen yeşil, her sayı yerli yerinde.';
-    $('win-total').textContent = engine.sum;
-    $('win-moves').textContent = engine.path.length;
-    $('next').innerHTML = `${final ? 'Yolculuğu yeniden keşfet' : `Bölüm ${pad(active+2)} ile devam et`} ${icons('arrow')}`;
-    $('confetti').innerHTML = Array.from({length:22},(_,i) => `<i class="confetti-piece" style="left:${(i*37)%100}%;background:${['#9bbe73','#c4e89b','#789651','#dbdfb9'][i%4]};--drift:${(i%2 ? 1 : -1)*(20+i*2)}px;animation-delay:${(i%7)*.06}s;transform:rotate(${i*28}deg)"></i>`).join('');
-    sound(0, true); openModal('win-dialog');
+    const final=active===levels.length-1;
+    $('win-eyebrow').textContent=final?'10 BÖLÜMLÜK YOLCULUK TAMAMLANDI':`BÖLÜM ${pad(active+1)} TAMAMLANDI`;
+    $('win-title').textContent=final?'Usta işi!':'Güzel eşleşme!';
+    $('win-description').textContent=final?'Bütün tahtaları yeşerttin. Her hamlen bir planın parçasıydı.':`${engine.movesLeft} hamle kala hem puan hedefini hem yeşil alanı tamamladın.`;
+    $('win-total').textContent=engine.score;$('win-moves').textContent=engine.movesLeft;
+    $('next').innerHTML=`${final?'İlk bölüme dön':`Bölüm ${pad(active+2)} ile devam et`} ${icon('arrow')}`;
+    $('confetti').innerHTML=reduceMotion()?'':Array.from({length:18},(_,i)=>`<i class="confetti-piece" style="left:${i*37%100}%;background:${['#9bbe73','#c4e89b','#b8a5cf','#dbdfb9'][i%4]};--drift:${(i%2?1:-1)*(20+i*2)}px;animation-delay:${i%7*.06}s"></i>`).join('');
+    tone(0,true);openModal('win-dialog');
   }
-  function undo() {
-    clearTimeout(winTimer);
-    if (engine.undo()) { hinted = null; render(); persist(); }
+  function showLoss() {
+    $('lose-title').textContent='Bir plan daha?';
+    $('lose-description').textContent='Hamlelerin bitti. Önce eksik kalan zeminleri hedefleyerek aynı tahtayı yeniden deneyebilirsin.';
+    $('lose-score').textContent=`${engine.score} / ${levels[active].target}`;
+    $('lose-coverage').textContent=`${engine.covered} / ${levels[active].cells.length}`;
+    openModal('lose-dialog');
   }
-  function reset() {
-    clearTimeout(winTimer); engine.reset(); hinted = null; render(); persist();
-    notify('Yeni bir rota, yeni bir ihtimal.');
+  function showResult() {if(engine.status==='won')showVictory();else if(engine.status==='lost')showLoss();}
+  function restart() {
+    if(busy)return;
+    document.querySelectorAll('dialog[open]').forEach(closeModal);
+    loadLevel(active,true);toast('Aynı tahta, aynı yeni sayılar. Bu kez başka bir plan dene.');
   }
   function hint() {
-    const result = engine.hint();
-    if (result.type === 'next') {
-      hinted = result.index; render();
-      notify(engine.path.length ? 'Parlayan altıgen, rotanın bir sonraki adımı.' : 'Parlayan altıgenden başlayabilirsin.');
-    } else if (result.type === 'undo') {
-      hinted = null; render();
-      notify(result.reason === 'timeout' ? 'Bu rota için ipucu bulunamadı. Bir adım geri alıp tekrar dene.' : 'Bu rotadan hedefe ulaşılamıyor. Bir adım geri alıp ipucunu tekrar dene.');
-      $('undo').animate?.([{background:'#e0efcb'},{background:'transparent'}],{duration:1000,iterations:2});
-    }
+    if(busy||engine.status!=='playing')return;
+    const suggestion=engine.hint();
+    if(suggestion?.pair){selected=null;hinted=suggestion.pair;render();toast('Parlayan iki taşın yerini değiştir. Eksik zeminleri de gözet.');}
+    else toast('Şu anda ipucu bulunamadı. Başka bir üçlü arayabilirsin.');
   }
-  $('levels').addEventListener('click', e => {
-    const button = e.target.closest('[data-level]');
-    if (!button || button.disabled || +button.dataset.level === active) return;
-    persist(); loadLevel(+button.dataset.level);
+  $('levels').addEventListener('click',e=>{
+    const b=e.target.closest('[data-level]');if(!b||b.disabled||busy||+b.dataset.level===active)return;
+    persist();loadLevel(+b.dataset.level);
   });
-  $('board').addEventListener('pointerdown', e => {
-    if (e.button !== 0 && e.pointerType !== 'touch') return;
-    const tile = e.target.closest('[data-index]');
-    if (!tile) return;
-    if (activePointer !== null) return;
-    e.preventDefault(); dragging = true; activePointer = e.pointerId; dragLast = +tile.dataset.index;
-    select(dragLast);
+  $('board').addEventListener('pointerdown',e=>{
+    if(busy||engine.status!=='playing'||pointer||e.isPrimary===false||(e.button!==0&&e.pointerType!=='touch'))return;
+    const tile=e.target.closest('[data-index]');if(!tile)return;
+    e.preventDefault();pointer={id:e.pointerId,index:+tile.dataset.index,x:e.clientX,y:e.clientY,moved:false};
   });
-  window.addEventListener('pointermove', e => {
-    if (!dragging || e.pointerId !== activePointer) return;
-    if (e.pointerType !== 'touch' && e.buttons === 0) { stopDrag(); return; }
-    const tile = document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-index]');
-    if (!tile || !$('board').contains(tile)) return;
-    const index = +tile.dataset.index;
-    if (index === dragLast) return;
-    dragLast = index;
-    if (index !== engine.path.at(-1)) select(index, true);
+  window.addEventListener('pointermove',e=>{
+    if(!pointer||pointer.id!==e.pointerId)return;
+    if(e.pointerType!=='touch'&&e.buttons===0){stopPointer();return;}
+    if(!pointer.moved&&Math.hypot(e.clientX-pointer.x,e.clientY-pointer.y)>9){pointer.moved=true;selected=pointer.index;hinted=null;render();}
   });
-  function stopDrag() { dragging = false; dragLast = null; activePointer = null; }
-  window.addEventListener('pointerup', stopDrag);
-  window.addEventListener('pointercancel', stopDrag);
-  window.addEventListener('blur', stopDrag);
-  $('board').addEventListener('keydown', e => {
-    const tile = e.target.closest('[data-index]');
-    if (!tile) return;
-    if (e.key === 'Enter' || e.key === ' ') {e.preventDefault(); select(+tile.dataset.index);}
-    if (['ArrowRight','ArrowLeft','ArrowUp','ArrowDown'].includes(e.key)) {
-      e.preventDefault();
-      const index = +tile.dataset.index, cell = levels[active].cells[index];
-      const desired = {ArrowRight:[1,0],ArrowLeft:[-1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];
-      const candidates = engine.neighbors[index].map(i => {const c=levels[active].cells[i],dx=1.5*(c.q-cell.q),dy=Math.sqrt(3)*(c.r-cell.r+(c.q-cell.q)/2);return {i,score:(dx*desired[0]+dy*desired[1])/Math.hypot(dx,dy)};}).filter(c=>c.score>0).sort((a,b)=>b.score-a.score);
-      if(candidates.length) $('board').querySelector(`[data-index="${candidates[0].i}"]`)?.focus();
-    }
+  window.addEventListener('pointerup',e=>{
+    if(!pointer||pointer.id!==e.pointerId)return;
+    const start=pointer;stopPointer();
+    const hit=document.elementFromPoint?.(e.clientX,e.clientY)||e.target;
+    const tile=hit?.closest?.('[data-index]');
+    if(!tile||!$('board').contains(tile)){selected=null;render();return;}
+    const target=+tile.dataset.index;
+    if(start.moved&&target!==start.index){performSwap(start.index,target);return;}
+    if(!start.moved)select(target);
   });
-  $('board').addEventListener('click', e => {
-    // Assistive technologies can activate buttons without a pointer event.
-    if (e.detail === 0) {
-      const tile = e.target.closest('[data-index]'); if (tile) select(+tile.dataset.index);
-    }
+  window.addEventListener('pointercancel',stopPointer);window.addEventListener('blur',stopPointer);
+  $('board').addEventListener('click',e=>{if(e.detail===0){const tile=e.target.closest('[data-index]');if(tile)select(+tile.dataset.index);}});
+  $('board').addEventListener('keydown',e=>{
+    const tile=e.target.closest('[data-index]');if(!tile||busy)return;
+    const index=+tile.dataset.index;
+    if(e.key==='Enter'||e.key===' '){e.preventDefault();select(index);return;}
+    const direction={ArrowRight:[1,0],ArrowLeft:[-1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];if(!direction)return;
+    e.preventDefault();const positions=geometry().positions,p=positions[index];
+    const next=levels[active].cells.map((_,i)=>i).filter(i=>engine.adjacent(index,i)).map(i=>{const dx=positions[i].x-p.x,dy=positions[i].y-p.y;return {i,score:(dx*direction[0]+dy*direction[1])/Math.hypot(dx,dy)};}).filter(n=>n.score>0).sort((a,b)=>b.score-a.score)[0];
+    if(next){focusIndex=next.i;for(const n of $('board').querySelectorAll('[data-index]'))n.setAttribute('tabindex',+n.dataset.index===focusIndex?'0':'-1');$('board').querySelector(`[data-index="${focusIndex}"]`)?.focus?.();}
   });
-  $('undo').addEventListener('click', undo);
-  $('reset').addEventListener('click', reset);
-  $('hint').addEventListener('click', hint);
-  $('help').addEventListener('click', () => openModal('help-dialog'));
-  $('sound').addEventListener('click', () => {saved.sound = !saved.sound; renderSound(); persist(); if(saved.sound) sound(4);});
-  $('next').addEventListener('click', () => {
-    closeModal($('win-dialog'));
-    if (active < levels.length-1) loadLevel(active+1);
-    else {active = 0; engine = new window.HexEngine(levels[0]); saved.routes[0] = []; loadLevel(0);}
+  $('reset').addEventListener('click',restart);$('retry').addEventListener('click',restart);$('hint').addEventListener('click',hint);
+  $('help').addEventListener('click',()=>openModal('help-dialog'));
+  $('sound').addEventListener('click',()=>{saved.sound=!saved.sound;renderSound();persist();if(saved.sound)tone(3);});
+  $('continue').addEventListener('click',showResult);
+  $('next').addEventListener('click',()=>{closeModal($('win-dialog'));loadLevel(active<levels.length-1?active+1:0,active===levels.length-1);});
+  $('review').addEventListener('click',()=>closeModal($('win-dialog')));
+  window.addEventListener('keydown',e=>{
+    if(e.ctrlKey||e.metaKey||e.altKey||e.repeat||document.querySelector('dialog[open]')||['INPUT','TEXTAREA'].includes(e.target.tagName))return;
+    if(e.key.toLowerCase()==='r'){e.preventDefault();restart();}
+    if(e.key.toLowerCase()==='h'){e.preventDefault();hint();}
+    if(e.key==='Escape'&&!busy){selected=null;hinted=null;render();}
   });
-  $('review').addEventListener('click', () => closeModal($('win-dialog')));
-  $('continue').addEventListener('click', showVictory);
-  window.addEventListener('keydown', e => {
-    if (e.ctrlKey || e.metaKey || e.altKey || e.repeat || document.querySelector('dialog[open]') || ['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
-    if (e.key.toLowerCase() === 'z') {e.preventDefault(); undo();}
-    if (e.key.toLowerCase() === 'r') {e.preventDefault(); reset();}
-    if (e.key.toLowerCase() === 'h') {e.preventDefault(); hint();}
-  });
-  renderSound(); loadLevel(active);
+  renderSound();loadLevel(active);
 })();
