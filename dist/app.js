@@ -73,6 +73,10 @@
     const dialog=$(id);if(!dialog.open){dialog.showModal();modalStack.push(id);}
     document.body.classList.add('modal-open');
   }
+  document.addEventListener('hexrota:open-dialog',event=>{
+    if(event.detail?.id!=='install-dialog')return;
+    event.preventDefault();openModal('install-dialog');
+  });
   function closeModal(dialog){if(dialog?.open)dialog.close();}
   function closeAllDialogs(){[...document.querySelectorAll('dialog[open]')].reverse().forEach(closeModal);}
   document.querySelectorAll('dialog').forEach(dialog=>{
@@ -440,7 +444,7 @@
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=5');
+            job.worker=new Worker('./hint-worker.js?v=7');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:levels[active],snapshot:engine.snapshot()});

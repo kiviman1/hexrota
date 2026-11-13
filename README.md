@@ -78,3 +78,14 @@ R: aynı bölümü yeniden başlat; H: ipucu; Enter/Space: taş seç; ok tuşlar
 Node.js 22.22.2+ veya 24.15.0+ kullan. `npm install` ardından `npm test`. Üretimde harici bağımlılık veya font servisi kullanılmaz; jsdom yalnızca geliştirme testidir.
 
 Testler üç ekseni, geçersiz takasta durumun korunmasını, kesişimlerin tek sayılmasını, çift zemini, düşüşü, kontrollü yenilemeyi, zincirleri, karıştırmayı, ipucunu, son hamlede kazanmayı, kaybetmeyi ve kayıt doğrulamayı kapsar. İki öğretici ve on bölüm DOM üzerinden oynanıp açılır. Yönlendirmeler, yanlış hamlede bütçenin korunması, öğreticileri atlama/yeniden oynama, eski kayıtların iki indeks kaydırılarak korunması ve gerçek başlangıçtan düşüş verisi doğrulanır. Gerçek pointer olaylarıyla parmak kayması, capture/iptal, animasyon hatası, süre sınırı, sekme değişimi, eski zamanlayıcılar ve Worker hataları kontrol edilir. Menü testleri ana ekran, devam etme, ön izleme iptali, ayarlar, onaylı sıfırlama, iç içe pencere geri/Escape sırası, arka planda duraklama ve sonuç ekranı geçişlerini kapsar. Ses katmanı sahte AudioContext ile döngü çoğalması, görünürlük, hata ve kapanış davranışına karşı kontrol edilir. DOM testleri fiziksel cihaz ve görsel tarayıcı testinin yerine geçmez.
+
+
+## Web uygulaması ve Vercel
+
+`dist/` doğrudan HTTPS üzerinden yayınlanır. `vercel.json` framework algılamasını ve gereksiz derleme/kurulumu kapatır, çıktı dizinini `dist` olarak seçer. Ortam değişkeni veya sunucu gerekmez. GitHub deposunun `main` dalı Vercel projesine bağlandığında yeni gönderimler otomatik dağıtılır.
+
+Ayarlar içinden bağlantı paylaşılabilir, destekleyen cihazlarda tam ekran açılabilir ve ana ekrana ekleme yönergesi görülebilir. Kurulabilir tarayıcılarda yerel kurulum istemi kullanılır; iPhone/iPad'de Safari'nin Paylaş → Ana Ekrana Ekle yolu açıklanır. Güvenli alan boşlukları ve uygulama simgeleri telefon ekranlarını destekler.
+
+İlk çevrim içi açılıştan sonra doğrulanmış oyun dosyaları çevrim dışı kullanım için saklanır. Giriş sayfaları ve başka sitelerin yanıtları önbelleğe alınmaz. Yeni sürüm beklerken devam eden oyun kendiliğinden yenilenmez; Ayarlar'daki **Yeni sürümü aç** eylemi güncellemeyi uygular. Oyun durumu her hamlede yerel olarak kaydedilir.
+
+İlerleme cihaz ve site adresine özeldir. Eski Sites adresindeki kayıtlar o adreste korunur; Vercel adresi ayrı bir yolculuk başlatır. Bu sürümde hesap veya cihazlar arası eşitleme yoktur.
