@@ -10,6 +10,12 @@ Her eşleşme, altındaki sabit zemini boyar. Zemin ilerlemesi taşlarla birlikt
 
 Geçerli takas kalmazsa sayılar otomatik karıştırılır; puan, zemin ilerlemesi ve kalan hamleler korunur. Her bölüm sabit bir başlangıç ve deterministik yenileme tohumu kullanır; yeniden başlatmak aynı bulmacayı verir. Gerçekleştirilen eşleşmelere göre tüketilen yeni sayılar değişebilir. Sınırsız geri alma kaldırılmıştır; yeniden deneme bölümün tamamını sıfırlar.
 
+## Doğrudan deneme alanı
+
+`/test.html` Halka, Filiz ve birlikte kullanımını bölüm kilidi olmadan denemek içindir. Her senaryo hazır özel taşlarla açılır. Ana eylem düğmesi gerçek oyun motorundaki önerilen takası tek seferde çalıştırır. Taşlara dokunarak komşu takası da denenebilir. Halka/Filiz yerleştirme araçları ve senaryoyu yeniden hazırlama vardır.
+
+Bu alan hamle veya kazanma sınırı uygulamaz, kampanya ilerlemesini değiştirmez ve kayıt alanına yazmaz. Normal oyunla aynı `HexMatch` motorunu kullanır. Filiz senaryosu, büyümenin eksik zemine yönelmesini görünür kılan kısmen yeşil bir zeminle başlar.
+
 ## Özel taşlar
 
 Halka, oyuncunun kurduğu ilk eşleşmede düz 4'lüden doğar; kendi hücresini ve altı komşusunu temizler. Filiz, düz 5'li veya iki eksende kesişen üçlülerden doğar; eksik zemine doğru en fazla üç adımlık bitişik bir yol açar (kendisi dahil en fazla dört hücre). Filiz'in yeri önemlidir: takastan sonraki konumundan çalışır. Seçili taşın kesikli vurgusu mevcut konumdaki etki örneğidir.
@@ -47,6 +53,7 @@ Derleme veya sunucu tarafı kod gerekmez. `dist/` dizinini statik olarak sun. Ö
 - `dist/levels.js`: Sabit başlangıçlar, tohumlar, hamle bütçeleri ve çözümler.
 - `dist/engine.js`: DOM'dan bağımsız eşleştirme, düşüş, zincirler, puan, zemin ve ipucu.
 - `dist/app.js`: Giriş kontrolleri, sınırlı ve iptal edilebilir sunum, arayüz, yerel kayıt ve ses.
+- `dist/test.html`, `dist/test.css`, `dist/test.js`: Doğrudan oynanabilir özel taş denemeleri.
 - `dist/hint-worker.js`: Giriş ve çizim akışından ayrı çalışan ipucu araması.
 - `dist/style.css`: Duyarlı tasarım ve azaltılmış hareket desteği.
 - `generate-levels.cjs`: Tekrarlanabilir bölüm üretimi ve çözüm araması.

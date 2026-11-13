@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f8f9f4">
+<title>Hexrota — Deneme alanı</title>
+<meta name="description" content="Halka ve Filiz taşlarını bölüm geçmeden, sınırsız hamleyle hemen dene.">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./test.css?v=1">
+<script defer src="./engine.js?v=3"></script>
+<script defer src="./levels.js?v=3"></script>
+<script defer src="./test.js?v=1"></script>
+</head>
+<body>
+<main class="test-shell">
+<header><a class="brand" href="./">hexrota<span>.</span></a><a class="back-link" href="./">Oyuna dön ↗</a></header>
+<div class="title-row"><div><span class="eyebrow">BÖLÜM GEÇMEDEN, HEMEN DENE</span><h1>Deneme alanı<span>.</span></h1></div><span class="free-badge">∞ Hamle sınırı yok</span></div>
+<nav class="scenario-tabs" aria-label="Test seçimi">
+<button id="scenario-ring" type="button" data-scenario="ring" aria-pressed="true">◎ Halka</button>
+<button id="scenario-sprout" type="button" data-scenario="sprout" aria-pressed="false">♧ Filiz</button>
+<button id="scenario-together" type="button" data-scenario="together" aria-pressed="false">İkisi birlikte</button>
+</nav>
+<section class="test-card" aria-label="Serbest deneme tahtası">
+<div class="case-copy"><h2 id="case-name">Halkayı dene</h2><p id="instruction">Alttaki düğmeye bas. Hazır Halka, merkezini ve altı komşusunu temizlesin.</p></div>
+<div class="board-container"><div id="sandbox-board" role="group" aria-label="Özel taş deneme tahtası"></div><svg id="effect-overlay" aria-hidden="true"></svg></div>
+<div class="preview-key"><span class="preview-dot"></span> Kesikli alan: hazır takasın özel etkisi</div>
+<div class="primary-row"><button id="activate" class="primary" type="button">Halkayı çalıştır</button><button id="reset" class="reset" type="button" aria-label="Testi yeniden hazırla">↻ Yeniden hazırla</button></div>
+<p id="status" class="status" role="status" aria-live="polite">Hazır taşları kullanmak için tek düğme yeterli.</p>
+<div class="test-stats" aria-label="Test sonuçları"><span>Puan <strong id="score">0</strong></span><span>Yeşil zemin <strong id="covered">0 / 19</strong></span><span>Denediğin hamle <strong id="turn">0</strong></span></div>
+</section>
+<section class="free-tools" aria-label="Tahta düzenleme araçları"><div class="tool-label"><h2>Kendin de yerleştir.</h2><p>Bir güç seç, tahtada istediğin taşa dokun.</p></div><div class="tool-buttons"><button id="tool-play" type="button" data-tool="play" aria-pressed="true">Serbest oyna</button><button id="tool-ring" type="button" data-tool="ring" aria-pressed="false">◎ Halka ekle</button><button id="tool-sprout" type="button" data-tool="sprout" aria-pressed="false">♧ Filiz ekle</button><button id="tool-erase" type="button" data-tool="erase" aria-pressed="false">Gücü kaldır</button></div></section>
+<p class="footnote">İstersen iki komşuya sırayla dokunarak veya bir taşı komşusuna sürükleyerek de oynayabilirsin. Bu alan bölüm ilerlemeni değiştirmez.</p>
+</main>
+</body>
+</html>
