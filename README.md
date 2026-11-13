@@ -91,3 +91,10 @@ Ayarlar içinden bağlantı paylaşılabilir, destekleyen cihazlarda tam ekran a
 İlk çevrim içi açılıştan sonra doğrulanmış oyun dosyaları çevrim dışı kullanım için saklanır. Giriş sayfaları ve başka sitelerin yanıtları önbelleğe alınmaz. Yeni sürüm beklerken devam eden oyun kendiliğinden yenilenmez; Ayarlar'daki **Yeni sürümü aç** eylemi güncellemeyi uygular. Oyun durumu her hamlede yerel olarak kaydedilir.
 
 İlerleme cihaz ve site adresine özeldir. Eski Sites adresindeki kayıtlar o adreste korunur; Vercel adresi ayrı bir yolculuk başlatır. Bu sürümde hesap veya cihazlar arası eşitleme yoktur.
+
+
+## Tam ekran oyun görünümü
+
+Sürüm 8'de oyun alanı görünür ekran yüksekliğini kullanır. Oyun sırasında site başlığı, bölüm şeridi ve genel gezinme gizlenir; üstte puan/hedef, bölüm arması ve hamle, altta zemin ilerlemesi ve beş oyun kontrolü bulunur. Bölüm seçimi ana menüdeki patikadan yapılır. Dikey ve yatay yerleşimler, güvenli alanlar ve tarayıcı çubuklarının yüksekliği hesaba katılır. Görüntü boyutu değişikliği tahtayı veya hamle kaydını yeniden başlatmaz.
+
+Uygulamada pinch, çift dokunma ve klavye/tekerlek yakınlaştırma hareketleri engellenir. Tek dokunuşlar, taş takası ve ayar pencerelerindeki kaydırma korunur. Tarayıcının kendi adres ve sistem çubuklarını gizlemek için desteklenen cihazlarda ana ekrana ekleme veya tam ekran seçeneği kullanılabilir.

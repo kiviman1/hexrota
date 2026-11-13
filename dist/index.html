@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="application-name" content="Hexrota">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14,13 +14,13 @@
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="./style.css?v=7">
-  <script src="./engine.js?v=7" defer></script>
-  <script src="./levels.js?v=7" defer></script>
-  <script src="./tutorials.js?v=7" defer></script>
-  <script src="./audio.js?v=7" defer></script>
-  <script src="./app.js?v=7" defer></script>
-  <script src="./pwa.js?v=7" defer></script>
+  <link rel="stylesheet" href="./style.css?v=8">
+  <script src="./engine.js?v=8" defer></script>
+  <script src="./levels.js?v=8" defer></script>
+  <script src="./tutorials.js?v=8" defer></script>
+  <script src="./audio.js?v=8" defer></script>
+  <script src="./app.js?v=8" defer></script>
+  <script src="./pwa.js?v=8" defer></script>
 </head>
 <body>
   <svg class="icon-library" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -82,19 +82,17 @@
           <div class="journey-progress"><div><span>Tamamlanan</span><strong id="completed">0 / 10</strong></div><div class="progress-track"><span id="journey-fill"></span></div><p><span class="save-dot"></span> Yolculuğun burada saklı.</p></div>
         </aside>
         <section class="game-card" aria-label="Altıgen eşleştirme oyunu">
-          <div class="game-topbar">
-            <div class="game-level"><div class="level-heading"><span class="level-tag" id="level-tag">ÖĞREN 01</span><h2 id="level-name">İlk eşleşmen</h2></div><div class="level-controls"><span class="difficulty" id="difficulty">Öğretici</span><button id="game-home" class="game-icon-button" type="button" data-nav="home" aria-label="Ana menüye dön"><svg class="icon"><use href="#i-home"/></svg></button><button id="pause" class="game-icon-button" type="button" aria-label="Oyunu duraklat"><svg class="icon"><use href="#i-pause"/></svg></button></div></div>
-            <div class="scoreboard" aria-label="Puan, hedef ve kalan hamle">
-              <div class="score-current metric"><span>PUANIN</span><strong id="sum">0</strong></div>
-              <div class="score-target metric"><span><svg class="icon"><use href="#i-hex"/></svg> HEDEF</span><strong id="target">15</strong></div>
-              <div class="moves-badge metric"><span>KALAN HAMLE</span><strong id="moves-left">5</strong><svg class="moves-symbol icon" aria-hidden="true"><use href="#i-moves"/></svg></div>
+          <header class="game-topbar" aria-label="Bölüm hedefleri">
+            <div class="scoreboard" aria-label="Puan hedefi, bölüm ve kalan hamle">
+              <div class="score-target metric hud-score"><span id="score-goal-label">HEDEF PUAN</span><div class="score-pair"><strong id="sum">0</strong><span>/</span><strong id="target">15</strong></div><div class="score-track" aria-hidden="true"><span id="score-progress"></span></div></div>
+              <div class="level-emblem"><svg class="emblem-leaf icon" aria-hidden="true"><use href="#i-leaf"/></svg><span class="level-tag" id="level-tag">ÖĞREN 01</span><h2 id="level-name" class="sr-only">İlk eşleşmen</h2><span class="difficulty sr-only" id="difficulty">Öğretici</span></div>
+              <div class="moves-badge metric"><span>HAMLE</span><strong id="moves-left">5</strong><svg class="moves-symbol icon" aria-hidden="true"><use href="#i-moves"/></svg></div>
             </div>
-            <div class="score-goal"><div class="score-track" aria-hidden="true"><span id="score-progress"></span></div><span id="score-goal-label">Hedefe doğru</span></div>
-          </div>
+          </header>
           <section id="tutorial-coach" class="tutorial-coach" aria-label="Birlikte öğrenelim" hidden>
             <div class="coach-marker" aria-hidden="true"><svg class="icon"><use href="#i-swap"/></svg></div>
             <div class="coach-copy"><div class="coach-heading"><span id="coach-step">ADIM 1 / 3</span><h3 id="coach-title">İki komşuyu seç.</h3></div><p id="coach-text">Parlayan taşı seç, sonra yanındaki işaretli taşa dokun.</p><div class="coach-track" aria-hidden="true"><span id="coach-progress"></span></div></div>
-            <button id="coach-skip" class="coach-skip" type="button">Öğreticiyi geç <span aria-hidden="true">→</span></button>
+            <button id="coach-skip" class="coach-skip" type="button" aria-label="Öğreticiyi geç">Geç <span aria-hidden="true">→</span></button>
           </section>
           <div class="board-stage" id="board-stage">
             <div class="stage-top"><span id="level-note">Komşuları değiştir, üçlüyü bul.</span><span id="move-counter">0 / 5 HAMLE</span></div>
@@ -104,7 +102,13 @@
           </div>
           <div class="game-toolbar">
             <div class="coverage"><div class="mini-progress"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="14"/><circle id="coverage-ring" cx="18" cy="18" r="14"/></svg></div><div><strong id="coverage">0 / 7</strong><span>zemin yeşil</span></div></div>
-            <div class="tool-actions"><button id="reset" class="tool-button" type="button" title="Aynı bölümü yeniden başlat (R)"><svg class="icon"><use href="#i-reset"/></svg><span>Yeniden</span></button><button id="hint" class="hint-button" type="button" title="Bir eşleşme öner (H)"><svg class="icon"><use href="#i-bulb"/></svg><span>İpucu</span></button></div>
+            <nav class="tool-actions" aria-label="Oyun kontrolleri">
+              <button id="game-home" class="dock-button" type="button" data-nav="home" aria-label="Ana menüye dön"><svg class="icon" aria-hidden="true"><use href="#i-home"/></svg><span>Menü</span></button>
+              <button id="reset" class="tool-button dock-button" type="button" title="Aynı bölümü yeniden başlat (R)"><svg class="icon" aria-hidden="true"><use href="#i-reset"/></svg><span>Yeniden</span></button>
+              <button id="hint" class="hint-button dock-button" type="button" title="Bir eşleşme öner (H)"><svg class="icon" aria-hidden="true"><use href="#i-bulb"/></svg><span>İpucu</span></button>
+              <button id="pause" class="dock-button" type="button" aria-label="Oyunu duraklat"><svg class="icon" aria-hidden="true"><use href="#i-pause"/></svg><span>Mola</span></button>
+              <button id="game-settings" class="dock-button" type="button" data-settings aria-label="Ayarlar"><svg class="icon" aria-hidden="true"><use href="#i-settings"/></svg><span>Ayarlar</span></button>
+            </nav>
           </div>
         </section>
       </div>

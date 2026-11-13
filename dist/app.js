@@ -62,6 +62,25 @@
     const old=pointer;pointer=null;
     if(old)try{if($('board').hasPointerCapture?.(old.id))$('board').releasePointerCapture(old.id);}catch(_){}
   }
+  // Keep the game canvas tied to the visible viewport without rebuilding its state.
+  const appViewport=window.visualViewport;
+  let appHeight=0;
+  function syncAppHeight(){
+    if(Math.abs((Number(appViewport?.scale)||1)-1)>.02)return;
+    const height=Math.round(Number(appViewport?.height)||window.innerHeight);
+    if(Number.isFinite(height)&&height>0&&height!==appHeight){appHeight=height;document.documentElement.style.setProperty('--app-height',height+'px');}
+  }
+  ['resize','orientationchange','pageshow'].forEach(name=>window.addEventListener(name,syncAppHeight,{passive:true}));
+  document.addEventListener('fullscreenchange',syncAppHeight);
+  appViewport?.addEventListener?.('resize',syncAppHeight,{passive:true});
+  syncAppHeight();
+  function preventZoom(event){if(event.cancelable)event.preventDefault();}
+  function preventPinch(event){preventZoom(event);stopPointer();}
+  ['gesturestart','gesturechange','gestureend'].forEach(name=>document.addEventListener(name,preventPinch,{passive:false}));
+  ['touchstart','touchmove'].forEach(name=>document.addEventListener(name,event=>{if(event.touches?.length>1)preventPinch(event);},{passive:false}));
+  document.addEventListener('wheel',event=>{if(event.ctrlKey||event.metaKey)preventZoom(event);},{passive:false});
+  document.addEventListener('dblclick',preventZoom);
+  window.addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&['+','-','=','0'].includes(event.key))preventZoom(event);});
   function topDialog(){return [...modalStack].reverse().map(id=>$(id)).find(dialog=>dialog.open)||[...document.querySelectorAll('dialog[open]')].at(-1)||null;}
   const gameInputAllowed=()=>screen==='game'&&!paused&&!topDialog();
   function syncAudio(){document.body.classList.toggle('reduce-motion',reduceMotion());audio?.configure({sfx:saved.sound,music:saved.preferences.music,volume:saved.preferences.volume});audio?.setActive(!document.hidden&&!paused);}
@@ -444,7 +463,7 @@
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=7');
+            job.worker=new Worker('./hint-worker.js?v=8');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:levels[active],snapshot:engine.snapshot()});
