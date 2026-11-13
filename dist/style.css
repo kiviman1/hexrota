@@ -227,3 +227,11 @@ body[data-screen="game"] .combo-feedback{max-width:calc(100% - 24px);white-space
 @keyframes score-arrival{0%{box-shadow:inset 0 2px #fff,0 4px 0 #0f3226,0 0 0 0 #d7f98b99}40%{box-shadow:inset 0 2px #fff,0 4px 0 #0f3226,0 0 0 8px #d7f98b55}100%{box-shadow:inset 0 2px #fff,0 4px 0 #0f3226,0 0 0 13px #d7f98b00}}
 @media(max-width:360px){.score-packet-gain{font-size:46px}.score-digit{font-size:27px}body[data-screen="game"] .metric>#score-receipt{font-size:10px;right:-4px;bottom:-9px;padding:3px 7px}}
 body.reduce-motion .score-packet,body.reduce-motion .score-digit,body.reduce-motion .score-burst-ring,body.reduce-motion .score-burst-spark{display:none}
+
+/* Achievement intensity changes size, colour and detail; timing stays consistent. */
+.score-packet[data-reward-tier="1"] .score-packet-gain{color:#f0ffb8}
+.score-packet[data-reward-tier="2"] .score-packet-gain{color:#ffe68a;text-shadow:-2px 0 #29482b,2px 0 #29482b,0 -2px #29482b,0 3px #29482b,0 5px #173d27,0 0 21px #fff0adbb}
+.score-packet[data-reward-tier="3"] .score-packet-gain{color:#fff6b6;text-shadow:-2px 0 #29482b,2px 0 #29482b,0 -2px #29482b,0 3px #29482b,0 6px #173d27,0 0 27px #ffe991dd}
+.score-packet[data-reward-headline] .score-packet-chain{font-size:11px;letter-spacing:.7px;color:#fff3b7}
+.reward-goal-hit{filter:drop-shadow(0 0 8px #d8f69666)}
+body.reduce-motion .reward-goal-hit{filter:none}

@@ -134,6 +134,22 @@
       this._tone(320 + value * 42, {duration: .17, gain: .08});
       this._tone((320 + value * 42) * 1.5, {delay: .035, duration: .15, gain: .026});
     }
+    reward(cue = {}) {
+      if (!this.sfx || !this._ready()) return;
+      const tier = Number.isInteger(cue?.tier) ? Math.max(0, Math.min(3, cue.tier)) : 0;
+      const pitch = Number.isInteger(cue?.pitchStep) ? Math.max(-12, Math.min(12, cue.pitchStep)) : 0;
+      const completion = cue?.completion === true || cue?.reason === 'win' || cue?.reason === 'last_move_win';
+      const intervals = tier === 3 && cue?.reason === 'last_move_win'
+        ? [0, 5, 9, 12]
+        : tier === 3 && completion ? [0, 7, 9, 12] : [[0], [0, 5], [0, 4, 9], [0, 4, 7, 12]][tier];
+      const root = 392 * Math.pow(2, pitch / 12);
+      // More notes add harmony, rather than making a stronger reward louder.
+      const gain = .065 / intervals.length;
+      intervals.forEach((interval, index) => this._tone(root * Math.pow(2, interval / 12), {
+        delay: index * .055, duration: .22 + tier * .015 + (completion ? .035 : 0), gain,
+        type: index ? 'triangle' : 'sine'
+      }));
+    }
     click() { this._tone(420, {duration: .075, gain: .045}); }
     victory() {
       [523.25, 659.25, 783.99, 1046.5].forEach((frequency, index) => this._tone(frequency, {delay: index * .09, duration: .28, gain: .065}));

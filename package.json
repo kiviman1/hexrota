@@ -1,10 +1,12 @@
 {
   "name": "hexrota",
-  "version": "8.1.2",
+  "version": "8.2.0",
   "private": true,
   "description": "Telefon ve masaüstünde oynanabilir, iki öğretici ve on bölümlü altıgen eşleştirme web uygulaması.",
   "scripts": {
-    "test": "node check-levels.mjs && node check-engine.mjs && node check-tutorials.mjs && node check-audio.cjs && node check-ui.cjs && node check-input.cjs && node check-menu.cjs && node check-pwa.cjs && node check-game-shell.cjs && node check-score.cjs"
+    "test": "node check-levels.mjs && node check-engine.mjs && node check-tutorials.mjs && node check-audio.cjs && node check-ui.cjs && node check-input.cjs && node check-menu.cjs && node check-pwa.cjs && node check-game-shell.cjs && node check-score.cjs && node sync-reward-rules.cjs --check && node generate-reward-vectors.cjs --check && node check-rewards.cjs && node check-reward-ui.cjs",
+    "rewards:sync": "node sync-reward-rules.cjs",
+    "test:unity-rewards": "node check-reward-parity.cjs"
   },
   "devDependencies": {
     "jsdom": "31.0.1"

@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "accentGapTurns": 3,
+  "runThresholds": [4, 5, 6],
+  "chainThresholds": [2, 3, 5],
+  "crossTier": 2,
+  "crossThreeTier": 3,
+  "simultaneousTier": 1,
+  "groundMin": 4,
+  "groundPercent": 20,
+  "doublesMin": 2,
+  "doublesTier": 2,
+  "tutorialCap": 1,
+  "goalTier": 2,
+  "winTier": 3,
+  "scoreMilestones": [50, 100],
+  "groundMilestones": [25, 50, 75, 100],
+  "tiers": [
+    {"scalePermille":1300,"sparks":10,"rings":1,"pitchStep":0,"hapticMs":0},
+    {"scalePermille":1400,"sparks":13,"rings":1,"pitchStep":2,"hapticMs":12},
+    {"scalePermille":1520,"sparks":17,"rings":2,"pitchStep":4,"hapticMs":22},
+    {"scalePermille":1650,"sparks":22,"rings":2,"pitchStep":7,"hapticMs":35}
+  ]
+}

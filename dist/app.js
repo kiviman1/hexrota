@@ -45,6 +45,68 @@
   const modalStack=[];
   const audio=window.HexAudio?new window.HexAudio({sfx:saved.sound,music:saved.preferences.music,volume:saved.preferences.volume}):null;
   const difficulty=['Isınma','Isınma','Keşif','Keşif','Planlama','Planlama','Zorlu','Zorlu','Ustalık','Ustalık'];
+  let rewardState=null,completionReward=null,completionRewardPlayed=false;
+  const rewardReady=()=>!!(window.HexRewards&&window.HexRewardAdapter&&window.HEX_REWARD_RULES);
+  function rewardLabel(cue){
+    if(!cue)return '';
+    switch(cue.labelKey){
+      case 'long_run':return cue.value>=5?'Uzun bir rota!':'Güzel eşleşme!';
+      case 'chain':return `${cue.value}. zincir!`;
+      case 'cross':return cue.value>=3?'Üç eksen bir arada!':'Çapraz eşleşme!';
+      case 'simultaneous':return 'Birden fazla eşleşme!';
+      case 'green':return 'Rota yeşeriyor!';
+      case 'doubles':return `${cue.value} çift zemin yeşil!`;
+      case 'score_goal':return 'Puan hedefi tamam!';
+      case 'ground_goal':return 'Bütün zemin yeşil!';
+      case 'last_move_win':return 'Tam zamanında!';
+      case 'win':return 'Yeşil rota tamam!';
+      default:return '';
+    }
+  }
+  function restoreRewards(){
+    rewardState=null;completionReward=null;completionRewardPlayed=false;
+    if(!rewardReady())return;
+    try{rewardState=window.HexRewardAdapter.restore(levels[active],engine.snapshot(),window.HEX_REWARD_RULES,window.HexMatch).state;}catch(_){}
+  }
+  function planRewards(before,result){
+    if(!rewardReady())return null;
+    try{
+      if(!rewardState)rewardState=window.HexRewardAdapter.restore(levels[active],before,window.HEX_REWARD_RULES,window.HexMatch).state;
+      const input=window.HexRewardAdapter.summarize(levels[active],before,result,engine);
+      const evaluated=window.HexRewards.evaluate(input,rewardState,window.HEX_REWARD_RULES);
+      rewardState=evaluated.nextState;
+      completionReward=evaluated.plan.headline?.completion?evaluated.plan.headline:null;completionRewardPlayed=false;
+      return evaluated.plan;
+    }catch(_){rewardState=null;completionReward=null;return null;}
+  }
+  function rewardForWave(job,wave){
+    const cues=job.rewardPlan?.waves?.filter(cue=>cue.wave===wave||(wave===2&&cue.wave>2))||[];
+    return cues.reduce((best,cue)=>!best||cue.tier>best.tier||(cue.tier===best.tier&&cue.rawTier>best.rawTier)?cue:best,null);
+  }
+  function rewardHeadline(job,wave){
+    const cue=job.rewardPlan?.headline;
+    if(!cue||cue.completion||job.rewardHeadlineUsed||Math.min(2,cue.wave)!==wave)return null;
+    // A floor/score goal from compressed later waves is named after the final board is visible.
+    if(cue.wave>2&&(cue.reason==='score_goal'||cue.reason==='ground_goal'))return null;
+    job.rewardHeadlineUsed=true;return cue;
+  }
+  function rewardFeedback(job,cue){
+    if(!cue||job.controller.signal.aborted||presentation!==job||job.rewardCueIds.has(cue.id))return;
+    job.rewardCueIds.add(cue.id);
+    if(saved.sound&&typeof audio?.reward==='function')try{audio.reward(cue);}catch(_){}
+    if(saved.preferences.haptics&&typeof navigator.vibrate==='function'&&cue.hapticMs>0)try{navigator.vibrate(Math.min(60,cue.hapticMs));}catch(_){}
+  }
+  function rewardMilestones(job,wave,kind){
+    if(!canAnimate()||job.controller.signal.aborted||presentation!==job)return;
+    for(const milestone of job.rewardPlan?.milestones||[]){
+      if(milestone.kind!==kind||Math.min(2,milestone.wave)!==wave||job.rewardMilestoneIds.has(milestone.id))continue;
+      job.rewardMilestoneIds.add(milestone.id);
+      const node=kind==='score'?$('sum').closest('.hud-score'):document.querySelector('.coverage');if(!node)continue;
+      node.classList.add('reward-goal-hit');job.rewardNodes.add(node);
+      animateElement(job,node,[{filter:'brightness(1)',transform:'scale(1)'},{filter:'brightness(1.18)',transform:`scale(${milestone.percent===100?1.065:1.035})`,offset:.4},{filter:'brightness(1)',transform:'scale(1)'}],{duration:220,easing:'ease-out'});
+    }
+  }
+
   const canOpen=i=>i===0||saved.done.includes(i-1)||saved.done.includes(i);
   const isTutorial=()=>active<tutorialCount;
   const stageLabel=i=>i<tutorialCount?`ÖĞREN ${pad(i+1)}`:`BÖLÜM ${pad(i-tutorialCount+1)}`;
@@ -229,7 +291,7 @@
     active=canOpen(index)?index:0;
     try {engine=new window.HexMatch(levels[active],fresh?null:saved.boards[active]||null);}
     catch (_) {engine=new window.HexMatch(levels[active]);}
-    selected=null;hinted=null;focusIndex=0;comboText='';
+    selected=null;hinted=null;focusIndex=0;comboText='';restoreRewards();
     $('level-tag').textContent=stageLabel(active);
     $('level-name').textContent=levels[active].name;
     $('difficulty').textContent=isTutorial()?'Öğretici':difficulty[active-tutorialCount];
@@ -359,9 +421,13 @@
         const node=document.createElement('div');node.className=className;node.style.left=point.x+'px';node.style.top=point.y+'px';node.style.translate='-50% -50%';nodes.add(node);layer.appendChild(node);return node;
       };
       const packet=add('score-packet',origin);packet.style.zIndex='2';packet.dataset.gain=String(gain);packet.dataset.wave=String(wave);packet.dataset.destinationScore=String(destination);packet.dataset.phase='collect';
-      const chain=document.createElement('span');chain.className='score-packet-chain';chain.textContent=wave===1?'':extra?`${wave}–${totalWaves}. ZİNCİR`:`${wave}. ZİNCİR`;
+      const waveCue=rewardForWave(job,wave),headline=rewardHeadline(job,wave);
+      const cue=headline&&(!waveCue||headline.tier>waveCue.tier)?headline:waveCue;
+      if(cue){packet.dataset.rewardTier=String(cue.tier);packet.dataset.rewardReason=cue.reason;packet.dataset.rewardWave=String(cue.wave);}
+      if(headline)packet.dataset.rewardHeadline=headline.reason;
+      const chain=document.createElement('span');chain.className='score-packet-chain';chain.textContent=headline?rewardLabel(headline):wave===1?'':extra?`${wave}–${totalWaves}. ZİNCİR`:`${wave}. ZİNCİR`;
       const amount=document.createElement('strong');amount.className='score-packet-gain';amount.textContent=`+${gain}`;packet.append(chain,amount);
-      const packetRect=packet.getBoundingClientRect(),halfWidth=(packetRect.width||120)/2,halfHeight=(packetRect.height||70)/2;
+      const packetRect=packet.getBoundingClientRect(),peakScale=Math.max(1,(cue?.scalePermille||1300)/1000)*1.08,halfWidth=(packetRect.width||120)*peakScale/2,halfHeight=(packetRect.height||70)*peakScale/2;
       const maxY=Math.max(halfHeight+12,viewportHeight-halfHeight-12),minY=Math.min(maxY,viewportWidth>viewportHeight?halfHeight+12:(hudRect?.bottom||80)+halfHeight+8);
       const start={x:Math.max(halfWidth+12,Math.min(viewportWidth-halfWidth-12,origin.x)),y:Math.max(minY,Math.min(maxY,origin.y))};
       packet.style.left=start.x+'px';packet.style.top=start.y+'px';amount.textContent='';amount.style.opacity='0';
@@ -386,18 +452,22 @@
         animateElement(job,amount,[{transform:'scale(.8)'},{transform:'scale(1.08)',offset:.45},{transform:'scale(1)'}],{duration:motion.collectPulse,easing:'ease-out'});
       }
       amount.textContent=`+${gain}`;packet.dataset.phase='pop';
-      animateElement(job,packet,[{transform:'scale(.75)',opacity:1},{transform:'scale(1.3)',opacity:1,offset:.42},{transform:'scale(1)',opacity:1}],{duration:motion.pop,easing:'cubic-bezier(.2,.9,.35,1)',fill:'forwards'});
-      const ring=add('score-burst-ring',start);
-      animateElement(job,ring,[{transform:'scale(.3)',opacity:.95},{transform:'scale(1.65)',opacity:0}],{duration:motion.pop+motion.hold,easing:'ease-out',fill:'forwards'});
-      for(let i=0;i<10;i++){
-        const spark=add('score-burst-spark',start),angle=i*Math.PI/5,distance=42+(i%3)*12;
+      animateElement(job,packet,[{transform:'scale(.75)',opacity:1},{transform:`scale(${(cue?.scalePermille||1300)/1000})`,opacity:1,offset:.42},{transform:'scale(1)',opacity:1}],{duration:motion.pop,easing:'cubic-bezier(.2,.9,.35,1)',fill:'forwards'});
+      rewardFeedback(job,cue);
+      for(let n=0;n<(cue?.rings||1);n++){
+        const ring=add('score-burst-ring',start);
+        animateElement(job,ring,[{transform:`scale(${.3+n*.15})`,opacity:.95},{transform:`scale(${1.65+n*.4})`,opacity:0}],{duration:motion.pop+motion.hold,easing:'ease-out',fill:'forwards'});
+      }
+      const sparkCount=cue?.sparks??10;
+      for(let i=0;i<sparkCount;i++){
+        const spark=add('score-burst-spark',start),angle=i*Math.PI*2/sparkCount,distance=42+(i%3)*12+(cue?.tier||0)*4;
         animateElement(job,spark,[{transform:'translate(0px,0px) scale(1)',opacity:1},{transform:`translate(${Math.cos(angle)*distance}px,${Math.sin(angle)*distance}px) scale(.15) rotate(100deg)`,opacity:0}],{duration:motion.pop+motion.hold,easing:'ease-out',fill:'forwards'});
       }
       await pause(motion.pop+motion.hold,job);if(!current())return;
       packet.dataset.phase='fly';chain.style.opacity='0';const dx=end.x-start.x,dy=end.y-start.y;
       animateElement(job,packet,[{transform:'translate(0px,0px) scale(1)',opacity:1},{transform:`translate(${dx*.38-14}px,${dy*.6-16}px) scale(.8)`,opacity:1,offset:.6},{transform:`translate(${dx}px,${dy}px) scale(.18)`,opacity:0}],{duration:motion.flight,easing:'cubic-bezier(.3,.1,.5,1)',fill:'forwards'});
       await pause(motion.flight,job);if(!current())return;
-      packet.dataset.phase='arrived';packet.dataset.arrived='true';hud?.classList.add('score-arrival');
+      packet.dataset.phase='arrived';packet.dataset.arrived='true';hud?.classList.add('score-arrival');rewardMilestones(job,wave,'score');
       const receipt=$('score-receipt');if(receipt)receipt.textContent=`+${gain}`;
       animateElement(job,hud,[{transform:'scale(1)'},{transform:'scale(1.065)',offset:.4},{transform:'scale(1)'}],{duration:motion.arrival,easing:'ease-out'});
       await countScore(job,destination);
@@ -406,13 +476,14 @@
   const canAnimate=()=>!document.hidden&&!reduceMotion()&&typeof window.Element.prototype.animate==='function';
   function cancelPresentation() {
     const job=presentation;presentation=null;busy=false;
-    if(job){clearTimeout(job.watchdog);job.controller.abort();for(const a of job.animations)try{a.cancel?.();}catch(_){}clearScoreReceipt();}
+    if(job){clearTimeout(job.watchdog);job.controller.abort();for(const a of job.animations)try{a.cancel?.();}catch(_){}for(const node of job.rewardNodes||[])node.classList.remove('reward-goal-hit');clearScoreReceipt();}
   }
   function finishPresentation(job) {
     if(!job||presentation!==job||job.token!==epoch)return;
     cancelPresentation();
     const result=job.result;
     comboText=`+${result.scoreGain} puan${result.frames.length>1?` · ${result.frames.length} zincir`:''}`;
+    const deferred=job.rewardPlan?.headline;if(deferred&&!deferred.completion&&!job.rewardHeadlineUsed){comboText=rewardLabel(deferred)+' · '+comboText;job.rewardHeadlineUsed=true;}
     if(result.reshuffled)comboText+=' · Karıştırıldı';
     try{renderLevels();render();persist();}
     catch(_){persist();}
@@ -486,9 +557,10 @@
       comboText=`${i?`${i+1}. zincir · `:''}${scoreEquation(f)} puan${extra?` · Devamı +${extra}`:''}`;
       render({values:f.before,layers:prior?prior.layers:before.layers,score,movesLeft:engine.movesLeft},{message:i?'Bir hamle, yeni bir zincir!':'Üçlü tamam. Şimdi zemine bak.'});
       const task=flyScore(job,f,{wave:i+1,gain,destination:score+gain,extra,totalWaves:frames.length}).catch(()=>{});job.scoreTasks.push(task);
-      matchEffects(job,f);tone(Math.min(5,i+1));await pause(motion.matchPause,job);
+      matchEffects(job,f);if(!job.rewardPlan||typeof audio?.reward!=='function')tone(Math.min(5,i+1));await pause(motion.matchPause,job);
       if(job.controller.signal.aborted||presentation!==job)return;
       render({values:f.after,layers:f.layers,score:score+f.scoreGain,movesLeft:engine.movesLeft},{falling:f.falls.map(x=>x.to),message:'Taşlar aşağı kayıyor; zemin yerinde kalıyor.'});
+      rewardMilestones(job,i+1,'ground');
       const duration=fallingGems(job,f);await Promise.all([pause(duration+10,job),task]);
     }
     await Promise.all(job.scoreTasks);
@@ -516,11 +588,15 @@
       toast(engine.adjacent(a,b)?'Üçlü oluşmadı. Hamlen duruyor.':'Sadece komşu iki taşı değiştirebilirsin.');
       return;
     }
-    const job={token:++epoch,result,controller:new AbortController(),animations:[],watchdog:null,scoreDisplay:before.score,scoreTasks:[]};
+    const rewardPlan=planRewards(checkpoint,result);
+    const job={token:++epoch,result,controller:new AbortController(),animations:[],watchdog:null,scoreDisplay:before.score,scoreTasks:[],rewardPlan,rewardCueIds:new Set(),rewardMilestoneIds:new Set(),rewardNodes:new Set(),rewardHeadlineUsed:false};
     presentation=job;busy=true;selected=null;hinted=null;comboText='';
     try{
       markCompleted(true);persist();renderLevels();
-      if(saved.preferences.haptics&&typeof navigator.vibrate==='function')try{navigator.vibrate(12);}catch(_){}
+      if(!rewardPlan&&saved.preferences.haptics&&typeof navigator.vibrate==='function')try{navigator.vibrate(12);}catch(_){}
+      if(rewardPlan&&!canAnimate()&&!rewardPlan.headline?.completion){
+        const cue=rewardPlan.headline||rewardPlan.waves.reduce((best,next)=>!best||next.tier>best.tier?next:best,null);rewardFeedback(job,cue);
+      }
       job.watchdog=setTimeout(()=>finishPresentation(job),motion.budget);
       await presentSwap(job,a,b,before);
     }catch(_){/* Presentation failure must never lock committed game state. */}
@@ -541,12 +617,18 @@
     const final=active===levels.length-1,learning=isTutorial();
     $('win-eyebrow').textContent=final?'YOLCULUK TAMAMLANDI':`${stageLabel(active)} TAMAMLANDI`;
     $('win-title').textContent=learning?(active===0?'İlk adım tamam!':'Artık hazırsın!'):final?'Usta işi!':'Harika eşleşme!';
+    if(completionReward&&!learning)$('win-title').textContent=rewardLabel(completionReward);
     $('win-description').textContent=learning?(active===0?'Komşuları değiştirdin, üç eksende eşleştirdin. Şimdi hedefleri birlikte tanıyalım.':'Puan ve yeşil zemini birlikte tamamladın. Sırada on gerçek bulmaca var.'):final?'On bulmacanın tamamını yeşerttin. Her eşleşme bir adım oldu.':`${engine.movesLeft} hamle kala iki hedefi de tamamladın.`;
     $('win-total').textContent=engine.score;$('win-moves').textContent=engine.movesLeft;
     const nextText=final?'Yolculuğun başına dön':active===0?'İkinci öğreticiye geç':active===1?'İlk bölüme başla':`Bölüm ${pad(active-tutorialCount+2)} ile devam et`;
     $('next').innerHTML=`${nextText} ${icon('arrow')}`;
-    $('confetti').innerHTML=reduceMotion()?'':Array.from({length:18},(_,i)=>`<i class="confetti-piece" style="left:${i*37%100}%;background:${['#9bbe73','#c4e89b','#b8a5cf','#dbdfb9'][i%4]};--drift:${(i%2?1:-1)*(20+i*2)}px;animation-delay:${i%7*.06}s"></i>`).join('');
-    tone(0,true);openModal('win-dialog');
+    $('confetti').innerHTML=reduceMotion()?'':Array.from({length:completionReward?12+completionReward.tier*4:18},(_,i)=>`<i class="confetti-piece" style="left:${i*37%100}%;background:${['#9bbe73','#c4e89b','#b8a5cf','#dbdfb9'][i%4]};--drift:${(i%2?1:-1)*(20+i*2)}px;animation-delay:${i%7*.06}s"></i>`).join('');
+    if(completionReward&&!completionRewardPlayed){
+      completionRewardPlayed=true;
+      if(saved.sound){if(typeof audio?.reward==='function')try{audio.reward(completionReward);}catch(_){}else tone(0,true);}
+      if(saved.preferences.haptics&&typeof navigator.vibrate==='function'&&completionReward.hapticMs>0)try{navigator.vibrate(Math.min(60,completionReward.hapticMs));}catch(_){}
+    }else if(!completionReward)tone(0,true);
+    openModal('win-dialog');
   }
   function showLoss() {
     $('lose-title').textContent='Bir plan daha?';
@@ -571,7 +653,7 @@
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=12');
+            job.worker=new Worker('./hint-worker.js?v=13');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:levels[active],snapshot:engine.snapshot()});

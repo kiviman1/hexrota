@@ -108,3 +108,12 @@ Oyun motoru sonucu önceden hesaplayıp kaydeder. Hareketli rakamlar yalnızca b
 
 
 Hareket süreleri `app.js` içindeki `motion` ayarlarında birlikte tanımlanır. Takas 300 ms, taş düşüşü 380 ms (sütun gecikmesi en çok 70 ms), rakamların toplanması 240–420 ms sürer. Toplamın büyümesi ve ekranda beklemesi 340 ms, hedefe uçuşu 380 ms'dir. Tek dalga yaklaşık 1,6 saniyede, iki dalga yaklaşık 2,9 saniyede tamamlanır; ikinci dalga öncekinin puanı göstergeye ulaştıktan sonra başlar. Atla ve azaltılmış hareket seçenekleri beklemeden gerçek sonuca geçer.
+
+
+## Unity ile ortak ödül yöneticisi
+
+Uzun çizgi, gerçek zincir, kesişen eksenler, yeni yeşil alan, çift zemin ve hedef tamamlamaları dört geri bildirim seviyesine çevrilir. Hamlede tek ana başlık seçilir; en büyük efektlerin tekrar aralığı vardır. Mevcut puanlar, bölüm dengesi ve onaylanan animasyon süreleri korunur.
+
+Kurallar `dist/reward-rules.json` içinde, arayüzden bağımsız JavaScript motoru `dist/rewards.js` içindedir. Aynı modelin derlenerek doğrulanan C# 7.3 karşılığı `unity/Rewards/` altındadır. Ayrıntılı davranış ve aktarım adımları: [Ödül yöneticisi](docs/REWARD_DIRECTOR.md).
+
+`npm test` JavaScript, uygulama ve ortak veri kontrollerini çalıştırır. `npm run test:unity-rewards` .NET 8 SDK ile C# / JavaScript sonuçlarını karşılaştırır; `DOTNET_PATH` ile SDK yolu verilebilir. Unity Editör veya iOS paket derlemesi bu aşamada yapılmaz.

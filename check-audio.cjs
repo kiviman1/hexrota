@@ -95,16 +95,53 @@ function harness(options={}){
   effects.configure({sfx:false});effects.move(4);effects.victory();effects.click();assert.equal(fx.contexts[0].oscillators.length,enabledCount,'muted effects create no nodes');
   effects.stop();assert.equal(fx.living().length,0,'stop also releases effects');effects.dispose();
 
+  // Reward tiers change the phrase and pitch, while retaining the same gain budget.
+  const rewards=harness(),rewardAudio=new rewards.HexAudio({sfx:true,music:false,volume:.35});
+  rewardAudio.setActive(true);rewardAudio.reward({tier:3,pitchStep:7,completion:true});
+  assert.equal(rewards.contexts.length,0,'rewards cannot create or unlock an audio context');
+  await rewardAudio.unlock();const rewardContext=rewards.contexts[0];
+  const play=cue=>{const start=rewardContext.oscillators.length;rewardAudio.reward(cue);return rewardContext.oscillators.slice(start);};
+  const peaks=notes=>notes.map(note=>note.connections[0].gain.events.find(event=>event.kind==='linear').value);
+  const frequencies=notes=>notes.map(note=>note.frequency.value);
+  const totals=[];
+  for(let tier=0;tier<=3;tier++){
+    const notes=play({tier,pitchStep:tier*2});
+    assert.equal(notes.length,tier+1,'each tier has a distinct one-to-four-note phrase');
+    assert(notes.every((note,index)=>Number.isFinite(note.frequency.value)&&note.frequency.value>=100&&note.frequency.value<=2000&&(!index||(note.frequency.value>notes[index-1].frequency.value&&note.startTime>notes[index-1].startTime))),'reward notes rise with bounded pitch and ordered scheduling');
+    assert(notes.every(note=>note.stopTime-note.startTime>=.2&&note.stopTime-note.startTime<.5),'reward decays are brief and bounded');
+    totals.push(peaks(notes).reduce((sum,value)=>sum+value,0));
+    assert.equal(rewards.timers.size,0,'reward scheduling uses the audio clock without JavaScript timers');
+  }
+  assert(totals.every(total=>Math.abs(total-totals[0])<1e-12),'stronger rewards do not raise the summed voice gain');
+  assert.equal(rewards.master().gain.value,.35,'all tiers retain the configured master volume');
+  const ordinary=play({tier:1,pitchStep:0}),octave=play({tier:1,pitchStep:12});
+  frequencies(ordinary).forEach((frequency,index)=>assert(Math.abs(frequencies(octave)[index]/frequency-2)<1e-10,'pitchStep transposes every note consistently'));
+  const regularFinish=frequencies(play({tier:3,completion:true})),lastMoveFinish=frequencies(play({tier:3,reason:'last_move_win',completion:true}));
+  assert.notDeepEqual(regularFinish,lastMoveFinish,'last-move wins receive their own completion phrase');
+  for(const cue of [undefined,null,{},'invalid',{tier:NaN,pitchStep:Infinity},{tier:99,pitchStep:999},{tier:-99,pitchStep:-999}]){
+    const notes=play(cue);assert(notes.length>=1&&notes.length<=4,'malformed cues retain bounded phrase size');
+    assert(notes.every(note=>Number.isFinite(note.frequency.value)&&note.frequency.value>=100&&note.frequency.value<=2000),'malformed pitch values never reach AudioParams');
+  }
+  for(let n=0;n<30;n++)play({tier:3,pitchStep:7});
+  assert(rewards.living().length<=24,'rapid rewards retain the global voice limit');
+  rewards.visibility(true);const hiddenCount=rewardContext.oscillators.length;
+  rewardAudio.reward({tier:3});assert.equal(rewardContext.oscillators.length,hiddenCount);assert.equal(rewards.living().length,0,'backgrounding stops scheduled reward notes');
+  rewards.visibility(false);rewardAudio.setActive(false);rewardAudio.reward({tier:3});assert.equal(rewardContext.oscillators.length,hiddenCount,'inactive rewards stay silent');
+  rewardAudio.setActive(true);rewardAudio.configure({sfx:false});rewardAudio.reward({tier:3});assert.equal(rewardContext.oscillators.length,hiddenCount,'SFX preference gates every reward tier');
+  rewardAudio.configure({sfx:true});play({tier:2});assert(rewards.living().length>0);
+  rewardAudio.stop();assert.equal(rewards.living().length,0,'stop clears future reward notes');
+  rewardAudio.dispose();rewardAudio.reward({tier:3});assert.equal(rewardContext.closeCount,1);assert.equal(rewards.living().length,0,'disposed rewards cannot reactivate');
+
   // Browser restrictions and partially implemented APIs are normal failure paths.
   for(const settings of [{available:false},{failures:{ctor:true}},{failures:{gain:true}},{failures:{resume:true}}]){
     const failed=harness(settings),silent=new failed.HexAudio({music:true,sfx:true,volume:NaN});
     silent.setActive(true);assert.equal(await silent.unlock(),false,'unavailable audio resolves false');
-    silent.configure({music:false,sfx:false,volume:Infinity});silent.move(2);silent.victory();silent.click();silent.stop();silent.dispose();
+    silent.reward({tier:3});silent.configure({music:false,sfx:false,volume:Infinity});silent.move(2);silent.victory();silent.click();silent.reward(null);silent.stop();silent.dispose();
     assert.equal(failed.timers.size,0,'failed audio leaves no scheduled loop');
   }
   const denied=harness({failures:{resume:true}}),retry=new denied.HexAudio({music:true});retry.setActive(true);
   assert.equal(await retry.unlock(),false);denied.failures.resume=false;assert.equal(await retry.unlock(),true,'later gesture can recover from denied autoplay');
   assert.equal(denied.contexts.length,1,'a retry reuses a usable context');assert.equal(denied.timers.size,1);retry.dispose();
   await Promise.resolve();await Promise.resolve();assert.equal(unhandled.length,0,unhandled.join('\n'));
-  console.log('Audio checks passed: gesture gating, real tones, singleton music, settings/volume, visibility/pause, failure recovery and disposal.');
+  console.log('Audio checks passed: gesture gating, tiered reward phrases, bounded pitch/gain/voices, singleton music, settings, visibility/pause, failure recovery and disposal.');
 })().catch(error=>{console.error(error);process.exitCode=1;});
