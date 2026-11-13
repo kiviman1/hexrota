@@ -1,10 +1,10 @@
 {
   "name": "hexrota",
-  "version": "3.1.0",
+  "version": "4.0.0",
   "private": true,
-  "description": "Halka ve Filiz taşlarıyla, hamle sınırı olan 10 bölümlük altıgen eşleştirme bulmacası.",
+  "description": "Kontrollü yenileme ve doğrulanmış bölümlerle sade altıgen üçlü eşleştirme bulmacası.",
   "scripts": {
-    "test": "node check-levels.mjs && node check-engine.mjs && node check-ui.cjs && node check-input.cjs && node check-sandbox.cjs"
+    "test": "node check-levels.mjs && node check-engine.mjs && node check-ui.cjs && node check-input.cjs"
   },
   "devDependencies": {
     "jsdom": "31.0.1"

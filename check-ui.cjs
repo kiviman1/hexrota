@@ -1,8 +1,8 @@
-/* Full DOM gameplay, special-stone and asynchronous hint regressions. */
+/* Classic match-three DOM flow, persistence migration and asynchronous hints. */
 const {JSDOM,VirtualConsole}=require('jsdom');
 const fs=require('node:fs');
 const assert=require('node:assert/strict');
-const root=__dirname+'/dist/',key='hexrota-match-v3';
+const root=__dirname+'/dist/',key='hexrota-match-v4';
 const errors=[],unhandled=[],mounted=[];
 process.on('unhandledRejection',error=>unhandled.push(error?.message||String(error)));
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -18,6 +18,7 @@ function mount(state,legacy,options={}){
  if(state)w.localStorage.setItem(key,JSON.stringify(state));
  if(legacy)w.localStorage.setItem('hexrota-v1',JSON.stringify(legacy));
  if(options.v2)w.localStorage.setItem('hexrota-match-v2',JSON.stringify(options.v2));
+ if(options.v3)w.localStorage.setItem('hexrota-match-v3',JSON.stringify(options.v3));
  if(options.Worker)w.Worker=options.Worker;
  for(const file of ['levels.js','engine.js','app.js'])w.eval(fs.readFileSync(root+file,'utf8'));
  return dom;
@@ -28,13 +29,17 @@ function select(w,index){click(w,`#board [data-index="${index}"]`);}
 async function swap(w,pair){select(w,pair[0]);select(w,pair[1]);await settle();}
 function numbers(w){return [...w.document.querySelectorAll('.hex-number')].map(node=>+node.textContent);}
 function readSave(w){return JSON.parse(w.localStorage.getItem(key));}
-function domPowers(w){return [...w.document.querySelectorAll('#board [data-index]')].map(node=>node.classList.contains('power-ring')?'ring':node.classList.contains('power-sprout')?'sprout':null);}
+function assertClassicShell(w){
+ assert.equal(w.document.querySelector('.special-guide,.special-preview,#power-tip,.intro-test-link,.power-symbol,.power-ring,.power-sprout'),null,'classic shell has no removed features');
+}
 function assertBoard(w,game,message){
  const d=w.document;
  assert.equal(+d.getElementById('sum').textContent,game.score,message+' score');
  assert.equal(+d.getElementById('moves-left').textContent,game.movesLeft,message+' moves');
  assert.deepEqual(numbers(w),Array.from(game.values),message+' values');
- assert.deepEqual(domPowers(w),Array.from(game.specials),message+' special positions');
+ assertClassicShell(w);
+ assert.equal(d.querySelectorAll('.floor-green').length,game.covered,message+' covered count');
+ assert.equal(d.getElementById('coverage').textContent,`${game.covered} / ${game.total}`,message+' coverage label');
  for(let i=0;i<game.total;i++){
   const cell=tile(w,i),left=game.layers[i],initial=game.level.cells[i].layers||1;
   assert.equal(cell.classList.contains('floor-green'),left===0,message+' green cell '+i);
@@ -44,7 +49,10 @@ function assertBoard(w,game,message){
  const active=readSave(w).current,snapshot=readSave(w).boards[active];
  assert.deepEqual(snapshot.values,Array.from(game.values),message+' saved values');
  assert.deepEqual(snapshot.layers,Array.from(game.layers),message+' saved layers');
- assert.deepEqual(snapshot.specials,Array.from(game.specials),message+' saved specials');
+ assert.equal(snapshot.score,game.score,message+' saved score');
+ assert.equal(snapshot.movesLeft,game.movesLeft,message+' saved remaining moves');
+ assert.equal(snapshot.turn,game.turn,message+' saved turn');
+ assert.equal(snapshot.version,4,'current checkpoint format');
 }
 function fakeWorkers(){
  const instances=[];
@@ -105,9 +113,13 @@ function assertLegalHint(w){
  click(rw,'#continue');assert(rd.getElementById('win-dialog').open);click(rw,'#review');
  // A legal but unplanned sequence can exhaust its finite budget.
  const level=w.HEX_LEVELS[9];let losing;
- for(let policy=0;policy<12&&!losing;policy++){
+ for(let policy=0;policy<20&&!losing;policy++){
   const game=new w.HexMatch(level),route=[];
-  while(game.status==='playing'){const moves=game.legalMoves(),p=moves[(game.turn*7+policy)%moves.length];route.push(p);game.swap(...p);}
+  while(game.status==='playing'){
+   assert(game.turn<=level.moves,'blind policy stays within its declared budget');
+   const moves=game.legalMoves();assert(moves.length,'playing state has a legal continuation');
+   const p=moves[(game.turn*7+policy)%moves.length];route.push(p);assert(game.swap(...p).ok);
+  }
   if(game.status==='lost')losing=route;
  }
  assert(losing,'last level has a failing blind strategy');click(rw,'#reset');
@@ -115,35 +127,23 @@ function assertLegalHint(w){
  await until(()=>rd.getElementById('lose-dialog').open,'loss dialog appears after the final turn');
  assert.equal(+rd.getElementById('moves-left').textContent,0);
  click(rw,'#retry');assert(!rd.getElementById('lose-dialog').open);assertBoard(rw,new rw.HexMatch(rw.HEX_LEVELS[9]),'loss retry');
- // Exact restore includes the special-stone vector; tampered checkpoints restart safely.
+ // Exact classic checkpoint restore; tampered checkpoints restart safely.
  const state=readSave(rw),game=new w.HexMatch(level);game.swap(...level.solution[0]);state.boards[9]=game.snapshot();
  const middle=mount(state);assertBoard(middle.window,game,'mid-turn restore');
  state.boards[9].score+=1;const corrupt=mount(state);assert.equal(+corrupt.window.document.getElementById('sum').textContent,0);
- // V2 match progress migrates, while changed boards are discarded and not replayed.
- const v2={current:5,done:[0,1,2,3,4],sound:true,boards:{0:{version:2,score:999},5:{version:2,score:999}}};
- const migrated=mount(null,null,{v2}),mw=migrated.window,ms=readSave(mw);
- assert.deepEqual(ms.done,v2.done);assert.equal(ms.current,5);assert.equal(ms.sound,true);
- assert.deepEqual(Object.keys(ms.boards),['5'],'legacy board checkpoints are discarded');
- assertBoard(mw,new mw.HexMatch(mw.HEX_LEVELS[5]),'v2 fresh current board');
- assert.equal(mw.localStorage.getItem('hexrota-match-v2'),JSON.stringify(v2),'legacy data itself is left intact');
- // Tutorial specials are visible, named accessibly, and preview their footprint.
- for(const [index,type,label]of[[2,'ring','Halka'],[5,'sprout','Filiz']]){
-  const fixture=mount({current:index,done:Array.from({length:index},(_,i)=>i),boards:{},sound:false}),fw=fixture.window,fd=fw.document;
-  const source=fw.HEX_LEVELS[index],shadow=new fw.HexMatch(source),power=shadow.specials.indexOf(type);
-  assert(power>=0,`level ${index+1} provides ${type}`);
-  assert(tile(fw,power).querySelector(`.power-symbol.${type}`),'special glyph visible');
-  assert(tile(fw,power).getAttribute('aria-label').includes(label+' taşı'),'special has an accessible name');
-  select(fw,power);
-  const preview=[...fd.querySelectorAll('.power-target')].map(node=>+node.dataset.index).sort((a,b)=>a-b);
-  assert.deepEqual(preview,Array.from(shadow.previewPower(power)).sort((a,b)=>a-b),'selected power previews engine footprint');
-  assert.equal(fd.getElementById('special-preview').hidden,false);
-  assert(fd.getElementById('special-preview').textContent.includes(label),'effect explanation visible');
-  const neighbor=shadow.neighbors[power][0],result=shadow.swap(power,neighbor);assert(result.ok,'special activates without requiring a number match');
-  assert.equal(shadow.movesLeft,source.moves-1,'power activation costs exactly one move');
-  assert(result.frames.some(frame=>(frame.activated||[]).some(effect=>effect.type===type)),'power effect actually fired');
-  select(fw,neighbor);await settle();assertBoard(fw,shadow,type+' activation');
-  assert(fd.getElementById('last-combo').textContent.includes('Özel etki'),'activation feedback shown');
+ // Earlier match progress migrates, while changed boards are discarded.
+ for(const version of [2,3]){
+  const legacy={current:5,done:[0,1,2,3,4],sound:true,boards:{0:{version,score:999},5:{version,score:999}}};
+  const migrated=mount(null,null,{['v'+version]:legacy}),mw=migrated.window,ms=readSave(mw);
+  assert.deepEqual(ms.done,legacy.done);assert.equal(ms.current,5);assert.equal(ms.sound,true);
+  assert.deepEqual(Object.keys(ms.boards),['5'],'legacy checkpoints are discarded');
+  assertBoard(mw,new mw.HexMatch(mw.HEX_LEVELS[5]),'v'+version+' fresh current board');
+  assert.equal(mw.localStorage.getItem('hexrota-match-v'+version),JSON.stringify(legacy),'legacy data itself stays intact');
  }
+ const v2={current:1,done:[0],sound:false,boards:{}},v3={current:4,done:[0,1,2,3],sound:true,boards:{}};
+ const preferred=mount(null,null,{v2,v3});
+ assert.equal(readSave(preferred.window).current,4,'latest previous match version wins migration');
+ assert.deepEqual(readSave(preferred.window).done,v3.done);
  // Worker responses belong to one board revision and are ignored after a turn/reset.
  for(const cancel of ['turn','restart']){
   const {WorkerStub,instances}=fakeWorkers(),fixture=mount(null,null,{Worker:WorkerStub}),fw=fixture.window,fd=fw.document;
@@ -165,5 +165,5 @@ function assertLegalHint(w){
  let prevented=false;workers.instances[0].onerror({preventDefault(){prevented=true;}});await settle();
  assert(prevented);assert(workers.instances[0].terminated);assertLegalHint(failed.window);
  assert.equal(errors.length,0,errors.join('\n'));assert.equal(unhandled.length,0,unhandled.join('\n'));
- console.log('UI DOM checks passed: 10 solutions, tap/drag, specials/previews, exact board state, win/loss/retry, v2 migration, checkpoint validation and stale/failing hint workers.');
+ console.log('UI DOM checks passed: 10 classic solutions, tap/drag, exact board and floor state, win/loss/retry, v2/v3 migration, removed-feature absence, checkpoint validation and stale/failing hint workers.');
 })().catch(error=>{console.error(error);process.exitCode=1;}).finally(()=>{for(const dom of mounted)dom.window.close();});

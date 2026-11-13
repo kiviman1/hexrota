@@ -2,7 +2,7 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const levels = window.HEX_LEVELS;
-  const key = 'hexrota-match-v3';
+  const key = 'hexrota-match-v4';
   let migrated=false;
   const pad = n => String(n).padStart(2, '0');
   const icon = name => `<svg class="icon" aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -10,7 +10,7 @@
   let saved = {current:0,done:[],boards:{},sound:false};
   try {
     let raw = JSON.parse(localStorage.getItem(key));
-    if(!raw){const previous=JSON.parse(localStorage.getItem('hexrota-match-v2'));if(previous){raw={...previous,boards:{}};migrated=true;}}
+    if(!raw){const previous=JSON.parse(localStorage.getItem('hexrota-match-v3'))||JSON.parse(localStorage.getItem('hexrota-match-v2'));if(previous){raw={...previous,boards:{}};migrated=true;}}
     if (raw && typeof raw === 'object') {
       saved.done = Array.isArray(raw.done) ? [...new Set(raw.done.filter(i => Number.isInteger(i) && i>=0 && i<levels.length))] : [];
       saved.current = Number.isInteger(raw.current) && raw.current>=0 && raw.current<levels.length ? raw.current : 0;
@@ -103,9 +103,6 @@
     $('difficulty').textContent=difficulty[active];
     $('target').textContent=levels[active].target;
     $('level-note').textContent=levels[active].subtitle;
-    const powers=levels[active].powers||[];
-    $('power-tip').textContent=powers.includes('sprout')?'Filiz: beşli veya kesişen eşleşmeden doğar. Eksik zemine doğru büyür.':powers.includes('ring')?'Halka: aynı dört sayıdan doğar. Komşusuyla değiştirince çevresini temizler.':'';
-    $('power-tip').hidden=!powers.length;
     markCompleted();renderLevels();render();persist();
   }
   function geometry() {
@@ -119,27 +116,23 @@
     const height=Math.max(300,Math.max(...ys)-Math.min(...ys)+radius*Math.sqrt(3)+26);
     const data={positions,radius,width,height};geometryCache.set(active,data);return data;
   }
-  function boardMarkup(state,matching=[],falling=[],effects=[]) {
+  function boardMarkup(state,matching=[],falling=[]) {
     const {positions,radius,width,height}=geometry();
     $('board').setAttribute('viewBox',`${-width/2} ${-height/2} ${width} ${height}`);
     const poly=r=>Array.from({length:6},(_,i)=>`${(r*Math.cos(i*Math.PI/3)).toFixed(3)},${(r*Math.sin(i*Math.PI/3)).toFixed(3)}`).join(' ');
     const outer=poly(radius),inner=poly(radius*.78),matched=new Set(matching),dropped=new Set(falling);
     const interactive=!busy&&engine.status==='playing';
-    const targets=new Set(selected!==null?engine.previewPower?.(selected)||[]:[]),powerHits=new Set(effects.flatMap(e=>e.affected)),powerActive=new Set(effects.map(e=>e.index));
     return `<defs><filter id="tile-shadow" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="0" dy="2" stdDeviation="1" flood-color="#3d5031" flood-opacity=".06"/></filter></defs>${levels[active].cells.map((c,i)=>{
-      const left=state.layers[i],green=left===0,partial=left>0&&left<(c.layers||1),power=(state.specials||engine.specials||[])[i];
-      const classes=['hex-tile',`value-${state.values[i]}`,green?'floor-green':partial?'floor-partial':'floor-untouched',c.layers===2?'layered':'',selected===i?'selected':'',hinted?.includes(i)?'hinted':'',selected!==null&&engine.adjacent(selected,i)?'neighbor':'',matched.has(i)?'matching':'',dropped.has(i)?'falling':'',power?`power-${power}`:'',targets.has(i)?'power-target':'',powerHits.has(i)?'power-hit':'',powerActive.has(i)?'power-active':''].filter(Boolean).join(' ');
+      const left=state.layers[i],green=left===0,partial=left>0&&left<(c.layers||1);
+      const classes=['hex-tile',`value-${state.values[i]}`,green?'floor-green':partial?'floor-partial':'floor-untouched',c.layers===2?'layered':'',selected===i?'selected':'',hinted?.includes(i)?'hinted':'',selected!==null&&engine.adjacent(selected,i)?'neighbor':'',matched.has(i)?'matching':'',dropped.has(i)?'falling':''].filter(Boolean).join(' ');
       const p=positions[i],ground=green?'zemin yeşil':`${left} eşleşme gerekiyor`;
-      return `<g transform="translate(${p.x},${p.y})" class="${classes}" data-index="${i}" role="button" tabindex="${i===focusIndex?0:-1}" aria-label="${state.values[i]} sayısı${power?`, ${power==='ring'?'Halka':'Filiz'} taşı`:''}, ${ground}${selected===i?', seçili':''}${hinted?.includes(i)?', ipucu':''}" aria-pressed="${selected===i}" aria-disabled="${!interactive}"><polygon class="floor-shape" points="${outer}"/><g class="gem"><polygon class="gem-shape" points="${inner}"/><text class="hex-number" text-anchor="middle" x="0" y="${power?-5:0}">${state.values[i]}</text>${power?powerGlyph(power):''}</g>${green?'<path class="floor-mark" d="m-4 29 3 3 6-7"/>':c.layers===2?`<text class="layer-count" text-anchor="middle" x="0" y="31">${left}</text>`:''}</g>`;
-    }).join('')}${powerOverlay(effects,positions)}`;
-  }
-  function powerOverlay(effects,positions){
-    return `<g class="power-effects" aria-hidden="true">${effects.map(e=>{const p=positions[e.index],points=e.affected.map(i=>`${positions[i].x},${positions[i].y}`).join(' ');return e.type==='ring'?`<g class="effect-ring"><circle cx="${p.x}" cy="${p.y}" r="68"/>${e.affected.filter(i=>i!==e.index).map(i=>`<path d="M${p.x} ${p.y}L${positions[i].x} ${positions[i].y}"/>`).join('')}</g>`:`<g class="effect-sprout"><polyline points="${points}"/>${e.affected.map(i=>`<circle cx="${positions[i].x}" cy="${positions[i].y}" r="5"/>`).join('')}</g>`;}).join('')}</g>`;
+      return `<g transform="translate(${p.x},${p.y})" class="${classes}" data-index="${i}" role="button" tabindex="${i===focusIndex?0:-1}" aria-label="${state.values[i]} sayısı, ${ground}${selected===i?', seçili':''}${hinted?.includes(i)?', ipucu':''}" aria-pressed="${selected===i}" aria-disabled="${!interactive}"><polygon class="floor-shape" points="${outer}"/><g class="gem"><polygon class="gem-shape" points="${inner}"/><text class="hex-number" text-anchor="middle" x="0" y="0">${state.values[i]}</text></g>${green?'<path class="floor-mark" d="m-4 29 3 3 6-7"/>':c.layers===2?`<text class="layer-count" text-anchor="middle" x="0" y="31">${left}</text>`:''}</g>`;
+    }).join('')}`;
   }
   function render(state=null,options={}) {
-    const display=state||{values:engine.values,layers:engine.layers,specials:engine.specials,score:engine.score,movesLeft:engine.movesLeft};
+    const display=state||{values:engine.values,layers:engine.layers,score:engine.score,movesLeft:engine.movesLeft};
     const focused=document.activeElement?.closest?.('[data-index]')?.dataset.index;
-    $('board').innerHTML=boardMarkup(display,options.matching||[],options.falling||[],options.effects||[]);
+    $('board').innerHTML=boardMarkup(display,options.matching||[],options.falling||[]);
     if(focused!==undefined)$('board').querySelector(`[data-index="${focused}"]`)?.focus?.({preventScroll:true});
     const covered=display.layers.filter(n=>n===0).length,total=levels[active].cells.length;
     $('sum').textContent=display.score;
@@ -157,9 +150,6 @@
     $('board').setAttribute('aria-busy',String(busy));
     $('board-stage').classList.toggle('busy',busy);
     $('last-combo').textContent=comboText;
-    const power=selected!==null?(engine.specials||[])[selected]:null;
-    $('special-preview').hidden=!power;
-    $('special-preview').textContent=power==='ring'?'Halka · Takastan sonraki konumunda merkezi ve altı komşusu temizlenir.':power==='sprout'?'Filiz · Takastan sonraki konumundan eksik zemine doğru en fazla üç adım büyür.':'';
     const status=$('board-status');status.className='board-status';
     let text;
     if(options.message)text=options.message;
@@ -170,9 +160,6 @@
     else text='Bir taş seç; komşusuyla değiştirip üçlüyü oluştur.';
     $('status-text').textContent=text;
   }
-  function powerGlyph(type) {
-    return type==='ring'?'<g class="power-symbol ring" transform="translate(0 17)" aria-hidden="true"><circle r="7"/><circle r="2"/><path d="M0-11v2m0 18v2M-9.5-5.5l1.8 1M7.7 4.5l1.8 1M-9.5 5.5l1.8-1M7.7-4.5l1.8-1"/></g>':'<g class="power-symbol sprout" transform="translate(0 17)" aria-hidden="true"><path d="M0 9V0m0 3C-9 3-10-4-10-4S-1-5 0 3Zm0-3C9 0 10-7 10-7S1-8 0 0Z"/></g>';
-  }
   const canAnimate=()=>!document.hidden&&!reduceMotion()&&typeof window.Element.prototype.animate==='function';
   function cancelPresentation() {
     const job=presentation;presentation=null;busy=false;
@@ -182,8 +169,7 @@
     if(!job||presentation!==job||job.token!==epoch)return;
     cancelPresentation();
     const result=job.result;
-    const powers=result.frames.flatMap(f=>f.activated||[]);
-    comboText=`${powers.length?'Özel etki · ':''}${result.frames.length>1?`${result.frames.length} zincir · `:''}+${result.scoreGain} puan${result.reshuffled?' · Karıştırıldı':''}`;
+    comboText=`${result.frames.length>1?`${result.frames.length} zincir · `:''}+${result.scoreGain} puan${result.reshuffled?' · Karıştırıldı':''}`;
     try{renderLevels();render();persist();}
     catch(_){persist();}
     finally{
@@ -213,18 +199,18 @@
     const frames=job.result.frames;
     // Show key waves; the engine has already resolved every wave exactly once.
     let indices=frames.map((_,i)=>i);
-    if(indices.length>4){const special=frames.findIndex((f,i)=>i>1&&(f.activated||[]).length);indices=[...new Set([0,1,special>1?special:2,frames.length-1])].sort((x,y)=>x-y);}
+    if(indices.length>4){indices=[0,1,2,frames.length-1].sort((x,y)=>x-y);}
     for(const i of indices){
       if(job.controller.signal.aborted||presentation!==job||!canAnimate())return;
       const f=frames[i],prior=i?frames[i-1]:null;
       const score=before.score+frames.slice(0,i).reduce((n,frame)=>n+frame.scoreGain,0);
-      const clearTime=(f.activated||[]).length?135:90;
+      const clearTime=90;
       $('board').style.setProperty('--clear-duration',`${clearTime}ms`);$('board').style.setProperty('--fall-duration','55ms');
       comboText=`${i?`Zincir ×${i+1} · `:''}+${f.scoreGain} puan`;
-      render({values:f.before,layers:prior?prior.layers:before.layers,specials:f.beforeSpecials||before.specials,score,movesLeft:engine.movesLeft},{matching:f.removed||f.matched,effects:f.activated||[],message:(f.activated||[]).length?'Özel taş çalışıyor; zemin açılıyor.':i?'Zincirleme eşleşme!':'Eşleşti! Zemin yeşilleniyor.'});
+      render({values:f.before,layers:prior?prior.layers:before.layers,score,movesLeft:engine.movesLeft},{matching:f.matched,message:i?'Zincirleme eşleşme!':'Eşleşti! Zemin yeşilleniyor.'});
       tone(Math.min(5,i+1));await pause(clearTime+5,job);
       if(job.controller.signal.aborted||presentation!==job)return;
-      render({values:f.after,layers:f.layers,specials:f.afterSpecials||engine.specials,score:score+f.scoreGain,movesLeft:engine.movesLeft},{falling:f.matched,message:'Yeni sayılar yerleşiyor…'});
+      render({values:f.after,layers:f.layers,score:score+f.scoreGain,movesLeft:engine.movesLeft},{falling:f.matched,message:'Yeni sayılar yerleşiyor…'});
       await pause(60,job);
     }
   }
@@ -232,7 +218,7 @@
     if(busy){finishPresentation(presentation);return;}
     if(engine.status!=='playing')return;
     cancelHint();
-    const checkpoint=engine.snapshot(),before={values:engine.values.slice(),layers:engine.layers.slice(),specials:(engine.specials||[]).slice(),score:engine.score,movesLeft:engine.movesLeft};
+    const checkpoint=engine.snapshot(),before={values:engine.values.slice(),layers:engine.layers.slice(),score:engine.score,movesLeft:engine.movesLeft};
     let result;
     try{result=engine.swap(a,b);}catch(_){
       try{engine=new window.HexMatch(levels[active],checkpoint);}catch(_){engine=new window.HexMatch(levels[active]);}
@@ -292,7 +278,7 @@
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=3');
+            job.worker=new Worker('./hint-worker.js?v=4');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:levels[active],snapshot:engine.snapshot()});
@@ -302,7 +288,7 @@
       }
       if(hintJob!==job||job.token!==epoch||job.game!==engine)return;
       if(!suggestion)suggestion=engine.hint({maxMs:12,maxDepth:1});
-      if(suggestion?.pair){selected=null;hinted=suggestion.pair;toast('Parlayan iki taşı değiştir. Özel taşları eksik zemine yakın kullan.');}
+      if(suggestion?.pair){selected=null;hinted=suggestion.pair;toast('Parlayan iki taşı değiştir. Eksik kalan zeminlere ulaşan eşleşmeleri gözet.');}
       else toast('Şu anda ipucu bulunamadı. Başka bir üçlü arayabilirsin.');
     }catch(_){toast('İpucu şu anda hazır değil. Oynamaya devam edebilirsin.');}
     finally{if(hintJob===job){cancelHint();render();}}
@@ -373,5 +359,5 @@
     if(e.key==='Escape'&&!busy){selected=null;hinted=null;render();}
   });
   renderSound();loadLevel(active);
-  if(migrated)toast('Tamamladığın bölümler korundu. Yeni taşlar için mevcut tahta yenilendi.');
+  if(migrated)toast('Tamamladığın bölümler korundu. Sade eşleştirme tahtası yenilendi.');
 })();

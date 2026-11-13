@@ -8,8 +8,10 @@ const plain=value=>JSON.parse(JSON.stringify(value));
 const cells=[];
 for(let q=-2;q<=2;q++)for(let r=-2;r<=2;r++)if(Math.max(Math.abs(q),Math.abs(r),Math.abs(q+r))<=2)cells.push({q,r,layers:2});
 const at=(q,r)=>cells.findIndex(c=>c.q===q&&c.r===r);
-const base={id:'fixture',cells,initial:cells.map((_,i)=>100+i),palette:Array.from({length:200},(_,i)=>i+1),seed:9731,moves:10,target:999999,solution:[]};
+const base={id:'fixture',rulesVersion:'classic-v4',cells,initial:cells.map((_,i)=>100+i),palette:Array.from({length:200},(_,i)=>i+1),seed:9731,moves:10,target:999999,solution:[]};
 const e=new HexMatch(base);
+assert.equal(e.snapshot().version,4,'Checkpoints use the strengthened classic rules version');
+assert.equal(Object.keys(e.snapshot()).sort().join(','),'history,layers,movesLeft,rngState,rulesVersion,score,turn,values,version','Checkpoint contains only classic state');
 // Each axial direction independently recognizes straight runs, never bent clusters.
 for(const [dq,dr] of [[1,0],[0,1],[1,-1]]){
  const values=base.initial.slice(),expected=[];
@@ -78,11 +80,65 @@ for(const frame of ar.frames){
  }
 }
 assert.equal(a.findMatches().length,0,'A resolved board is stable');
+// Independent coordinate oracle: only new three-cell windows involving the new slot count.
+const byCoord=new Map(cells.map((cell,i)=>[`${cell.q},${cell.r}`,i]));
+function localTriples(values,index){
+ let count=0;const cell=cells[index];
+ for(const [dq,dr]of[[1,0],[0,1],[1,-1]])for(let start=-2;start<=0;start++){
+  const ids=[0,1,2].map(offset=>byCoord.get(`${cell.q+(start+offset)*dq},${cell.r+(start+offset)*dr}`));
+  if(ids.some(i=>i===undefined))continue;
+  if(values[ids[0]]!=null&&ids.every(i=>values[i]===values[ids[0]]))count++;
+ }
+ return count;
+}
+let checkedRefills=0,foundNaturalChain=false;
+for(const frame of ar.frames){
+ assert.equal(frame.compacted.length,cells.length,'Gravity compaction is observable before refill');
+ const partial=plain(frame.compacted),seen=new Set();
+ assert.equal(frame.refill.length,frame.matched.length,'Every cleared tile receives one new number');
+ for(const refill of frame.refill){
+  assert.equal(partial[refill.index],null,'Only a newly opened slot is refilled');
+  assert(!seen.has(refill.index),'A slot is filled once in a wave');seen.add(refill.index);
+  const counts=cascadeLevel.palette.map(value=>{partial[refill.index]=value;return localTriples(partial,refill.index);});
+  const minimum=Math.min(...counts),chosen=cascadeLevel.palette.indexOf(refill.value);
+  assert(chosen>=0);assert.equal(counts[chosen],minimum,'Refill chooses a minimum-triple candidate');
+  assert.equal(refill.forced,minimum>0,'Only unavoidable immediate triples are marked forced');
+  partial[refill.index]=refill.value;checkedRefills++;
+ }
+ assert.deepEqual(partial,plain(frame.after),'Recorded sequential refills reproduce the wave output');
+ if(a.findMatches(frame.compacted).length)foundNaturalChain=true;
+}
+assert(checkedRefills>0,'Production cascade exercises controlled refills');
+assert(foundNaturalChain,'Existing settled survivors can still create natural gravity chains');
+assert(ar.frames.length<=32,'A swap has a finite cascade limit');
+// Direct gravity consumes precisely one seeded RNG draw for each new tile.
+const gravityOnly=new HexMatch(cascadeLevel),removed=[at(0,0),at(0,1),at(1,-1)];
+let expectedRng=gravityOnly.rngState;
+for(const _ of removed){let x=expectedRng;x^=x<<13;x^=x>>>17;x^=x<<5;expectedRng=x>>>0;}
+const gravityResult=gravityOnly._gravity(removed);
+assert.equal(gravityOnly.rngState,expectedRng,'Each replacement consumes exactly one random draw');
+assert.equal(gravityResult.refill.length,removed.length);
+// All four values can be blocked at one slot; fallback must be finite and minimal.
+const blocked=new HexMatch({...base,palette:[1,2,3,4]});
+for(const [q,r,value]of[[-2,0,1],[-1,0,1],[1,0,2],[2,0,2],[0,-2,3],[0,-1,3],[0,1,4],[0,2,4]])blocked.values[at(q,r)]=value;
+blocked.values[at(0,0)]=null;
+const forced=blocked._fillVacancies();
+assert.equal(forced.length,1);assert.equal(forced[0].index,at(0,0));
+assert.equal(forced[0].forced,true,'An unavoidable candidate is explicit, never retried forever');
+assert.equal(forced[0].minMatches,1);assert.equal(localTriples(blocked.values,at(0,0)),1);
+// Neither goal by itself finishes the level.
+assert.equal(new HexMatch({...base,target:0}).status,'playing','Score alone cannot win without green ground');
+const floorOnly=new HexMatch({...crossLevel,target:999999});floorOnly.layers.fill(0);
+assert.equal(floorOnly.status,'playing','Green ground alone cannot win below the score target');
+assert.equal(floorOnly.swap(at(0,0),at(1,-1)).ok,true);assert.equal(floorOnly.status,'lost');
+
+
 const restored=new HexMatch(cascadeLevel,plain(a.snapshot()));
 assert.equal(JSON.stringify(restored.snapshot()),JSON.stringify(a.snapshot()));
 const following=a.legalMoves()[0];assert(following);
 assert.deepEqual(plain(restored.swap(...following)),plain(a.swap(...following)),'Checkpoint replay preserves future refills');
 assert.equal(JSON.stringify(restored.snapshot()),JSON.stringify(a.snapshot()));
+assert.throws(()=>new HexMatch(cascadeLevel,{...plain(a.snapshot()),version:2}),'Old refill rules cannot restore into the new engine');
 assert.throws(()=>new HexMatch(cascadeLevel,{...plain(a.snapshot()),movesLeft:-1}));
 assert.throws(()=>new HexMatch(cascadeLevel,{...plain(a.snapshot()),values:[]}));
 // Checkpoints must follow actual deterministic history, not just pass shape checks.
@@ -113,108 +169,9 @@ const ground=plain(dead.layers),moves=dead.movesLeft,turn=dead.turn;
 assert.equal(dead._ensurePlayable(),true);
 assert.equal(dead.findMatches().length,0);assert(dead.legalMoves().length>0);
 assert.deepEqual(plain(dead.layers),ground);assert.equal(dead.score,23);assert.equal(dead.movesLeft,moves);assert.equal(dead.turn,turn);
-const hintBefore=JSON.stringify(dead.snapshot()),hint=dead.hint();
+const hintBefore=JSON.stringify(dead.snapshot()),hint=dead.hint({maxMs:1,maxDepth:1});
 assert(hint?.pair);assert(dead.legalMoves().some(p=>p[0]===hint.pair[0]&&p[1]===hint.pair[1]));
 assert.equal(JSON.stringify(dead.snapshot()),hintBefore,'Hint search cannot mutate gameplay');
-// Player-earned specials: births occur only in the first natural match wave.
-const birthPair=[at(0,-1),at(0,0)];
-function birthLevel(length,powers=['ring','sprout']){
- const values=base.initial.slice();
- for(let q=-2;q<=Math.min(2,length-3);q++)values[at(q,0)]=7;
- // length4 occupies q=-2,-1,0,1; length5 adds q=2. The middle is a gap.
- if(length===4)values[at(1,0)]=7;
- if(length===5)values[at(2,0)]=7;
- values[at(0,0)]=8;values[at(0,-1)]=7;
- return {...base,id:'birth-'+length,initial:values,powers};
-}
-for(const [length,type] of [[4,'ring'],[5,'sprout']]){
- const game=new HexMatch(birthLevel(length));
- assert.equal(game.findMatches().length,0,'Special birth fixture starts settled');
- const result=game.swap(...birthPair),first=result.frames[0];
- assert(result.ok);assert.equal(first.created.length,1,'At most one power is earned per player swap');
- assert.equal(first.created[0].type,type,'Four earns ring; five prioritizes sprout');
- assert.equal(first.created[0].index,birthPair[1],'Birth prefers the player destination');
- assert.equal(first.afterSpecials[birthPair[1]],type,'New power survives in its unremoved anchor');
- assert.equal(first.before[birthPair[1]],7);
- assert.equal(first.layers[birthPair[1]],1,'The survivor anchor still paints its ground once');
- assert.equal(first.activated.length,0,'A newborn does not activate in its birth wave');
- assert(!first.removed.includes(birthPair[1]),'Birth anchor is preserved from gravity removal');
- assert.equal(first.scoreGain,first.matched.reduce((n,i)=>n+first.before[i],0),'Birth scores its painted anchor once');
- assert(result.frames.slice(1).every(f=>f.created.length===0),'Automatic cascades cannot mint extra powers');
-}
-const disabledBirth=new HexMatch(birthLevel(4,[])).swap(...birthPair);
-assert(disabledBirth.frames.every(f=>f.created.length===0),'Powers require the level progression unlock');
-const crossedPower=new HexMatch({...crossLevel,moves:10,powers:['ring','sprout']});
-const crossedResult=crossedPower.swap(at(0,0),at(1,-1));
-assert.equal(crossedResult.frames[0].created[0].type,'sprout','Intersecting triples earn the floor-seeking power');
-assert.equal(crossedResult.frames[0].created.length,1);
-
-// A pre-existing power is activated by a neighboring swap without a natural match.
-function withPower(entries){
- const specials=cells.map(()=>null);for(const [q,r,type] of entries)specials[at(q,r)]=type;
- return {...base,id:'power-fixture',powers:['ring','sprout'],initialSpecials:specials};
-}
-const ringStart=at(0,0),ringDest=at(1,0);
-const ringLevel=withPower([[0,0,'ring']]),ringGame=new HexMatch(ringLevel);
-assert.equal(ringGame.findMatches().length,0);
-assert(ringGame.legalMoves().some(p=>p.includes(ringStart)&&p.includes(ringDest)),'Power swap is advertised as legal');
-const previewBefore=JSON.stringify(ringGame.snapshot());
-assert.deepEqual(plain(ringGame.previewPower(ringStart)).sort((a,b)=>a-b),[ringStart,...ringGame.neighbors[ringStart]].sort((a,b)=>a-b),'Ring preview shows its current hex footprint');
-assert.deepEqual(plain(ringGame.previewPower(-1)),[]);assert.deepEqual(plain(ringGame.previewPower(999)),[]);
-assert.deepEqual(plain(ringGame.previewPower(ringDest)),[],'Normal numbers have no power footprint');
-assert.equal(JSON.stringify(ringGame.snapshot()),previewBefore,'Power previews do not mutate RNG, score, tiles or floor');
-const ringResult=ringGame.swap(ringStart,ringDest),ringFrame=ringResult.frames[0];
-assert(ringResult.ok);assert.equal(ringGame.movesLeft,ringLevel.moves-1);
-const ringPulse=ringFrame.activated.find(p=>p.type==='ring');assert(ringPulse);
-assert.equal(ringPulse.index,ringDest,'The power activates after it reaches the swapped destination');
-assert.deepEqual(plain(ringPulse.affected).sort((a,b)=>a-b),[ringDest,...ringGame.neighbors[ringDest]].sort((a,b)=>a-b),'Ring follows all six hex neighbors');
-assert.equal(ringFrame.matched.length,7);
-for(const i of ringFrame.matched)assert.equal(ringFrame.layers[i],1,'Ring hits each ground layer once');
-assert(ringResult.frames.every(f=>f.created.length===0),'A power activation never creates fresh powers from its blast');
-assert(ringFrame.afterSpecials.every(p=>p===null),'Activated ring is consumed');
-
-// Two neighboring powers and powers hit by another pulse form a finite union.
-for(const entries of [[[0,0,'ring'],[1,0,'sprout']],[[0,0,'ring'],[2,0,'ring']]]){
- const game=new HexMatch(withPower(entries)),result=game.swap(ringStart,ringDest),first=result.frames[0];
- assert(result.ok);assert.equal(first.activated.length,2,'Both swapped or hit powers activate');
- assert.equal(new Set(first.activated.map(p=>p.index)).size,2,'A power cannot activate twice in its wave');
- assert.equal(new Set(first.matched).size,first.matched.length,'Overlapping effects union before scoring');
- assert.equal(first.scoreGain,first.matched.reduce((n,i)=>n+first.before[i],0));
- for(const i of first.matched)assert.equal(first.layers[i],1,'Overlapping effects do not double-damage layered ground');
- assert(result.frames.length<=32,'Special resolution stays bounded');
-}
-
-// Sprout follows an adjacent path toward unfinished ground instead of clearing a color.
-const sproutGame=new HexMatch(withPower([[0,0,'sprout']]));
-sproutGame.layers.fill(0);const unfinished=at(-2,0);sproutGame.layers[unfinished]=1;
-const sproutResult=sproutGame.swap(ringStart,ringDest),sprout=sproutResult.frames[0].activated.find(p=>p.type==='sprout');
-assert(sprout);assert.equal(sprout.index,ringDest);
-assert.equal(sprout.affected[0],ringDest);assert(sprout.affected.length<=4);
-assert(sprout.affected.includes(unfinished),'Sprout reaches an unfinished floor three edges away');
-for(let i=1;i<sprout.affected.length;i++)assert(sproutGame.adjacent(sprout.affected[i-1],sprout.affected[i]),'Growth path uses real hex neighbors');
-assert.equal(sproutResult.frames[0].layers[unfinished],0,'Reached ground is painted');
-
-// Number and power are one falling tile; newly refilled tiles carry no power.
-const falling=new HexMatch(withPower([[0,-1,'ring'],[0,0,'sprout']]));
-const ringValue=falling.values[at(0,-1)],sproutValue=falling.values[at(0,0)];
-falling._gravity([at(0,2)]);
-assert.equal(falling.specials[at(0,0)],'ring');assert.equal(falling.values[at(0,0)],ringValue);
-assert.equal(falling.specials[at(0,1)],'sprout');assert.equal(falling.values[at(0,1)],sproutValue);
-assert.equal(falling.specials[at(0,-2)],null);
-const specialCount=falling.specials.filter(Boolean).length;
-falling._stableBoard();assert.equal(falling.specials.filter(Boolean).length,specialCount,'Safety settle retains outstanding powers');
-const powerClone=falling.clone(),beforePowerClone=JSON.stringify(falling.snapshot());powerClone.specials[0]='sprout';
-assert.equal(JSON.stringify(falling.snapshot()),beforePowerClone,'Special arrays are isolated in clones');
-const replayedRing=new HexMatch(ringLevel,plain(ringGame.snapshot()));
-assert.deepEqual(plain(replayedRing.snapshot()),plain(ringGame.snapshot()),'Special activation replays deterministically');
-for(const replacement of ['ring','unknown']){
- const bad=plain(ringGame.snapshot());bad.specials[0]=replacement;
- assert.throws(()=>new HexMatch(ringLevel,bad),'Power checkpoint tampering is rejected');
-}
-const quickBefore=JSON.stringify(ringGame.snapshot()),quickHint=ringGame.hint({maxMs:12,maxDepth:1});
-if(quickHint)assert(ringGame.legalMoves().some(p=>p[0]===quickHint.pair[0]&&p[1]===quickHint.pair[1]));
-assert.equal(JSON.stringify(ringGame.snapshot()),quickBefore,'Bounded hint keeps the full special state immutable');
-
 // Authored levels prove reproducible solutions and valid hints at every canonical prefix.
 let checkedLevels=0;
 for(const [n,level] of (HEX_LEVELS||[]).entries()){
@@ -233,4 +190,4 @@ for(const [n,level] of (HEX_LEVELS||[]).entries()){
  game.reset();assert.equal(game.movesLeft,level.moves);assert.equal(game.score,0);assert.deepEqual(plain(game.values),plain(level.initial));
  checkedLevels++;
 }
-console.log(`Match engine checks passed: three axes, rollback, intersection layers, deterministic cascade/gravity, restore, last-move victory, loss, reshuffle, special births/activation/gravity, hints and ${checkedLevels} authored solutions.`);
+console.log(`Classic engine checks passed: three axes, no-op rollback, controlled refills, surviving gravity chains, deterministic state, replay validation, last-move victory, dead-board recovery, bounded hints and ${checkedLevels} authored solutions.`);
