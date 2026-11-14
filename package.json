@@ -13,7 +13,8 @@
     "config:export": "node export-game-config.cjs",
     "test:gameplay-vectors": "node export-game-config.cjs --check && node generate-gameplay-vectors.cjs --check && node check-gameplay-vectors.cjs",
     "lives:sync": "node sync-lives-config.cjs",
-    "test:lives": "node sync-lives-config.cjs --check && node check-lives.cjs && node generate-life-vectors.cjs --check && node check-life-vectors.cjs && node check-lives-ui.cjs"
+    "test:lives": "node sync-lives-config.cjs --check && node check-lives.cjs && node generate-life-vectors.cjs --check && node check-life-vectors.cjs && node check-lives-ui.cjs",
+    "test:unity-gameplay": "node check-gameplay-parity.cjs"
   },
   "devDependencies": {
     "jsdom": "31.0.1"
