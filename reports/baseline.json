@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "referenceCommit": "61f1af01f4166b00dbf610f91b69459c0340fbad",
+  "date": "2026-11-14",
+  "rulesVersion": "classic-v4",
+  "snapshotVersion": 4,
+  "saveKey": "hexrota-match-v5",
+  "tutorials": 2,
+  "campaignLevels": 10,
+  "productionDependencies": [],
+  "devDependencies": {
+    "jsdom": "31.0.1"
+  },
+  "checks": {
+    "npmTest": {
+      "status": "passed",
+      "command": "NODE_PATH=/workspace/scratch/hexrota-qa/node_modules npm test"
+    },
+    "unityRewards": {
+      "status": "passed",
+      "command": "npm run test:unity-rewards",
+      "sharedVectors": 104,
+      "factoryCases": 1,
+      "valid": 98,
+      "rejected": 7,
+      "compilerLanguageVersion": "C# 7.3",
+      "sdk": "8.0.428"
+    }
+  },
+  "sha256": {
+    "dist/engine.js": "1149b929518bb174df19d2e110ca24c72f89fc5a588dca35cb421d1e5fe33db0",
+    "dist/levels.js": "912d974e9fbcabf77036b0fb1d3e1cc25962049cb598707241fcdb9cc6795bd4",
+    "dist/tutorials.js": "b5ae419bffeb4fb684261baad425a74857a73cc6d6dd998f5d1def58c2ea4ee0",
+    "dist/app.js": "2cd6f3cdd4b97ee474359c21c68a48d0af1cd09a575db624366ebb7b6f04f5e0",
+    "dist/rewards.js": "d349bed5bf7299e141c23ee64eeb2d508f86a1e6fffe0b344985e4857b2e39c4",
+    "dist/reward-adapter.js": "0017813221d71b66524b305167a5192b6d23bac8c247f4968fbe18e1a946eb6f",
+    "generate-levels.cjs": "27e758de51e2ff8edd9add8a19fd91d4478ed1aa5b490f84209bb71e1f6efb58",
+    "balance-report.json": "e87e2e36e834fd22c2158b8c0d830a583bfc932ac72042b0117413002732a3fa",
+    "package.json": "b40675a2526672fd1ad5b07229e324fb61e44f7137459bd75de798c8565326c9"
+  }
+}
