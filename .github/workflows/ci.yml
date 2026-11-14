@@ -1,0 +1,52 @@
+name: Hexrota CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+# Tests only need to read repository contents.
+permissions:
+  contents: read
+
+concurrency:
+  group: hexrota-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gameplay-tests:
+    name: Gameplay, UI and data tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.2'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Test gameplay, variants, lives, UI and data consistency
+        run: npm test
+
+  csharp-reward-parity:
+    name: C# reward parity
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.2'
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Compile C# 7.3 and compare JavaScript reward outputs
+        run: npm run test:unity-rewards
