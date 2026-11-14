@@ -14,24 +14,24 @@
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="./style.css?v=22">
-  <script src="./engine.js?v=22" defer></script>
-  <script src="./levels.js?v=22" defer></script>
-  <script src="./tutorials.js?v=22" defer></script>
-  <script src="./variants-data.js?v=22" defer></script>
-  <script src="./attempts.js?v=22" defer></script>
-  <script src="./events.js?v=22" defer></script>
-  <script src="./lives-config.js?v=22" defer></script>
-  <script src="./lives.js?v=22" defer></script>
-  <script src="./life-providers.js?v=22" defer></script>
-  <script src="./playtest.js?v=22" defer></script>
-  <script src="./reward-rules.js?v=22" defer></script>
-  <script src="./rewards.js?v=22" defer></script>
-  <script src="./reward-adapter.js?v=22" defer></script>
-  <script src="./audio.js?v=22" defer></script>
-  <script src="./session-store.js?v=22" defer></script>
-  <script src="./app.js?v=22" defer></script>
-  <script src="./pwa.js?v=22" defer></script>
+  <link rel="stylesheet" href="./style.css?v=23">
+  <script src="./engine.js?v=23" defer></script>
+  <script src="./levels.js?v=23" defer></script>
+  <script src="./tutorials.js?v=23" defer></script>
+  <script src="./variants-data.js?v=23" defer></script>
+  <script src="./attempts.js?v=23" defer></script>
+  <script src="./events.js?v=23" defer></script>
+  <script src="./lives-config.js?v=23" defer></script>
+  <script src="./lives.js?v=23" defer></script>
+  <script src="./life-providers.js?v=23" defer></script>
+  <script src="./playtest.js?v=23" defer></script>
+  <script src="./reward-rules.js?v=23" defer></script>
+  <script src="./rewards.js?v=23" defer></script>
+  <script src="./reward-adapter.js?v=23" defer></script>
+  <script src="./audio.js?v=23" defer></script>
+  <script src="./session-store.js?v=23" defer></script>
+  <script src="./app.js?v=23" defer></script>
+  <script src="./pwa.js?v=23" defer></script>
 </head>
 <body>
   <svg class="icon-library" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -114,8 +114,8 @@
           <div class="board-stage" id="board-stage">
             <div class="stage-top"><span id="level-note">Komşuları değiştir, üçlüyü bul.</span><span id="move-counter">0 / 5 HAMLE</span></div>
             <div class="board-wrap"><svg id="board" role="group" aria-label="Sayıları eşleştirmek için iki komşu altıgen seç"></svg><div id="last-combo" class="combo-feedback" aria-live="polite"></div></div>
-            <div class="board-status" id="board-status" aria-live="polite"><span class="status-dot"></span><span id="status-text">Parlayan iki taşı değiştirerek başlayalım.</span><button id="continue" class="continue-button" type="button" hidden>Devam et →</button><button id="skip-animation" class="skip-animation" type="button" hidden>Animasyonu geç <span aria-hidden="true">↠</span></button></div>
-            <div class="board-legend"><span><i class="legend-hex untouched"></i> Boyanacak alan</span><span><i class="legend-hex painted"></i> Yeşil alan</span><span class="legend-double"><i class="legend-hex double" aria-hidden="true"></i> İki kez</span></div>
+            <div class="board-status" id="board-status" aria-live="polite"><span id="status-text" class="sr-only">Parlayan iki taşı değiştirerek başlayalım.</span><button id="continue" class="continue-button" type="button" hidden>Devam et →</button><button id="skip-animation" class="skip-animation" type="button" hidden>Animasyonu geç <span aria-hidden="true">↠</span></button></div>
+            
           </div>
           <div class="game-toolbar">
             <nav class="tool-actions" aria-label="Oyun kontrolleri">

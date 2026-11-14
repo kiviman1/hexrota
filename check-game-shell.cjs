@@ -74,6 +74,21 @@ test('game mode hides website chrome while menu navigation remains available',()
  }finally{f.close();}
 });
 
+test('the board help strip is removed without losing controls or accessible status',()=>{
+ const f=mount();try{
+  f.enter();
+  assert.equal(f.d.querySelector('.board-legend'),null,'permanent legend was removed');
+  const status=f.node('board-status'),description=f.node('status-text');
+  assert.equal(status.getAttribute('aria-live'),'polite','status announcements remain live');
+  assert(description.classList.contains('sr-only'),'status is available to screen readers without visual text');
+  const layout=f.w.getComputedStyle(status);
+  assert.equal(layout.minHeight,'0px','status has no reserved height');
+  assert.equal(layout.paddingTop,'0px','no upper status gap');
+  assert.equal(layout.paddingBottom,'0px','no lower status gap');
+  assert(f.node('continue')&&f.node('skip-animation'),'continue and animation skip controls remain');
+ }finally{f.close();}
+});
+
 test('visible viewport changes fit the shell without changing the active checkpoint',()=>{
  const f=mount();try{
   assert.equal(f.height(),'844px');f.enter();
