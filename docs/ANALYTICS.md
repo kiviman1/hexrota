@@ -50,3 +50,8 @@ Gerçek oyuncu kaybı, günlük geri dönüş veya uzun vadeli tutma oranı içi
 ## Geliştirmede doğrulama
 
 `check-events.cjs` ve `check-attempt-ui.cjs` saf şema ile gerçek arayüz akışını denetler; ilgili komutlar `package.json` içindedir. Tarayıcı geliştirici araçlarında `JSON.parse(localStorage.getItem('hexrota-events-v1'))` yalnızca o tarayıcıdaki son olayları gösterir. Veriyi dışarı gönderme otomasyonu yoktur. Küçük gerçek kullanıcı denemelerinde gönüllü, elle alınmış gözlem notları bu yerel ölçümleri tamamlamalıdır.
+
+
+## 9.1 can kaydı
+
+Can kesintisi veya test ödülü yalnızca `level_failed` sayısından çıkarılmaz: koruma, sınırsız can, geliştirici geçişi ve daha önce kapatılmış deneme aynı olayın mali/can etkisini değiştirebilir. Yetkili yerel can sonucu ayrı `hexrota-lives-v1` işlem/deneme günlüğündedir. Test sağlayıcısı sonuçları gerçek reklam izlenmesi veya satış dönüşümü değildir. Mevcut olay şemasına kişisel ya da ödeme verisi eklenmemiştir.

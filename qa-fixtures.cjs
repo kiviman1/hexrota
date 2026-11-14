@@ -1,7 +1,20 @@
 /* Test fixtures load the actual attempt modules while preserving explicit legacy cases. */
 'use strict';
 const assert=require('node:assert/strict');
-const key='hexrota-match-v5',catalogs=new WeakMap();
+const key='hexrota-match-v5',lifeKey='hexrota-lives-v1',catalogs=new WeakMap();
+// Regression/balance fixtures explicitly opt out of energy waits. Production defaults stay on.
+function prepareLifeBypass(window,read){
+ const dependencies=[['lives-config.js','HEX_LIVES_CONFIG'],['lives.js','HexLives'],['life-providers.js','HexLifePrototype']];
+ for(const [file,globalName]of dependencies)if(!window[globalName])window.eval(read(file));
+ assert(window.HexLives&&window.HEX_LIVES_CONFIG&&window.HexLifePrototype,'production life modules are loaded');
+ if(window.localStorage.getItem(lifeKey)===null){
+  const manager=window.HexLives.createManager(window.HEX_LIVES_CONFIG,{clock:()=>window.Date.now()});
+  const life=manager.setDeveloperBypass(manager.createState(),true).state;
+  const aggregate=window.HexLifePrototype.createState(life,{providerNamespace:'qa',gold:300,adAvailable:true});
+  window.localStorage.setItem(lifeKey,JSON.stringify(aggregate));
+ }
+}
+
 function loadGame(window,files,read,{originalBoards=[]}={}){
  const modules=[];
  for(const file of files){
@@ -9,6 +22,7 @@ function loadGame(window,files,read,{originalBoards=[]}={}){
   modules.push(file);
  }
  for(const file of modules){
+  if(file==='app.js')prepareLifeBypass(window,read);
   if(file==='app.js'&&originalBoards.length){
    const saved=JSON.parse(window.localStorage.getItem(key)||'null')||{current:0,done:[],boards:{},sound:false};
    saved.boards=saved.boards||{};
@@ -36,4 +50,4 @@ function confirmRestart(window){
  const dialog=window.document.getElementById('restart-dialog');
  if(dialog?.open){const confirm=window.document.getElementById('restart-confirm');assert(confirm,'restart has a concrete confirmation');confirm.click();}
 }
-module.exports={loadGame,savedLevel,savedGame,confirmRestart};
+module.exports={loadGame,savedLevel,savedGame,confirmRestart,prepareLifeBypass};

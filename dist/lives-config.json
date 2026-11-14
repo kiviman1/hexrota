@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "rulesVersion": "lives-v1",
+  "maxLives": 5,
+  "initialLives": 5,
+  "refillIntervalMs": 1800000,
+  "maxLedgerEntries": 20000,
+  "firstFailureProtection": {
+    "enabled": false,
+    "levelIds": [1, 2, 3]
+  },
+  "ads": {
+    "rewardLives": 1,
+    "dailyLimit": 3,
+    "cooldownMs": 1800000
+  },
+  "products": {
+    "single_life": {"costGold": 30, "amount": 1},
+    "refill_lives": {"costGold": 100},
+    "unlimited_lives_30m": {"costGold": 180, "durationMs": 1800000}
+  },
+  "development": {
+    "allowBypass": true,
+    "initialTestGold": 300
+  }
+}

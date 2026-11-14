@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "appVersion": "9.1.0",
+  "date": "2026-11-14",
+  "referenceCommit": "0970a7b551736e9fdb00d723c3b6501c41ea128c",
+  "tests": {
+    "npmTest": {
+      "status": "passed",
+      "command": "NODE_PATH=/workspace/scratch/hexrota-qa/node_modules npm test"
+    },
+    "unityRewards": {
+      "status": "passed",
+      "compiled": true,
+      "vectors": 104,
+      "factoryCases": 1,
+      "sdk": "8.0.428",
+      "language": "C# 7.3"
+    },
+    "lifeRules": {
+      "status": "passed",
+      "groups": 22
+    },
+    "lifeApplication": {
+      "status": "passed",
+      "groups": 20
+    },
+    "lifeGoldens": {
+      "status": "passed",
+      "cases": 16,
+      "transitionsAndProbes": 136
+    },
+    "browser": {
+      "status": "passed",
+      "runtime": "Chromium",
+      "viewports": [
+        [
+          390,
+          664
+        ],
+        [
+          320,
+          568
+        ],
+        [
+          568,
+          320
+        ]
+      ],
+      "realTouch": true,
+      "standardAnimations": true,
+      "nativeScrollingOfZeroLifeModal": true,
+      "errors": 0,
+      "physicalDeviceTest": false
+    }
+  },
+  "unchangedReferenceFiles": {
+    "dist/engine.js": true,
+    "dist/levels.js": true,
+    "dist/tutorials.js": true,
+    "dist/variants.json": true,
+    "dist/rewards.js": true,
+    "dist/reward-adapter.js": true,
+    "fixtures/gameplay-vectors.json": true,
+    "fixtures/reward-vectors.json": true
+  },
+  "rules": {
+    "maxLives": 5,
+    "refillIntervalMs": 1800000,
+    "firstFailureProtectionDefault": false,
+    "developerBypassDefault": false,
+    "adLives": 1,
+    "adDailyCap": 3,
+    "adCooldownMs": 1800000,
+    "singleLifeTestGold": 30,
+    "refillTestGold": 100,
+    "unlimited30mTestGold": 180
+  },
+  "limits": [
+    "Providers and Gold are explicitly development-only; local verification is not financial or live-ad proof.",
+    "Device clock is mutable; monotonic UTC watermark prevents rollback duplication but does not prove trusted real-world elapsed time.",
+    "Life C# implementation is future work; shared JSON vectors and Unity contracts are prepared."
+  ]
+}

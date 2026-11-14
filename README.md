@@ -141,6 +141,19 @@ Kurallar `dist/reward-rules.json` içinde, arayüzden bağımsız JavaScript mot
 - [Yerel olay sözleşmesi ve ölçüm sınırları](docs/ANALYTICS.md)
 - [Başlangıç referansı ve test sonuçları](docs/BASELINE.md)
 
-Ekonomi ayarları `data/economy-design.json` içinde yalnızca taslak veridir; uygulama bunları yüklemez. Gerçek para, reklam SDK'sı, Altın cüzdanı veya güçlendirici eklenmemiştir. Her bölüm, temel kurallarla ve satın alma olmadan tamamlanan yollarla doğrulanır.
+Ekonomi ayarları `data/economy-design.json` içinde yalnızca taslak veridir; uygulama bunları yüklemez. Gerçek para, canlı reklam SDK'sı veya güçlendirici eklenmemiştir. 9.1 can denemeleri için ayrı ve açıkça etiketlenmiş bir Test Altını bakiyesi/sahte sağlayıcı ekler; bu gerçek oyun ekonomisi değildir. Her bölüm, temel kurallarla ve satın alma olmadan tamamlanan yollarla doğrulanır.
 
 Botlar, amaç odaklı kararları motor kopyasında gerçek RNG ile hesaplar; gelecek taşları insan oyuncudan daha iyi bilir. Bot başarısı insan kazanma oranı değildir. Özellikle 5/8 planlama zirveleri ve alanı önceleyen stratejide rahatlayan 9, ticari dengeleme öncesi gerçek kullanıcıyla sınanmalıdır.
+
+
+## Can sistemi — sürüm 9.1
+
+Yeni oyuncu 5 canla başlar. Ana bölüm kaybı veya oynanmış denemeyi onayla kapatma 1 can harcar; aynı deneme iki kez ücretlendirilmez. Kazanma ve T1/T2 ücretsizdir. Eksik can 30 dakikada bir, oyun kapalıyken de yenilenir. Can sıfırken yeni ana deneme açılmaz; doğrulanmış kayıt kaldığı yerden devam edebilir. Beş kalp ana menü ve yolculukta görünür.
+
+`dist/lives.js` saat ve işlem doğrulayıcısı dışarıdan verilen saf yöneticidir. `dist/lives-config.json` kanonik ayardır; değiştirince `npm run lives:sync` tarayıcı kopyasını üretir. Oyun snapshot'ı ve `hexrota-match-v5` değişmez; can, sahte sağlayıcı ve Test Altını tek ayrı `hexrota-lives-v1` kaydında saklanır.
+
+Can ekranındaki reklam ve Altın işlemleri yalnızca **GELİŞTİRME TESTİ** içindir; gerçek reklam gösterilmez veya para alınmaz. Test fiyatları 1 can/30, beşe tamamlama/100 ve 30 dakika sınırsız can/180 Test Altınıdır. Sahte reklam +1 can verir; başarılı talepler günde 3 ve aralarında 30 dakika ile sınırlıdır.
+
+Ayarlar → **Geliştirme testi → Can sınırını kapat** bölüm dengelemesini beklemesiz yapar. Aynı alanda reklam yokluğunu deneme ve 300 Test Altını ekleme araçları bulunur. Geliştirici geçişi varsayılan kapalıdır; ilk üç bölümün ilk kayıp koruması da varsayılan kapalı, JSON'dan yapılandırılabilirdir.
+
+`npm run test:lives` zaman, tekrar bildirim, sıfır can, kayıt, sağlayıcı ve UI senaryolarını doğrular; genel `npm test` buna ek olarak 9.0'ın bütün bölüm/ödül/denge kontrollerini çalıştırır. [Can kuralları ve JSON sözleşmesi](docs/LIVES_DESIGN.md) Unity portunun referansıdır; C# can uygulaması henüz yazılmamıştır.

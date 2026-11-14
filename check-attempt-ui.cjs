@@ -3,7 +3,7 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const {JSDOM,VirtualConsole}=require('jsdom');
-const {savedLevel,savedGame}=require('./qa-fixtures.cjs');
+const {savedLevel,savedGame,prepareLifeBypass}=require('./qa-fixtures.cjs');
 const root=__dirname+'/dist/',key='hexrota-match-v5',eventKey='hexrota-events-v1';
 const read=file=>fs.readFileSync(root+file,'utf8'),plain=value=>JSON.parse(JSON.stringify(value));
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms)),tests=[],errors=[],unhandled=[];
@@ -28,6 +28,7 @@ function mount(state=fresh(),options={}){
  else w.localStorage.setItem(key,JSON.stringify(state));
  if(options.events)w.localStorage.setItem(eventKey,JSON.stringify(options.events));
  for(const file of ['engine.js','levels.js','tutorials.js','variants-data.js','attempts.js','events.js','reward-rules.js','rewards.js','reward-adapter.js','app.js']){
+  if(file==='app.js')prepareLifeBypass(w,read);
   if(file==='app.js'&&Object.hasOwn(options,'pack'))w.HEX_VARIANTS=options.pack;
   if(file==='app.js'&&options.attempts===false)delete w.HexAttempts;
   w.eval(read(file));

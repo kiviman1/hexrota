@@ -1,17 +1,19 @@
 {
   "name": "hexrota",
-  "version": "9.0.0",
+  "version": "9.1.0",
   "private": true,
   "description": "Telefon ve masaüstünde oynanabilir, iki öğretici ve on bölümlü altıgen eşleştirme web uygulaması.",
   "scripts": {
-    "test": "node check-levels.mjs && node check-engine.mjs && node check-tutorials.mjs && node generate-variants.cjs --check && node check-variants.cjs && node check-attempts.cjs && node check-events.cjs && node check-audio.cjs && node check-ui.cjs && node check-onboarding.cjs && node check-input.cjs && node check-menu.cjs && node check-attempt-ui.cjs && node check-pwa.cjs && node check-game-shell.cjs && node check-score.cjs && node sync-reward-rules.cjs --check && node generate-reward-vectors.cjs --check && node check-rewards.cjs && node check-reward-ui.cjs && node export-game-config.cjs --check && node generate-gameplay-vectors.cjs --check && node check-gameplay-vectors.cjs && node recheck-legacy-balance.cjs && node balance-variants.cjs --check",
+    "test": "node check-levels.mjs && node check-engine.mjs && node check-tutorials.mjs && node generate-variants.cjs --check && node check-variants.cjs && node check-attempts.cjs && node sync-lives-config.cjs --check && node check-lives.cjs && node generate-life-vectors.cjs --check && node check-life-vectors.cjs && node check-events.cjs && node check-audio.cjs && node check-ui.cjs && node check-onboarding.cjs && node check-input.cjs && node check-menu.cjs && node check-attempt-ui.cjs && node check-lives-ui.cjs && node check-pwa.cjs && node check-game-shell.cjs && node check-score.cjs && node sync-reward-rules.cjs --check && node generate-reward-vectors.cjs --check && node check-rewards.cjs && node check-reward-ui.cjs && node export-game-config.cjs --check && node generate-gameplay-vectors.cjs --check && node check-gameplay-vectors.cjs && node recheck-legacy-balance.cjs && node balance-variants.cjs --check",
     "rewards:sync": "node sync-reward-rules.cjs",
     "test:unity-rewards": "node check-reward-parity.cjs",
     "variants:generate": "node generate-variants.cjs --resume",
     "variants:check": "node generate-variants.cjs --check && node check-variants.cjs && node balance-variants.cjs --check",
     "balance:check": "node recheck-legacy-balance.cjs && node balance-variants.cjs --check",
     "config:export": "node export-game-config.cjs",
-    "test:gameplay-vectors": "node export-game-config.cjs --check && node generate-gameplay-vectors.cjs --check && node check-gameplay-vectors.cjs"
+    "test:gameplay-vectors": "node export-game-config.cjs --check && node generate-gameplay-vectors.cjs --check && node check-gameplay-vectors.cjs",
+    "lives:sync": "node sync-lives-config.cjs",
+    "test:lives": "node sync-lives-config.cjs --check && node check-lives.cjs && node generate-life-vectors.cjs --check && node check-life-vectors.cjs && node check-lives-ui.cjs"
   },
   "devDependencies": {
     "jsdom": "31.0.1"

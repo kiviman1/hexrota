@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "referenceCommit": "0970a7b551736e9fdb00d723c3b6501c41ea128c",
+  "appVersion": "9.0.0",
+  "date": "2026-11-14",
+  "tests": {
+    "npmTest": "passed",
+    "compiledUnityRewards": "passed"
+  },
+  "sha256": {
+    "dist/engine.js": "84cf60d3c1d1b395718ef3b9f0cb00ace213bafe41e0b61c1d7babd03e27ebec",
+    "dist/levels.js": "912d974e9fbcabf77036b0fb1d3e1cc25962049cb598707241fcdb9cc6795bd4",
+    "dist/tutorials.js": "b5ae419bffeb4fb684261baad425a74857a73cc6d6dd998f5d1def58c2ea4ee0",
+    "dist/variants.json": "087caa9349785ad3cd2cea6ae01e38968307205cba0dad530110b9e78a657f7d",
+    "dist/rewards.js": "d349bed5bf7299e141c23ee64eeb2d508f86a1e6fffe0b344985e4857b2e39c4",
+    "dist/reward-adapter.js": "f1b99fccc27c372f2906c5876bbbbd7c7b4e357338ca761edc047f31520aba3a",
+    "fixtures/gameplay-vectors.json": "f88b4870bf78cb1c80bb15ff516a1b35f68c365b119765fa9ad1d5c197740efa",
+    "fixtures/reward-vectors.json": "8fe29510db80358c7cd5c1197455d14d60e73763f829d698236c522c6504b0aa"
+  }
+}

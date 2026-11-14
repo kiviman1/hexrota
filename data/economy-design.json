@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "rulesVersion": "economy-draft-v1",
+  "rulesVersion": "economy-draft-v2",
   "status": "design_only",
   "loadedByPrototype": false,
-  "pricingStatus": "unvalidated_design_candidates",
+  "pricingStatus": "unvalidated_design_candidates_and_9_1_test_prices",
   "currency": {
     "id": "gold",
     "displayName": "Altın",
@@ -16,9 +16,14 @@
     "retryCostGold": 0,
     "hintCostGold": 0,
     "failurePenaltyGold": 0,
-    "energyGateEnabled": false,
+    "energyGateEnabled": true,
     "variantSelectionReadsCommerceState": false,
-    "rewardDirectorChangesScore": false
+    "rewardDirectorChangesScore": false,
+    "failureCostLives": 1,
+    "validMoveConfirmedRestartCostLives": 1,
+    "tutorialCostLives": 0,
+    "savedAttemptResumeCostLives": 0,
+    "automaticLifeRegenerationIsFree": true
   },
   "sources": [
     {
@@ -40,12 +45,6 @@
       "id": "campaign_replay_clear",
       "amountGold": 10,
       "maximumGrantsPerUtcDay": 5
-    },
-    {
-      "id": "optional_rewarded_ad",
-      "amountGold": 25,
-      "maximumGrantsPerUtcDay": 3,
-      "recommendation": "defer"
     }
   ],
   "products": [
@@ -137,5 +136,42 @@
     "boosterConsumesNormalMove": false,
     "keepScoreAndAllGreenWinConditions": true,
     "requiresNonMatchRewardContractReview": true
+  },
+  "currentPrototypeLives": {
+    "status": "implemented_development_test_only",
+    "runtimeConfigSource": "dist/lives-config.json",
+    "rulesVersion": "lives-v1",
+    "realMoneyEnabled": false,
+    "liveAdSdkEnabled": false,
+    "testWalletInitialGold": 300,
+    "ads": {
+      "rewardLives": 1,
+      "dailyLimit": 3,
+      "cooldownMs": 1800000
+    },
+    "products": {
+      "single_life": {
+        "costGold": 30,
+        "amount": 1
+      },
+      "refill_lives": {
+        "costGold": 100
+      },
+      "unlimited_lives_30m": {
+        "costGold": 180,
+        "durationMs": 1800000
+      }
+    },
+    "firstFailureProtection": {
+      "enabled": false,
+      "levelIds": [
+        1,
+        2,
+        3
+      ]
+    },
+    "normalGoldEarningImplemented": false,
+    "testCreditProductId": "test_gold_300",
+    "testCreditRequiresExplicitConfirmation": true
   }
 }

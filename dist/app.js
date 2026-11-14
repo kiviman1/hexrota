@@ -184,6 +184,189 @@
     const context=eventContext(entry);if(!context)return;
     try{eventState=window.HexEvents.append(eventState,name,context,details);localStorage.setItem(eventKey,JSON.stringify(eventState));}catch(_){/* Local measurements never affect a game or a save. */}
   }
+  // Lives, development receipts and the test wallet share one atomic storage write.
+  // They never enter a HexMatch snapshot or its gameplay RNG.
+  const livesKey='hexrota-lives-v1';
+  let lifeFeature=null,lifeManager=null,lifeIssue=null,lifeWriteFailed=false,lifeVerificationProvider=null,pendingLifeStart=null,pendingLifeProvider=null;
+  let lifeLastPersistUtc=0,pendingResetLifeCost=null;
+  const lifeClock=()=>Date.now();
+  const lifeClone=value=>JSON.parse(JSON.stringify(value));
+  function lifeReady(){return !!(lifeFeature&&lifeManager);}
+  function lifeCommit(next,{quiet=false}={}){
+    try{localStorage.setItem(livesKey,JSON.stringify(next));lifeFeature=next;lifeWriteFailed=false;lifeLastPersistUtc=next.life.lastSeenUtc;return true;}
+    catch(_){lifeWriteFailed=true;if(!quiet)toast('Can bilgisi kaydedilemedi. İşlem uygulanmadı.');return false;}
+  }
+  function lifeRefresh({persist=false}={}){
+    if(!lifeReady())return null;
+    try{
+      const old=lifeFeature.life,next=lifeManager.reconcile(old);
+      const changed=next.lives!==old.lives||next.regenAnchorUtc!==old.regenAnchorUtc||next.unlimitedUntilUtc!==old.unlimitedUntilUtc||next.adUsage.dayUtc!==old.adUsage.dayUtc;
+      lifeFeature={...lifeFeature,life:next};
+      if(changed||persist||next.lastSeenUtc-lifeLastPersistUtc>=60000)lifeCommit(lifeFeature,{quiet:!persist});
+      return lifeManager.view(lifeFeature.life);
+    }catch(_){lifeIssue='invalid';return null;}
+  }
+  function lifeStageIdentity(index){
+    if(index===active&&activeAttempt)return activeAttempt;
+    try{return restoredStage(index)?.metadata||null;}catch(_){return null;}
+  }
+  function lifeDiscarded(index=active){
+    const identity=lifeStageIdentity(index);if(!identity)return false;
+    if(lifeReady())return lifeFeature.life.settledAttempts[identity.attemptId]?.discarded===true;
+    const raw=readSave(livesKey);return raw?.life?.settledAttempts?.[identity.attemptId]?.discarded===true;
+  }
+  function lifeContext(entry,outcome){
+    return {attemptId:entry.metadata.attemptId,levelId:entry.level.id,tutorial:entry.level.kind==='tutorial',movesUsed:entry.game.turn,outcome,confirmed:outcome==='restart'};
+  }
+  function lifeSettle(entry,outcome,{historical=false,maxCharge}={}){
+    if(!entry?.metadata)return {applied:false,reason:'no_attempt',charged:false};
+    if(!lifeReady())return {applied:false,reason:'unavailable',charged:false};
+    try{
+      const context=lifeContext(entry,outcome),result=historical?lifeManager.acknowledgeHistoricalAttempt(lifeFeature.life,context):lifeManager.settleAttempt(lifeFeature.life,context);
+      if(maxCharge===0&&result.charged)return {applied:false,reason:'confirmation_changed',charged:false};
+      if(!lifeCommit({...lifeFeature,life:result.state}))return {applied:false,reason:'storage',charged:false};
+      renderLives();return result;
+    }catch(_){lifeIssue='invalid';return {applied:false,reason:'invalid',charged:false};}
+  }
+  function settleActiveLife(){
+    if(!engine||engine.status==='playing'||!activeAttempt||attemptPending||saveBlocked)return;
+    lifeSettle({metadata:activeAttempt,level:activeLevel,game:engine},engine.status==='won'?'won':'failed');
+  }
+  function initializeLives(){
+    if(!window.HexLives||!window.HEX_LIVES_CONFIG||!window.HexLifeProviders||!window.HexLifePrototype){lifeIssue='modules';return;}
+    try{
+      lifeManager=window.HexLives.createManager(window.HEX_LIVES_CONFIG,{clock:lifeClock,verifyReceipt:receipt=>window.HexLifeProviders.verify(lifeVerificationProvider||lifeFeature?.provider,receipt)});
+      const previous=readSave(livesKey),existed=(()=>{try{return localStorage.getItem(livesKey)!==null;}catch(_){return false;}})();
+      if(existed){lifeFeature=window.HexLifePrototype.validate(previous,lifeManager);}
+      else{
+        let random=0;try{const value=new Uint32Array(1);window.crypto?.getRandomValues(value);random=value[0];}catch(_){}
+        lifeFeature=window.HexLifePrototype.createState(lifeManager.createState(),{providerNamespace:`dev-${lifeClock().toString(36)}-${random.toString(16)}`,gold:window.HEX_LIVES_CONFIG.development.initialTestGold,adAvailable:true});
+        // Only existing pre-feature terminal boards are historical. Later interrupted
+        // failure writes are recovered and charged once using their attempt IDs.
+        for(let index=0;index<levels.length;index++)try{const entry=restoredStage(index);if(entry&&entry.game.status!=='playing')lifeFeature.life=lifeManager.acknowledgeHistoricalAttempt(lifeFeature.life,lifeContext(entry,entry.game.status==='won'?'won':'failed')).state;}catch(_){}
+      }
+      // An interrupted TEST provider window never completes an ad or purchase.
+      for(const transaction of Object.values(lifeFeature.provider.transactions))if(transaction.status==='pending')transaction.status='cancelled';
+      lifeCommit(lifeFeature,{quiet:true});
+      if(existed)for(let index=0;index<levels.length;index++)try{const entry=restoredStage(index);if(entry&&entry.game.status!=='playing')lifeSettle(entry,entry.game.status==='won'?'won':'failed');}catch(_){}
+    }catch(_){lifeFeature=null;lifeIssue='invalid';}
+  }
+  function lifeTime(ms){const seconds=Math.max(0,Math.ceil(ms/1000));return `${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;}
+  function renderLives(){
+    const view=lifeReady()?lifeManager.view(lifeFeature.life):null;
+    for(const button of document.querySelectorAll('[data-open-lives]')){
+      const hearts=button.querySelector('[data-life-hearts]');
+      if(hearts)hearts.innerHTML=Array.from({length:5},(_,i)=>`<svg class="icon life-heart${!view||i>=view.lives?' is-empty':''}" data-filled="${!!view&&i<view.lives}" aria-hidden="true"><use href="#i-heart"/></svg>`).join('');
+      const summary=button.querySelector('[data-life-summary]'),timer=button.querySelector('[data-life-timer]');
+      button.dataset.bypass=String(!!view?.developerBypass);button.dataset.unlimited=String(!!view?.unlimited);
+      if(summary)summary.textContent=!view?'Can bilgisi yüklenemedi':view.developerBypass?'TEST · Can sınırı kapalı':view.unlimited?'Sınırsız can':`${view.lives} / ${view.maxLives} can`;
+      if(timer)timer.textContent=view?.nextLifeAtUtc!==null&&view?.nextLifeAtUtc!==undefined?`Sonraki can ${lifeTime(view.remainingMs)}`:view?.unlimited?lifeTime(view.unlimitedRemainingMs):view?'Canlar dolu':'Yenileme bilgisi yok';
+      button.setAttribute('aria-label',!view?'Can bilgisi yüklenemedi':`${view.lives} can${view.unlimited?', sınırsız can etkin':''}${view.nextLifeAtUtc!==null?', sonraki can '+lifeTime(view.remainingMs):''}`);
+    }
+    if($('lives-count'))$('lives-count').textContent=view?`${view.lives} / ${view.maxLives}`:'—';
+    if($('lives-description'))$('lives-description').textContent=!view?'Can verisi açılamadı. Mevcut oyun kayıtların korundu. Sayfayı yenileyip tekrar dene.':lifeWriteFailed?'Can bilgisi kaydedilemedi. Yeni deneme ve test işlemleri durduruldu.':view.developerBypass?'Geliştirici testi: can sınırı ve can harcaması kapalı.':view.lives===0&&!view.unlimited?'Yeni bir bölüm için can gerekiyor. Bekleyebilir veya ücretsiz öğreticiyi oynayabilirsin.':'Yeni ana bölümler için canın olmalı. Kaybetmek veya oynanmış bir denemeyi sıfırlamak 1 can harcar.';
+    if($('lives-next'))$('lives-next').textContent=view?.nextLifeAtUtc!==null&&view?.nextLifeAtUtc!==undefined?lifeTime(view.remainingMs):view?'Canlar dolu':'—';
+    if($('lives-unlimited-note')){$('lives-unlimited-note').hidden=!view?.unlimited;$('lives-unlimited-note').textContent=view?.unlimited?`Sınırsız can: ${lifeTime(view.unlimitedRemainingMs)}. Normal canların da yenilenmeye devam eder.`:'';}
+    if($('lives-gold'))$('lives-gold').textContent=lifeFeature?.testWallet.gold??'—';
+    const products=[['lives-buy-one','single_life','lives-price-one'],['lives-buy-refill','refill_lives','lives-price-refill'],['lives-buy-unlimited','unlimited_lives_30m','lives-price-unlimited']];
+    for(const [id,product,priceId]of products){const offer=view?lifeManager.transactionAvailability(lifeFeature.life,product):null;if($(id))$(id).disabled=!offer?.allowed||lifeWriteFailed||lifeFeature.testWallet.gold<offer.costGold;if($(priceId))$(priceId).textContent=offer?.costGold??window.HEX_LIVES_CONFIG?.products?.[product]?.costGold??'—'; }
+    const adOffer=view?lifeManager.transactionAvailability(lifeFeature.life,'ad_life'):null;
+    if($('lives-ad')){$('lives-ad').disabled=!adOffer?.allowed||!lifeFeature?.provider.adAvailable||lifeWriteFailed;const label=$('lives-ad').querySelector('span');if(label&&lifeManager)label.textContent=`Test reklamı: +${lifeManager.config.ads.rewardLives} can`;}
+    const unlimitedLabel=$('lives-buy-unlimited')?.querySelector(':scope > span');if(unlimitedLabel&&lifeManager)unlimitedLabel.textContent=`${lifeManager.config.products.unlimited_lives_30m.durationMs/60000} dk sınırsız can`;
+    if($('lives-ad-status'))$('lives-ad-status').textContent=!view?'Test sağlayıcısı yüklenemedi.':!lifeFeature.provider.adAvailable?'Şu anda test reklamı yok. Bekleyebilir veya Test Altını kullanabilirsin.':!adOffer.allowed?adOffer.reason==='already_full'?'Canların zaten dolu.':`Yeni test reklamı için ${lifeTime(adOffer.waitMs||0)} bekle. Bekleme ve Test Altını seçeneklerin de var.`:`TEST: +${lifeManager.config.ads.rewardLives} can. Bugün ${view.adClaimsToday} / ${lifeManager.config.ads.dailyLimit} reklam kullanıldı.`;
+    if($('setting-lives-bypass')){$('setting-lives-bypass').checked=!!view?.developerBypass;$('setting-lives-bypass').disabled=!view||!lifeManager.config.development.allowBypass;}
+    if($('setting-mock-ad')){$('setting-mock-ad').checked=!!lifeFeature?.provider.adAvailable;$('setting-mock-ad').disabled=!view;}
+    if($('setting-test-gold'))$('setting-test-gold').disabled=!view||lifeWriteFailed;
+    if($('lives-wait'))$('lives-wait').textContent=pendingLifeStart&&view?.canStart?'Bölüme başla':'Bekle';
+  }
+  function openLives(request=null){
+    lifeRefresh({persist:true});pendingLifeStart=request;renderLives();
+    if($('lives-dialog'))openModal('lives-dialog');else toast('Can bilgisi şu anda açılamadı. Sayfayı yenileyip tekrar dene.');
+  }
+  function freshCampaignAvailable(index){
+    if(index<tutorialCount)return true;
+    if(!window.HexAttempts||!variantCatalog?.currentVersion)return false;
+    try{const id=String(levels[index].id);variantCatalog.start(levels[index].id,{attemptSerial:saved.variantSelection.serial+1,selectionSeed:selectionSeed(),previousVariantId:saved.attempts[index]?.variantId,recentVariantIds:saved.variantSelection.recent[id]||[]});return true;}catch(_){return false;}
+  }
+  function resumeLifeRequest(){
+    const request=pendingLifeStart;if(!request)return false;
+    lifeRefresh({persist:true});if(!lifeReady()||lifeWriteFailed||!lifeManager.canStart(lifeFeature.life,{tutorial:request.index<tutorialCount}))return false;
+    pendingLifeStart=null;return enterGame(request.index,{fresh:true,reason:request.reason});
+  }
+  function beginLifeProduct(productId){
+    if(pendingLifeProvider)return;
+    lifeRefresh({persist:true});if(!lifeReady()||lifeWriteFailed){openLives();return;}
+    if(productId!=='test_gold_300'){
+      const offer=lifeManager.transactionAvailability(lifeFeature.life,productId);
+      if(!offer.allowed){toast(offer.reason==='already_full'?'Canların zaten dolu.':'Bu test işlemi henüz kullanılamıyor. Bekleme seçeneklerini kontrol et.');renderLives();return;}
+      if(offer.costGold>lifeFeature.testWallet.gold){toast('Test Altının yeterli değil. Bekleyebilir veya geliştirici ayarından Test Altını ekleyebilirsin.');return;}
+    }
+    const result=window.HexLifeProviders.begin(lifeFeature.provider,{productId,nowUtc:lifeManager.view(lifeFeature.life).effectiveNowUtc});
+    if(!result.transactionId){toast('Şu anda test reklamı yok. Bekleyebilir veya Test Altını kullanabilirsin.');renderLives();return;}
+    if(!lifeCommit({...lifeFeature,provider:result.state}))return;
+    pendingLifeProvider=result.transactionId;
+    const text={ad_life:['TEST reklamı',`Gerçek reklam gösterilmiyor. Test sonucunu onaylarsan +${lifeManager.config.ads.rewardLives} can alırsın.`],single_life:['TEST: 1 can',`${lifeManager.config.products.single_life.costGold} Test Altını kullanarak 1 can alacaksın. Gerçek para alınmaz.`],refill_lives:['TEST: Canları tamamla',`${lifeManager.config.products.refill_lives.costGold} Test Altını kullanarak canlarını ${lifeManager.config.maxLives}’e tamamlayacaksın. Gerçek para alınmaz.`],unlimited_lives_30m:['TEST: Sınırsız can',`${lifeManager.config.products.unlimited_lives_30m.costGold} Test Altını kullanarak ${lifeManager.config.products.unlimited_lives_30m.durationMs/60000} dakika sınırsız can alacaksın. Etkin süre varsa bu süre eklenir. Gerçek para alınmaz.`],test_gold_300:['Geliştirici testi','300 Test Altını eklenecek. Bu, gerçek para veya gerçek oyun ekonomisi değildir.']}[productId];
+    if($('life-provider-title'))$('life-provider-title').textContent=text[0];if($('life-provider-description'))$('life-provider-description').textContent=text[1];
+    if($('life-provider-dialog'))openModal('life-provider-dialog');
+  }
+  function applyLifeReceipt(receipt,provider=lifeFeature?.provider){
+    if(!lifeReady()||lifeWriteFailed||!window.HexLifeProviders.verify(provider,receipt))return {applied:false,reason:'unverified_receipt'};
+    lifeRefresh({persist:true});if(lifeWriteFailed)return {applied:false,reason:'storage'};
+    if(Object.prototype.hasOwnProperty.call(lifeFeature.testWallet.processedTransactions,receipt.transactionId))return {applied:false,reason:'duplicate_transaction'};
+    const next=lifeClone(lifeFeature);next.provider=lifeClone(provider);let applied=false,reason='rejected',goldDelta=0;
+    if(receipt.productId==='test_gold_300'){goldDelta=Math.min(300,2147483647-next.testWallet.gold);next.testWallet.gold+=goldDelta;applied=goldDelta>0;reason=applied?'test_gold_granted':'wallet_full';}
+    else{
+      const offer=lifeManager.transactionAvailability(next.life,receipt.productId);
+      if(offer.costGold>next.testWallet.gold)reason='insufficient_gold';
+      else{
+        try{lifeVerificationProvider=provider;const result=lifeManager.applyTransaction(next.life,receipt);next.life=result.state;applied=result.applied;reason=result.reason;if(applied){goldDelta=-offer.costGold;next.testWallet.gold+=goldDelta;}}finally{lifeVerificationProvider=null;}
+      }
+    }
+    next.testWallet.processedTransactions[receipt.transactionId]={productId:receipt.productId,goldDelta,atUtc:next.life.lastSeenUtc};
+    if(!lifeCommit(next))return {applied:false,reason:'storage'};renderLives();return {applied,reason};
+  }
+  function finishLifeProvider(outcome='completed'){
+    const id=pendingLifeProvider;if(!id||!lifeReady())return;
+    lifeRefresh({persist:true});const result=window.HexLifeProviders.complete(lifeFeature.provider,id,{outcome,nowUtc:lifeManager.view(lifeFeature.life).effectiveNowUtc});
+    let applied={applied:false,reason:result.reason};
+    if(result.receipt)applied=applyLifeReceipt(result.receipt,result.state);else lifeCommit({...lifeFeature,provider:result.state});
+    pendingLifeProvider=null;if($('life-provider-dialog')?.open)closeModal($('life-provider-dialog'));
+    renderLives();
+    if(applied.applied){toast(result.receipt.productId==='test_gold_300'?'300 Test Altını eklendi.':'Test işlemi doğrulandı. Canın güncellendi.');resumeLifeRequest();}
+    else if(outcome==='completed')toast(applied.reason==='already_full'?'Canların zaten dolu. Altın veya reklam hakkı harcanmadı.':applied.reason==='insufficient_gold'?'Test Altının yeterli değil. İşlem uygulanmadı.':'Test işlemi tamamlanamadı. Bekleyebilir veya diğer seçenekleri kullanabilirsin.');
+  }
+  function cancelLifeProvider(){
+    if(!pendingLifeProvider||!lifeReady())return;const id=pendingLifeProvider;pendingLifeProvider=null;
+    try{const result=window.HexLifeProviders.complete(lifeFeature.provider,id,{outcome:'cancelled',nowUtc:lifeManager.view(lifeFeature.life).effectiveNowUtc});lifeCommit({...lifeFeature,provider:result.state},{quiet:true});}catch(_){}
+  }
+  function discardCost(entries){
+    if(!lifeReady())return null;let state=lifeManager.reconcile(lifeFeature.life),charged=0;
+    for(const entry of entries)if(entry?.metadata&&entry.game.status==='playing'){const result=lifeManager.settleAttempt(state,lifeContext(entry,'restart'));state=result.state;if(result.charged)charged++;}return charged;
+  }
+  function updateRestartLifeCopy(index){
+    const entry=stageEntry(index),cost=discardCost([entry]);
+    if(pendingRestart?.index===index)pendingRestart.lifeCost=cost;
+    if($('restart-description'))$('restart-description').textContent=lifeReady()&&entry?.game.status==='playing'&&entry.game.turn>0&&lifeManager.view(lifeFeature.life).lives===0&&!lifeManager.view(lifeFeature.life).unlimited&&!lifeManager.view(lifeFeature.life).developerBypass?'Bu deneme kapanacak. Canın olmadığı için can harcanmaz. Yeni deneme için can gerekir.':cost?`Bu bölümdeki ilerlemen sıfırlanacak ve ${cost} can harcanacak.${lifeManager.view(lifeFeature.life).lives===1?' Son canını kullanıyorsun. Yeni tahta açmak için sonra beklemen veya can alman gerekecek.':' Yeni bir tahta açılacak.'}`:'Bu bölümdeki ilerlemen sıfırlanacak. Yeni bir tahta açılacak. Bu işlem can harcamaz.';
+  }
+  function bindLivesUI(){
+    for(const button of document.querySelectorAll('[data-open-lives]'))button.addEventListener('click',()=>openLives());
+    $('lives-ad')?.addEventListener('click',()=>beginLifeProduct('ad_life'));
+    $('lives-buy-one')?.addEventListener('click',()=>beginLifeProduct('single_life'));
+    $('lives-buy-refill')?.addEventListener('click',()=>beginLifeProduct('refill_lives'));
+    $('lives-buy-unlimited')?.addEventListener('click',()=>beginLifeProduct('unlimited_lives_30m'));
+    $('setting-test-gold')?.addEventListener('click',()=>beginLifeProduct('test_gold_300'));
+    $('life-provider-confirm')?.addEventListener('click',()=>finishLifeProvider('completed'));
+    $('life-provider-dialog')?.addEventListener('close',cancelLifeProvider);
+    $('lives-wait')?.addEventListener('click',()=>{const request=pendingLifeStart;pendingLifeStart=null;if(request){lifeRefresh({persist:true});if(lifeReady()&&!lifeWriteFailed&&lifeManager.canStart(lifeFeature.life,{tutorial:request.index<tutorialCount}))enterGame(request.index,{fresh:true,reason:request.reason});}});
+    $('lives-teach')?.addEventListener('click',()=>{pendingLifeStart=null;enterGame(0,{fresh:true,reason:'free_tutorial'});});
+    $('setting-lives-bypass')?.addEventListener('change',event=>{if(!lifeReady())return;const result=lifeManager.setDeveloperBypass(lifeFeature.life,event.target.checked);lifeCommit({...lifeFeature,life:result.state});renderLives();});
+    $('setting-mock-ad')?.addEventListener('change',event=>{if(!lifeReady())return;lifeCommit({...lifeFeature,provider:window.HexLifeProviders.setAdAvailable(lifeFeature.provider,event.target.checked)});renderLives();});
+    const tick=()=>{lifeRefresh();renderLives();};
+    window.setInterval(tick,1000);window.addEventListener('focus',()=>{lifeRefresh({persist:true});renderLives();});
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden){lifeRefresh({persist:true});renderLives();}});
+    window.addEventListener('pagehide',()=>lifeRefresh({persist:true}));
+    window.HexLifeTestAdapter=Object.freeze({applyReceipt:receipt=>applyLifeReceipt(receipt)});
+  }
   function persist() {
     saved.current=active;
     if(engine&&!attemptPending&&!saveBlocked){
@@ -241,7 +424,7 @@
   document.addEventListener('dblclick',preventZoom);
   window.addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&['+','-','=','0'].includes(event.key))preventZoom(event);});
   function topDialog(){return [...modalStack].reverse().map(id=>$(id)).find(dialog=>dialog.open)||[...document.querySelectorAll('dialog[open]')].at(-1)||null;}
-  const gameInputAllowed=()=>screen==='game'&&!paused&&!topDialog();
+  const gameInputAllowed=()=>screen==='game'&&!paused&&!topDialog()&&!lifeDiscarded();
   function syncAudio(){document.body.classList.toggle('reduce-motion',reduceMotion());audio?.configure({sfx:saved.sound,music:saved.preferences.music,volume:saved.preferences.volume});audio?.setActive(!document.hidden&&!paused);}
   function unlockAudio(){syncAudio();audio?.unlock().catch(()=>{});}
   function openModal(id){
@@ -293,7 +476,7 @@
   }
   function nextStage(){
     const current=validCheckpoint(saved.current);
-    if(current?.status==='playing'&&current.turn>0&&canOpen(saved.current))return {index:saved.current,resume:true};
+    if(current?.status==='playing'&&current.turn>0&&canOpen(saved.current)&&!lifeDiscarded(saved.current))return {index:saved.current,resume:true};
     const next=levels.findIndex((_,i)=>!saved.done.includes(i)&&canOpen(i));
     return next>=0?{index:next,resume:false}:null;
   }
@@ -331,12 +514,31 @@
     for(const name of ['home','journey','game','records']){const node=$(name+'-screen');node.hidden=name!==screen;node.inert=name!==screen;}
     document.body.dataset.screen=screen;
     document.querySelectorAll('[data-nav]').forEach(button=>{const active=button.dataset.nav===screen;button.classList.toggle('is-active',active);if(active)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
-    updateMenus();syncAudio();
+    updateMenus();syncAudio();renderLives();
     if(historyChange&&(replace||previousScreen!==screen))try{history[replace?'replaceState':'pushState']({screen},'','#'+screen);}catch(_){}
     document.documentElement.scrollTop=0;document.body.scrollTop=0;
   }
-  function enterGame(index,{fresh=false,reason='stage_entry'}={}){
+  function enterGame(index,{fresh=false,reason='stage_entry',lifeCostQuote}={}){
+    lifeRefresh({persist:true});
+    if(index>=tutorialCount&&lifeDiscarded(index))fresh=true;
+    const savedGame=validCheckpoint(index),newAttempt=fresh||!savedGame||savedGame.status!=='playing';
+    if(index>=tutorialCount&&newAttempt&&savedGame&&savedGame.status!=='playing'&&lifeReady()){
+      const terminal=stageEntry(index),recovery=lifeSettle(terminal,savedGame.status==='won'?'won':'failed');
+      if(['storage','invalid','unavailable','ledger_full'].includes(recovery.reason)){openLives({index,reason});return false;}
+    }
+    if(index>=tutorialCount&&newAttempt){
+      if(!lifeReady()||lifeWriteFailed||!lifeManager.canStart(lifeFeature.life,{tutorial:false})){openLives({index,reason});return false;}
+      if(!freshCampaignAvailable(index)){toast('Yeni tahtalar yüklenemedi. Mevcut denemen korundu.');return false;}
+    }
     const previousEntry=fresh?stageEntry(index):null;
+    if(index>=tutorialCount&&fresh&&previousEntry?.game.status==='playing'){
+      const settlement=lifeSettle(previousEntry,'restart',{maxCharge:lifeCostQuote});
+      if(settlement.reason==='confirmation_changed'){pendingRestart={index,reason};updateRestartLifeCopy(index);openModal('restart-dialog');toast('Can koşulları değişti. Yeni bilgiyi kontrol edip tekrar onayla.');return false;}
+      if(['storage','invalid','unavailable','ledger_full'].includes(settlement.reason)){openLives({index,reason});return false;}
+      if(!lifeManager.canStart(lifeFeature.life,{tutorial:false})){
+        discardStage(index,reason,previousEntry);persist();showScreen('home');openLives({index,reason});return false;
+      }
+    }
     closeAllDialogs();paused=false;
     if(!loadLevel(index,fresh,{activate:true})){showScreen('home');toast(loadIssue==='data'?'Yeni tahtalar yüklenemedi. Sayfayı yenileyip tekrar dene.':'Kaydın açılamadı ve korundu. İstersen yeni bir deneme başlatabilirsin.');return false;}
     const previous=previousEntry?discardStage(index,reason,previousEntry):null;
@@ -346,7 +548,7 @@
   }
   function requestStage(index){
     if(!Number.isInteger(index)||index<0||index>=levels.length||!canOpen(index))return;
-    const level=levels[index],checkpoint=validCheckpoint(index),resume=checkpoint?.status==='playing'&&checkpoint.turn>0,blocked=!!saved.boards[index]&&!checkpoint;
+    const level=levels[index],checkpoint=validCheckpoint(index),resume=checkpoint?.status==='playing'&&checkpoint.turn>0&&!lifeDiscarded(index),blocked=!!saved.boards[index]&&!checkpoint;
     pendingStage=index;
     $('pregame-dialog').dataset.learning=index===0?'first':index<tutorialCount?'goals':'';
     if($('pregame-lesson'))$('pregame-lesson').hidden=index!==0;
@@ -735,7 +937,7 @@
     const job={token:++epoch,result,controller:new AbortController(),animations:[],watchdog:null,scoreDisplay:before.score,scoreTasks:[],rewardPlan,rewardCueIds:new Set(),rewardMilestoneIds:new Set(),rewardNodes:new Set(),rewardHeadlineUsed:false};
     presentation=job;busy=true;selected=null;hinted=null;comboText='';
     try{
-      markCompleted(true);persist();terminalEvent();renderLevels();
+      markCompleted(true);persist();settleActiveLife();terminalEvent();renderLevels();
       if(!rewardPlan&&saved.preferences.haptics&&typeof navigator.vibrate==='function')try{navigator.vibrate(12);}catch(_){}
       if(rewardPlan&&!canAnimate()&&!rewardPlan.headline?.completion){
         const cue=rewardPlan.headline||rewardPlan.waves.reduce((best,next)=>!best||next.tier>best.tier?next:best,null);rewardFeedback(job,cue);
@@ -786,9 +988,9 @@
     const checkpoint=index===active&&!attemptPending&&!saveBlocked?engine:validCheckpoint(index);
     const reason=checkpoint?.status==='lost'?'retry':'restart';
     if(index>=tutorialCount&&variantCatalog&&checkpoint?.status==='playing'){
-      pendingRestart={index,reason};openModal('restart-dialog');return;
+      pendingRestart={index,reason};updateRestartLifeCopy(index);openModal('restart-dialog');return;
     }
-    if(index>=tutorialCount&&saved.boards[index]&&!checkpoint&&variantCatalog){pendingRestart={index,reason};openModal('restart-dialog');return;}
+    if(index>=tutorialCount&&saved.boards[index]&&!checkpoint&&variantCatalog){pendingRestart={index,reason};updateRestartLifeCopy(index);openModal('restart-dialog');return;}
     if(enterGame(index,{fresh:true,reason}))toast(index<tutorialCount?'Öğretici baştan başladı.':'Yeni bir tahta hazır. Tekrar dene.');
   }
   function hintEvent(suggestion,kind='heuristic'){
@@ -808,7 +1010,7 @@
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=16');
+            job.worker=new Worker('./hint-worker.js?v=17');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:activeLevel,snapshot:engine.snapshot()});
@@ -900,9 +1102,20 @@
   $('help-teach')?.addEventListener('click',()=>enterGame(0,{fresh:true}));
   $('settings').addEventListener('click',event=>{event.stopPropagation();openSettings();});
   $('pause').addEventListener('click',pauseGame);
-  $('pregame-start').addEventListener('click',()=>{const index=pendingStage;if(index===null)return;const checkpoint=validCheckpoint(index);if(saved.boards[index]&&!checkpoint&&variantCatalog){restart(index);return;}enterGame(index,{fresh:checkpoint?.status!=='playing',reason:checkpoint?'replay':'stage_entry'});});
+  $('pregame-start').addEventListener('click',()=>{const index=pendingStage;if(index===null)return;const checkpoint=validCheckpoint(index);if(saved.boards[index]&&!checkpoint&&variantCatalog){restart(index);return;}enterGame(index,{fresh:checkpoint?.status!=='playing'||lifeDiscarded(index),reason:checkpoint?'replay':'stage_entry'});});
   $('pregame-restart').addEventListener('click',()=>{const index=pendingStage;if(index!==null)restart(index);});
-  $('restart-confirm')?.addEventListener('click',()=>{const request=pendingRestart;if(!request)return;if(enterGame(request.index,{fresh:true,reason:request.reason}))toast('Yeni bir tahta hazır. Önceki denemen sıfırlandı.');});
+  $('restart-confirm')?.addEventListener('click',()=>{
+    const request=pendingRestart;if(!request)return;lifeRefresh({persist:true});
+    const entry=stageEntry(request.index),view=lifeReady()?lifeManager.view(lifeFeature.life):null;
+    if(request.index>=tutorialCount&&entry?.game.status==='playing'&&entry.game.turn>0&&view&&!view.canStart){
+      if(!freshCampaignAvailable(request.index)){toast('Yeni tahtalar yüklenemedi. Mevcut denemen korundu.');return;}
+      const result=lifeSettle(entry,'restart',{maxCharge:request.lifeCost});
+      if(['storage','invalid','unavailable','ledger_full'].includes(result.reason)){openLives({index:request.index,reason:request.reason});return;}
+      if(result.reason==='confirmation_changed'){updateRestartLifeCopy(request.index);return;}
+      discardStage(request.index,request.reason,entry);persist();showScreen('home');openLives({index:request.index,reason:request.reason});return;
+    }
+    if(enterGame(request.index,{fresh:true,reason:request.reason,lifeCostQuote:request.lifeCost}))toast('Yeni bir tahta hazır. Önceki denemen sıfırlandı.');
+  });
   $('pause-continue').addEventListener('click',()=>{closeModal($('pause-dialog'));unlockAudio();});
   $('pause-restart').addEventListener('click',restart);
   $('pause-home').addEventListener('click',()=>showScreen('home'));
@@ -915,8 +1128,24 @@
   $('setting-motion').addEventListener('change',event=>{saved.preferences.motion=event.target.value;if(presentation)finishPresentation(presentation);savePreferences();});
   $('setting-volume').addEventListener('input',event=>{saved.preferences.volume=Math.max(0,Math.min(1,Number(event.target.value)/100));$('volume-value').textContent=`%${Math.round(saved.preferences.volume*100)}`;savePreferences();});
   $('setting-haptics').addEventListener('change',event=>{saved.preferences.haptics=event.target.checked;savePreferences();if(saved.preferences.haptics&&typeof navigator.vibrate==='function')try{navigator.vibrate(12);}catch(_){} });
-  $('settings-reset').addEventListener('click',()=>openModal('reset-dialog'));
+  $('settings-reset').addEventListener('click',()=>{
+    lifeRefresh({persist:true});const entries=levels.map((_,index)=>stageEntry(index)),cost=discardCost(entries);pendingResetLifeCost=cost;
+    if($('reset-description'))$('reset-description').textContent=`Bütün bölüm ilerlemen silinecek.${cost?` Oynanmış açık denemeleri silmek ${cost} can harcar.`:''} Canların yeniden doldurulmaz. Test Altının ve işlem kayıtların korunur.`;
+    openModal('reset-dialog');
+  });
   $('reset-confirm').addEventListener('click',()=>{
+    lifeRefresh({persist:true});
+    if(!lifeReady()){toast('Can verisi açılamadı. İlerlemen korundu.');return;}
+    const currentResetCost=discardCost(levels.map((_,index)=>stageEntry(index)));
+    if(pendingResetLifeCost===null||currentResetCost>pendingResetLifeCost){pendingResetLifeCost=currentResetCost;if($('reset-description'))$('reset-description').textContent=`Koşullar değişti. Bütün bölüm ilerlemen silinecek ve ${currentResetCost} can harcanacak. Canların yeniden doldurulmaz; Test Altının ve işlem kayıtların korunur.`;toast('Can koşulları değişti. Yeni bilgiyi kontrol edip tekrar onayla.');return;}
+    const lifeReset=lifeClone(lifeFeature);let actualResetCost=0;
+    for(let index=0;index<levels.length;index++){const entry=stageEntry(index);if(entry?.game.status==='playing'){
+      const result=lifeManager.settleAttempt(lifeReset.life,lifeContext(entry,'restart'));
+      if(['invalid','unavailable','ledger_full'].includes(result.reason)){toast('Can işlemi tamamlanamadı. İlerlemen korundu.');return;}
+      lifeReset.life=result.state;if(result.charged)actualResetCost++;
+    }}
+    if(actualResetCost>pendingResetLifeCost){pendingResetLifeCost=actualResetCost;if($('reset-description'))$('reset-description').textContent=`Koşullar değişti. Bütün bölüm ilerlemen silinecek ve ${actualResetCost} can harcanacak. Canların yeniden doldurulmaz; Test Altının ve işlem kayıtların korunur.`;toast('Can koşulları değişti. Yeni bilgiyi kontrol edip tekrar onayla.');return;}
+    if(!lifeCommit(lifeReset))return;
     for(let index=0;index<levels.length;index++)discardStage(index,'progress_reset');cancelPresentation();cancelHint();closeAllDialogs();saved.done=[];saved.boards={};saved.attempts={};saved.attemptStats={};saved.variantSelection.counts={};saved.variantSelection.recent={};saved.guideAcks=[];saved.records={};saved.current=0;active=0;loadLevel(0,true);showScreen('home',{replace:true});toast('Yolculuk sıfırlandı. Ses ve hareket tercihlerin korundu.');
   });
   window.addEventListener('popstate',event=>{
@@ -937,6 +1166,6 @@
   window.addEventListener('pagehide',()=>{audio?.stop();if(engine)persist();});
   const motionQuery=window.matchMedia?.('(prefers-reduced-motion: reduce)');
   motionQuery?.addEventListener?.('change',()=>{if(saved.preferences.motion==='auto'){if(presentation&&reduceMotion())finishPresentation(presentation);syncAudio();}});
-  hydrateRecords();renderSound();loadLevel(active);showScreen('home',{replace:true});
+  initializeLives();bindLivesUI();hydrateRecords();renderSound();loadLevel(active);showScreen('home',{replace:true});
   if(migrated)toast('İlerlemen korundu. Öğreticileri yolculuk menüsünden yeniden oynayabilirsin.');
 })();

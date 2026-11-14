@@ -4,7 +4,7 @@
 
 Oynanışın referansı saf JavaScript motoru, sürümlü bölüm verileri ve kayıtlı test çıktılarıdır. Unity aktarımında önce aynı girdiden aynı oyun sonucunu üreten C# çekirdeği kurulmalı; çizim, ses, titreşim, dokunma ve cihaz servisleri bunun dışına bağlanmalıdır.
 
-Bu depoda **oyun motorunun C# uygulaması henüz yoktur**. C# olarak uygulanmış ve derlenerek karşılaştırılan parça `unity/Rewards/` içindeki Reward Director'dır. Unity sahnesi, mobil paket, mağaza, ödeme ve reklam entegrasyonu bu çalışmanın parçası değildir.
+Bu depoda **oyun motorunun C# uygulaması henüz yoktur**. C# olarak uygulanmış ve derlenerek karşılaştırılan parça `unity/Rewards/` içindeki Reward Director'dır. Unity sahnesi, mobil paket, gerçek ödeme ve canlı reklam entegrasyonu bu çalışmanın parçası değildir. 9.1'deki can çekirdeği ve sahte TEST işlemleri JS tarafında uygulanır; C# LifeManager henüz yazılmadı.
 
 | Alan | Bu sürümde uygulanan | C# durumu |
 | --- | --- | --- |
@@ -15,7 +15,8 @@ Bu depoda **oyun motorunun C# uygulaması henüz yoktur**. C# olarak uygulanmı�
 | İpucu | Çoklu doğrulanmış rota, sınırlı arama, açık garanti bilgisi | Aynı düğüm bütçesiyle önce saf C# karşılığı yapılacak. |
 | Ödül yöneticisi | Saf JS + C# 7.3, ortak ödül vektörleri | Uygulandı; Unity sunumuna bağlanması gerekiyor. |
 | Yerel olaylar | `dist/events.js`, tarayıcıda sınırlı yerel tampon | Aynı şema için cihaz adaptörü yapılacak. |
-| Ekonomi | Tasarım belgesi ve yüklenmeyen öneri JSON'u | Uygulanmadı; fiyatlar ve yardım komutları öneridir. |
+| Can | `dist/lives.js`, kanonik `lives-config.json`, ayrı kayıt ve sahte sağlayıcı | C# karşılığı aktarılacak; ortak can JSON vektörleri hazır. |
+| Ekonomi | Genel tasarım JSON'u; 9.1'de yalnızca TEST can cüzdanı/ürünleri | Gerçek mali sistem ve oyun içi yardım komutları uygulanmadı. |
 
 ## Modül eşlemesi
 
@@ -35,7 +36,8 @@ Aşağıdaki C# adları hedef modüllerdir; Reward Director dışındakiler mevc
 | Hint Solver | `hint()` | `HintSolver`: klonlarda çalışır; doğrulanmış yol, aramayla bulunan kazanma ve sezgisel öneriyi ayırır. |
 | Save/Load | `_restore()`, `HexAttempts.restore()/checkpoint()`, uygulama bağlantısı | `SaveValidator`, `AttemptRepository`, eski kayıt adaptörü: kimliği çöz, bütün hamleleri tekrar oynat, tüm durumu karşılaştır. |
 | Reward Director | `rewards.js`, `reward-adapter.js`, `reward-rules.json` | Mevcut `RewardDirector.cs`, `RewardTypes.cs`; oyun dalgalarını girdi DTO'suna çeviren adaptör ayrıca bağlanır. |
-| Economy Rules | `data/economy-design.json` ve ekonomi belgesi | Gelecekte `EconomyRules`, cüzdan günlüğü ve yardım komutları; şu anda oyun çekirdeğine eklenmez. |
+| Life Manager | `dist/lives.js`, `lives-config.json` ve uygulama bağlantısı | `LifeManager`, `LifeState`, `LifeConfig`, `LifeSettlement`; dış `IUtcClock`, `IReceiptVerifier`, ayrı kayıt adaptörü. Motorun RNG ve snapshot'ına dokunmaz. |
+| Economy Rules | `data/economy-design.json`, `life-providers.js` ve ekonomi belgesi | 9.1 TEST cüzdanı/sağlayıcısı ayrı adaptördür; gerçek `EconomyRules`, mali günlük ve oyun yardımları gelecekte yapılır. |
 
 `dist/app.js` içindeki ekran yönetimi, giriş, kayıt servisi ve sunum tek bir C# oyun motoruna kopyalanmamalıdır. Unity tarafında deneme akışını yöneten bir uygulama katmanı, saf çekirdekten ayrı bir sunum katmanı ve cihaz adaptörleri gerekir. Bu katmanın mevcut davranışı; ön izleme, onaylı yeniden başlatma, devam etme ve sonuç ekranı testlerinden alınır.
 
@@ -48,7 +50,8 @@ Aşağıdaki C# adları hedef modüllerdir; Reward Director dışındakiler mevc
 | `dist/variants.json` | `schemaVersion: 1`, `levelDataVersion: variants-v1` | Ana bölüm başına 4 başlangıç, tohum, en az iki farklı ilk takasla kazandıran yol ve analiz bilgileri. |
 | `dist/difficulty-rules.json` | Veri içindeki şema ve analiz parametreleri | Çevrimdışı bot davranışları, kabul aralıkları ve bölüm ritmi. Oynarken sonucu değiştiren bir ayar değildir. |
 | `dist/reward-rules.json` | Ödül kuralı sürümü 1 | Sadece görsel/işitsel/dokunsal geri bildirim kararları. |
-| `data/economy-design.json` | `schemaVersion: 1`, `rulesVersion: economy-draft-v1`, `status: design_only`, `loadedByPrototype: false` | Gelecekteki ekonomi için doğrulanmamış aday parametreler. Çalışan oyun tarafından yüklenmez. |
+| `dist/lives-config.json` | `schemaVersion: 1`, `rulesVersion: lives-v1` | 5 can, 30 dakika yenilenme, test fiyatları, reklam sınırları ve isteğe bağlı ilk kayıp koruması. Web sarmalayıcısı `lives-config.js`; C# kanonik JSON'u okur. |
+| `data/economy-design.json` | `schemaVersion: 1`, `rulesVersion: economy-draft-v2`, `status: design_only`, `loadedByPrototype: false` | Genel ekonomi önerileri ve ayrı 9.1 TEST can alt kümesi. Bu dosya yüklenmez; uygulanan can değerlerinin kaynağı `lives-config.json` olur. |
 
 Orijinal ana bölüm ve öğretici JSON'ları `node export-game-config.cjs` ile mevcut JS kaynaklarından üretilir. `--check`, dışa aktarımın bütün alanları ve kimlik türlerini aynen koruduğunu denetler. JS kaynakları değiştirilmez. C# veri yükleyicisi bu JSON'ları okuyabilir; JS kodunu çalıştırması gerekmez. `dist/variants-data.js` yalnızca web için üretilmiş sarmalayıcıdır; Unity'nin veri kaynağı kanonik JSON olmalıdır.
 
@@ -146,9 +149,51 @@ Görsel sistem `SwapResult` içindeki dalgaları ve düşüş kimliklerini tüke
 
 Mevcut olay sözleşmesi [ANALYTICS.md](ANALYTICS.md) içindedir. `HexEvents` saf doğrulama/ekleme yapar; `hexrota-events-v1` kaydı varsayılan son 500 olayı saklar. Olay ayrıntıları iç içe `details` nesnesi değil düz alanlardır. `hintKind` kaynak sınıfını, dizge olan `hintGuarantee` ise `certified_route`, `bounded_search`, `none` veya `guided` değerini taşır. Saat, saklama ve ileride ulaşım adaptörünün sorumluluğudur; motor sonucu olay kaydı yazılamadığı için değişmez. Bu tampon eksiksiz insan tutma veya mağaza dönüşüm veritabanı değildir.
 
-Ekonomi için [ECONOMY_DESIGN.md](ECONOMY_DESIGN.md) ve tasarım JSON'u kullanılır. Henüz cüzdan, ürün veya ekonomik komut çalışmaz. Gelecekteki `Swap`, `GrantMoves`, `ClearCell`, `RerollCell`, `ReduceGroundLayer` günlüğü, takas sayısı ile komut sırasını ayırmalı; RNG, ücret ve uygunluk aynı doğrulanabilir işlemde bağlanmalıdır. Bu **gelecek kayıt/kural sürümüdür**; v4 geçmişine gizlice hamle eklemek veya hücre temizlemek doğru değildir. Yeni sürüm numarası ve kesin komut semantiği henüz kararlaştırılmadı; eski snapshot v4 okuyucusu korunmalıdır.
+Ekonomi için [ECONOMY_DESIGN.md](ECONOMY_DESIGN.md) ve tasarım JSON'u kullanılır. 9.1'de yalnızca ayrı TEST Altın cüzdanı ve sahte can ürünleri çalışır; gerçek para, canlı reklam veya oyun içi ekonomik yardım komutu yoktur. Gelecekteki `Swap`, `GrantMoves`, `ClearCell`, `RerollCell`, `ReduceGroundLayer` günlüğü, takas sayısı ile komut sırasını ayırmalı; RNG, ücret ve uygunluk aynı doğrulanabilir işlemde bağlanmalıdır. Bu **gelecek kayıt/kural sürümüdür**; v4 geçmişine gizlice hamle eklemek veya hücre temizlemek doğru değildir. Yeni sürüm numarası ve kesin komut semantiği henüz kararlaştırılmadı; eski snapshot v4 okuyucusu korunmalıdır.
 
 Reward Director v1 en az üç taş eşleşen dalgalar ve sıralı takaslar bekler. Tek taş temizleme veya normal hamle harcamayan yardım bu sözleşmeye doğrudan sığmaz. Üç taş eşleşmiş gibi veri uydurulamaz. Ayrı yardım geri bildirimi veya sürümlü ödül adaptörü, komut/hamle/ödül sırası ayrımıyla ayrıca tasarlanmalı ve test edilmelidir. Ücretsiz kazanılan ve satın alınan Altınla aynı komut aynı oyunu üretmelidir; satış kaynağı motor girdisi değildir.
+
+## Can v1 — taşınabilir ek sözleşme
+
+9.1 can yöneticisinin kuralları [LIVES_DESIGN.md](LIVES_DESIGN.md) içinde dondurulmuştur. Bu katman iki ayrı işi yapar: yeni ana denemenin açılmasına izin vermek ve gerçek bir denemenin can sonucunu kimliğiyle bir kez kaydetmek. `HexMatch` içine can, tarih, cüzdan veya reklam verisi girmez. Mevcut 40 varyantın ve eski on bölümün kazanma yolları aynıdır.
+
+C# `LifeManager`, `createManager(config, { clock, verifyReceipt })` sözleşmesinin karşılığı olmalıdır. Clock UTC milisaniye `long` döndürür; her açık geçişte tek zaman örneği kullanılır. Saf çekirdek `DateTime.UtcNow`, Unity sahnesi, reklam/ödeme SDK'sı veya depolama çağırmaz. Doğrulayıcı enjekte edilir; verilmemiş doğrulayıcı bütün makbuzları reddeder. Unity'nin gerçek sağlayıcısı gelecekte bu sınırın dışına bağlanır; `development` makbuzu gerçek para kanıtı değildir. Can çekirdeği sağlayıcı adını bu test değerine kilitlemez; güvenilirliği enjekte edilen doğrulayıcı belirler, böylece gerçek adaptör eklendiğinde can kuralları yeniden yazılmaz.
+
+Can DTO'su: `schemaVersion: 1`, `rulesVersion: lives-v1`, `lives`, nullable `regenAnchorUtc`, `lastSeenUtc`, nullable `unlimitedUntilUtc`, `developerBypass`, `settledAttempts`, `processedTransactions`, `protectionUsed`, `firstFailures`, `adUsage`. Can 0…5 tamsayıdır. Bütün UTC alanları güvenli JS tamsayı aralığında `long`; `null`, sıfırla değiştirilmez. Günlük reklam anahtarı `floor(effectiveUtc / 86400000)` olur, yerel saat dilimi değildir. `number:1` ve `string:1` koruma anahtarları farklı kalır.
+
+Saklanan zarf oyundan ayrıdır:
+
+```text
+hexrota-lives-v1:
+  schemaVersion: 1
+  life: LifeStateV1
+  testWallet:
+    schemaVersion: 1
+    gold: integer
+    processedTransactions: { transactionId: { productId, goldDelta, atUtc } }
+  provider:
+    schemaVersion: 1
+    namespace: string
+    nextSerial: safe integer
+    adAvailable: boolean
+    transactions: { transactionId: development provider record }
+```
+
+`hexrota-match-v5` hâlâ tahta/varyant/RNG/hamle geçmişidir. Native kayıt adaptörü can/TEST işlem zarfını atomik saklamalı; başarısız yazımı başarı diye göstermemelidir. Oyuncu ilerlemesini sıfırlamak, can sayacını veya işlenmiş makbuz kimliklerini sıfırlamaz.
+
+Makbuzun beş alanı: `transactionId`, `productId`, `provider: development`, `status: completed`, `verifiedAtUtc`. Ürünler `ad_life`, `single_life`, `refill_lives`, `unlimited_lives_30m`; açık test Altın yüklemesi sağlayıcı/cüzdanda ayrı `test_gold_300` ürünüdür. Doğrulayıcı makbuzu sağlayıcının tamamlanmış kaydıyla karşılaştırır; ödül miktarı veya fiyat callback'ten alınmaz. Aynı kimlik bir kez uygulanır; doğrulanmış fakat uygun olmayan işlem de tekrar ödüle dönmesin diye kaydedilir. Can ve işlem kimlikleri sessizce budanmaz; 20.000 kayıt kapasitesinde yeni denemeler/işlemler engellenir, mevcut devam ve öğreticiler korunur.
+
+C#'ta aynı sırayla korunacaklar:
+
+1. Etkin zaman `max(clockUtc, lastSeenUtc)` olur. Geri alınan saat canı geri çekmez veya sınırsız/reklam hakkını yeniden yaratmaz; saat yakalayana kadar ilerleme donabilir. İleri alınan cihaz saati yerel prototipte güvenilir mali süre otoritesi değildir.
+2. Eksik can için geçen tam 30 dakikalar eklenir. İlk kayıp aralığı başlatır; sonraki kayıp veya +1 ödül mevcut aralığı kaydırmaz. Beşe ulaşınca başlangıç `null` olur; daha sonra eksilirse o andan yeni aralık başlar.
+3. Sınırsız hak normal yenilenmeyle birlikte çalışır; normal bakiyeyi zorla doldurmaz. Yeni doğrulanmış hak `max(etkinŞimdi, eskiBitiş) + 30 dakika` uzatır. Tekrar callback uzatmaz.
+4. Ana kayıp ve geçerli takas sonrası onaylı sıfırlama Attempt ID başına en fazla bir can harcar. Onaysız sıfırlama, menü, kapanma ve öğretici ücretsizdir. 0 can yeni denemeyi engeller; kapatılmamış geçerli kayıt devam edebilir. Son canla onaylı sıfırlamada eski kimlik kapanır, 0 iken aynı kimlik ücretsiz geri açılamaz. Zaten 0 canla oynanmış kaydı sıfırlama açıkça onaylanırsa `empty` muafiyetiyle kapanır; borç tutulmaz, daha sonra kazanılan can tekrar kesilmez. Onaysız yeni deneme engeli veya iptal eski kaydı kapatmaz. Onay sırasında süre nedeniyle maliyet yükselirse kesintiden önce yeni açıklama ve yeniden onay gerekir.
+5. Bütün ilerlemeyi sıfırlama onayı, doğrulanmış açık ve oynanmış ana denemelerin gerçek toplam can maliyeti varsa bunu önceden gösterir. Bütün sonuçlandırmalar tek can zarfında kesinleşmeden oyun kaydı temizlenmez; can/TEST Altın/koruma/işlem kimlikleri ve seçim kimliği sayacı korunur.
+6. İlk özellik geçişi eski bitmiş sonuçları `historical` olarak kabul eder, ücret almaz. Sonraki kesinti sonrası henüz işlenmemiş yeni sonuçlar tek kez uzlaştırılır. Bypass/sınırsız/koruma nedeniyle ücretsiz sonuç da kayıtlı kalır; ayar kapanınca geriye dönük ücret çıkmaz.
+7. Gelecekte +3/+5 aynı denemeyi açarsa ilk can sonucu korunur: ikinci kayıp yeniden kesmez, kazanma yeni kesinti veya otomatik iade üretmez. Yardım komutu uygulaması hâlâ yeni oyun-kuralı/kayıt sözleşmesi gerektirir.
+
+`fixtures/lives-vectors.json` can portunun ortak beklenen JSON'udur; `generate-life-vectors.cjs --check` güncelliği, `check-life-vectors.cjs` geçişleri kontrol eder. JS tarafındaki 16 örnekte 136 geçiş/probe doğrulanmıştır. C# LifeManager yazıldığında aynı dosyalar alan alan karşılaştırılmalıdır. Bu sürümde **C# can parity çalıştırıcısı yoktur**; mevcut derlenmiş C# testi yalnızca ödül yöneticisidir.
 
 ## Ortak doğrulama vektörleri
 
@@ -187,16 +232,17 @@ Mevcut C# ödül karşılaştırması ayrı olarak `fixtures/reward-vectors.json
 3. Zincir, karıştırma, kazanma, klon ve replay doğrulaması eklenir. Öğreticiler ve eski on çözümün bütün adımları aynı kalır; bozuk kayıtlar reddedilir.
 4. Katalog, seçim, deneme kimliği, bütün varyant çözüm yolları ve düğüm bütçeli ipucu aktarılır. Aynı durumdan devam eden üretim ve garanti yolları karşılaştırılır. C# oyun parity komutu bu aşamada yazılacak; henüz depoda yoktur.
 5. Ödül adaptörü gerçek deneme kimliğiyle mevcut C# Reward Director'a bağlanır. Tek değerlendirme, sessiz yükleme, animasyon iptali ve tercih testleri geçer.
-6. Unity giriş, çizim, ses, titreşim, uygulama yaşam döngüsü ve yerel kayıt adaptörleri eklenir. Aynı hamle günlüğüyle masaüstü ve hedef fiziksel telefonlarda durum eşitliği, input gecikmesi ve bellek ölçülür.
-7. Ekonomi kararı verilirse ücretsiz çekirdeğin kabulünden ayrı bir sürümde komut günlüğü, cüzdan, ödül adaptörü ve yardımlı sonuç testleri yapılır. Ücretsiz doğrulanmış yollar bu geçişin ön koşulu olarak kalır.
+6. Can v1 çekirdeği, UTC clock, deneme sonuçlandırma ve makbuz adaptörü aktarılır; ortak can vektörleri ve sıfır can/kayıt devamı/aynı callback testleri eşleşir.
+7. Unity giriş, çizim, ses, titreşim, uygulama yaşam döngüsü ve yerel kayıt adaptörleri eklenir. Aynı hamle günlüğüyle masaüstü ve hedef fiziksel telefonlarda durum eşitliği, input gecikmesi ve bellek ölçülür.
+8. Gerçek ekonomi ve oyun içi yardımlar için ücretsiz çekirdeğin kabulünden ayrı bir sürümde komut günlüğü, güvenilir cüzdan, ödül adaptörü ve yardımlı sonuç testleri yapılır. Ücretsiz doğrulanmış yollar bu geçişin ön koşulu olarak kalır.
 
 ## Unity öncesi açık kararlar
 
 - Gerçek oyuncularda ilk bağımsız hamle, puan/alan amacı, yeniden deneme ve zor/rahat bölüm ritmi; bot oranları insan oranı değildir. Kabul verileri [LEVEL_DESIGN.md](LEVEL_DESIGN.md) içindedir.
 - Unity sürümü, genel JSON okuyucusu ve iç içe diziler/kimlik birliği için DTO adaptörü; hedef cihazlar ve iş parçacığı/performans bütçesi.
-- C# gameplay test çalıştırıcısının API'si ve CI kapısı; mevcut ortak dosyalar hazır, çalıştırıcı ve oyun portu uygulanmadı.
+- C# gameplay ve can test çalıştırıcılarının API'si ve CI kapıları; ortak dosyalar hazır, can ve oyun çekirdeği portları uygulanmadı.
 - Mevcut Level ID altında taban yapılandırma değiştirilecekse eski taban verilerin arşivlenmesi ve bozuk/bilinmeyen kayıt için kurtarma akışı.
 - Yardım ürünlerinin hangilerinin gerçekten gerekli olduğu, ücret adayları, tam komut semantiği, yardımlı sonuç ayrımı ve Reward Director'ın takas dışı eylem sözleşmesi.
-- Cihaz değiştirme/kayıt eşitleme, kalıcı haklar ve mali işlem doğrulama; yalnızca yerel replay, ödeme güvenliği sağlamaz.
+- Cihaz değiştirme/kayıt eşitleme, can saati otoritesi, kalıcı haklar ve mali işlem doğrulama; yerel replay, cihaz saati veya sahte sağlayıcı gerçek ödeme/reklam güvenliği sağlamaz.
 
 Bu kararlar görsel uygulama veya gelecekteki ürün kapsamıdır. Mevcut eşleşme, puan, düşüş, üretim, iki kazanma koşulu, eski kayıt tekrarı ve ücretsiz doğrulanmış başlangıç kuralları C# aktarımında yeniden tasarlanmayacaktır.
