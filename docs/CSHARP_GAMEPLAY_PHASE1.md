@@ -32,7 +32,7 @@ npm run test:unity-rewards
 npm test
 ```
 
-Gameplay komutu .NET 8 SDK arar, C# 7.3 ile gerçekten derler, JSONL isteklerini derlenen DLL'e yollar ve bütün JSON sonucunu `assert.deepEqual` ile karşılaştırır. SDK yoksa kontrol başarısızdır; JS sonucunu C# sonucu gibi gösteren geri dönüş yoktur. İstenirse SDK yolu `DOTNET_PATH` ile verilir. Derleme çıktıları geçici klasörde tutulup temizlenir. GitHub Actions'ta mevcut iki işe ek ayrı `C# gameplay parity` işi vardır.
+Kök `global.json`, birden fazla SDK bulunan CI makinelerinde 8.0 ailesini seçer; yüklü en güncel 8.0 özellik yamasına ilerler. Gameplay komutu .NET 8 SDK arar, C# 7.3 ile gerçekten derler, JSONL isteklerini derlenen DLL'e yollar ve bütün JSON sonucunu `assert.deepEqual` ile karşılaştırır. SDK yoksa kontrol başarısızdır; JS sonucunu C# sonucu gibi gösteren geri dönüş yoktur. İstenirse SDK yolu `DOTNET_PATH` ile verilir. Derleme çıktıları geçici klasörde tutulup temizlenir. GitHub Actions'ta mevcut iki işe ek ayrı `C# gameplay parity` işi vardır.
 
 Referans `fixtures/gameplay-vectors.json` değiştirilmez. Önce JS'nin hâlâ bu sabit beklentileri verdiği doğrulanır; sonra C# karşılaştırılır. Ek uzun rota beklentileri değişmeyen JS motoruyla aynı veri/tohum/hamlelerden hazırlanır.
 
