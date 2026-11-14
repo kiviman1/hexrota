@@ -24,7 +24,9 @@
     "test:integration-browser": "node check-integration-browser.cjs",
     "test:swap-visual": "node check-swap-visual.cjs",
     "test:swap-lifecycle": "node check-swap-lifecycle.cjs",
-    "test:unity-catalog": "node check-catalog-parity.cjs"
+    "test:unity-catalog": "node check-catalog-parity.cjs",
+    "test:unity-hints": "node check-hints-parity.cjs",
+    "test:unity-reward-adapter": "node check-reward-adapter-parity.cjs"
   },
   "devDependencies": {
     "jsdom": "31.0.1",
