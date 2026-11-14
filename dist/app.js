@@ -180,8 +180,13 @@ window.HexSessionStore.boot(function startApp(session) {
     const game=entry.game;return {timestamp:Date.now(),levelId:entry.metadata.levelId,variantId:entry.metadata.variantId,levelDataVersion:entry.metadata.levelDataVersion,attemptId:entry.metadata.attemptId,attemptNumber:Math.max(1,validCounter(entry.stats.attemptNumber)),movesUsed:game.turn,movesRemaining:game.movesLeft,score:game.score,targetScore:entry.level.target,covered:game.covered,totalCells:game.total,remainingLayers:game.remainingLayers,cascades:validCounter(entry.stats.cascades),hintsUsed:validCounter(entry.stats.hintsUsed),status:game.status};
   }
   const playtestKey='hexrota-playtest-v1';let playtest=null;
-  if(window.HexPlaytest)try{playtest=window.HexPlaytest.createTracker({now:()=>Date.now(),monotonic:()=>performance.now(),state:readSave(playtestKey)});}catch(_){/* Invalid observation data must not affect play. */}
-  function persistPlaytest(){if(playtest)try{localStorage.setItem(playtestKey,JSON.stringify(playtest.snapshot()));}catch(_){} }
+  const createPlaytest=state=>window.HexPlaytest.createTracker({now:()=>Date.now(),monotonic:()=>performance.now(),state});
+  if(window.HexPlaytest)try{playtest=createPlaytest(readSave(playtestKey));}catch(_){/* Invalid observation data must not affect play. */}
+  function persistPlaytest(){
+    if(!playtest||sessionRestoring)return;
+    if(sessionDepth){sessionPlaytestDirty=true;return;}
+    sessionPlaytestDirty=false;try{localStorage.setItem(playtestKey,JSON.stringify(playtest.snapshot()));}catch(_){}
+  }
   function syncPlaytestActivity(){
     if(!playtest)return;try{playtest.setActivity({playing:screen==='game'&&!busy&&!paused&&!document.hidden&&!topDialog()&&engine?.status==='playing',attemptId:activeAttempt?.attemptId||null});}catch(_){}
   }
@@ -201,10 +206,14 @@ window.HexSessionStore.boot(function startApp(session) {
   let lifeLastPersistUtc=0,pendingResetLifeCost=null;
   const lifeClock=()=>Date.now();
   const lifeClone=value=>JSON.parse(JSON.stringify(value));
-  let sessionDepth=0,sessionDirty=false,sessionRestoring=false,sessionEventBaseline=null,sessionGameBaseline=null;
+  let sessionDepth=0,sessionDirty=false,sessionRestoring=false,sessionEventBaseline=null,sessionGameBaseline=null,sessionPlaytestBaseline=null,sessionPlaytestDirty=false;
   function on(target,type,callback,options){if(!target)return;if(['pointerdown','pointermove','pointercancel','lostpointercapture','touchstart','touchmove','wheel','gesturestart','gesturechange','gestureend'].includes(type)){target.addEventListener(type,callback,options);return;}target.addEventListener(type,function(...args){return sessionAction(()=>callback.apply(this,args));},options);}
   function sessionAction(callback){
-    if(!sessionDepth){sessionEventBaseline=eventState?lifeClone(eventState):null;sessionGameBaseline=lifeClone(saved);}sessionDepth++;try{return callback();}finally{sessionDepth--;if(!sessionDepth&&sessionDirty)commitSession();}
+    if(!sessionDepth){
+      sessionEventBaseline=eventState?lifeClone(eventState):null;sessionGameBaseline=lifeClone(saved);sessionPlaytestBaseline=null;
+      if(playtest)try{sessionPlaytestBaseline=playtest.snapshot();}catch(_){}
+    }
+    sessionDepth++;try{return callback();}finally{sessionDepth--;if(!sessionDepth){if(sessionDirty)commitSession();else if(sessionPlaytestDirty)persistPlaytest();}}
   }
   function captureGame(){
     saved.current=active;
@@ -218,8 +227,12 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   function commitSession(){
     sessionDirty=false;if(sessionRestoring||!lifeFeature)return true;
-    try{captureGame();session.commit(saved,lifeFeature);if(eventState)try{localStorage.setItem(eventKey,JSON.stringify(eventState));}catch(_){}lifeWriteFailed=false;lifeLastPersistUtc=lifeFeature.life.lastSeenUtc;if(pendingLifeReceipt&&lifeFeature.testWallet.processedTransactions[pendingLifeReceipt.receipt.transactionId])pendingLifeReceipt=null;return true;}
-    catch(_){eventState=sessionEventBaseline;restoreDurable();lifeWriteFailed=true;if(pendingLifeReceipt){pendingLifeProvider=pendingLifeReceipt.receipt.transactionId;$('life-provider-title').textContent='Ödülün kaydedilmeyi bekliyor';$('life-provider-description').textContent='Tamamlanan test işlemi kaydedilemedi. Yeniden denediğinde aynı ödül bir kez kaydedilecek.';openModal('life-provider-dialog');}toast('İşlem kaydedilemedi. Tahtan ve canların son güvenli kayda döndürüldü. Sayfayı yenileyip tekrar dene.');return false;}
+    try{captureGame();session.commit(saved,lifeFeature);if(eventState)try{localStorage.setItem(eventKey,JSON.stringify(eventState));}catch(_){}lifeWriteFailed=false;lifeLastPersistUtc=lifeFeature.life.lastSeenUtc;if(pendingLifeReceipt&&lifeFeature.testWallet.processedTransactions[pendingLifeReceipt.receipt.transactionId])pendingLifeReceipt=null;if(sessionPlaytestDirty)persistPlaytest();return true;}
+    catch(_){eventState=sessionEventBaseline;
+      // Observation events describe committed moves only. Never rewind an already
+      // saved move when a later presentation-only write fails.
+      if(sessionPlaytestDirty&&sessionPlaytestBaseline)try{playtest=createPlaytest(sessionPlaytestBaseline);}catch(_){}
+      sessionPlaytestDirty=false;restoreDurable();lifeWriteFailed=true;if(pendingLifeReceipt){pendingLifeProvider=pendingLifeReceipt.receipt.transactionId;$('life-provider-title').textContent='Ödülün kaydedilmeyi bekliyor';$('life-provider-description').textContent='Tamamlanan test işlemi kaydedilemedi. Yeniden denediğinde aynı ödül bir kez kaydedilecek.';openModal('life-provider-dialog');}toast('İşlem kaydedilemedi. Tahtan ve canların son güvenli kayda döndürüldü. Sayfayı yenileyip tekrar dene.');return false;}
   }
   function stageSession(){sessionDirty=true;return sessionDepth>0?true:commitSession();}
   function lifeReady(){return !!(lifeFeature&&lifeManager);}

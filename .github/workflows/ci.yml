@@ -87,6 +87,8 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Test real two-tab locks, atomic save recovery and verified ad rewards
         run: npm run test:session-browser
+      - name: Test combined mobile, canonical saves, observations and offline shell
+        run: npm run test:integration-browser
 
   mobile-input-browser:
     name: Mobile input in ${{ matrix.browser }}

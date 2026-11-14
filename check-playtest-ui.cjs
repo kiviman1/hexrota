@@ -3,7 +3,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const {JSDOM,VirtualConsole}=require('jsdom');
 const read=file=>fs.readFileSync(__dirname+'/dist/'+file,'utf8'),plain=value=>JSON.parse(JSON.stringify(value));
-const GAME='hexrota-match-v5',LIFE='hexrota-lives-v1',OBS='hexrota-playtest-v1';
+const GAME='hexrota-match-v5',LIFE='hexrota-lives-v1',OBS='hexrota-playtest-v1',PROFILE='hexrota-profile-v2';
 const NOW=Date.UTC(2026,0,8,12),tests=[],errors=[],unhandled=[];
 process.on('unhandledRejection',error=>unhandled.push(error?.message||String(error)));
 const test=(name,run)=>tests.push({name,run}),wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -16,7 +16,7 @@ function zeroLives(){const manager=R.HexLives.createManager(R.HEX_LIVES_CONFIG,{
 function mount({saved=fresh(),life,observations,animated=false}={}){
  const vc=new VirtualConsole();vc.on('jsdomError',error=>errors.push(error.message));
  const dom=new JSDOM(read('index.html'),{url:'https://hexrota-playtest.example/?email=private%40example.test&secret=do-not-export',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});
- const w=dom.window,d=w.document,network=[],blobs=[],downloads=[];let mono=0;
+ const w=dom.window,d=w.document,network=[],blobs=[],downloads=[];let mono=0;w.HexSessionTestMode={isolated:true};
  w.Date.now=()=>NOW+mono;Object.defineProperty(w.performance,'now',{configurable:true,value:()=>mono});
  w.matchMedia=()=>({matches:!animated,addEventListener(){},removeEventListener(){}});
  w.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};w.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');this.dispatchEvent(new w.Event('close'));};
@@ -31,7 +31,7 @@ function mount({saved=fresh(),life,observations,animated=false}={}){
  w.HexAudio=AudioStub;w.localStorage.setItem(GAME,JSON.stringify(saved));
  if(life!==undefined)w.localStorage.setItem(LIFE,JSON.stringify(life));if(observations!==undefined)w.localStorage.setItem(OBS,JSON.stringify(observations));
  for(const script of d.querySelectorAll('script[src]')){const file=script.getAttribute('src').split('/').at(-1).split('?')[0];if(!['audio.js','pwa.js'].includes(file))w.eval(read(file));}
- const f={dom,w,d,network,blobs,downloads,advance(ms){mono+=ms;},save:()=>JSON.parse(w.localStorage.getItem(GAME)),life:()=>JSON.parse(w.localStorage.getItem(LIFE)),observed:()=>JSON.parse(w.localStorage.getItem(OBS)||'null'),close(){w.close();}};
+ const f={dom,w,d,network,blobs,downloads,advance(ms){mono+=ms;},save:()=>JSON.parse(w.localStorage.getItem(PROFILE)||'null')?.game||JSON.parse(w.localStorage.getItem(GAME)),life:()=>JSON.parse(w.localStorage.getItem(PROFILE)||'null')?.energy||JSON.parse(w.localStorage.getItem(LIFE)),observed:()=>JSON.parse(w.localStorage.getItem(OBS)||'null'),close(){w.close();}};
  f.node=selector=>{const result=d.querySelector(selector);assert(result,selector+' exists');return result;};
  f.click=selector=>f.node(selector).dispatchEvent(new w.MouseEvent('click',{bubbles:true,detail:0}));
  f.change=(selector,value)=>{const node=f.node(selector);node.checked=value;node.dispatchEvent(new w.Event('change',{bubbles:true}));};

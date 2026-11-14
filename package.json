@@ -20,7 +20,8 @@
     "audit:observable": "node audit-observable.cjs --write",
     "test:observable": "node check-observable.cjs && node audit-observable.cjs --check --quiet",
     "test:playtest": "node check-playtest.cjs && node check-playtest-ui.cjs",
-    "test:integration": "node check-integration.cjs"
+    "test:integration": "node check-integration.cjs",
+    "test:integration-browser": "node check-integration-browser.cjs"
   },
   "devDependencies": {
     "jsdom": "31.0.1",

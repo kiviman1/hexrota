@@ -1,0 +1,184 @@
+{
+  "schemaVersion": 1,
+  "scope": "Combined Hexrota 9.2 integration; local evidence, remote checks are shown on the current Integration PR",
+  "branch": "integration/hexrota-9.2",
+  "baseCommit": "1adefd90db277312d562a45fa7ce8ed068fc818f",
+  "sourcePullRequests": [
+    {
+      "number": 1,
+      "head": "7d7d2feaaa67c4ed4c5a8e22b3b4da066bc2095d"
+    },
+    {
+      "number": 2,
+      "head": "3e6a4aa558ecce21df3032d3ef031a60748f24d7"
+    },
+    {
+      "number": 3,
+      "head": "d9462a32e9fa7b2961b7ca650b331f28141b59e9"
+    },
+    {
+      "number": 4,
+      "head": "2b9c7c70326f6d93d0a88c7099c98544881ffdce"
+    }
+  ],
+  "packageVersion": "9.2.0",
+  "pwaShellVersion": 21,
+  "rulesVersion": "classic-v4",
+  "mainProgressKey": "hexrota-match-v5",
+  "canonicalProfileKey": "hexrota-profile-v2",
+  "compatibilityLifeKey": "hexrota-lives-v1",
+  "tutorials": 2,
+  "mainLevels": 10,
+  "variants": 40,
+  "certifiedRoutes": 80,
+  "localChecks": [
+    {
+      "command": "npm ci",
+      "exitCode": 0
+    },
+    {
+      "command": "npm test",
+      "exitCode": 0,
+      "newIntegrationGroups": 7,
+      "existingPlaytestGroups": 9,
+      "pwaGroups": 13
+    },
+    {
+      "command": "npm run test:unity-gameplay",
+      "exitCode": 0,
+      "sharedMechanics": 71,
+      "certifiedRoutes": 80,
+      "offRouteRuns": 120,
+      "validSwaps": 1913,
+      "exactResumes": 256,
+      "explicitReplays": 260,
+      "cloneChecks": 2172,
+      "nextSwapCloneChecks": 1912,
+      "invalidRestoresPreservePriorState": 1042
+    },
+    {
+      "command": "npm run test:unity-rewards",
+      "exitCode": 0,
+      "vectors": 104,
+      "factoryCases": 1
+    },
+    {
+      "command": "npm run test:observable",
+      "exitCode": 0,
+      "boards": 80,
+      "hiddenRngComparisons": 1920,
+      "sampledDecisions": 160,
+      "simulations": 17920,
+      "exactReportReproduction": true
+    },
+    {
+      "command": "npm run test:mobile-browser",
+      "browser": "chromium",
+      "transport": "native CDP touch",
+      "exitCode": 0,
+      "checks": 40
+    },
+    {
+      "command": "HEXROTA_BROWSER=webkit npm run test:mobile-browser",
+      "browser": "webkit",
+      "transport": "native mouse swipes and native touch taps",
+      "exitCode": 0,
+      "checks": 37
+    },
+    {
+      "command": "npm run test:session-browser",
+      "browser": "chromium",
+      "exitCode": 0,
+      "groups": 5
+    },
+    {
+      "command": "npm run test:integration-browser",
+      "browser": "chromium",
+      "transport": "native CDP touch",
+      "exitCode": 0,
+      "groups": 6,
+      "actualOfflineServiceWorkerAndHintWorker": true
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  ],
+  "preservedSources": [
+    {
+      "path": "dist/engine.js",
+      "sha256": "84cf60d3c1d1b395718ef3b9f0cb00ace213bafe41e0b61c1d7babd03e27ebec",
+      "unchangedFromMain": true
+    },
+    {
+      "path": "dist/levels.js",
+      "sha256": "912d974e9fbcabf77036b0fb1d3e1cc25962049cb598707241fcdb9cc6795bd4",
+      "unchangedFromMain": true
+    },
+    {
+      "path": "dist/tutorials.js",
+      "sha256": "b5ae419bffeb4fb684261baad425a74857a73cc6d6dd998f5d1def58c2ea4ee0",
+      "unchangedFromMain": true
+    },
+    {
+      "path": "dist/variants.json",
+      "sha256": "087caa9349785ad3cd2cea6ae01e38968307205cba0dad530110b9e78a657f7d",
+      "unchangedFromMain": true
+    },
+    {
+      "path": "dist/variants-data.js",
+      "sha256": "c0e98fff5fdb7cacf098d7615d0030883707fa432e2b00614cb21daf75d9c0a2",
+      "unchangedFromMain": true
+    },
+    {
+      "path": "fixtures/gameplay-vectors.json",
+      "sha256": "f88b4870bf78cb1c80bb15ff516a1b35f68c365b119765fa9ad1d5c197740efa",
+      "unchangedFromMain": true
+    },
+    {
+      "path": "fixtures/reward-vectors.json",
+      "sha256": "8fe29510db80358c7cd5c1197455d14d60e73763f829d698236c522c6504b0aa",
+      "unchangedFromMain": true
+    },
+    {
+      "path": "unity/Rewards/RewardDirector.cs",
+      "sha256": "4419352fb5971ea98c9c37583b6fa377c6ed3424f4afad9a58f93e44154c8ad9",
+      "unchangedFromMain": true
+    },
+    {
+      "path": "unity/Rewards/RewardTypes.cs",
+      "sha256": "9bf47b3109c6526c817bc4169e062ba0774495131be655728fbaa4488fe4dc98",
+      "unchangedFromMain": true
+    }
+  ],
+  "integratedSourceSha256": {
+    "dist/app.js": "3546bbed01ee67d2d534955e868cd154f4dbd380a39d713b88959e4f14171d15",
+    "dist/index.html": "256257f3cdeac04f143f08e0a54cbeba9597360e8109dd385c92c91610ceb1bf",
+    "dist/sw.js": "2496808a92a5f678c26fd4d30e3d99472ac12504d756ecb9f14eab5f25cb158e",
+    "dist/hint-worker.js": "cf479888946869f8a408b7f3ba9e9e49ca863b49c8b622a04aff00d76c0263b9",
+    "dist/session-store.js": "754b85ba101549695ddac951484bf60b4fcc0b4cf446de3c1f8a54b048eebb3e",
+    "dist/playtest.js": "a27605b6bb19ba7205d3992aac4ceb21dd21b6fe555440010ff5388562f68dce",
+    "package.json": "50db43791bc242b64557412e61018a4eff3391109364cfd3026a210ce412612e",
+    "package-lock.json": "94cca4600cd3f1316a93d0877700f9f742fc446320bc4a3992ce2febd257fbcd",
+    "check-integration.cjs": "c5d81b1420dafa0244183c6e063be86cfd3ab6af678041ee1fddd46867c974f3",
+    "check-integration-browser.cjs": "43d41f3c59b25f26be6129b72969aad95c98412d662c46f18b1dbbe2ab0743c2"
+  },
+  "newRegressionFixes": [
+    "Uncommitted move observations roll back with canonical save failure.",
+    "Uncommitted final-loss observations cannot survive while board and life roll back.",
+    "Uncommitted restart/abandon/retry observations restore their baseline.",
+    "Later presentation-only save failures preserve previously committed move observations."
+  ],
+  "openValidation": [
+    "Physical iPhone/iOS Safari not tested. Desktop WebKit is not physical iOS proof.",
+    "Unity/IL2CPP/AOT/device execution and C# Hint/Variant/Life ports remain outside this phase.",
+    "Human difficulty calibration has not been performed; level data is unchanged."
+  ],
+  "limits": [
+    "One writable tab per origin/browser profile; unsupported Web Locks fails closed.",
+    "Finite browser quota can reject canonical writes safely. Exact legacy deduplication identities still take space.",
+    "Separate opt-in observation writes are best effort after canonical success; missing measurement is possible, and observation failure does not roll back a committed game.",
+    "Device time and development receipts are not trusted real payment/ad verification."
+  ],
+  "generatedAtUtc": "2026-11-14T17:20:36.956989+00:00"
+}
