@@ -26,7 +26,8 @@
     "test:swap-lifecycle": "node check-swap-lifecycle.cjs",
     "test:unity-catalog": "node check-catalog-parity.cjs",
     "test:unity-hints": "node check-hints-parity.cjs",
-    "test:unity-reward-adapter": "node check-reward-adapter-parity.cjs"
+    "test:unity-reward-adapter": "node check-reward-adapter-parity.cjs",
+    "test:unity-lives": "node check-lives-parity.cjs"
   },
   "devDependencies": {
     "jsdom": "31.0.1",
