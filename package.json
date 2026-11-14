@@ -23,7 +23,8 @@
     "test:integration": "node check-integration.cjs",
     "test:integration-browser": "node check-integration-browser.cjs",
     "test:swap-visual": "node check-swap-visual.cjs",
-    "test:swap-lifecycle": "node check-swap-lifecycle.cjs"
+    "test:swap-lifecycle": "node check-swap-lifecycle.cjs",
+    "test:unity-lives": "node check-lives-parity.cjs"
   },
   "devDependencies": {
     "jsdom": "31.0.1",
