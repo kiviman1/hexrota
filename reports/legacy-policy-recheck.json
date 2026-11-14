@@ -1,0 +1,196 @@
+{
+  "schemaVersion": 1,
+  "method": "Exact original100random/30coverage-greedy trials, original policy definitions and seeds; not human rates.",
+  "levels": [
+    {
+      "levelId": 1,
+      "random": {
+        "wins": 5,
+        "trials": 100,
+        "rate": 5,
+        "averageWaves": 1.309,
+        "maxWaves": 7,
+        "forcedRefills": 0
+      },
+      "greedy": {
+        "wins": 23,
+        "trials": 30,
+        "rate": 77,
+        "averageWaves": 1.347,
+        "maxWaves": 4,
+        "forcedRefills": 0
+      }
+    },
+    {
+      "levelId": 2,
+      "random": {
+        "wins": 5,
+        "trials": 100,
+        "rate": 5,
+        "averageWaves": 1.352,
+        "maxWaves": 6,
+        "forcedRefills": 1
+      },
+      "greedy": {
+        "wins": 30,
+        "trials": 30,
+        "rate": 100,
+        "averageWaves": 2.8,
+        "maxWaves": 6,
+        "forcedRefills": 0
+      }
+    },
+    {
+      "levelId": 3,
+      "random": {
+        "wins": 0,
+        "trials": 100,
+        "rate": 0,
+        "averageWaves": 1.407,
+        "maxWaves": 6,
+        "forcedRefills": 2
+      },
+      "greedy": {
+        "wins": 26,
+        "trials": 30,
+        "rate": 87,
+        "averageWaves": 1.959,
+        "maxWaves": 4,
+        "forcedRefills": 0
+      }
+    },
+    {
+      "levelId": 4,
+      "random": {
+        "wins": 0,
+        "trials": 100,
+        "rate": 0,
+        "averageWaves": 1.568,
+        "maxWaves": 8,
+        "forcedRefills": 1
+      },
+      "greedy": {
+        "wins": 29,
+        "trials": 30,
+        "rate": 97,
+        "averageWaves": 2.165,
+        "maxWaves": 6,
+        "forcedRefills": 0
+      }
+    },
+    {
+      "levelId": 5,
+      "random": {
+        "wins": 0,
+        "trials": 100,
+        "rate": 0,
+        "averageWaves": 1.606,
+        "maxWaves": 7,
+        "forcedRefills": 2
+      },
+      "greedy": {
+        "wins": 21,
+        "trials": 30,
+        "rate": 70,
+        "averageWaves": 2.498,
+        "maxWaves": 7,
+        "forcedRefills": 0
+      }
+    },
+    {
+      "levelId": 6,
+      "random": {
+        "wins": 0,
+        "trials": 100,
+        "rate": 0,
+        "averageWaves": 1.466,
+        "maxWaves": 6,
+        "forcedRefills": 3
+      },
+      "greedy": {
+        "wins": 0,
+        "trials": 30,
+        "rate": 0,
+        "averageWaves": 2.742,
+        "maxWaves": 7,
+        "forcedRefills": 0
+      }
+    },
+    {
+      "levelId": 7,
+      "random": {
+        "wins": 0,
+        "trials": 100,
+        "rate": 0,
+        "averageWaves": 1.909,
+        "maxWaves": 10,
+        "forcedRefills": 3
+      },
+      "greedy": {
+        "wins": 15,
+        "trials": 30,
+        "rate": 50,
+        "averageWaves": 3.817,
+        "maxWaves": 10,
+        "forcedRefills": 0
+      }
+    },
+    {
+      "levelId": 8,
+      "random": {
+        "wins": 0,
+        "trials": 100,
+        "rate": 0,
+        "averageWaves": 1.529,
+        "maxWaves": 8,
+        "forcedRefills": 0
+      },
+      "greedy": {
+        "wins": 30,
+        "trials": 30,
+        "rate": 100,
+        "averageWaves": 2.594,
+        "maxWaves": 4,
+        "forcedRefills": 0
+      }
+    },
+    {
+      "levelId": 9,
+      "random": {
+        "wins": 0,
+        "trials": 100,
+        "rate": 0,
+        "averageWaves": 1.622,
+        "maxWaves": 7,
+        "forcedRefills": 0
+      },
+      "greedy": {
+        "wins": 0,
+        "trials": 30,
+        "rate": 0,
+        "averageWaves": 2.414,
+        "maxWaves": 9,
+        "forcedRefills": 0
+      }
+    },
+    {
+      "levelId": 10,
+      "random": {
+        "wins": 0,
+        "trials": 100,
+        "rate": 0,
+        "averageWaves": 1.459,
+        "maxWaves": 8,
+        "forcedRefills": 0
+      },
+      "greedy": {
+        "wins": 3,
+        "trials": 30,
+        "rate": 10,
+        "averageWaves": 2.574,
+        "maxWaves": 8,
+        "forcedRefills": 0
+      }
+    }
+  ]
+}

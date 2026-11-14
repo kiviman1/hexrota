@@ -2,6 +2,7 @@
 const {JSDOM,VirtualConsole}=require('jsdom');
 const fs=require('node:fs');
 const assert=require('node:assert/strict');
+const {loadGame,savedLevel,savedGame,confirmRestart}=require('./qa-fixtures.cjs');
 const root=__dirname+'/dist/',key='hexrota-match-v5';
 const errors=[],unhandled=[],mounted=[];
 process.on('unhandledRejection',error=>unhandled.push(error?.message||String(error)));
@@ -20,12 +21,12 @@ function mount(state,legacy,options={}){
  if(legacy)w.localStorage.setItem('hexrota-v1',JSON.stringify(legacy));
  for(const v of [2,3,4])if(options['v'+v])w.localStorage.setItem('hexrota-match-v'+v,JSON.stringify(options['v'+v]));
  if(options.Worker)w.Worker=options.Worker;
- for(const file of ['levels.js','engine.js','tutorials.js','audio.js','app.js'])w.eval(fs.readFileSync(root+file,'utf8'));
+ loadGame(w,['levels.js','engine.js','tutorials.js','audio.js','app.js'],file=>fs.readFileSync(root+file,'utf8'),{originalBoards:options.legacyCampaign?Array.from({length:10},(_,i)=>i+2):options.originalStage!==undefined?[options.originalStage]:[]});
  if(options.launch!==false)enterStage(w,readSave(w).current);
  return dom;
 }
-function click(w,selector){const node=w.document.querySelector(selector);assert(node,selector+' exists');node.dispatchEvent(new w.MouseEvent('click',{bubbles:true,detail:0}));}
-function startPending(w){const dialog=w.document.getElementById('pregame-dialog');if(dialog?.open)click(w,'#pregame-start');}
+function click(w,selector){const node=w.document.querySelector(selector);assert(node,selector+' exists');node.dispatchEvent(new w.MouseEvent('click',{bubbles:true,detail:0}));if(selector==='#reset')confirmRestart(w);}
+function startPending(w){const dialog=w.document.getElementById('pregame-dialog');if(dialog?.open)click(w,'#pregame-start');confirmRestart(w);}
 function enterStage(w,index){
  const nav=w.document.querySelector('[data-nav="journey"]');assert(nav,'journey navigation exists');nav.click();
  const node=w.document.querySelector(`[data-stage="${index}"]`);assert(node&&!node.disabled,'stage '+index+' is accessible');node.click();
@@ -73,7 +74,7 @@ function fakeWorkers(){
  return {WorkerStub,instances};
 }
 function assertLegalHint(w){
- const save=readSave(w),level=all(w)[save.current],game=new w.HexMatch(level,save.boards[save.current]);
+ const game=savedGame(w);
  const pair=[...w.document.querySelectorAll('#board .hinted')].map(node=>+node.dataset.index);
  assert.equal(pair.length,2,'fallback produces a pair');
  assert(game.legalMoves().some(p=>p.includes(pair[0])&&p.includes(pair[1])),'fallback hint is currently legal');
@@ -82,7 +83,7 @@ function assertLegalHint(w){
 }
 const campaignState=()=>({current:2,done:[0,1],boards:{},sound:false});
 (async()=>{
- const dom=mount(null,{done:[0,1,2,3,4,5,6,7,8,9],current:9}),w=dom.window,d=w.document;
+ const dom=mount(null,{done:[0,1,2,3,4,5,6,7,8,9],current:9},{legacyCampaign:true}),w=dom.window,d=w.document;
  assert.equal(w.HEX_TUTORIALS.length,2);assert.equal(w.HEX_LEVELS.length,10);
  assert.equal(d.querySelectorAll('.level-button').length,12,'two tutorials precede ten original stages');
  assert.equal(d.querySelectorAll('.level-button:disabled').length,11,'new player begins with tutorial one');
@@ -130,7 +131,7 @@ const campaignState=()=>({current:2,done:[0,1],boards:{},sound:false});
  assert.equal(rd.getElementById('home-screen').hidden,false,'completed journey returns to home on reload');
  enterStage(rw,11);assert.equal(+rd.getElementById('moves-left').textContent,rw.HEX_LEVELS[9].moves,'starting a completed stage explicitly replays it');
  // A legal but unplanned sequence can exhaust the finite campaign budget.
- const level=w.HEX_LEVELS[9];let losing;
+ const level=savedLevel(rw);let losing;
  for(let policy=0;policy<20&&!losing;policy++){
   const game=new w.HexMatch(level),route=[];
   while(game.status==='playing'){
@@ -139,13 +140,13 @@ const campaignState=()=>({current:2,done:[0,1],boards:{},sound:false});
   }
   if(game.status==='lost')losing=route;
  }
- assert(losing,'last campaign stage has a failing blind strategy');click(rw,'#reset');
+ assert(losing,'last campaign variant has a failing blind strategy');
  for(const next of losing)await swap(rw,next);
  await until(()=>rd.getElementById('lose-dialog').open,'loss dialog appears after last turn');
  assert.equal(+rd.getElementById('moves-left').textContent,0);
- click(rw,'#retry');assert(!rd.getElementById('lose-dialog').open);assertBoard(rw,new rw.HexMatch(rw.HEX_LEVELS[9]),'loss retry');
+ click(rw,'#retry');assert(!rd.getElementById('lose-dialog').open);assertBoard(rw,savedGame(rw),'loss retry');assert.equal(readSave(rw).boards[11].turn,0,'retry starts an untouched certified board');
  // Exact checkpoint restore survives adding the tutorials; malformed state restarts.
- const state=readSave(rw),game=new w.HexMatch(level);game.swap(...level.solution[0]);state.boards[11]=game.snapshot();
+ const state=readSave(rw),original=w.HEX_LEVELS[9],game=new w.HexMatch(original);game.swap(...original.solution[0]);state.boards[11]=game.snapshot();if(state.attempts)delete state.attempts[11];
  const middle=mount(state);assertBoard(middle.window,game,'mid-turn restore');
  state.boards[11].score+=1;const corrupt=mount(state);assert.equal(+corrupt.window.document.getElementById('sum').textContent,0);
  // Explicit tutorial skip opens campaign one. Replay never clears campaign progress.
@@ -153,7 +154,7 @@ const campaignState=()=>({current:2,done:[0,1],boards:{},sound:false});
  assert.equal(readSave(sw).current,2);assert.deepEqual(readSave(sw).done,[0,1]);
  assert.equal(sw.document.getElementById('completed').textContent,'0 / 10');
  assert(sw.document.getElementById('tutorial-coach').hidden);
- const first=sw.HEX_LEVELS[0];await swap(sw,first.solution[0]);const campaignBefore=readSave(sw).boards[2];
+ const first=savedLevel(sw);await swap(sw,first.solution[0]);const campaignBefore=readSave(sw).boards[2];
  click(sw,'#tutorial-replay');startPending(sw);await settle();assert.equal(readSave(sw).current,0);
  assert.deepEqual(readSave(sw).boards[2],campaignBefore,'replaying tutorial preserves an in-progress campaign board');
  const replayed=mount(saved),pw=replayed.window;click(pw,'#tutorial-replay');startPending(pw);await settle();
@@ -171,25 +172,25 @@ const campaignState=()=>({current:2,done:[0,1],boards:{},sound:false});
   const legacy={current:5,done:[0,1,2,3,4],sound:true,boards:{5:{version,score:999}}};
   const migrated=mount(null,null,{['v'+version]:legacy}),mw=migrated.window,ms=readSave(mw);
   assert.deepEqual(ms.done,[0,1,2,3,4,5,6]);assert.equal(ms.current,7);assert.equal(ms.sound,true);
-  assert.deepEqual(Object.keys(ms.boards),['7']);assertBoard(mw,new mw.HexMatch(mw.HEX_LEVELS[5]),'v'+version+' migration');
+  assert.deepEqual(Object.keys(ms.boards),['7']);assertBoard(mw,savedGame(mw),'v'+version+' migration');assert.equal(ms.boards[7].turn,0,'incompatible old rules restart without inventing moves');
  }
  const v2={current:1,done:[0],sound:false,boards:{}},v3={current:4,done:[0,1,2,3],sound:true,boards:{}};
  const preferred=mount(null,null,{v2,v3,v4});assert.equal(readSave(preferred.window).current,7,'latest previous version wins');
  // Worker responses belong to one campaign board revision.
  for(const cancel of ['turn','restart']){
-  const {WorkerStub,instances}=fakeWorkers(),fixture=mount(campaignState(),null,{Worker:WorkerStub}),fw=fixture.window,fd=fw.document;
-  const source=fw.HEX_LEVELS[0],shadow=new fw.HexMatch(source),next=source.solution[0];
+  const {WorkerStub,instances}=fakeWorkers(),fixture=mount(campaignState(),null,{Worker:WorkerStub,originalStage:2}),fw=fixture.window,fd=fw.document;
+  const source=fw.HEX_LEVELS[0],next=source.solution[0];let shadow=new fw.HexMatch(source);
   click(fw,'#hint');assert.equal(instances.length,1);assert(fd.getElementById('hint').disabled);
   assert.equal(fd.getElementById('reset').disabled,false);
   const worker=instances[0];assert(worker.url.includes('hint-worker.js'));assert(worker.payload.snapshot);
-  if(cancel==='turn'){await swap(fw,next);shadow.swap(...next);}else click(fw,'#reset');
+  if(cancel==='turn'){await swap(fw,next);shadow.swap(...next);}else {click(fw,'#reset');shadow=savedGame(fw);}
   worker.reply({pair:next});await settle();assert(worker.terminated);
   assert.equal(fd.querySelectorAll('#board .hinted').length,0,'late hint cannot override new revision');
   assertBoard(fw,shadow,'stale worker '+cancel);assert.equal(fd.getElementById('hint').disabled,false);
  }
  class UnavailableWorker{constructor(){throw new Error('Worker blocked');}}
- const blocked=mount(campaignState(),null,{Worker:UnavailableWorker});click(blocked.window,'#hint');await settle();assertLegalHint(blocked.window);
- const workers=fakeWorkers(),failed=mount(campaignState(),null,{Worker:workers.WorkerStub});click(failed.window,'#hint');
+ const blocked=mount(campaignState(),null,{Worker:UnavailableWorker,originalStage:2});click(blocked.window,'#hint');await settle();assertLegalHint(blocked.window);
+ const workers=fakeWorkers(),failed=mount(campaignState(),null,{Worker:workers.WorkerStub,originalStage:2});click(failed.window,'#hint');
  workers.instances[0].onerror({preventDefault(){}});await settle();assert(workers.instances[0].terminated);assertLegalHint(failed.window);
  assert.equal(errors.length,0,errors.join('\n'));assert.equal(unhandled.length,0,unhandled.join('\n'));
  console.log('UI checks passed: 2 guided tutorials + 10 campaign solutions, guarded actions, skip/replay, exact state, progress migration and stale/failing hints.');

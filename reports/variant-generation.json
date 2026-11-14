@@ -1,0 +1,201 @@
+{
+  "schemaVersion": 1,
+  "sourceHash": "c998101d9b726ab91ca2d4a0c87642ddfbcf92e610b63476be104fed27ab1fe7",
+  "levels": [
+    {
+      "levelId": 1,
+      "attempts": 5,
+      "screened": 4,
+      "fullAnalyses": 4,
+      "rejects": {
+        "duplicate": 1
+      },
+      "selectedCandidates": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "levelId": 2,
+      "attempts": 342,
+      "screened": 339,
+      "fullAnalyses": 46,
+      "rejects": {
+        "ease-band": 41,
+        "screen": 293,
+        "duplicate": 3,
+        "greedy-moves-spread": 2,
+        "coverage-moves-spread": 3,
+        "ease-spread": 6,
+        "greedy-rate-spread": 1
+      },
+      "selectedCandidates": [
+        98,
+        249,
+        275,
+        341
+      ]
+    },
+    {
+      "levelId": 3,
+      "attempts": 67,
+      "screened": 65,
+      "fullAnalyses": 13,
+      "rejects": {
+        "ease-band": 5,
+        "screen": 52,
+        "coverage-rate-spread": 2,
+        "duplicate": 2,
+        "greedy-rate-spread": 3,
+        "ease-spread": 1,
+        "planning-moves-spread": 1
+      },
+      "selectedCandidates": [
+        15,
+        24,
+        55,
+        66
+      ]
+    },
+    {
+      "levelId": 4,
+      "attempts": 286,
+      "screened": 281,
+      "fullAnalyses": 33,
+      "rejects": {
+        "screen": 248,
+        "ease-band": 20,
+        "ease-spread": 14,
+        "greedy-rate-spread": 19,
+        "coverage-rate-spread": 18,
+        "duplicate": 5,
+        "planning-moves-spread": 3
+      },
+      "selectedCandidates": [
+        24,
+        78,
+        196,
+        285
+      ]
+    },
+    {
+      "levelId": 5,
+      "attempts": 50,
+      "screened": 49,
+      "fullAnalyses": 11,
+      "rejects": {
+        "screen": 38,
+        "ease-band": 6,
+        "duplicate": 1,
+        "greedy-rate-spread": 4,
+        "ease-spread": 2
+      },
+      "selectedCandidates": [
+        17,
+        31,
+        40,
+        49
+      ]
+    },
+    {
+      "levelId": 6,
+      "attempts": 119,
+      "screened": 118,
+      "fullAnalyses": 38,
+      "rejects": {
+        "screen": 80,
+        "ease-band": 31,
+        "ease-spread": 25,
+        "greedy-rate-spread": 24,
+        "duplicate": 1,
+        "coverage-rate-spread": 3,
+        "coverage-moves-spread": 1
+      },
+      "selectedCandidates": [
+        0,
+        43,
+        67,
+        118
+      ]
+    },
+    {
+      "levelId": 7,
+      "attempts": 58,
+      "screened": 58,
+      "fullAnalyses": 28,
+      "rejects": {
+        "screen": 30,
+        "ease-band": 11,
+        "ease-spread": 12,
+        "greedy-rate-spread": 17,
+        "coverage-rate-spread": 17,
+        "greedy-ground-spread": 15
+      },
+      "selectedCandidates": [
+        3,
+        12,
+        29,
+        57
+      ]
+    },
+    {
+      "levelId": 8,
+      "attempts": 9,
+      "screened": 9,
+      "fullAnalyses": 4,
+      "rejects": {
+        "screen": 5
+      },
+      "selectedCandidates": [
+        1,
+        4,
+        5,
+        8
+      ]
+    },
+    {
+      "levelId": 9,
+      "attempts": 921,
+      "screened": 921,
+      "fullAnalyses": 53,
+      "rejects": {
+        "screen": 868,
+        "ease-band": 36,
+        "ease-spread": 16,
+        "coverage-rate-spread": 18,
+        "planning-moves-spread": 17,
+        "greedy-rate-spread": 20,
+        "coverage-moves-spread": 9,
+        "planning-floor": 2,
+        "planning-rate-spread": 2,
+        "greedy-moves-spread": 1
+      },
+      "selectedCandidates": [
+        50,
+        241,
+        519,
+        920
+      ]
+    },
+    {
+      "levelId": 10,
+      "attempts": 8,
+      "screened": 8,
+      "fullAnalyses": 7,
+      "rejects": {
+        "ease-band": 1,
+        "planning-moves-spread": 2,
+        "screen": 1,
+        "planning-rate-spread": 1
+      },
+      "selectedCandidates": [
+        0,
+        1,
+        3,
+        7
+      ]
+    }
+  ]
+}

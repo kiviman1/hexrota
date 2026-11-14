@@ -1,6 +1,7 @@
 /* Score feedback: receipts, count-up and cancellation against the real game. */
 'use strict';
 const assert=require('node:assert/strict');
+const {loadGame,savedLevel,savedGame,confirmRestart}=require('./qa-fixtures.cjs');
 const fs=require('node:fs');
 const vm=require('node:vm');
 const {JSDOM,VirtualConsole}=require('jsdom');
@@ -70,9 +71,9 @@ function mount({motion='full',which=simple}={}){
   for(const packet of packets){const text=packet.node.querySelector('.score-packet-gain')?.textContent||'';if(text){const value=Number(text.replace(/^\+/,''));if(Number.isFinite(value)&&mergeSamples.filter(s=>s.node===packet.node).at(-1)?.value!==value)mergeSamples.push({node:packet.node,value});}}
   samples.push(+d.getElementById('sum')?.textContent||0);
  });observer.observe(d.body,{childList:true,subtree:true,attributes:true,attributeFilter:['data-phase']});
- for(const file of ['engine.js','levels.js','tutorials.js','app.js'])w.eval(source(file));
+ loadGame(w,['engine.js','levels.js','tutorials.js','app.js'],source);
  const node=id=>{const n=d.getElementById(id);assert(n,'#'+id+' exists');return n;};
- const click=id=>node(id).click(),save=()=>JSON.parse(w.localStorage.getItem(key));
+ const click=id=>{node(id).click();if(id==='reset')confirmRestart(w);},save=()=>JSON.parse(w.localStorage.getItem(key));
  d.querySelector('[data-nav="journey"]').click();d.querySelector('[data-stage="2"]').click();click('pregame-start');
  function move(){for(const index of which.pair){const tile=d.querySelector(`#board [data-index="${index}"]`);tile.dispatchEvent(new w.MouseEvent('click',{bubbles:true,detail:0}));}}
  const score=()=>+node('sum').textContent,busy=()=>node('board').getAttribute('aria-busy')==='true';

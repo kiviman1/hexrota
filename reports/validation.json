@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-14",
+  "appVersion": "9.0.0",
+  "referenceCommit": "61f1af01f4166b00dbf610f91b69459c0340fbad",
+  "checks": {
+    "npmTest": {
+      "command": "NODE_PATH=/workspace/scratch/hexrota-qa/node_modules npm test",
+      "status": "passed"
+    },
+    "unityRewards": {
+      "command": "npm run test:unity-rewards",
+      "status": "passed",
+      "vectors": 104,
+      "factoryCases": 1,
+      "valid": 98,
+      "rejected": 7,
+      "sdk": "8.0.428",
+      "language": "C# 7.3"
+    },
+    "variants": {
+      "status": "passed",
+      "levels": 10,
+      "variants": 40,
+      "winningRoutes": 80,
+      "replayCheckpoints": 600
+    },
+    "hints": {
+      "status": "passed",
+      "provenPrefixes": 600,
+      "offRouteStates": 40
+    },
+    "botBalance": {
+      "status": "passed",
+      "variantAttempts": 10240,
+      "originalAttempts": 2560,
+      "models": 4,
+      "trialsPerVariantPerModel": 64
+    },
+    "gameplayGoldens": {
+      "status": "passed",
+      "cases": 71,
+      "validSwaps": 162,
+      "resumes": 56,
+      "selections": 80,
+      "rejections": 9,
+      "csharpGameplayExecuted": false
+    },
+    "browser": {
+      "status": "passed",
+      "runtime": "Chromium",
+      "viewports": [
+        [
+          390,
+          664
+        ],
+        [
+          320,
+          568
+        ],
+        [
+          568,
+          320
+        ]
+      ],
+      "fullMotion390": true,
+      "touchInput": true,
+      "nativeHintWorker": true,
+      "errors": 0,
+      "physicalDeviceTest": false
+    }
+  },
+  "immutableSourceSha256": {
+    "dist/levels.js": "912d974e9fbcabf77036b0fb1d3e1cc25962049cb598707241fcdb9cc6795bd4",
+    "dist/tutorials.js": "b5ae419bffeb4fb684261baad425a74857a73cc6d6dd998f5d1def58c2ea4ee0"
+  },
+  "limits": [
+    "Bot success is not a human win rate; goal-aware bots see exact RNG outcomes.",
+    "Gameplay C# port remains future work; only Reward Director has compiled JS/C# parity.",
+    "Economy config is design_only and not loaded by the prototype.",
+    "Local analytics buffer is bounded and cannot measure population churn or sales conversion."
+  ]
+}

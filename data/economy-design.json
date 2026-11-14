@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "rulesVersion": "economy-draft-v1",
+  "status": "design_only",
+  "loadedByPrototype": false,
+  "pricingStatus": "unvalidated_design_candidates",
+  "currency": {
+    "id": "gold",
+    "displayName": "Altın",
+    "integerOnly": true,
+    "minimumBalance": 0,
+    "maximumBalance": 2147483647
+  },
+  "fairness": {
+    "campaignCompletionRequiresPayment": false,
+    "retryCostGold": 0,
+    "hintCostGold": 0,
+    "failurePenaltyGold": 0,
+    "energyGateEnabled": false,
+    "variantSelectionReadsCommerceState": false,
+    "rewardDirectorChangesScore": false
+  },
+  "sources": [
+    {
+      "id": "starter_grant",
+      "amountGold": 100,
+      "limit": "once_per_wallet"
+    },
+    {
+      "id": "tutorial_first_clear",
+      "amountGold": 25,
+      "limit": "once_per_tutorial"
+    },
+    {
+      "id": "campaign_first_clear",
+      "amountGold": 50,
+      "limit": "once_per_campaign_level"
+    },
+    {
+      "id": "campaign_replay_clear",
+      "amountGold": 10,
+      "maximumGrantsPerUtcDay": 5
+    },
+    {
+      "id": "optional_rewarded_ad",
+      "amountGold": 25,
+      "maximumGrantsPerUtcDay": 3,
+      "recommendation": "defer"
+    }
+  ],
+  "products": [
+    {
+      "id": "extra_moves_3",
+      "costGold": 90,
+      "effect": {
+        "type": "grant_moves",
+        "amount": 3
+      },
+      "maximumPerAttempt": 1,
+      "sharedLimitGroup": "rescue_moves",
+      "recommendation": "test_after_free_balance"
+    },
+    {
+      "id": "extra_moves_5",
+      "costGold": 140,
+      "effect": {
+        "type": "grant_moves",
+        "amount": 5
+      },
+      "maximumPerAttempt": 1,
+      "sharedLimitGroup": "rescue_moves",
+      "recommendation": "test_after_free_balance"
+    },
+    {
+      "id": "single_cell_clear",
+      "costGold": 60,
+      "effect": {
+        "type": "clear_cell",
+        "directScore": 0,
+        "groundLayersRemoved": 1
+      },
+      "maximumPerAttempt": 1,
+      "recommendation": "defer_until_command_rules_validated"
+    },
+    {
+      "id": "targeted_reroll",
+      "costGold": 50,
+      "effect": {
+        "type": "reroll_cell",
+        "alwaysChangesValue": true,
+        "directScore": 0
+      },
+      "maximumPerAttempt": 1,
+      "recommendation": "do_not_launch_initially"
+    },
+    {
+      "id": "starting_ground_brush",
+      "costGold": 80,
+      "effect": {
+        "type": "reduce_one_double_ground_layer",
+        "directScore": 0
+      },
+      "maximumPerAttempt": 1,
+      "recommendation": "do_not_launch_initially"
+    },
+    {
+      "id": "board_theme",
+      "costGold": 400,
+      "effect": {
+        "type": "permanent_cosmetic_entitlement"
+      },
+      "maximumPurchasesPerSku": 1,
+      "recommendation": "first_shop_candidate"
+    },
+    {
+      "id": "effect_style",
+      "costGold": 200,
+      "effect": {
+        "type": "permanent_cosmetic_entitlement"
+      },
+      "maximumPurchasesPerSku": 1,
+      "recommendation": "first_shop_candidate"
+    }
+  ],
+  "futureCommands": {
+    "status": "proposed_not_implemented",
+    "requiresNewGameplayRulesAndSaveVersion": true,
+    "kinds": [
+      "Swap",
+      "GrantMoves",
+      "ClearCell",
+      "RerollCell",
+      "ReduceGroundLayer"
+    ],
+    "preserveLegacySnapshotVersion": 4,
+    "sameActionForEarnedAndPurchasedGold": true,
+    "boosterConsumesNormalMove": false,
+    "keepScoreAndAllGreenWinConditions": true,
+    "requiresNonMatchRewardContractReview": true
+  }
+}

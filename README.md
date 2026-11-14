@@ -27,7 +27,7 @@ Yeni oyuncu iki kısa, oynanabilir öğreticiyle başlar. İlkinde 7 altıgen ü
 
 Öğretici ve yardım metinleri günlük Türkçeyle yazılır: hareket için “iki taşın yerini değiştir”, boyanan yer için “taşların altı” veya “yeşil alan” kullanılır. Talimatlar o an yapılacak hareketi söyler; puan, iki nokta ve bölümün bitmesi gerçek hamlelerden sonra açıklanır.
 
-Ardından aynı kontrollü yenileme algoritmasını kullanan mevcut 10 bölüm gelir; bölüm verileri ve çözüm dizileri değiştirilmemiştir. Yolculuk etiketleri T1, T2, 01…10'dur. Kampanya ilerleme sayacı yalnızca 10 ana bölümü sayar.
+Ardından aynı kontrollü yenileme algoritmasını kullanan 10 bölüm gelir. Orijinal bölüm verileri eski kayıtlar için korunur; yeni oyunlarda her bölümün dört doğrulanmış varyantından biri açılır. Yolculuk etiketleri T1, T2, 01…10'dur. Kampanya ilerleme sayacı yalnızca 10 ana bölümü sayar.
 
 ## Oynanış
 
@@ -35,13 +35,13 @@ Ardından aynı kontrollü yenileme algoritmasını kullanan mevcut 10 bölüm g
 
 Bir geçerli takas ve onun bütün zincirleri tek hamle tüketir. Her eşleşme, altındaki sabit zemini bir kat boyar; kesişimdeki hücre aynı dalgada bir kez sayılır. Zemin taşlarla birlikte düşmez. İşaretli çift katmanlar iki ayrı eşleşme dalgası gerektirir.
 
-Kazanmak için hamleler tükenmeden **hedef puana ulaşmak veya onu aşmak** ve **bütün zemini yeşertmek** gerekir. Son hamlede iki hedefi tamamlamak da kazandırır. Geçerli takas kalmazsa sayılar otomatik karıştırılır; puan, zemin ilerlemesi ve kalan hamleler korunur. Yeniden başlatmak aynı başlangıç ve yenileme tohumunu kullanır.
+Kazanmak için hamleler tükenmeden **hedef puana ulaşmak veya onu aşmak** ve **bütün zemini yeşertmek** gerekir. Son hamlede iki hedefi tamamlamak da kazandırır. Geçerli takas kalmazsa sayılar otomatik karıştırılır; puan, zemin ilerlemesi ve kalan hamleler korunur. Ana bölümde yeniden başlatma onaydan sonra yeni bir doğrulanmış varyant seçer; kayıptan sonra yeniden deneme doğrudan yeni varyant açar. Devam et aynı varyantı ve durumu getirir. İki öğretici sabittir.
 
 ## Yenileme ve bölüm algoritması
 
 Önce bütün sütunlardaki mevcut taşlar düşürülür; yeni taş yerleri boş bırakılır. Her yeni sayı, üç eksende kendisinin tamamlayacağı eşleşmeler denetlenerek seçilir. Mümkün olduğunda yeni sayının otomatik üçlü yaratması önlenir. Bütün seçenekler engelliyse en az çatışma üreten sayı deterministik olarak seçilir. Mevcut taşların düşüşünden oluşan doğal zincirler çalışmaya devam eder.
 
-Bölüm üreticisi eşleşmesiz ve birden fazla geçerli başlangıcı olan tahtalar arar. Her bölüm için farklı ilk takaslarla başlayan iki kazanılabilir çözüm kaydedilir. Zemin ve puan hedefleriyle bütçe içinde tamamlanan bu diziler yeniden oynatılarak doğrulanır. Arama aynı tahta/zemin/RNG durumuna ulaştığında daha yüksek puanı korur. Bölüm kabul sınırlarını geçemeyen adaylar sessizce yayımlanmaz. Veriler, 10 bölümün tamamı doğrulandıktan sonra yazılır.
+Çevrimdışı varyant üreticisi eşleşmesiz ve birden fazla geçerli başlangıcı olan tahtalar arar. Her varyant için farklı ilk takaslarla başlayan iki kazanılabilir çözüm kaydedilir. Zemin ve puan hedefleriyle bütçe içinde tamamlanan bu diziler yeniden oynatılarak doğrulanır. Arama aynı tahta/zemin/RNG durumuna ulaştığında daha yüksek puanı korur. Bölüm kabul sınırlarını geçemeyen adaylar sessizce yayımlanmaz. Veriler, 10 bölümdeki bütün varyantlar doğrulandıktan sonra yazılır. Dört bot politikası, aynı bölüm içindeki benzerlik ve bölümler arası dalgalanma sınırları ayrıca denetlenir.
 
 Rastgele geçerli hamle denemeleri kaba zorluk kontrolüdür; insan oyun testinin veya strateji kanıtının yerine geçmez. Hamle bütçeleri ve zemin yerleşimi sonraki oynama deneyimiyle ayarlanabilir.
 
@@ -61,20 +61,26 @@ Destekleyen tarayıcılarda ipucu Web Worker'da aranır. İşçi açılamazsa k�
 
 ## Kayıt ve sürüm geçişi
 
-Kayıtlar `hexrota-match-v5` anahtarındadır. Sürüm 4'ten geçişte mevcut 10 bölümün indeksleri iki kaydırılır; hamle geçmişleri, tamamlanan bölümler ve ses tercihi korunur. Mevcut oyuncular için öğreticiler tamamlanmış sayılır ve tekrar oynanabilir. Daha eski eşleştirme sürümlerinden ilerleme/ses tercihi taşınır, uyumsuz tahta yeniden başlar. Yeni oyuncular ana menüde Birlikte başlayalım ile T1'e başlar. Aynı v5 kayıt anahtarı ve oyun kuralları korunur; tercihler, gözlenen en iyi sonuçlar ve öğretici onayları ayrıca saklanır. Önceki kayıt anahtarlarına dokunulmaz.
+Kayıtlar `hexrota-match-v5` anahtarındadır. Sürüm 4'ten geçişte mevcut 10 bölümün indeksleri iki kaydırılır; hamle geçmişleri, tamamlanan bölümler ve ses tercihi korunur. Mevcut oyuncular için öğreticiler tamamlanmış sayılır ve tekrar oynanabilir. Daha eski eşleştirme sürümlerinden ilerleme/ses tercihi taşınır, uyumsuz tahta yeniden başlar. Yeni oyuncular ana menüde Birlikte başlayalım ile T1'e başlar. Aynı v5 kayıt anahtarı ve oyun kuralları korunur; tercihler, gözlenen en iyi sonuçlar ve öğretici onayları ayrıca saklanır. Önceki kayıt anahtarlarına dokunulmaz. Yeni denemelerde ham snapshot v4 biçimi `boards` içinde kalır; bölüm/varyant/veri sürümü/deneme kimliği `attempts` içinde aynı JSON yazımında tutulur. Varyant bilgisi bulunmayan eski kayıt yalnızca değişmeyen orijinal bölümle tekrar oynatılarak doğrulanır. Geçerli kaydın tamamı korunur; bilinmeyen veri sürümü veya kimlik sessizce yeni tahtayla değiştirilmez.
 
 ## Çalıştırma ve dosyalar
 
 Derleme veya sunucu tarafı kod gerekmez. `dist/` dizinini statik olarak sun. Örneğin yerel geliştirmede `python3 -m http.server 8000 --directory dist`.
 
-- `dist/levels.js`: 10 ana bölümün başlangıçları, tohumları, bütçeleri ve çözümleri.
+- `dist/levels.js`: Eski kayıtlar için değişmez 10 orijinal bölüm; geometri, bütçe, hedef ve palet referansı.
+- `dist/variants.json`, `dist/variants-data.js`: 40 doğrulanmış yeni başlangıç ve 80 kazanma yolu.
+- `dist/attempts.js`: Saf katalog, tekrar önleyici seçim ve hamle geçmişiyle doğrulanmış deneme geri yükleme.
+- `dist/events.js`: Yerel olay şeması; dışarı veri göndermez.
 - `dist/tutorials.js`: İki küçük öğretici, yönlendirme adımları ve doğrulanmış çözümler.
 - `dist/engine.js`: DOM'dan bağımsız eşleştirme, kontrollü yenileme, düşüş, zincirler, puan ve zemin.
 - `dist/app.js`: Giriş kontrolleri, iptal edilebilir sunum, arayüz, yerel kayıt ve ses.
 - `dist/hint-worker.js`: Giriş ve çizim akışından ayrı çalışan ipucu araması.
 - `dist/audio.js`: Kullanıcı etkileşiminden sonra başlayan, iptal edilebilir yerel ses/müzik katmanı.
 - `dist/style.css`: Duyarlı tasarım ve azaltılmış hareket desteği.
-- `generate-levels.cjs`: Tekrarlanabilir bölüm üretimi, çözüm araması ve kabul denetimleri.
+- `generate-variants.cjs`, `lib/level-analysis.cjs`: Çevrimdışı varyant üretimi, dört bot ve kabul kapıları.
+- `generate-levels.cjs`: Eski araştırma üreticisi; çıktı yalnızca `reports/legacy-generated/` altında, mevcut orijinal verinin üzerine yazılmaz.
+- `balance-variants.cjs`: Bütün bot ölçümlerinin ve zorluk sırasının tekrarlanması.
+- `data/levels-original.json`, `data/tutorials-fixed.json`: Unity aktarımı için kaynaklarla eşit JSON dışa aktarımları.
 - `balance-report.json`: Sabit deneme politikalarıyla ölçülen kaba zorluk ve zincir istatistikleri.
 
 Eski `/test.html` bağlantısı güncel oyuna yönlenir. Ayrı deneme oyunu bulunmaz.
@@ -83,7 +89,7 @@ R: aynı bölümü yeniden başlat; H: ipucu; Enter/Space: taş seç; ok tuşlar
 
 ## Kontroller
 
-Node.js 22.22.2+ veya 24.15.0+ kullan. `npm install` ardından `npm test`. Üretimde harici bağımlılık veya font servisi kullanılmaz; jsdom yalnızca geliştirme testidir.
+Node.js 22.22.2+ veya 24.15.0+ kullan. `npm ci` ardından `npm test`. Üretimde harici bağımlılık veya font servisi kullanılmaz; jsdom yalnızca geliştirme testidir.
 
 Testler üç ekseni, geçersiz takasta durumun korunmasını, kesişimlerin tek sayılmasını, çift zemini, düşüşü, kontrollü yenilemeyi, zincirleri, karıştırmayı, ipucunu, son hamlede kazanmayı, kaybetmeyi ve kayıt doğrulamayı kapsar. İki öğretici ve on bölüm DOM üzerinden oynanıp açılır. Yönlendirmeler, yanlış hamlede bütçenin korunması, öğreticileri atlama/yeniden oynama, eski kayıtların iki indeks kaydırılarak korunması ve gerçek başlangıçtan düşüş verisi doğrulanır. Gerçek pointer olaylarıyla parmak kayması, capture/iptal, animasyon hatası, süre sınırı, sekme değişimi, eski zamanlayıcılar ve Worker hataları kontrol edilir. Menü testleri ana ekran, devam etme, ön izleme iptali, ayarlar, onaylı sıfırlama, iç içe pencere geri/Escape sırası, arka planda duraklama ve sonuç ekranı geçişlerini kapsar. Ses katmanı sahte AudioContext ile döngü çoğalması, görünürlük, hata ve kapanış davranışına karşı kontrol edilir. DOM testleri fiziksel cihaz ve görsel tarayıcı testinin yerine geçmez.
 
@@ -123,3 +129,18 @@ Uzun çizgi, gerçek zincir, kesişen eksenler, yeni yeşil alan, çift zemin ve
 Kurallar `dist/reward-rules.json` içinde, arayüzden bağımsız JavaScript motoru `dist/rewards.js` içindedir. Aynı modelin derlenerek doğrulanan C# 7.3 karşılığı `unity/Rewards/` altındadır. Ayrıntılı davranış ve aktarım adımları: [Ödül yöneticisi](docs/REWARD_DIRECTOR.md).
 
 `npm test` JavaScript, uygulama ve ortak veri kontrollerini çalıştırır. `npm run test:unity-rewards` .NET 8 SDK ile C# / JavaScript sonuçlarını karşılaştırır; `DOTNET_PATH` ile SDK yolu verilebilir. Unity Editör veya iOS paket derlemesi bu aşamada yapılmaz.
+
+
+## Doğrulanmış varyantlar ve Unity hazırlığı — sürüm 9
+
+`npm test` orijinal regresyonların yanında 40 varyantın 80 yolunu, deneme/kayıt/olay akışlarını, dört politikayla denge raporunu ve ortak gameplay vektörlerini de denetler. `npm run test:unity-rewards` mevcut C# ödül yöneticisini gerçekten derleyerek karşılaştırır. Gameplay motorunun C# uygulaması henüz yoktur; hazırlanmış JSON vektörleri gelecekteki portun kabul sözleşmesidir.
+
+- [Bölüm tasarımı, gerçek bot tablosu ve kabul sınırları](docs/LEVEL_DESIGN.md)
+- [Ekonomi tasarımı — uygulanmış mağaza/cüzdan değildir](docs/ECONOMY_DESIGN.md)
+- [Unity modül ve veri aktarım planı](docs/UNITY_MIGRATION_PLAN.md)
+- [Yerel olay sözleşmesi ve ölçüm sınırları](docs/ANALYTICS.md)
+- [Başlangıç referansı ve test sonuçları](docs/BASELINE.md)
+
+Ekonomi ayarları `data/economy-design.json` içinde yalnızca taslak veridir; uygulama bunları yüklemez. Gerçek para, reklam SDK'sı, Altın cüzdanı veya güçlendirici eklenmemiştir. Her bölüm, temel kurallarla ve satın alma olmadan tamamlanan yollarla doğrulanır.
+
+Botlar, amaç odaklı kararları motor kopyasında gerçek RNG ile hesaplar; gelecek taşları insan oyuncudan daha iyi bilir. Bot başarısı insan kazanma oranı değildir. Özellikle 5/8 planlama zirveleri ve alanı önceleyen stratejide rahatlayan 9, ticari dengeleme öncesi gerçek kullanıcıyla sınanmalıdır.

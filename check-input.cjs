@@ -2,6 +2,7 @@
 const {JSDOM,VirtualConsole}=require('jsdom');
 const fs=require('node:fs');
 const assert=require('node:assert/strict');
+const {loadGame,savedLevel,savedGame,confirmRestart}=require('./qa-fixtures.cjs');
 const root=__dirname+'/dist/';
 const appSource=fs.readFileSync(root+'app.js','utf8');
 const storageKey=appSource.match(/const key\s*=\s*['"]([^'"]+)['"]/)?.[1];
@@ -44,7 +45,7 @@ function mount({motion='none',current=2,done=[0,1],boards={}}={}){
     w.Element.prototype.getAnimations=()=>animations;
   }
   if(storageKey)w.localStorage.setItem(storageKey,JSON.stringify({current,done,boards,sound:false}));
-  for(const file of ['levels.js','engine.js','tutorials.js','audio.js','app.js'])w.eval(fs.readFileSync(root+file,'utf8'));
+  loadGame(w,['levels.js','engine.js','tutorials.js','audio.js','app.js'],file=>fs.readFileSync(root+file,'utf8'),{originalBoards:current>=2?[current]:[]});
   d.querySelector('[data-nav="journey"]').click();
   const stage=d.querySelector(`[data-stage="${current}"]`);assert(stage&&!stage.disabled,'fixture stage is accessible');stage.click();
   assert(d.getElementById('pregame-dialog').open,'fixture uses real stage preview');d.getElementById('pregame-start').click();
@@ -60,7 +61,7 @@ function mount({motion='none',current=2,done=[0,1],boards={}}={}){
     (target||((type==='pointerdown')?d.querySelector(`#board [data-index="${index}"]`):board)).dispatchEvent(event);
   }
   function tap(index,options={}){send('pointerdown',index,options);send('pointerup',index,options);}
-  function click(id){const element=d.getElementById(id);assert(element,`#${id} exists`);element.click();}
+  function click(id){const element=d.getElementById(id);assert(element,`#${id} exists`);element.click();if(id==='reset')confirmRestart(w);}
   function readSave(){return JSON.parse(w.localStorage.getItem(storageKey));}
   function assertState(game,message){
     assert.equal(+d.getElementById('sum').textContent,game.score,message+' score');
@@ -70,7 +71,7 @@ function mount({motion='none',current=2,done=[0,1],boards={}}={}){
   function isBusy(){return board.getAttribute('aria-busy')==='true';}
   async function idle(timeout=3600){const start=Date.now();while(isBusy()&&Date.now()-start<timeout)await pause(10);await pause(5);assert(!isBusy(),'presentation releases board before timeout');}
   function assertUnlocked(){assert.equal(board.getAttribute('aria-busy'),'false');assert.equal(d.getElementById('reset').disabled,false);}
-  return {dom,w,d,board,index:current,level:all(w)[current],errors,captureCalls,activeCaptures,animations,send,tap,click,setHit,readSave,assertState,isBusy,idle,assertUnlocked,close:()=>dom.window.close()};
+  return {dom,w,d,board,index:current,get level(){return savedLevel(w);},errors,captureCalls,activeCaptures,animations,send,tap,click,setHit,readSave,assertState,isBusy,idle,assertUnlocked,close:()=>dom.window.close()};
 }
 
 const cases=[];
@@ -122,9 +123,9 @@ test('nonzero presentation supports skip and a strict total duration bound',asyn
     assert(swaps.every(a=>a.options.duration>=280),'the swap remains on screen long enough to follow');
     const skip=f.d.getElementById('skip-animation');assert(skip&&!skip.hidden,'visible skip control during effects');
     f.click('skip-animation');await f.idle(150);f.assertUnlocked();f.assertState(game,'skipped presentation');
-    f.click('reset');const start=Date.now();f.tap(pair[0]);f.tap(pair[1]);await f.idle(3600);
+    f.click('reset');const resetLevel=f.level,resetPair=resetLevel.solution[0],resetGame=new f.w.HexMatch(resetLevel);resetGame.swap(...resetPair);const start=Date.now();f.tap(resetPair[0]);f.tap(resetPair[1]);await f.idle(3600);
     assert(Date.now()-start<3600,'long chains finish within the bounded presentation budget');
-    f.assertState(game,'natural presentation completion');
+    f.assertState(resetGame,'natural presentation completion');
   }finally{f.close();}
 });
 
@@ -164,11 +165,11 @@ test('reset and level preview navigation cancel presentation without stale persi
     assert.equal(f.d.getElementById('reset').disabled,false,'restart remains available while effects run');
     f.click('reset');await f.idle(150);assert.equal(+f.d.getElementById('sum').textContent,0);assert.equal(+f.d.getElementById('moves-left').textContent,level.moves);
     await pause(250);assert.equal(f.readSave().boards[f.index].turn,0,'cancelled animation cannot resave the old turn');
-    f.tap(pair[0]);f.tap(pair[1]);assert(f.isBusy());
+    const nextPair=f.level.solution[0];f.tap(nextPair[0]);f.tap(nextPair[1]);assert(f.isBusy());
     const next=f.d.querySelector('[data-level="3"]');assert(next&&!next.disabled,'unlocked navigation remains available');next.click();
     await f.idle(150);assert(f.d.getElementById('pregame-dialog').open,'navigation shows objective preview');
     assert.equal(f.readSave().current,f.index,'preview does not choose a new active board');
-    f.click('pregame-start');const game=new f.w.HexMatch(all(f.w)[3]);
+    f.click('pregame-start');const game=savedGame(f.w);
     f.assertState(game,'new level');await pause(250);f.assertState(game,'after stale await');
     assert.equal(f.readSave().current,3,'old animation cannot switch or persist the previous active level');
   }finally{f.close();}

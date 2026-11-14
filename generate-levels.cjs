@@ -56,7 +56,9 @@ function certify(level,main){
  }
  return routes;
 }
-function generate(){
+function generate({outputDirectory='reports/legacy-generated'}={}){
+ // Research output cannot replace the original data used by existing saves.
+ fs.mkdirSync(outputDirectory,{recursive:true});
  const names=['İlk eşleşme','Üç yönde düşün','Çifte dikkat','Yeşil adalar','Zincir etkisi','İnce seçim','Katman katman','Uzak köşeler','Son hamle','Usta dokunuşu'];
  const subtitles=['Komşu iki sayıyı değiştir; aynı sayıdan en az üçünü sırala.','Üç eksende eşleşme kur. Her hamle bir seçim.','İşaretli zemini yeşile boyamak için iki ayrı eşleşme kur.','Yeşillenmemiş alanlara ulaşan eşleşmeleri ara.','Düşen mevcut taşlarla yeni bir zincir planla.','Puanın kadar geride kalan zemini de düşün.','Çift katmanları tamamlayacak hamlelerini sakla.','Büyüyen tahtada kenarları unutma.','En çok puanı değil, eksik alanı tamamlayan hamleyi ara.','Hedef puan ve bütün zemin, sınırlı hamlede.'];
  const sizes=[19,19,19,23,23,23,29,29,37,37],layerCounts=[0,0,2,3,4,5,7,9,12,16],output=[];
@@ -89,8 +91,8 @@ function generate(){
  }
  // Only replace published data after every candidate passes final replay.
  for(const l of output)for(const route of [l.solution,...l.alternativeSolutions])if(replay(l,route).status!=='won')throw Error('Final certification failed');
- const path='./dist/levels.js',temp=path+'.next';fs.writeFileSync(temp,'/* Classic-v4 levels: controlled refill and independently certified winning openings. */\nwindow.HEX_LEVELS = '+JSON.stringify(output,null,2)+';\n');fs.renameSync(temp,path);
- fs.writeFileSync('./balance-report.json',JSON.stringify({rulesVersion:'classic-v4',method:'100 seeded random-valid games and 30 seeded one-step coverage-greedy games per level; not a human playtest',levels:output.map(l=>({id:l.id,cells:l.cells.length,moves:l.moves,par:l.par,target:l.target,...l.balance}))},null,2)+'\n');
- console.log('Generated and certified all 10 classic-v4 levels.');
+ const path=outputDirectory+'/levels.js',temp=path+'.next';fs.writeFileSync(temp,'/* Classic-v4 levels: controlled refill and independently certified winning openings. */\nwindow.HEX_LEVELS = '+JSON.stringify(output,null,2)+';\n');fs.renameSync(temp,path);
+ fs.writeFileSync(outputDirectory+'/balance-report.json',JSON.stringify({rulesVersion:'classic-v4',method:'100 seeded random-valid games and 30 seeded one-step coverage-greedy games per level; not a human playtest',levels:output.map(l=>({id:l.id,cells:l.cells.length,moves:l.moves,par:l.par,target:l.target,...l.balance}))},null,2)+'\n');
+ console.log('Generated 10 research levels in '+outputDirectory+'; published legacy levels were preserved.');
 }
 module.exports={solve,replay,policyRate,generate};if(require.main===module)generate();

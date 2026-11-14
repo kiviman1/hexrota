@@ -1,6 +1,7 @@
 /* Reward director integration against the actual game, with no scoring changes. */
 'use strict';
 const assert=require('node:assert/strict');
+const {loadGame,savedLevel,savedGame,confirmRestart}=require('./qa-fixtures.cjs');
 const fs=require('node:fs');
 const vm=require('node:vm');
 const {JSDOM,VirtualConsole}=require('jsdom');
@@ -65,9 +66,9 @@ function mount({which=ordinary,motion='full',sound=true,haptics=true}={}){
    if(packet.dataset.phase==='pop'&&!burstSnapshots.some(snapshot=>snapshot.node===packet))burstSnapshots.push({node:packet,rings:d.querySelectorAll('.score-burst-ring').length,sparks:d.querySelectorAll('.score-burst-spark').length});
   }
  });observer.observe(d.body,{subtree:true,childList:true,attributes:true,attributeFilter:['data-phase','data-reward-headline']});
- for(const file of ['engine.js','levels.js','tutorials.js','reward-rules.js','rewards.js','reward-adapter.js','app.js'])w.eval(read(file));
+ loadGame(w,['engine.js','levels.js','tutorials.js','reward-rules.js','rewards.js','reward-adapter.js','app.js'],read);
  const node=id=>{const n=d.getElementById(id);assert(n,'#'+id+' exists');return n;};
- const click=id=>node(id).click(),save=()=>JSON.parse(w.localStorage.getItem(key));
+ const click=id=>{node(id).click();if(id==='reset')confirmRestart(w);},save=()=>JSON.parse(w.localStorage.getItem(key));
  function enter(){d.querySelector('[data-nav="journey"]').click();d.querySelector('[data-stage="2"]').click();if(node('pregame-dialog').open)click('pregame-start');assert.equal(d.body.dataset.screen,'game');assert.equal(save().current,2,'fixture enters the requested campaign board');}
  function move(){for(const index of which.pair)d.querySelector(`#board [data-index="${index}"]`).dispatchEvent(new w.MouseEvent('click',{bubbles:true,detail:0}));}
  const busy=()=>node('board').getAttribute('aria-busy')==='true';

@@ -1,0 +1,2497 @@
+{
+  "schemaVersion": 1,
+  "kind": "campaign",
+  "levelDataVersion": "original-v1",
+  "rulesVersion": "classic-v4",
+  "levels": [
+    {
+      "id": 1,
+      "rulesVersion": "classic-v4",
+      "name": "İlk eşleşme",
+      "subtitle": "Komşu iki sayıyı değiştir; aynı sayıdan en az üçünü sırala.",
+      "cells": [
+        {
+          "q": 0,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": 2,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": 2,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": 2,
+          "layers": 1
+        }
+      ],
+      "initial": [
+        3,
+        2,
+        2,
+        2,
+        2,
+        1,
+        3,
+        1,
+        1,
+        4,
+        2,
+        2,
+        1,
+        1,
+        2,
+        4,
+        3,
+        3,
+        4
+      ],
+      "seed": 101339443,
+      "palette": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "moves": 10,
+      "target": 85,
+      "solution": [
+        [
+          3,
+          6
+        ],
+        [
+          1,
+          6
+        ],
+        [
+          9,
+          12
+        ],
+        [
+          12,
+          17
+        ],
+        [
+          9,
+          7
+        ]
+      ],
+      "par": 5,
+      "alternativeSolutions": [
+        [
+          [
+            2,
+            7
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            9,
+            7
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            8,
+            11
+          ],
+          [
+            14,
+            18
+          ],
+          [
+            5,
+            10
+          ]
+        ]
+      ],
+      "balance": {
+        "randomWinRate": 5,
+        "trials": 100,
+        "solutionScore": 107,
+        "winningOpenings": 2,
+        "averageCascadeWaves": 1.309,
+        "maxCascadeWaves": 7,
+        "forcedRefills": 0,
+        "greedyWinRate": 77,
+        "greedyTrials": 30
+      }
+    },
+    {
+      "id": 2,
+      "rulesVersion": "classic-v4",
+      "name": "Üç yönde düşün",
+      "subtitle": "Üç eksende eşleşme kur. Her hamle bir seçim.",
+      "cells": [
+        {
+          "q": 0,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": 2,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": 2,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": 2,
+          "layers": 1
+        }
+      ],
+      "initial": [
+        2,
+        3,
+        4,
+        2,
+        1,
+        1,
+        3,
+        2,
+        3,
+        1,
+        3,
+        2,
+        4,
+        3,
+        3,
+        2,
+        1,
+        1,
+        2
+      ],
+      "seed": 166045592,
+      "palette": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "moves": 10,
+      "target": 110,
+      "solution": [
+        [
+          13,
+          11
+        ],
+        [
+          9,
+          12
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          8,
+          6
+        ],
+        [
+          14,
+          17
+        ]
+      ],
+      "par": 5,
+      "alternativeSolutions": [
+        [
+          [
+            1,
+            4
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            14,
+            18
+          ],
+          [
+            4,
+            7
+          ],
+          [
+            2,
+            7
+          ],
+          [
+            6,
+            9
+          ]
+        ]
+      ],
+      "balance": {
+        "randomWinRate": 5,
+        "trials": 100,
+        "solutionScore": 141,
+        "winningOpenings": 2,
+        "averageCascadeWaves": 1.352,
+        "maxCascadeWaves": 6,
+        "forcedRefills": 1,
+        "greedyWinRate": 100,
+        "greedyTrials": 30
+      }
+    },
+    {
+      "id": 3,
+      "rulesVersion": "classic-v4",
+      "name": "Çifte dikkat",
+      "subtitle": "İşaretli zemini yeşile boyamak için iki ayrı eşleşme kur.",
+      "cells": [
+        {
+          "q": 0,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": -2,
+          "layers": 2
+        },
+        {
+          "q": -1,
+          "r": 0,
+          "layers": 2
+        },
+        {
+          "q": 1,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": 2,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": 2,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": 2,
+          "layers": 1
+        }
+      ],
+      "initial": [
+        4,
+        1,
+        3,
+        3,
+        4,
+        2,
+        4,
+        1,
+        3,
+        1,
+        1,
+        2,
+        4,
+        4,
+        4,
+        1,
+        3,
+        3,
+        3
+      ],
+      "seed": 230751741,
+      "palette": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "moves": 9,
+      "target": 135,
+      "solution": [
+        [
+          9,
+          14
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          8,
+          11
+        ],
+        [
+          14,
+          18
+        ],
+        [
+          5,
+          10
+        ],
+        [
+          0,
+          4
+        ]
+      ],
+      "par": 6,
+      "alternativeSolutions": [
+        [
+          [
+            13,
+            16
+          ],
+          [
+            14,
+            12
+          ],
+          [
+            7,
+            12
+          ],
+          [
+            2,
+            7
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            3,
+            8
+          ]
+        ]
+      ],
+      "balance": {
+        "randomWinRate": 0,
+        "trials": 100,
+        "solutionScore": 169,
+        "winningOpenings": 2,
+        "averageCascadeWaves": 1.407,
+        "maxCascadeWaves": 6,
+        "forcedRefills": 2,
+        "greedyWinRate": 87,
+        "greedyTrials": 30
+      }
+    },
+    {
+      "id": 4,
+      "rulesVersion": "classic-v4",
+      "name": "Yeşil adalar",
+      "subtitle": "Yeşillenmemiş alanlara ulaşan eşleşmeleri ara.",
+      "cells": [
+        {
+          "q": -1,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "layers": 2
+        },
+        {
+          "q": -2,
+          "r": 2,
+          "layers": 2
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": 2,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": 1,
+          "layers": 2
+        },
+        {
+          "q": 0,
+          "r": 2,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": 2,
+          "layers": 1
+        }
+      ],
+      "initial": [
+        4,
+        4,
+        1,
+        2,
+        2,
+        3,
+        2,
+        2,
+        3,
+        1,
+        3,
+        4,
+        1,
+        1,
+        3,
+        1,
+        3,
+        3,
+        4,
+        1,
+        4,
+        3,
+        3
+      ],
+      "seed": 295457890,
+      "palette": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "moves": 9,
+      "target": 110,
+      "solution": [
+        [
+          2,
+          6
+        ],
+        [
+          8,
+          13
+        ],
+        [
+          20,
+          19
+        ],
+        [
+          5,
+          8
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          8,
+          6
+        ]
+      ],
+      "par": 6,
+      "alternativeSolutions": [
+        [
+          [
+            8,
+            13
+          ],
+          [
+            19,
+            17
+          ],
+          [
+            19,
+            22
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            11,
+            16
+          ],
+          [
+            5,
+            8
+          ]
+        ]
+      ],
+      "balance": {
+        "randomWinRate": 0,
+        "trials": 100,
+        "solutionScore": 143,
+        "winningOpenings": 2,
+        "averageCascadeWaves": 1.568,
+        "maxCascadeWaves": 8,
+        "forcedRefills": 1,
+        "greedyWinRate": 97,
+        "greedyTrials": 30
+      }
+    },
+    {
+      "id": 5,
+      "rulesVersion": "classic-v4",
+      "name": "Zincir etkisi",
+      "subtitle": "Düşen mevcut taşlarla yeni bir zincir planla.",
+      "cells": [
+        {
+          "q": -1,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": 1,
+          "layers": 2
+        },
+        {
+          "q": 0,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": -1,
+          "layers": 2
+        },
+        {
+          "q": -1,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": 2,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": 2,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": 1,
+          "layers": 2
+        },
+        {
+          "q": 0,
+          "r": 2,
+          "layers": 2
+        },
+        {
+          "q": 2,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": 2,
+          "layers": 1
+        }
+      ],
+      "initial": [
+        1,
+        1,
+        3,
+        4,
+        4,
+        4,
+        1,
+        4,
+        2,
+        4,
+        3,
+        1,
+        1,
+        3,
+        1,
+        3,
+        4,
+        4,
+        1,
+        1,
+        3,
+        1,
+        2
+      ],
+      "seed": 360164039,
+      "palette": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "moves": 8,
+      "target": 125,
+      "solution": [
+        [
+          3,
+          2
+        ],
+        [
+          11,
+          16
+        ],
+        [
+          8,
+          13
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          5,
+          10
+        ]
+      ],
+      "par": 5,
+      "alternativeSolutions": [
+        [
+          [
+            16,
+            19
+          ],
+          [
+            8,
+            6
+          ],
+          [
+            3,
+            6
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            11,
+            9
+          ]
+        ]
+      ],
+      "balance": {
+        "randomWinRate": 0,
+        "trials": 100,
+        "solutionScore": 157,
+        "winningOpenings": 2,
+        "averageCascadeWaves": 1.606,
+        "maxCascadeWaves": 7,
+        "forcedRefills": 2,
+        "greedyWinRate": 70,
+        "greedyTrials": 30
+      }
+    },
+    {
+      "id": 6,
+      "rulesVersion": "classic-v4",
+      "name": "İnce seçim",
+      "subtitle": "Puanın kadar geride kalan zemini de düşün.",
+      "cells": [
+        {
+          "q": -1,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": -1,
+          "layers": 2
+        },
+        {
+          "q": 0,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": -1,
+          "layers": 2
+        },
+        {
+          "q": 1,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": -1,
+          "layers": 2
+        },
+        {
+          "q": -1,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "layers": 2
+        },
+        {
+          "q": -2,
+          "r": 2,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "layers": 2
+        },
+        {
+          "q": 2,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": 2,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": 2,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": 2,
+          "layers": 1
+        }
+      ],
+      "initial": [
+        2,
+        3,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2,
+        4,
+        2,
+        3,
+        1,
+        1,
+        4,
+        3,
+        3,
+        2,
+        3,
+        3,
+        1,
+        2,
+        2,
+        4
+      ],
+      "seed": 424870188,
+      "palette": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "moves": 8,
+      "target": 160,
+      "solution": [
+        [
+          2,
+          6
+        ],
+        [
+          16,
+          19
+        ],
+        [
+          20,
+          19
+        ],
+        [
+          2,
+          6
+        ],
+        [
+          2,
+          6
+        ],
+        [
+          4,
+          9
+        ]
+      ],
+      "par": 6,
+      "alternativeSolutions": [
+        [
+          [
+            6,
+            11
+          ],
+          [
+            6,
+            11
+          ],
+          [
+            8,
+            11
+          ],
+          [
+            6,
+            4
+          ],
+          [
+            16,
+            20
+          ],
+          [
+            9,
+            12
+          ],
+          [
+            22,
+            21
+          ]
+        ]
+      ],
+      "balance": {
+        "randomWinRate": 0,
+        "trials": 100,
+        "solutionScore": 205,
+        "winningOpenings": 2,
+        "averageCascadeWaves": 1.466,
+        "maxCascadeWaves": 6,
+        "forcedRefills": 3,
+        "greedyWinRate": 0,
+        "greedyTrials": 30
+      }
+    },
+    {
+      "id": 7,
+      "rulesVersion": "classic-v4",
+      "name": "Katman katman",
+      "subtitle": "Çift katmanları tamamlayacak hamlelerini sakla.",
+      "cells": [
+        {
+          "q": 0,
+          "r": -3,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": -3,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": -3,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": -2,
+          "layers": 2
+        },
+        {
+          "q": -2,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": -2,
+          "layers": 2
+        },
+        {
+          "q": -1,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": 1,
+          "layers": 2
+        },
+        {
+          "q": 0,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "layers": 2
+        },
+        {
+          "q": -2,
+          "r": 2,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": 2,
+          "layers": 2
+        },
+        {
+          "q": 1,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": 3,
+          "layers": 2
+        },
+        {
+          "q": 0,
+          "r": 2,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": 1,
+          "layers": 2
+        },
+        {
+          "q": -1,
+          "r": 3,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": 2,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": 3,
+          "layers": 1
+        }
+      ],
+      "initial": [
+        4,
+        2,
+        2,
+        3,
+        4,
+        4,
+        1,
+        3,
+        4,
+        1,
+        2,
+        4,
+        3,
+        1,
+        3,
+        4,
+        1,
+        1,
+        2,
+        4,
+        4,
+        4,
+        3,
+        2,
+        2,
+        2,
+        3,
+        1,
+        1
+      ],
+      "seed": 489576337,
+      "palette": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "moves": 8,
+      "target": 215,
+      "solution": [
+        [
+          4,
+          2
+        ],
+        [
+          23,
+          21
+        ],
+        [
+          12,
+          17
+        ],
+        [
+          9,
+          7
+        ],
+        [
+          13,
+          11
+        ],
+        [
+          12,
+          15
+        ]
+      ],
+      "par": 6,
+      "alternativeSolutions": [
+        [
+          [
+            17,
+            20
+          ],
+          [
+            14,
+            17
+          ],
+          [
+            3,
+            6
+          ],
+          [
+            13,
+            16
+          ],
+          [
+            21,
+            26
+          ],
+          [
+            10,
+            15
+          ],
+          [
+            8,
+            11
+          ]
+        ]
+      ],
+      "balance": {
+        "randomWinRate": 0,
+        "trials": 100,
+        "solutionScore": 274,
+        "winningOpenings": 2,
+        "averageCascadeWaves": 1.909,
+        "maxCascadeWaves": 10,
+        "forcedRefills": 3,
+        "greedyWinRate": 50,
+        "greedyTrials": 30
+      }
+    },
+    {
+      "id": 8,
+      "rulesVersion": "classic-v4",
+      "name": "Uzak köşeler",
+      "subtitle": "Büyüyen tahtada kenarları unutma.",
+      "cells": [
+        {
+          "q": 0,
+          "r": -3,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": -3,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": -3,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": -1,
+          "layers": 2
+        },
+        {
+          "q": 2,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "layers": 2
+        },
+        {
+          "q": -2,
+          "r": 2,
+          "layers": 2
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": 2,
+          "layers": 2
+        },
+        {
+          "q": 1,
+          "r": 1,
+          "layers": 2
+        },
+        {
+          "q": -2,
+          "r": 3,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": 2,
+          "layers": 2
+        },
+        {
+          "q": 2,
+          "r": 1,
+          "layers": 2
+        },
+        {
+          "q": -1,
+          "r": 3,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": 2,
+          "layers": 2
+        },
+        {
+          "q": 0,
+          "r": 3,
+          "layers": 2
+        }
+      ],
+      "initial": [
+        1,
+        3,
+        5,
+        3,
+        5,
+        5,
+        1,
+        5,
+        5,
+        3,
+        4,
+        3,
+        2,
+        4,
+        2,
+        3,
+        5,
+        5,
+        2,
+        2,
+        1,
+        4,
+        3,
+        3,
+        4,
+        3,
+        1,
+        3,
+        5
+      ],
+      "seed": 554282486,
+      "palette": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "moves": 8,
+      "target": 170,
+      "solution": [
+        [
+          16,
+          19
+        ],
+        [
+          26,
+          24
+        ],
+        [
+          19,
+          22
+        ],
+        [
+          24,
+          27
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          12,
+          15
+        ]
+      ],
+      "par": 6,
+      "alternativeSolutions": [
+        [
+          [
+            1,
+            6
+          ],
+          [
+            12,
+            15
+          ],
+          [
+            13,
+            18
+          ],
+          [
+            17,
+            15
+          ],
+          [
+            13,
+            16
+          ],
+          [
+            11,
+            14
+          ],
+          [
+            0,
+            2
+          ]
+        ]
+      ],
+      "balance": {
+        "randomWinRate": 0,
+        "trials": 100,
+        "solutionScore": 217,
+        "winningOpenings": 2,
+        "averageCascadeWaves": 1.529,
+        "maxCascadeWaves": 8,
+        "forcedRefills": 0,
+        "greedyWinRate": 100,
+        "greedyTrials": 30
+      }
+    },
+    {
+      "id": 9,
+      "rulesVersion": "classic-v4",
+      "name": "Son hamle",
+      "subtitle": "En çok puanı değil, eksik alanı tamamlayan hamleyi ara.",
+      "cells": [
+        {
+          "q": 0,
+          "r": -3,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": -2,
+          "layers": 2
+        },
+        {
+          "q": 1,
+          "r": -3,
+          "layers": 2
+        },
+        {
+          "q": -2,
+          "r": -1,
+          "layers": 2
+        },
+        {
+          "q": 0,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": -3,
+          "layers": 2
+        },
+        {
+          "q": -3,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": 3,
+          "r": -3,
+          "layers": 2
+        },
+        {
+          "q": -2,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": -3,
+          "r": 1,
+          "layers": 2
+        },
+        {
+          "q": -1,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": -1,
+          "layers": 2
+        },
+        {
+          "q": 3,
+          "r": -2,
+          "layers": 2
+        },
+        {
+          "q": -2,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": 0,
+          "layers": 2
+        },
+        {
+          "q": 2,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": -3,
+          "r": 2,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 3,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": 2,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "layers": 2
+        },
+        {
+          "q": 2,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": -3,
+          "r": 3,
+          "layers": 2
+        },
+        {
+          "q": -1,
+          "r": 2,
+          "layers": 2
+        },
+        {
+          "q": 1,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 3,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": 3,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": 2,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": 3,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": 2,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": 3,
+          "layers": 1
+        }
+      ],
+      "initial": [
+        3,
+        5,
+        5,
+        1,
+        1,
+        5,
+        1,
+        3,
+        2,
+        1,
+        3,
+        1,
+        3,
+        5,
+        5,
+        2,
+        4,
+        3,
+        2,
+        5,
+        2,
+        5,
+        1,
+        4,
+        4,
+        2,
+        3,
+        3,
+        2,
+        2,
+        5,
+        1,
+        4,
+        1,
+        4,
+        1,
+        5
+      ],
+      "seed": 618988635,
+      "palette": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "moves": 12,
+      "target": 265,
+      "solution": [
+        [
+          8,
+          12
+        ],
+        [
+          21,
+          25
+        ],
+        [
+          25,
+          29
+        ],
+        [
+          21,
+          18
+        ],
+        [
+          2,
+          8
+        ],
+        [
+          9,
+          16
+        ],
+        [
+          6,
+          10
+        ],
+        [
+          12,
+          16
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          7
+        ]
+      ],
+      "par": 10,
+      "alternativeSolutions": [
+        [
+          [
+            21,
+            28
+          ],
+          [
+            14,
+            18
+          ],
+          [
+            28,
+            34
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            21,
+            18
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            7
+          ],
+          [
+            9,
+            16
+          ],
+          [
+            10,
+            14
+          ],
+          [
+            15,
+            22
+          ]
+        ]
+      ],
+      "balance": {
+        "randomWinRate": 0,
+        "trials": 100,
+        "solutionScore": 332,
+        "winningOpenings": 2,
+        "averageCascadeWaves": 1.622,
+        "maxCascadeWaves": 7,
+        "forcedRefills": 0,
+        "greedyWinRate": 0,
+        "greedyTrials": 30
+      }
+    },
+    {
+      "id": 10,
+      "rulesVersion": "classic-v4",
+      "name": "Usta dokunuşu",
+      "subtitle": "Hedef puan ve bütün zemin, sınırlı hamlede.",
+      "cells": [
+        {
+          "q": 0,
+          "r": -3,
+          "layers": 2
+        },
+        {
+          "q": -1,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": -3,
+          "layers": 2
+        },
+        {
+          "q": -2,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": -3,
+          "layers": 1
+        },
+        {
+          "q": -3,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": -2,
+          "layers": 2
+        },
+        {
+          "q": 3,
+          "r": -3,
+          "layers": 2
+        },
+        {
+          "q": -2,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": -1,
+          "layers": 2
+        },
+        {
+          "q": 2,
+          "r": -2,
+          "layers": 2
+        },
+        {
+          "q": -3,
+          "r": 1,
+          "layers": 2
+        },
+        {
+          "q": -1,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": -1,
+          "layers": 2
+        },
+        {
+          "q": 3,
+          "r": -2,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": -1,
+          "layers": 1
+        },
+        {
+          "q": -3,
+          "r": 2,
+          "layers": 2
+        },
+        {
+          "q": -1,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": 3,
+          "r": -1,
+          "layers": 2
+        },
+        {
+          "q": -2,
+          "r": 2,
+          "layers": 2
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "layers": 2
+        },
+        {
+          "q": 2,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": -3,
+          "r": 3,
+          "layers": 2
+        },
+        {
+          "q": -1,
+          "r": 2,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": 1,
+          "layers": 2
+        },
+        {
+          "q": 3,
+          "r": 0,
+          "layers": 1
+        },
+        {
+          "q": -2,
+          "r": 3,
+          "layers": 2
+        },
+        {
+          "q": 0,
+          "r": 2,
+          "layers": 1
+        },
+        {
+          "q": 2,
+          "r": 1,
+          "layers": 1
+        },
+        {
+          "q": -1,
+          "r": 3,
+          "layers": 1
+        },
+        {
+          "q": 1,
+          "r": 2,
+          "layers": 1
+        },
+        {
+          "q": 0,
+          "r": 3,
+          "layers": 2
+        }
+      ],
+      "initial": [
+        3,
+        5,
+        5,
+        4,
+        2,
+        4,
+        4,
+        2,
+        3,
+        5,
+        3,
+        4,
+        2,
+        5,
+        1,
+        1,
+        2,
+        4,
+        1,
+        2,
+        4,
+        2,
+        5,
+        1,
+        3,
+        3,
+        5,
+        2,
+        4,
+        1,
+        4,
+        5,
+        5,
+        5,
+        1,
+        1,
+        2
+      ],
+      "seed": 683694784,
+      "palette": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "moves": 14,
+      "target": 280,
+      "solution": [
+        [
+          13,
+          17
+        ],
+        [
+          33,
+          30
+        ],
+        [
+          31,
+          34
+        ],
+        [
+          17,
+          24
+        ],
+        [
+          12,
+          19
+        ],
+        [
+          11,
+          15
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          2,
+          8
+        ],
+        [
+          4,
+          8
+        ],
+        [
+          5,
+          12
+        ],
+        [
+          12,
+          19
+        ],
+        [
+          23,
+          30
+        ]
+      ],
+      "par": 12,
+      "alternativeSolutions": [
+        [
+          [
+            18,
+            22
+          ],
+          [
+            17,
+            24
+          ],
+          [
+            24,
+            28
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            14,
+            11
+          ],
+          [
+            32,
+            29
+          ],
+          [
+            24,
+            31
+          ],
+          [
+            2,
+            8
+          ],
+          [
+            27,
+            31
+          ],
+          [
+            15,
+            19
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            8,
+            5
+          ]
+        ]
+      ],
+      "balance": {
+        "randomWinRate": 0,
+        "trials": 100,
+        "solutionScore": 350,
+        "winningOpenings": 2,
+        "averageCascadeWaves": 1.459,
+        "maxCascadeWaves": 8,
+        "forcedRefills": 0,
+        "greedyWinRate": 10,
+        "greedyTrials": 30
+      }
+    }
+  ]
+}

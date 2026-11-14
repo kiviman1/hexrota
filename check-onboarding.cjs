@@ -1,6 +1,7 @@
 /* First-play understanding, deliberate lesson acknowledgements and transfer to a real puzzle. */
 'use strict';
 const assert=require('node:assert/strict');
+const {loadGame,savedLevel,savedGame,confirmRestart}=require('./qa-fixtures.cjs');
 const fs=require('node:fs');
 const {JSDOM,VirtualConsole}=require('jsdom');
 const root=__dirname+'/dist/',key='hexrota-match-v5';
@@ -25,7 +26,7 @@ function mount(state,{motion='reduce'}={}){
  class AudioStub{configure(){}unlock(){return Promise.resolve();}setActive(){}move(){}victory(){}click(){}stop(){}dispose(){}}
  w.HexAudio=AudioStub;
  if(state)w.localStorage.setItem(key,JSON.stringify(state));
- for(const file of ['engine.js','levels.js','tutorials.js','app.js'])w.eval(source(file));
+ loadGame(w,['engine.js','levels.js','tutorials.js','app.js'],source);
  const f={dom,w,d,node(selector){const node=d.querySelector(selector);assert(node,selector+' exists');return node;},save(){return JSON.parse(w.localStorage.getItem(key));},close(){dom.window.close();}};
  f.click=selector=>f.node(selector).dispatchEvent(new w.MouseEvent('click',{bubbles:true,detail:0}));
  f.board=()=>plain(f.save().boards[f.save().current]);

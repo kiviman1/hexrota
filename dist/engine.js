@@ -175,32 +175,53 @@
     }
     hint(options={}){
       if(this.status!=='playing')return null;
-      const solution=this.level.solution||[],legal=this.legalMoves();
-      if(this.history.length<solution.length&&this.history.every((p,i)=>solution[i]&&((p[0]===solution[i][0]&&p[1]===solution[i][1])||(p[0]===solution[i][1]&&p[1]===solution[i][0])))){
-        const pair=solution[this.history.length];
-        if(legal.some(p=>(p[0]===pair[0]&&p[1]===pair[1])||(p[1]===pair[0]&&p[0]===pair[1])))return {pair:pair.slice()};
+      options=options&&typeof options==='object'?options:{};
+      const legal=this.legalMoves();if(!legal.length)return null;
+      const same=(a,b)=>a&&b&&((a[0]===b[0]&&a[1]===b[1])||(a[0]===b[1]&&a[1]===b[0]));
+      const routes=[...(Array.isArray(this.level.solutions)?this.level.solutions:[]),this.level.solution,...(this.level.alternativeSolutions||[])].filter(route=>Array.isArray(route)&&route.length);
+      // Both independently certified openings remain useful after either route is chosen.
+      for(const route of routes){
+        if(this.history.length>=route.length||!this.history.every((pair,index)=>same(pair,route[index])))continue;
+        const pair=route[this.history.length];
+        if(legal.some(move=>same(move,pair)))return {pair:pair.slice(),source:'proven_route',guaranteed:true,continuation:route.slice(this.history.length).map(move=>move.slice()),searchedNodes:0,depth:0,truncated:false};
       }
-      if(!legal.length)return null;
       const clock=()=>typeof performance!=='undefined'?performance.now():Date.now();
-      const budget=Math.max(1,Math.min(150,Number(options.maxMs)||90)),maxDepth=Math.max(1,Math.min(3,Number(options.maxDepth)||3)),end=clock()+budget;
-      const initialLayers=this.remainingLayers;
-      let beam=[{game:this,first:null,rank:0}],best=null;
+      const nodeLimited=Number.isInteger(options.maxNodes)&&options.maxNodes>0;
+      const maxNodes=Math.min(100000,nodeLimited?options.maxNodes:5000);
+      const budget=Math.max(1,Math.min(150,Number(options.maxMs)||90)),end=clock()+budget;
+      const maxDepth=Math.min(this.movesLeft,Math.max(1,Math.min(3,Number(options.maxDepth)||3)));
+      const width=Math.max(1,Math.min(32,Math.floor(Number(options.beamWidth)||10)));
+      const initialLayers=this.remainingLayers,visited=new Set();
+      let beam=[{game:this,path:[],rank:0}],bestPlaying=null,bestLost=null,searchedNodes=0,depthReached=0;
+      const reply=(source='heuristic',item=null,truncated=false)=>({
+        pair:(item?.path[0]||bestPlaying?.path[0]||bestLost?.path[0]||legal[0]).slice(),source,guaranteed:source!=='heuristic',
+        continuation:source==='heuristic'?null:item.path.map(move=>move.slice()),searchedNodes,depth:depthReached,truncated
+      });
+      const exhausted=()=>searchedNodes>=maxNodes||(!nodeLimited&&clock()>=end);
       for(let depth=0;depth<maxDepth;depth++){
         const next=[];
         for(const node of beam){
-          if(clock()>=end)return {pair:(best?.first||legal[0]).slice()};
+          // A lost board cannot be expanded into a fictitious future recovery.
+          if(node.game.status!=='playing')continue;
           for(const pair of node.game.legalMoves()){
-            if(clock()>=end)return {pair:(best?.first||legal[0]).slice()};
-            const child=node.game.clone();child.swap(...pair);
-            const first=node.first||pair;
-            const rank=(initialLayers-child.remainingLayers)*120+(child.covered-this.covered)*45+Math.min(child.score-this.score,Math.max(0,this.level.target-this.score))*.8-depth*8;
-            if(child.status==='won')return {pair:first.slice()};
-            const item={game:child,first,rank};next.push(item);if(!best||rank>best.rank)best=item;
+            if(exhausted())return reply('heuristic',null,true);
+            const child=node.game.clone(),result=child.swap(...pair);if(!result.ok)continue;
+            searchedNodes++;depthReached=Math.max(depthReached,depth+1);
+            const path=node.path.concat([pair.slice()]);
+            const progress=initialLayers-child.remainingLayers,green=child.covered-this.covered;
+            const points=Math.min(child.score,this.level.target)-Math.min(this.score,this.level.target);
+            const urgency=Math.max(0,this.level.target-child.score)/Math.max(1,child.movesLeft);
+            const item={game:child,path,rank:progress*120+green*45+points*.8-(depth+1)*8-urgency*.35};
+            if(child.status==='won')return reply('search_win',item,false);
+            if(child.status==='lost'){if(!bestLost||item.rank>bestLost.rank)bestLost=item;continue;}
+            if(!bestPlaying||item.rank>bestPlaying.rank)bestPlaying=item;
+            const state=child.values.join(',')+'/'+child.layers.join(',')+'/'+child.score+'/'+child.movesLeft+'/'+child.rngState;
+            if(visited.has(state))continue;visited.add(state);next.push(item);
           }
         }
-        next.sort((a,b)=>b.rank-a.rank);beam=next.slice(0,10);if(!beam.length)break;
+        next.sort((a,b)=>b.rank-a.rank);beam=next.slice(0,width);if(!beam.length)break;
       }
-      return {pair:(best?.first||legal[0]).slice()};
+      return reply();
     }
   }
   global.HexMatch=HexMatch;

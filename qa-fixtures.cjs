@@ -1,0 +1,39 @@
+/* Test fixtures load the actual attempt modules while preserving explicit legacy cases. */
+'use strict';
+const assert=require('node:assert/strict');
+const key='hexrota-match-v5',catalogs=new WeakMap();
+function loadGame(window,files,read,{originalBoards=[]}={}){
+ const modules=[];
+ for(const file of files){
+  if(file==='app.js')for(const dependency of ['variants-data.js','attempts.js','events.js'])if(!modules.includes(dependency))modules.push(dependency);
+  modules.push(file);
+ }
+ for(const file of modules){
+  if(file==='app.js'&&originalBoards.length){
+   const saved=JSON.parse(window.localStorage.getItem(key)||'null')||{current:0,done:[],boards:{},sound:false};
+   saved.boards=saved.boards||{};
+   for(const stage of originalBoards)if(!saved.boards[stage])saved.boards[stage]=new window.HexMatch(window.HEX_LEVELS[stage-window.HEX_TUTORIALS.length]).snapshot();
+   window.localStorage.setItem(key,JSON.stringify(saved));
+  }
+  window.eval(read(file));
+ }
+}
+function catalog(window){
+ if(!catalogs.has(window))catalogs.set(window,window.HexAttempts.createCatalog(window.HEX_LEVELS,window.HEX_VARIANTS,window.HexMatch));
+ return catalogs.get(window);
+}
+function savedLevel(window,stage){
+ const saved=JSON.parse(window.localStorage.getItem(key)),index=stage??saved.current,count=window.HEX_TUTORIALS.length;
+ if(index<count)return window.HEX_TUTORIALS[index];
+ const base=window.HEX_LEVELS[index-count],metadata=saved.attempts?.[index];
+ return metadata?catalog(window).resolveLevel(base.id,metadata.variantId,metadata.levelDataVersion):base;
+}
+function savedGame(window,stage){
+ const saved=JSON.parse(window.localStorage.getItem(key)),index=stage??saved.current;
+ return new window.HexMatch(savedLevel(window,index),saved.boards[index]);
+}
+function confirmRestart(window){
+ const dialog=window.document.getElementById('restart-dialog');
+ if(dialog?.open){const confirm=window.document.getElementById('restart-confirm');assert(confirm,'restart has a concrete confirmation');confirm.click();}
+}
+module.exports={loadGame,savedLevel,savedGame,confirmRestart};

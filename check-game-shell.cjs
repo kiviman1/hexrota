@@ -1,6 +1,7 @@
 /* Native game-shell regressions: viewport changes, zoom gestures and real input. */
 'use strict';
 const assert=require('node:assert/strict');
+const {loadGame,savedLevel,savedGame,confirmRestart}=require('./qa-fixtures.cjs');
 const fs=require('node:fs');
 const {JSDOM,VirtualConsole}=require('jsdom');
 const root=__dirname+'/dist/',key='hexrota-match-v5';
@@ -28,7 +29,7 @@ function mount({viewport=true}={}){
  class AudioStub{configure(){}unlock(){return Promise.resolve();}setActive(){}move(){}victory(){}click(){}stop(){}dispose(){}}
  w.HexAudio=AudioStub;
  w.localStorage.setItem(key,JSON.stringify({current:2,done:[0,1],boards:{},sound:false}));
- for(const file of ['engine.js','levels.js','tutorials.js','app.js'])w.eval(read(file));
+ loadGame(w,['engine.js','levels.js','tutorials.js','app.js'],read,{originalBoards:[2]});
  const style=d.createElement('style');style.textContent=read('style.css');d.head.append(style);
  const node=id=>{const n=d.getElementById(id);assert(n,'#'+id+' exists');return n;};
  const click=id=>node(id).click();

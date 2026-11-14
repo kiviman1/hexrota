@@ -47,8 +47,8 @@
     const status=typeof after?.status==='string'?after.status:greenAfter===totalCells&&targetMet?'won':movesLeft<=0||(level.targetMode==='exact'&&scoreAfter>level.target)?'lost':'playing';
     return {attemptId,turn:after?.turn??before.turn+1,tutorial:level.kind==='tutorial',totalCells,target:level.target,scoreBefore:before.score,scoreAfter,greenBefore:green(before.layers),greenAfter,movesLeft,status,waves};
   }
-  function restore(level,snapshot,rules,Engine=global.HexMatch,Director=global.HexRewards){
-    const attemptId=String(level.id),replay=new Engine(level);let state=Director.createState(attemptId),lastPlan=null;
+  function restore(level,snapshot,rules,Engine=global.HexMatch,Director=global.HexRewards,attemptId=String(level.id)){
+    const replay=new Engine(level);let state=Director.createState(attemptId),lastPlan=null;
     for(const pair of snapshot?.history||[]){
       const before=replay.snapshot(),result=replay.swap(...pair);
       if(!result.ok)throw new Error('Reward history contains an invalid swap');

@@ -3,6 +3,7 @@ const {JSDOM,VirtualConsole}=require('jsdom');
 const fs=require('node:fs');
 const vm=require('node:vm');
 const assert=require('node:assert/strict');
+const {loadGame,savedLevel,savedGame,confirmRestart}=require('./qa-fixtures.cjs');
 const root=__dirname+'/dist/',key='hexrota-match-v5';
 const mounted=[],errors=[],unhandled=[];
 process.on('unhandledRejection',e=>unhandled.push(e?.message||String(e)));
@@ -34,7 +35,7 @@ function mount(state,options={}){
  w.HexAudio=AudioStub;
  if(state)w.localStorage.setItem(key,JSON.stringify(state));
  if(options.oldV4)w.localStorage.setItem('hexrota-match-v4',JSON.stringify(options.oldV4));
- for(const f of ['engine.js','levels.js','tutorials.js','app.js'])w.eval(fs.readFileSync(root+f,'utf8'));
+ loadGame(w,['engine.js','levels.js','tutorials.js','app.js'],file=>fs.readFileSync(root+file,'utf8'));
  return {dom,w,d,audio,save:()=>JSON.parse(w.localStorage.getItem(key)),close:()=>dom.window.close()};
 }
 function node(f,selector){const n=f.d.querySelector(selector);assert(n,selector+' exists');return n;}

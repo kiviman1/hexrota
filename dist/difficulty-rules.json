@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "levelDataVersion": "variants-v1",
+  "simulationSeed": 7631381,
+  "trialsPerPolicy": 64,
+  "planning": {
+    "maxDepth": 3,
+    "beamWidth": 6,
+    "maxNodes": 192
+  },
+  "easeWeights": {
+    "greedy": 0.3,
+    "coverage": 0.45,
+    "planning": 0.25
+  },
+  "maxEaseSpread": 14,
+  "maxPolicyWinRateSpread": 30,
+  "targets": [
+    {
+      "levelId": 1,
+      "category": "very-easy",
+      "label": "Çok kolay",
+      "role": "first-independent-success",
+      "easeBand": [
+        85,
+        100
+      ],
+      "centre": 92,
+      "minimumPlanningWinRate": 80
+    },
+    {
+      "levelId": 2,
+      "category": "easy",
+      "label": "Kolay",
+      "role": "reinforcement",
+      "easeBand": [
+        70,
+        86
+      ],
+      "centre": 78,
+      "minimumPlanningWinRate": 70
+    },
+    {
+      "levelId": 3,
+      "category": "medium",
+      "label": "Orta",
+      "role": "strategy",
+      "easeBand": [
+        48,
+        68
+      ],
+      "centre": 58,
+      "minimumPlanningWinRate": 45
+    },
+    {
+      "levelId": 4,
+      "category": "medium-hard",
+      "label": "Orta-zor",
+      "role": "build-up",
+      "easeBand": [
+        32,
+        53
+      ],
+      "centre": 43,
+      "minimumPlanningWinRate": 35
+    },
+    {
+      "levelId": 5,
+      "category": "challenge",
+      "label": "Meydan okuma",
+      "role": "first-peak",
+      "easeBand": [
+        15,
+        38
+      ],
+      "centre": 27,
+      "minimumPlanningWinRate": 25
+    },
+    {
+      "levelId": 6,
+      "category": "relief",
+      "label": "Rahatlama",
+      "role": "recovery",
+      "easeBand": [
+        76,
+        94
+      ],
+      "centre": 85,
+      "minimumPlanningWinRate": 75
+    },
+    {
+      "levelId": 7,
+      "category": "medium",
+      "label": "Orta",
+      "role": "strategy",
+      "easeBand": [
+        45,
+        65
+      ],
+      "centre": 55,
+      "minimumPlanningWinRate": 40
+    },
+    {
+      "levelId": 8,
+      "category": "hard",
+      "label": "Zor",
+      "role": "second-peak",
+      "easeBand": [
+        12,
+        34
+      ],
+      "centre": 24,
+      "minimumPlanningWinRate": 20
+    },
+    {
+      "levelId": 9,
+      "category": "relief",
+      "label": "Rahatlama",
+      "role": "final-preparation",
+      "easeBand": [
+        73,
+        92
+      ],
+      "centre": 82,
+      "minimumPlanningWinRate": 70
+    },
+    {
+      "levelId": 10,
+      "category": "final-challenge",
+      "label": "Final",
+      "role": "final-peak",
+      "easeBand": [
+        5,
+        27
+      ],
+      "centre": 18,
+      "minimumPlanningWinRate": 15
+    }
+  ],
+  "maxCertifiedMoveSpread": 2,
+  "maxAverageMovesUsedSpread": 2.5,
+  "maxAverageGroundCompletionSpread": 0.15,
+  "variantsPerLevel": 4,
+  "curve": {
+    "minimumRampEaseDrop": 3,
+    "minimumRecoveryEaseGain": 20,
+    "minimumFinalPeakEaseDrop": 1
+  }
+}
