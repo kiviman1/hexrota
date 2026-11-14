@@ -179,9 +179,19 @@
     if(!entry.metadata||!entry.game||!entry.stats)return null;
     const game=entry.game;return {timestamp:Date.now(),levelId:entry.metadata.levelId,variantId:entry.metadata.variantId,levelDataVersion:entry.metadata.levelDataVersion,attemptId:entry.metadata.attemptId,attemptNumber:Math.max(1,validCounter(entry.stats.attemptNumber)),movesUsed:game.turn,movesRemaining:game.movesLeft,score:game.score,targetScore:entry.level.target,covered:game.covered,totalCells:game.total,remainingLayers:game.remainingLayers,cascades:validCounter(entry.stats.cascades),hintsUsed:validCounter(entry.stats.hintsUsed),status:game.status};
   }
+  const playtestKey='hexrota-playtest-v1';let playtest=null;
+  if(window.HexPlaytest)try{playtest=window.HexPlaytest.createTracker({now:()=>Date.now(),monotonic:()=>performance.now(),state:readSave(playtestKey)});}catch(_){/* Invalid observation data must not affect play. */}
+  function persistPlaytest(){if(playtest)try{localStorage.setItem(playtestKey,JSON.stringify(playtest.snapshot()));}catch(_){} }
+  function syncPlaytestActivity(){
+    if(!playtest)return;try{playtest.setActivity({playing:screen==='game'&&!busy&&!paused&&!document.hidden&&!topDialog()&&engine?.status==='playing',attemptId:activeAttempt?.attemptId||null});}catch(_){}
+  }
+  function observePlaytest(name,context,details={}){
+    if(!playtest)return;try{const{timestamp,...fields}=context||{};playtest.recordEvent(name,fields,{...details,developerBypass:!!lifeFeature?.life?.developerBypass});syncPlaytestActivity();persistPlaytest();}catch(_){}
+  }
   function emitEvent(name,details={},entry){
     if(!eventState)return;
     const context=eventContext(entry);if(!context)return;
+    observePlaytest(name,context,details);
     try{eventState=window.HexEvents.append(eventState,name,context,details);localStorage.setItem(eventKey,JSON.stringify(eventState));}catch(_){/* Local measurements never affect a game or a save. */}
   }
   // Lives, development receipts and the test wallet share one atomic storage write.
@@ -280,6 +290,7 @@
     if($('lives-wait'))$('lives-wait').textContent=pendingLifeStart&&view?.canStart?'Bölüme başla':'Bekle';
   }
   function openLives(request=null){
+    if(request&&lifeReady()&&!lifeManager.view(lifeFeature.life).canStart)observePlaytest('life_blocked',{}, {requestedLevelId:levels[request.index].id,reason:'lives_empty',developerBypass:lifeManager.view(lifeFeature.life).developerBypass,lives:lifeManager.view(lifeFeature.life).lives});
     lifeRefresh({persist:true});pendingLifeStart=request;renderLives();
     if($('lives-dialog'))openModal('lives-dialog');else toast('Can bilgisi şu anda açılamadı. Sayfayı yenileyip tekrar dene.');
   }
@@ -432,7 +443,7 @@
     if(presentation)finishPresentation(presentation);
     clearTimeout(terminalTimer);
     const dialog=$(id);if(!dialog.open){dialog.showModal();modalStack.push(id);}
-    document.body.classList.add('modal-open');
+    document.body.classList.add('modal-open');syncPlaytestActivity();
   }
   document.addEventListener('hexrota:open-dialog',event=>{
     if(event.detail?.id!=='install-dialog')return;
@@ -446,7 +457,7 @@
       if(dialog.id==='pause-dialog'){paused=false;syncAudio();}
       if(dialog.id==='pregame-dialog')pendingStage=null;
       if(dialog.id==='restart-dialog')pendingRestart=null;
-      if(!topDialog())document.body.classList.remove('modal-open');
+      if(!topDialog())document.body.classList.remove('modal-open');syncPlaytestActivity();
     });
     dialog.addEventListener('click',e=>{
       if(e.target!==dialog)return;
@@ -514,7 +525,7 @@
     for(const name of ['home','journey','game','records']){const node=$(name+'-screen');node.hidden=name!==screen;node.inert=name!==screen;}
     document.body.dataset.screen=screen;
     document.querySelectorAll('[data-nav]').forEach(button=>{const active=button.dataset.nav===screen;button.classList.toggle('is-active',active);if(active)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
-    updateMenus();syncAudio();renderLives();
+    updateMenus();syncAudio();syncPlaytestActivity();renderLives();
     if(historyChange&&(replace||previousScreen!==screen))try{history[replace?'replaceState':'pushState']({screen},'','#'+screen);}catch(_){}
     document.documentElement.scrollTop=0;document.body.scrollTop=0;
   }
@@ -544,6 +555,7 @@
     const previous=previousEntry?discardStage(index,reason,previousEntry):null;
     showScreen('game');startEvent(reason);
     if(previous&&activeAttempt&&previous.attemptId!==activeAttempt.attemptId)emitEvent('level_retried',{reason,previousAttemptId:previous.attemptId});
+    if(!newAttempt)observePlaytest('attempt_resumed',eventContext()||{});syncPlaytestActivity();
     unlockAudio();return true;
   }
   function requestStage(index){
@@ -691,7 +703,7 @@
     if($('ground-goal-check')){$('ground-goal-check').hidden=covered<total;$('ground-goal-check').setAttribute('aria-label',covered===total?'Her yer yeşil':'Henüz her yer yeşil değil');}
     if($('ground-label'))$('ground-label').textContent=active===0&&engine.turn===0?'Taşların altı yeşil olur':'Yeşil alan';
     if($('game-goal-title'))$('game-goal-title').textContent=active===0?'Aynı sayıları eşleştir':'Puanı topla, alanı boya';
-    renderCoach();
+    renderCoach();syncPlaytestActivity();
   }
   function renderCoach(){
     const coach=$('tutorial-coach'),tutorial=isTutorial(),feedback=guideFeedback();coach.hidden=!tutorial||(engine.status!=='playing'&&!busy);
@@ -932,10 +944,11 @@
       toast(engine.adjacent(a,b)?'Üçlü oluşmadı. Hamlen duruyor.':'Sadece komşu iki taşı değiştirebilirsin.');
       return;
     }
+    if(playtest&&activeAttempt)try{playtest.recordMove({attemptId:activeAttempt.attemptId,turn:engine.turn,pair:[a,b],cells:[a,b].map(index=>({q:activeLevel.cells[index].q,r:activeLevel.cells[index].r})),scoreBefore:before.score,scoreAfter:engine.score,movesRemaining:engine.movesLeft,coveredBefore:before.layers.filter(value=>value===0).length,coveredAfter:engine.covered,remainingLayers:engine.remainingLayers,waves:result.frames.length,developerBypass:!!lifeFeature?.life?.developerBypass,matchedIndices:[...new Set(result.frames.flatMap(frame=>frame.matched))]});persistPlaytest();}catch(_){}
     const stats=activeStats();if(stats)stats.cascades=validCounter(stats.cascades)+Math.max(0,result.frames.length-1);
     const rewardPlan=planRewards(checkpoint,result);
     const job={token:++epoch,result,controller:new AbortController(),animations:[],watchdog:null,scoreDisplay:before.score,scoreTasks:[],rewardPlan,rewardCueIds:new Set(),rewardMilestoneIds:new Set(),rewardNodes:new Set(),rewardHeadlineUsed:false};
-    presentation=job;busy=true;selected=null;hinted=null;comboText='';
+    presentation=job;busy=true;selected=null;hinted=null;comboText='';syncPlaytestActivity();
     try{
       markCompleted(true);persist();settleActiveLife();terminalEvent();renderLevels();
       if(!rewardPlan&&saved.preferences.haptics&&typeof navigator.vibrate==='function')try{navigator.vibrate(12);}catch(_){}
@@ -1010,7 +1023,7 @@
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=17');
+            job.worker=new Worker('./hint-worker.js?v=19');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:activeLevel,snapshot:engine.snapshot()});
@@ -1166,6 +1179,16 @@
   window.addEventListener('pagehide',()=>{audio?.stop();if(engine)persist();});
   const motionQuery=window.matchMedia?.('(prefers-reduced-motion: reduce)');
   motionQuery?.addEventListener?.('change',()=>{if(saved.preferences.motion==='auto'){if(presentation&&reduceMotion())finishPresentation(presentation);syncAudio();}});
-  initializeLives();bindLivesUI();hydrateRecords();renderSound();loadLevel(active);showScreen('home',{replace:true});
+  function bindPlaytest(){
+    if(!playtest)return;
+    const toggle=$('setting-playtest');if(toggle){toggle.checked=playtest.snapshot().enabled;toggle.addEventListener('change',()=>{playtest.setEnabled(toggle.checked);syncPlaytestActivity();persistPlaytest();toast(toggle.checked?'Yerel oyuncu testi kaydı açık. Veri gönderilmez.':'Yerel oyuncu testi kaydı kapalı.');});}
+    $('playtest-export')?.addEventListener('click',()=>{const json=JSON.stringify(playtest.exportData(),null,2),blob=new Blob([json],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='hexrota-playtest.json';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+    $('playtest-clear')?.addEventListener('click',()=>{playtest.clear();persistPlaytest();toast('Yalnızca oyuncu testi kaydı temizlendi.');});
+    window.addEventListener('blur',()=>{playtest.setActivity({playing:false,attemptId:activeAttempt?.attemptId||null});persistPlaytest();});
+    window.addEventListener('focus',syncPlaytestActivity);
+    document.addEventListener('visibilitychange',()=>{syncPlaytestActivity();persistPlaytest();});
+    window.addEventListener('pagehide',()=>{playtest.setActivity({playing:false,attemptId:activeAttempt?.attemptId||null});persistPlaytest();});
+  }
+  initializeLives();bindLivesUI();hydrateRecords();renderSound();loadLevel(active);showScreen('home',{replace:true});bindPlaytest();
   if(migrated)toast('İlerlemen korundu. Öğreticileri yolculuk menüsünden yeniden oynayabilirsin.');
 })();
