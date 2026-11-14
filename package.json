@@ -15,7 +15,8 @@
     "lives:sync": "node sync-lives-config.cjs",
     "test:lives": "node sync-lives-config.cjs --check && node check-lives.cjs && node check-life-consistency.cjs && node check-session-consistency.cjs && node generate-life-vectors.cjs --check && node check-life-vectors.cjs && node check-lives-ui.cjs",
     "test:session-browser": "node check-session-browser.cjs",
-    "test:unity-gameplay": "node check-gameplay-parity.cjs"
+    "test:unity-gameplay": "node check-gameplay-parity.cjs",
+    "test:mobile-browser": "node check-mobile-browser.cjs"
   },
   "devDependencies": {
     "jsdom": "31.0.1",

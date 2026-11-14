@@ -441,7 +441,7 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   ['resize','orientationchange','pageshow'].forEach(name=>on(window,name,syncAppHeight,{passive:true}));
   on(document,'fullscreenchange',syncAppHeight);
-  const settleViewport=()=>{if(presentation)finishPresentation(presentation);};
+  const settleViewport=()=>{stopPointer();if(presentation)finishPresentation(presentation);};
   on(window,'resize',settleViewport,{passive:true});on(window,'orientationchange',settleViewport,{passive:true});
   appViewport?.addEventListener?.('resize',settleViewport,{passive:true});
   appViewport?.addEventListener?.('resize',syncAppHeight,{passive:true});
@@ -1060,41 +1060,92 @@ window.HexSessionStore.boot(function startApp(session) {
     const b=e.target.closest('[data-level]');if(!b||b.disabled||+b.dataset.level===active)return;
     requestStage(+b.dataset.level);
   });
+  // Recognition uses the complete gesture, independently from match validation.
+  // Coordinates stay in the board's SVG space; thresholds stay in screen pixels.
+  function boardPoint(e,inverse=null){
+    try{
+      const board=$('board'),matrix=inverse||board.getScreenCTM?.()?.inverse();if(!matrix)return null;
+      const point=board.createSVGPoint();point.x=e.clientX;point.y=e.clientY;
+      const local=point.matrixTransform(matrix);return Number.isFinite(local.x)&&Number.isFinite(local.y)?local:null;
+    }catch(_){return null;}
+  }
   function tileAt(e){
     const node=document.elementFromPoint?.(e.clientX,e.clientY)||e.target;
     const tile=node?.closest?.('[data-index]');
     if(tile&&$('board').contains(tile))return +tile.dataset.index;
-    try{
-      const board=$('board'),matrix=board.getScreenCTM?.();if(!matrix)return null;
-      const point=board.createSVGPoint();point.x=e.clientX;point.y=e.clientY;
-      const local=point.matrixTransform(matrix.inverse());let closest=null,distance=45;
-      geometry().positions.forEach((p,i)=>{const d=Math.hypot(p.x-local.x,p.y-local.y);if(d<distance){distance=d;closest=i;}});
-      return closest;
-    }catch(_){return null;}
+    const local=boardPoint(e);if(!local)return null;
+    const {positions,radius}=geometry(),matrix=$('board').getScreenCTM();
+    const scale=Math.min(Math.hypot(matrix.a,matrix.b),Math.hypot(matrix.c,matrix.d));
+    const padding=Math.min(6,3/Math.max(.1,scale));
+    const nearest=positions.map((point,index)=>({index,x:Math.abs(local.x-point.x),y:Math.abs(local.y-point.y),distance:Math.hypot(local.x-point.x,local.y-point.y)})).sort((a,b)=>a.distance-b.distance);
+    const point=nearest[0];if(!point)return null;
+    const inside=pad=>point.x<=radius+pad&&point.y<=radius*Math.sqrt(3)/2+pad&&Math.sqrt(3)*point.x+point.y<=Math.sqrt(3)*radius+pad*2;
+    if(inside(0))return point.index;
+    // A small edge allowance covers narrow gaps, but never guesses their bisector.
+    return inside(padding)&&(!nearest[1]||nearest[1].distance-point.distance>padding)?point.index:null;
   }
+  function samplePointer(e){
+    const gesture=pointer;if(!gesture)return;
+    if(outsideViewport(e)){gesture.invalid=true;return;}
+    gesture.maxDistance=Math.max(gesture.maxDistance,Math.hypot(e.clientX-gesture.x,e.clientY-gesture.y));
+    if(!gesture.local)return;
+    const local=boardPoint(e,gesture.inverse);if(!local){gesture.invalid=true;return;}
+    const dx=local.x-gesture.local.x,dy=local.y-gesture.local.y,length=Math.hypot(dx,dy);
+    if(!length||gesture.maxDistance<12)return;
+    let choice=null,alignment=-1;
+    for(const neighbor of gesture.neighbors){
+      const cosine=(dx*neighbor.dx+dy*neighbor.dy)/(length*neighbor.distance);
+      if(cosine<Math.cos(Math.PI/8)||cosine<=alignment)continue;
+      const along=length*cosine,threshold=Math.max(12,Math.min(20,neighbor.screenDistance*.28))*neighbor.distance/neighbor.screenDistance;
+      if(along<threshold)continue;
+      choice=neighbor.index;alignment=cosine;
+    }
+    if(choice===null)return;
+    if(gesture.target===null)gesture.target=choice;
+    else if(gesture.target!==choice)gesture.conflicted=true;
+  }
+  function outsideViewport(e){return !Number.isFinite(e.clientX)||!Number.isFinite(e.clientY)||e.clientX<0||e.clientY<0||e.clientX>window.innerWidth||e.clientY>window.innerHeight;}
   on($('board'),'pointerdown',e=>{
+    if(pointer&&pointer.id!==e.pointerId){stopPointer();return;}
     if(!gameInputAllowed()||guideFeedback()||e.isPrimary===false||(e.button!==0&&e.pointerType!=='touch'))return;
     if(busy){e.preventDefault();finishPresentation(presentation);return;}
-    if(engine.status!=='playing'||pointer)return;
-    const tile=e.target.closest('[data-index]');if(!tile)return;
-    e.preventDefault();pointer={id:e.pointerId,index:+tile.dataset.index,x:e.clientX,y:e.clientY};
+    if(engine.status!=='playing'||pointer||outsideViewport(e))return;
+    const downTile=e.target.closest?.('[data-index]');
+    const index=downTile&&$('board').contains(downTile)?+downTile.dataset.index:tileAt(e);if(index===null)return;
+    const matrix=$('board').getScreenCTM?.(),local=boardPoint(e),positions=geometry().positions,from=positions[index];
+    let inverse=null;try{inverse=matrix?.inverse();}catch(_){}
+    const neighbors=local&&matrix?engine.neighbors[index].map(index=>{
+      const dx=positions[index].x-from.x,dy=positions[index].y-from.y;
+      return {index,dx,dy,distance:Math.hypot(dx,dy),screenDistance:Math.hypot(matrix.a*dx+matrix.c*dy,matrix.b*dx+matrix.d*dy)};
+    }).filter(neighbor=>neighbor.screenDistance>0):[];
+    e.preventDefault();pointer={id:e.pointerId,index,x:e.clientX,y:e.clientY,local,inverse,neighbors,target:null,maxDistance:0,conflicted:false,invalid:false,epoch,game:engine};
     try{$('board').setPointerCapture?.(e.pointerId);}catch(_){}
   });
+  // A second contact anywhere cancels rather than committing a half-finished pinch.
+  window.addEventListener('pointerdown',e=>{if(pointer&&e.pointerType==='touch'&&e.pointerId!==pointer.id)stopPointer();});
   on(window,'pointermove',e=>{
     if(!pointer||pointer.id!==e.pointerId)return;
-    if(e.pointerType!=='touch'&&e.buttons===0)stopPointer();
-    // No selection mutation here: jitter over the same tile remains a tap.
+    if(e.pointerType!=='touch'&&e.buttons===0){stopPointer();return;}
+    const samples=e.getCoalescedEvents?.()||[];for(const sample of samples)samplePointer(sample);samplePointer(e);
   });
   on(window,'pointerup',e=>{
     if(!pointer||pointer.id!==e.pointerId)return;
-    const start=pointer,target=tileAt(e);stopPointer();
+    samplePointer(e);const gesture=pointer,target=tileAt(e);stopPointer();
+    if(outsideViewport(e)||gesture.invalid||gesture.conflicted||gesture.epoch!==epoch||gesture.game!==engine||!gameInputAllowed()||busy)return;
+    if(gesture.local){
+      if(gesture.target!==null)performSwap(gesture.index,gesture.target);
+      else if(gesture.maxDistance<12&&target===gesture.index)select(gesture.index);
+      return;
+    }
+    // Non-rendering hosts may lack SVG matrices; endpoint taps remain available.
     if(target===null)return;
-    if(target===start.index)select(target);
-    else if(Math.hypot(e.clientX-start.x,e.clientY-start.y)>=6)performSwap(start.index,target);
+    if(target===gesture.index)select(target);
+    else if(gesture.maxDistance>=6)performSwap(gesture.index,target);
     else select(target);
   });
-  on($('board'),'lostpointercapture',stopPointer);
-  on(window,'pointercancel',stopPointer);
+  const cancelPointer=e=>{if(pointer&&(e.pointerId===undefined||e.pointerId===pointer.id))stopPointer();};
+  on($('board'),'lostpointercapture',cancelPointer);
+  on(window,'pointercancel',cancelPointer);
   on(window,'blur',()=>{stopPointer();if(presentation)finishPresentation(presentation);pauseGame();});
   on(document,'visibilitychange',()=>{stopPointer();if(document.hidden){if(presentation)finishPresentation(presentation);pauseGame();}syncAudio();});
   on(window,'pagehide',()=>{stopPointer();if(presentation)finishPresentation(presentation);});
