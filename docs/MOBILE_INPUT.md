@@ -8,6 +8,8 @@ Algılanan kaydırma ve oyun kurallarınca geçerli eşleşme ayrı sonuçlardı
 
 `dist/engine.js`, bölüm/öğretici verileri, 40 varyant, 80 kazanma yolu, kayıt ve can sözleşmeleri değiştirilmedi. Bu PR yalnızca uygulamanın giriş adaptörü, testler ve test altyapısını değiştirir.
 
+Çevrimdışı kabuk önbelleği `hexrota-shell-v18` olarak yenilendi; HTML varlıkları, ön yükleme URL'leri ve ipucu Worker'ının hem çağrısı hem motor içe aktarımı `?v=18` kullanır. Böylece eski önbellekteki uygulama ile yeni giriş kodu karışmaz. Bu yalnızca PWA kabuk sürümüdür; oyun/package sürümü ve kayıt kimlikleri değişmez. Mevcut açık oyun, kullanıcının onayladığı güncellemeye kadar otomatik yenilenmez.
+
 ## Tanıma kuralları
 
 - Başlangıçta olayın gerçek DOM hedefi kullanılır. Taşların arasındaki boşluk için SVG koordinatlarında altıgen testi yapılır. Kenar payı en fazla 3 ekran pikselidir; dünya koordinatlarında ayrıca 6 birimle sınırlıdır. İki hücre arasında kararsız kalan boşluk otomatik seçilmez.
