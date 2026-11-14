@@ -153,35 +153,36 @@ Ekonomi için [ECONOMY_DESIGN.md](ECONOMY_DESIGN.md) ve tasarım JSON'u kullanı
 
 Reward Director v1 en az üç taş eşleşen dalgalar ve sıralı takaslar bekler. Tek taş temizleme veya normal hamle harcamayan yardım bu sözleşmeye doğrudan sığmaz. Üç taş eşleşmiş gibi veri uydurulamaz. Ayrı yardım geri bildirimi veya sürümlü ödül adaptörü, komut/hamle/ödül sırası ayrımıyla ayrıca tasarlanmalı ve test edilmelidir. Ücretsiz kazanılan ve satın alınan Altınla aynı komut aynı oyunu üretmelidir; satış kaynağı motor girdisi değildir.
 
-## Can v1 — taşınabilir ek sözleşme
+## Can v2 — taşınabilir ek sözleşme
 
-9.1 can yöneticisinin kuralları [LIVES_DESIGN.md](LIVES_DESIGN.md) içinde dondurulmuştur. Bu katman iki ayrı işi yapar: yeni ana denemenin açılmasına izin vermek ve gerçek bir denemenin can sonucunu kimliğiyle bir kez kaydetmek. `HexMatch` içine can, tarih, cüzdan veya reklam verisi girmez. Mevcut 40 varyantın ve eski on bölümün kazanma yolları aynıdır.
+9.2 can yöneticisinin kuralları [LIVES_DESIGN.md](LIVES_DESIGN.md) içinde dondurulmuştur. Bu katman iki ayrı işi yapar: yeni ana denemenin açılmasına izin vermek ve gerçek bir denemenin can sonucunu kimliğiyle bir kez kaydetmek. `HexMatch` içine can, tarih, cüzdan veya reklam verisi girmez. Mevcut 40 varyantın ve eski on bölümün kazanma yolları aynıdır.
 
 C# `LifeManager`, `createManager(config, { clock, verifyReceipt })` sözleşmesinin karşılığı olmalıdır. Clock UTC milisaniye `long` döndürür; her açık geçişte tek zaman örneği kullanılır. Saf çekirdek `DateTime.UtcNow`, Unity sahnesi, reklam/ödeme SDK'sı veya depolama çağırmaz. Doğrulayıcı enjekte edilir; verilmemiş doğrulayıcı bütün makbuzları reddeder. Unity'nin gerçek sağlayıcısı gelecekte bu sınırın dışına bağlanır; `development` makbuzu gerçek para kanıtı değildir. Can çekirdeği sağlayıcı adını bu test değerine kilitlemez; güvenilirliği enjekte edilen doğrulayıcı belirler, böylece gerçek adaptör eklendiğinde can kuralları yeniden yazılmaz.
 
-Can DTO'su: `schemaVersion: 1`, `rulesVersion: lives-v1`, `lives`, nullable `regenAnchorUtc`, `lastSeenUtc`, nullable `unlimitedUntilUtc`, `developerBypass`, `settledAttempts`, `processedTransactions`, `protectionUsed`, `firstFailures`, `adUsage`. Can 0…5 tamsayıdır. Bütün UTC alanları güvenli JS tamsayı aralığında `long`; `null`, sıfırla değiştirilmez. Günlük reklam anahtarı `floor(effectiveUtc / 86400000)` olur, yerel saat dilimi değildir. `number:1` ve `string:1` koruma anahtarları farklı kalır.
+Can DTO'su: `schemaVersion: 2`, `rulesVersion: lives-v2`, `registeredAttempts`, `pendingAdLives`, `settledArchive`, `transactionArchive`, `transactionStreams`, `lives`, nullable `regenAnchorUtc`, `lastSeenUtc`, nullable `unlimitedUntilUtc`, `developerBypass`, `settledAttempts`, `processedTransactions`, `protectionUsed`, `firstFailures`, `adUsage`. Can 0…5 tamsayıdır. Bütün UTC alanları güvenli JS tamsayı aralığında `long`; `null`, sıfırla değiştirilmez. Günlük reklam anahtarı `floor(effectiveUtc / 86400000)` olur, yerel saat dilimi değildir. `number:1` ve `string:1` koruma anahtarları farklı kalır.
 
-Saklanan zarf oyundan ayrıdır:
+Mantıksal can zarfı oyundan ayrıdır; `hexrota-profile-v2.energy` kanonik alanı ve `hexrota-lives-v1` uyumluluk aynası şu biçimdedir:
 
 ```text
 hexrota-lives-v1:
   schemaVersion: 1
-  life: LifeStateV1
+  life: LifeStateV2
   testWallet:
     schemaVersion: 1
     gold: integer
     processedTransactions: { transactionId: { productId, goldDelta, atUtc } }
   provider:
-    schemaVersion: 1
+    schemaVersion: 2
     namespace: string
     nextSerial: safe integer
     adAvailable: boolean
     transactions: { transactionId: development provider record }
+    finalizedRanges: [[inclusiveStart, inclusiveEnd]]
 ```
 
-`hexrota-match-v5` hâlâ tahta/varyant/RNG/hamle geçmişidir. Native kayıt adaptörü can/TEST işlem zarfını atomik saklamalı; başarısız yazımı başarı diye göstermemelidir. Oyuncu ilerlemesini sıfırlamak, can sayacını veya işlenmiş makbuz kimliklerini sıfırlamaz.
+`hexrota-match-v5` hâlâ tahta/varyant/RNG/hamle geçmişidir. Native kayıt adaptörü oyun ile can/TEST işlem zarfını aynı atomik profil işleminde saklamalı; başarısız yazımı başarı diye göstermemelidir. Oyuncu ilerlemesini sıfırlamak, can sayacını veya işlenmiş makbuz kimliklerini sıfırlamaz.
 
-Makbuzun beş alanı: `transactionId`, `productId`, `provider: development`, `status: completed`, `verifiedAtUtc`. Ürünler `ad_life`, `single_life`, `refill_lives`, `unlimited_lives_30m`; açık test Altın yüklemesi sağlayıcı/cüzdanda ayrı `test_gold_300` ürünüdür. Doğrulayıcı makbuzu sağlayıcının tamamlanmış kaydıyla karşılaştırır; ödül miktarı veya fiyat callback'ten alınmaz. Aynı kimlik bir kez uygulanır; doğrulanmış fakat uygun olmayan işlem de tekrar ödüle dönmesin diye kaydedilir. Can ve işlem kimlikleri sessizce budanmaz; 20.000 kayıt kapasitesinde yeni denemeler/işlemler engellenir, mevcut devam ve öğreticiler korunur.
+Eski makbuzun beş alanı: `transactionId`, `productId`, `provider: development`, `status: completed`, `verifiedAtUtc`. Yeni test makbuzları ayrıca doğrulanan `streamId`/`sequence` taşır; sağlayıcı v2 eski biçimi de okur. Ürünler `ad_life`, `single_life`, `refill_lives`, `unlimited_lives_30m`; açık test Altın yüklemesi sağlayıcı/cüzdanda ayrı `test_gold_300` ürünüdür. Doğrulayıcı makbuzu sağlayıcının tamamlanmış kaydıyla karşılaştırır; ödül miktarı veya fiyat callback'ten alınmaz. Aynı kimlik bir kez uygulanır; doğrulanmış fakat uygun olmayan işlem de tekrar ödüle dönmesin diye kaydedilir. Can ve işlem kimlikleri sessizce budanmaz; `maxLedgerEntries` ayrıntılı kayıt saklama eşiğidir; yeni oyunu engellemez. Tam kimlikli arşivler ve yalnızca doğrulanmış seri akışları için kapalı aralıklar tekrar bildirimi korur.
 
 C#'ta aynı sırayla korunacaklar:
 
@@ -232,7 +233,7 @@ Mevcut C# ödül karşılaştırması ayrı olarak `fixtures/reward-vectors.json
 3. Zincir, karıştırma, kazanma, klon ve replay doğrulaması eklenir. Öğreticiler ve eski on çözümün bütün adımları aynı kalır; bozuk kayıtlar reddedilir.
 4. Katalog, seçim, deneme kimliği, bütün varyant çözüm yolları ve düğüm bütçeli ipucu aktarılır. Aynı durumdan devam eden üretim ve garanti yolları karşılaştırılır. C# oyun parity komutu bu aşamada yazılacak; henüz depoda yoktur.
 5. Ödül adaptörü gerçek deneme kimliğiyle mevcut C# Reward Director'a bağlanır. Tek değerlendirme, sessiz yükleme, animasyon iptali ve tercih testleri geçer.
-6. Can v1 çekirdeği, UTC clock, deneme sonuçlandırma ve makbuz adaptörü aktarılır; ortak can vektörleri ve sıfır can/kayıt devamı/aynı callback testleri eşleşir.
+6. Can v2 çekirdeği, UTC clock, deneme sonuçlandırma ve makbuz adaptörü aktarılır; ortak can vektörleri ve sıfır can/kayıt devamı/aynı callback testleri eşleşir.
 7. Unity giriş, çizim, ses, titreşim, uygulama yaşam döngüsü ve yerel kayıt adaptörleri eklenir. Aynı hamle günlüğüyle masaüstü ve hedef fiziksel telefonlarda durum eşitliği, input gecikmesi ve bellek ölçülür.
 8. Gerçek ekonomi ve oyun içi yardımlar için ücretsiz çekirdeğin kabulünden ayrı bir sürümde komut günlüğü, güvenilir cüzdan, ödül adaptörü ve yardımlı sonuç testleri yapılır. Ücretsiz doğrulanmış yollar bu geçişin ön koşulu olarak kalır.
 
@@ -246,3 +247,11 @@ Mevcut C# ödül karşılaştırması ayrı olarak `fixtures/reward-vectors.json
 - Cihaz değiştirme/kayıt eşitleme, can saati otoritesi, kalıcı haklar ve mali işlem doğrulama; yerel replay, cihaz saati veya sahte sağlayıcı gerçek ödeme/reklam güvenliği sağlamaz.
 
 Bu kararlar görsel uygulama veya gelecekteki ürün kapsamıdır. Mevcut eşleşme, puan, düşüş, üretim, iki kazanma koşulu, eski kayıt tekrarı ve ücretsiz doğrulanmış başlangıç kuralları C# aktarımında yeniden tasarlanmayacaktır.
+
+## 9.2 can ve profil aktarım eki (uygulanmış web sözleşmesi)
+
+`LifeStateV2`, `lives-v2` kural kimliğidir. `registerAttempt` çağrısı başlangıçtaki `unlimitedAtStart` hakkını kalıcı saklar; C# karşılığı süre bitişinde bunu yeniden hesaplamamalıdır. `pendingAdLives` aktif havuzdan ayrıdır: tamamlanan doğrulanmış reklam dolu havuzda saklanır, yer açılınca uygulanır. Aktif can üst sınırı yine 5'tir. Eski v1 DTO geçişi bakiye, zaman ve sonuç kimliklerini korur; eski kaydın bilinmeyen başlangıç hakkı tahmin edilmez.
+
+Depolama adaptörü `ProfileV2 { schemaVersion, revision, game, energy }` zarfını **tek atomik işlem** olarak saklar. `game` hâlâ motor snapshot v4/v5 ilerleme sözleşmesidir; can çekirdeğine oyun RNG'si veya Unity API girmez. `energy` can durumunu, TEST cüzdanını ve sağlayıcı günlüğünü içerir. Native uygulama profil yazımı başarısızken tahta ve canı birlikte geri almalı; yalnızca canı kesinleştirmemelidir. Tek yazıcı/mutex ve revizyon kontrolü platform adaptörünün sorumluluğudur. Webin Web Locks tercihi saf C# çekirdeğine taşınacak bir bağımlılık değildir.
+
+`registeredAttempts`, ayrıntılı sonuç/işlem kayıtları ve tam kimlikli sıkıştırılmış arşivler JSON nesneleridir. `transactionStreams`/sağlayıcı `finalizedRanges` kapsayıcı başlangıç/bitiş aralıklarıdır; keyfi kimliklerin sayısal bölümünü varsayarak silmek yasaktır. Günlük eşiği oyunu kilitlemez. Ortak `fixtures/lives-vectors-v1.json` geçmişi ve `fixtures/lives-vectors.json` v2 sonuçları, can portu yapılınca ayrı derlenmiş parity kapısına alınmalıdır. Bu PR'da C# can portu yoktur. Kesin uygulama ayrıntıları [LIVES_DESIGN.md](LIVES_DESIGN.md) içindedir.

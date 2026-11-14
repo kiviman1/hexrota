@@ -19,6 +19,7 @@ function add(id,operations,override={}){
   if(operation.kind==='reconcile')state=manager.reconcile(state);
   else if(operation.kind==='reload')state=manager.restore(JSON.parse(JSON.stringify(state)));
   else if(operation.kind==='settle'){const result=manager.settleAttempt(state,operation.context);state=result.state;const {state:unused,...rest}=result;outcome=rest;}
+  else if(operation.kind==='register'){const result=manager.registerAttempt(state,operation.context);state=result.state;const {state:unused,...rest}=result;outcome=rest;}
   else if(operation.kind==='historical'){const result=manager.acknowledgeHistoricalAttempt(state,operation.context);state=result.state;const {state:unused,...rest}=result;outcome=rest;}
   else if(operation.kind==='transaction'){
    if(operation.verified)trusted.add(JSON.stringify(operation.receipt));
@@ -72,17 +73,26 @@ add('developer-bypass-is-an-explicit-waiver',[
 add('historical-9-0-loss-is-not-retroactively-debited',[
  {kind:'historical',context:{attemptId:'historical',levelId:10,tutorial:false,movesUsed:14,outcome:'failed'}},loss('historical',{movesUsed:14}),loss('new-result'),reload(),loss('new-result')
 ]);
-add('full-reward-is-rejected-for-good',[
+add('completed-full-pool-ad-is-banked-once',[
  reward('full-ad','ad_life'),loss('later-loss'),reward('full-ad','ad_life'),reward('fresh-ad','ad_life')
 ]);
 const unverified=reward('not-yet-verified','single_life');
 add('unverified-callback-does-not-poison-a-later-verification',[
  loss('loss'),{...unverified,verified:false},unverified,unverified
 ]);
-add('ledger-capacity-never-evicts-an-old-key',[
+add('journal-retention-compacts-without-forgetting-an-old-key',[
  loss('kept'),reward('one','single_life'),loss('overflow'),reward('unlimited','unlimited_lives_30m'),reward('one','single_life'),{kind:'canStart',context:{}},{kind:'canResume',attemptId:'already-running'}
 ],{maxLedgerEntries:2});
-const payload={schemaVersion:1,rulesVersion:'lives-v1',description:'Pure UTC-clock life goldens. Verified flags configure a fake external verifier; they are not fields trusted by the manager. No C# life execution is claimed.',cases};
+add('unlimited-start-entitlement-survives-expiry-and-reload',[
+ reward('unlimited','unlimited_lives_30m'),{kind:'register',context:{attemptId:'protected',levelId:10,tutorial:false}},clock(31),reload(),loss('protected'),loss('ordinary'),loss('protected')
+]);
+add('banked-ad-applies-after-a-slot-opens',[
+ loss('spent'),clock(29),clock(30),reward('completed-ad','ad_life',{verifiedAtUtc:T+30*M}),reload(),loss('uses-bank'),reward('completed-ad','ad_life',{verifiedAtUtc:T+30*M}),loss('normal-loss')
+]);
+add('verified-stream-interval-compaction-deduplicates-early-receipts',[
+ reward('receipts-1','unlimited_lives_30m',{streamId:'receipts',sequence:1}),reward('receipts-3','unlimited_lives_30m',{streamId:'receipts',sequence:3}),reward('receipts-2','unlimited_lives_30m',{streamId:'receipts',sequence:2}),reload(),reward('receipts-1','unlimited_lives_30m',{streamId:'receipts',sequence:1}),reward('receipts-4','unlimited_lives_30m',{streamId:'receipts',sequence:4})
+],{maxLedgerEntries:1});
+const payload={schemaVersion:2,rulesVersion:'lives-v2',legacyFixture:'lives-vectors-v1.json',description:'Pure UTC-clock life v2 goldens. Legacy v1 goldens are preserved separately. Verified flags configure a fake external verifier, never trusted receipt fields. C# life execution is not claimed.',cases};
 const destination=path.join(root,'fixtures/lives-vectors.json'),serialized=JSON.stringify(payload,null,2)+'\n';
 if(process.argv.includes('--check')){
  if(fs.readFileSync(destination,'utf8')!==serialized)throw Error('Life vectors are stale; regenerate after reviewing a rule change');

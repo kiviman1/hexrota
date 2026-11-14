@@ -1,4 +1,4 @@
-(() => {
+window.HexSessionStore.boot(function startApp(session) {
   'use strict';
   const $ = id => document.getElementById(id);
   const tutorials=window.HEX_TUTORIALS||[];
@@ -14,7 +14,7 @@
   const reduceMotion=()=>saved.preferences.motion==='reduce'||(saved.preferences.motion==='auto'&&window.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true);
   const defaultPreferences={music:false,volume:.65,motion:'auto',haptics:false};
   let saved={current:0,done:[],boards:{},attempts:{},attemptStats:{},variantSelection:{seed:0,serial:0,counts:{},recent:{}},guideAcks:[],sound:false,preferences:{...defaultPreferences},records:{}};
-  function readSave(name){try{return JSON.parse(localStorage.getItem(name));}catch(_){return null;}}
+  function readSave(name){try{return session?session.read(name):JSON.parse(localStorage.getItem(name));}catch(_){return null;}}
   try {
     let raw=readSave(key);
     if(!raw){
@@ -182,19 +182,42 @@
   function emitEvent(name,details={},entry){
     if(!eventState)return;
     const context=eventContext(entry);if(!context)return;
-    try{eventState=window.HexEvents.append(eventState,name,context,details);localStorage.setItem(eventKey,JSON.stringify(eventState));}catch(_){/* Local measurements never affect a game or a save. */}
+    try{eventState=window.HexEvents.append(eventState,name,context,details);if(!sessionDepth)localStorage.setItem(eventKey,JSON.stringify(eventState));}catch(_){/* Local measurements never affect a game or a save. */}
   }
-  // Lives, development receipts and the test wallet share one atomic storage write.
-  // They never enter a HexMatch snapshot or its gameplay RNG.
+  // Game progress, lives and development receipts share one atomic host commit.
+  // Life data never enters a HexMatch snapshot or its gameplay RNG.
   const livesKey='hexrota-lives-v1';
-  let lifeFeature=null,lifeManager=null,lifeIssue=null,lifeWriteFailed=false,lifeVerificationProvider=null,pendingLifeStart=null,pendingLifeProvider=null;
+  let lifeFeature=null,lifeManager=null,lifeIssue=null,lifeWriteFailed=false,lifeVerificationProvider=null,pendingLifeStart=null,pendingLifeProvider=null,pendingLifeReceipt=null;
   let lifeLastPersistUtc=0,pendingResetLifeCost=null;
   const lifeClock=()=>Date.now();
   const lifeClone=value=>JSON.parse(JSON.stringify(value));
+  let sessionDepth=0,sessionDirty=false,sessionRestoring=false,sessionEventBaseline=null,sessionGameBaseline=null;
+  function on(target,type,callback,options){if(!target)return;if(['pointerdown','pointermove','pointercancel','lostpointercapture','touchstart','touchmove','wheel','gesturestart','gesturechange','gestureend'].includes(type)){target.addEventListener(type,callback,options);return;}target.addEventListener(type,function(...args){return sessionAction(()=>callback.apply(this,args));},options);}
+  function sessionAction(callback){
+    if(!sessionDepth){sessionEventBaseline=eventState?lifeClone(eventState):null;sessionGameBaseline=lifeClone(saved);}sessionDepth++;try{return callback();}finally{sessionDepth--;if(!sessionDepth&&sessionDirty)commitSession();}
+  }
+  function captureGame(){
+    saved.current=active;
+    if(engine&&!attemptPending&&!saveBlocked){saved.boards[active]=engine.snapshot();if(activeAttempt)saved.attempts[active]={...activeAttempt};}
+  }
+  function restoreDurable(){
+    const durable=session?.current();if(!durable)return;
+    saved=lifeClone(durable.revision===0?sessionGameBaseline:durable.game);lifeFeature=window.HexLifePrototype.validate(durable.energy,lifeManager);active=saved.current;
+    try{const entry=restoredStage(active);if(entry){engine=entry.game;activeLevel=entry.level;activeAttempt=entry.metadata;attemptPending=false;saveBlocked=false;}else{activeLevel=levels[active];engine=new window.HexMatch(activeLevel);activeAttempt=null;attemptPending=true;saveBlocked=false;loadIssue=null;}}catch(_){saveBlocked=true;}
+    sessionRestoring=true;try{cancelPresentation();cancelHint();selected=null;pendingStage=null;pendingRestart=null;pendingResetLifeCost=null;if(pendingLifeProvider&&!lifeFeature.provider.transactions[pendingLifeProvider]&&!pendingLifeReceipt){pendingLifeProvider=null;if($('life-provider-dialog')?.open)closeModal($('life-provider-dialog'));}if(attemptPending)showScreen('home',{replace:true});restoreRewards();renderLevels();render();renderLives();}catch(_){}finally{sessionRestoring=false;}
+  }
+  function commitSession(){
+    sessionDirty=false;if(sessionRestoring||!lifeFeature)return true;
+    try{captureGame();session.commit(saved,lifeFeature);if(eventState)try{localStorage.setItem(eventKey,JSON.stringify(eventState));}catch(_){}lifeWriteFailed=false;lifeLastPersistUtc=lifeFeature.life.lastSeenUtc;if(pendingLifeReceipt&&lifeFeature.testWallet.processedTransactions[pendingLifeReceipt.receipt.transactionId])pendingLifeReceipt=null;return true;}
+    catch(_){eventState=sessionEventBaseline;restoreDurable();lifeWriteFailed=true;if(pendingLifeReceipt){pendingLifeProvider=pendingLifeReceipt.receipt.transactionId;$('life-provider-title').textContent='Ödülün kaydedilmeyi bekliyor';$('life-provider-description').textContent='Tamamlanan test işlemi kaydedilemedi. Yeniden denediğinde aynı ödül bir kez kaydedilecek.';openModal('life-provider-dialog');}toast('İşlem kaydedilemedi. Tahtan ve canların son güvenli kayda döndürüldü. Sayfayı yenileyip tekrar dene.');return false;}
+  }
+  function stageSession(){sessionDirty=true;return sessionDepth>0?true:commitSession();}
   function lifeReady(){return !!(lifeFeature&&lifeManager);}
   function lifeCommit(next,{quiet=false}={}){
-    try{localStorage.setItem(livesKey,JSON.stringify(next));lifeFeature=next;lifeWriteFailed=false;lifeLastPersistUtc=next.life.lastSeenUtc;return true;}
-    catch(_){lifeWriteFailed=true;if(!quiet)toast('Can bilgisi kaydedilemedi. İşlem uygulanmadı.');return false;}
+    if(sessionRestoring)return false;
+    const transactions=Object.values(next.provider.transactions).filter(item=>item.status==='cancelled'||item.status==='unavailable'||item.status==='completed'&&Object.prototype.hasOwnProperty.call(next.testWallet.processedTransactions,item.transactionId)).sort((a,b)=>(a.createdAtUtc||0)-(b.createdAtUtc||0));
+    if(transactions.length>128&&window.HexLifeProviders.finalize){next=lifeClone(next);for(const item of transactions.slice(0,-128)){next.provider=window.HexLifeProviders.finalize(next.provider,item.transactionId);if(window.HexLifeProviders.isFinalized(next.provider,item.transactionId))delete next.testWallet.processedTransactions[item.transactionId];}}
+    lifeFeature=next;return stageSession();
   }
   function lifeRefresh({persist=false}={}){
     if(!lifeReady())return null;
@@ -212,7 +235,7 @@
   }
   function lifeDiscarded(index=active){
     const identity=lifeStageIdentity(index);if(!identity)return false;
-    if(lifeReady())return lifeFeature.life.settledAttempts[identity.attemptId]?.discarded===true;
+    if(lifeReady())return lifeManager.settlementFor(lifeFeature.life,identity.attemptId)?.discarded===true;
     const raw=readSave(livesKey);return raw?.life?.settledAttempts?.[identity.attemptId]?.discarded===true;
   }
   function lifeContext(entry,outcome){
@@ -236,7 +259,7 @@
     if(!window.HexLives||!window.HEX_LIVES_CONFIG||!window.HexLifeProviders||!window.HexLifePrototype){lifeIssue='modules';return;}
     try{
       lifeManager=window.HexLives.createManager(window.HEX_LIVES_CONFIG,{clock:lifeClock,verifyReceipt:receipt=>window.HexLifeProviders.verify(lifeVerificationProvider||lifeFeature?.provider,receipt)});
-      const previous=readSave(livesKey),existed=(()=>{try{return localStorage.getItem(livesKey)!==null;}catch(_){return false;}})();
+      const previous=readSave(livesKey),existed=previous!==null||(()=>{try{return localStorage.getItem(livesKey)!==null;}catch(_){return false;}})();
       if(existed){lifeFeature=window.HexLifePrototype.validate(previous,lifeManager);}
       else{
         let random=0;try{const value=new Uint32Array(1);window.crypto?.getRandomValues(value);random=value[0];}catch(_){}
@@ -266,7 +289,7 @@
     if($('lives-count'))$('lives-count').textContent=view?`${view.lives} / ${view.maxLives}`:'—';
     if($('lives-description'))$('lives-description').textContent=!view?'Can verisi açılamadı. Mevcut oyun kayıtların korundu. Sayfayı yenileyip tekrar dene.':lifeWriteFailed?'Can bilgisi kaydedilemedi. Yeni deneme ve test işlemleri durduruldu.':view.developerBypass?'Geliştirici testi: can sınırı ve can harcaması kapalı.':view.lives===0&&!view.unlimited?'Yeni bir bölüm için can gerekiyor. Bekleyebilir veya ücretsiz öğreticiyi oynayabilirsin.':'Yeni ana bölümler için canın olmalı. Kaybetmek veya oynanmış bir denemeyi sıfırlamak 1 can harcar.';
     if($('lives-next'))$('lives-next').textContent=view?.nextLifeAtUtc!==null&&view?.nextLifeAtUtc!==undefined?lifeTime(view.remainingMs):view?'Canlar dolu':'—';
-    if($('lives-unlimited-note')){$('lives-unlimited-note').hidden=!view?.unlimited;$('lives-unlimited-note').textContent=view?.unlimited?`Sınırsız can: ${lifeTime(view.unlimitedRemainingMs)}. Normal canların da yenilenmeye devam eder.`:'';}
+    if($('lives-unlimited-note')){$('lives-unlimited-note').hidden=!view?.unlimited&&!view?.pendingAdLives;$('lives-unlimited-note').textContent=(view?.unlimited?`Sınırsız can: ${lifeTime(view.unlimitedRemainingMs)}. Normal canların da yenilenmeye devam eder. `:'')+(view?.pendingAdLives?`Bekleyen reklam ödülün: ${view.pendingAdLives} can. Canında yer açılınca otomatik eklenir.`:'');}
     if($('lives-gold'))$('lives-gold').textContent=lifeFeature?.testWallet.gold??'—';
     const products=[['lives-buy-one','single_life','lives-price-one'],['lives-buy-refill','refill_lives','lives-price-refill'],['lives-buy-unlimited','unlimited_lives_30m','lives-price-unlimited']];
     for(const [id,product,priceId]of products){const offer=view?lifeManager.transactionAvailability(lifeFeature.life,product):null;if($(id))$(id).disabled=!offer?.allowed||lifeWriteFailed||lifeFeature.testWallet.gold<offer.costGold;if($(priceId))$(priceId).textContent=offer?.costGold??window.HEX_LIVES_CONFIG?.products?.[product]?.costGold??'—'; }
@@ -280,6 +303,7 @@
     if($('lives-wait'))$('lives-wait').textContent=pendingLifeStart&&view?.canStart?'Bölüme başla':'Bekle';
   }
   function openLives(request=null){
+    if(pendingLifeReceipt){openModal('life-provider-dialog');return;}
     lifeRefresh({persist:true});pendingLifeStart=request;renderLives();
     if($('lives-dialog'))openModal('lives-dialog');else toast('Can bilgisi şu anda açılamadı. Sayfayı yenileyip tekrar dene.');
   }
@@ -294,6 +318,7 @@
     pendingLifeStart=null;return enterGame(request.index,{fresh:true,reason:request.reason});
   }
   function beginLifeProduct(productId){
+    if(pendingLifeReceipt){openModal('life-provider-dialog');return;}
     if(pendingLifeProvider)return;
     lifeRefresh({persist:true});if(!lifeReady()||lifeWriteFailed){openLives();return;}
     if(productId!=='test_gold_300'){
@@ -310,7 +335,7 @@
     if($('life-provider-dialog'))openModal('life-provider-dialog');
   }
   function applyLifeReceipt(receipt,provider=lifeFeature?.provider){
-    if(!lifeReady()||lifeWriteFailed||!window.HexLifeProviders.verify(provider,receipt))return {applied:false,reason:'unverified_receipt'};
+    if(!lifeReady()||lifeWriteFailed||window.HexLifeProviders.isFinalized?.(provider,receipt?.transactionId)||!window.HexLifeProviders.verify(provider,receipt))return {applied:false,reason:'unverified_receipt'};
     lifeRefresh({persist:true});if(lifeWriteFailed)return {applied:false,reason:'storage'};
     if(Object.prototype.hasOwnProperty.call(lifeFeature.testWallet.processedTransactions,receipt.transactionId))return {applied:false,reason:'duplicate_transaction'};
     const next=lifeClone(lifeFeature);next.provider=lifeClone(provider);let applied=false,reason='rejected',goldDelta=0;
@@ -327,15 +352,18 @@
   }
   function finishLifeProvider(outcome='completed'){
     const id=pendingLifeProvider;if(!id||!lifeReady())return;
-    lifeRefresh({persist:true});const result=window.HexLifeProviders.complete(lifeFeature.provider,id,{outcome,nowUtc:lifeManager.view(lifeFeature.life).effectiveNowUtc});
+    if(pendingLifeReceipt)lifeWriteFailed=false;lifeRefresh({persist:true});const retryProvider=pendingLifeReceipt?lifeClone(lifeFeature.provider):null;if(retryProvider){retryProvider.nextSerial=Math.max(retryProvider.nextSerial,pendingLifeReceipt.provider.nextSerial);retryProvider.transactions[id]=lifeClone(pendingLifeReceipt.provider.transactions[id]);}
+    const result=pendingLifeReceipt?{state:retryProvider,receipt:pendingLifeReceipt.receipt,reason:'completed'}:window.HexLifeProviders.complete(lifeFeature.provider,id,{outcome,nowUtc:lifeManager.view(lifeFeature.life).effectiveNowUtc});
+    if(result.receipt)pendingLifeReceipt={provider:result.state,receipt:result.receipt};
     let applied={applied:false,reason:result.reason};
     if(result.receipt)applied=applyLifeReceipt(result.receipt,result.state);else lifeCommit({...lifeFeature,provider:result.state});
     pendingLifeProvider=null;if($('life-provider-dialog')?.open)closeModal($('life-provider-dialog'));
     renderLives();
-    if(applied.applied){toast(result.receipt.productId==='test_gold_300'?'300 Test Altını eklendi.':'Test işlemi doğrulandı. Canın güncellendi.');resumeLifeRequest();}
+    if(applied.applied){toast(result.receipt.productId==='test_gold_300'?'300 Test Altını eklendi.':applied.reason==='banked'?'Reklam ödülün saklandı. Canında yer açılınca eklenecek.':'Test işlemi doğrulandı. Canın güncellendi.');resumeLifeRequest();}
     else if(outcome==='completed')toast(applied.reason==='already_full'?'Canların zaten dolu. Altın veya reklam hakkı harcanmadı.':applied.reason==='insufficient_gold'?'Test Altının yeterli değil. İşlem uygulanmadı.':'Test işlemi tamamlanamadı. Bekleyebilir veya diğer seçenekleri kullanabilirsin.');
   }
   function cancelLifeProvider(){
+    if(pendingLifeReceipt)return;
     if(!pendingLifeProvider||!lifeReady())return;const id=pendingLifeProvider;pendingLifeProvider=null;
     try{const result=window.HexLifeProviders.complete(lifeFeature.provider,id,{outcome:'cancelled',nowUtc:lifeManager.view(lifeFeature.life).effectiveNowUtc});lifeCommit({...lifeFeature,provider:result.state},{quiet:true});}catch(_){}
   }
@@ -349,31 +377,33 @@
     if($('restart-description'))$('restart-description').textContent=lifeReady()&&entry?.game.status==='playing'&&entry.game.turn>0&&lifeManager.view(lifeFeature.life).lives===0&&!lifeManager.view(lifeFeature.life).unlimited&&!lifeManager.view(lifeFeature.life).developerBypass?'Bu deneme kapanacak. Canın olmadığı için can harcanmaz. Yeni deneme için can gerekir.':cost?`Bu bölümdeki ilerlemen sıfırlanacak ve ${cost} can harcanacak.${lifeManager.view(lifeFeature.life).lives===1?' Son canını kullanıyorsun. Yeni tahta açmak için sonra beklemen veya can alman gerekecek.':' Yeni bir tahta açılacak.'}`:'Bu bölümdeki ilerlemen sıfırlanacak. Yeni bir tahta açılacak. Bu işlem can harcamaz.';
   }
   function bindLivesUI(){
-    for(const button of document.querySelectorAll('[data-open-lives]'))button.addEventListener('click',()=>openLives());
-    $('lives-ad')?.addEventListener('click',()=>beginLifeProduct('ad_life'));
-    $('lives-buy-one')?.addEventListener('click',()=>beginLifeProduct('single_life'));
-    $('lives-buy-refill')?.addEventListener('click',()=>beginLifeProduct('refill_lives'));
-    $('lives-buy-unlimited')?.addEventListener('click',()=>beginLifeProduct('unlimited_lives_30m'));
-    $('setting-test-gold')?.addEventListener('click',()=>beginLifeProduct('test_gold_300'));
-    $('life-provider-confirm')?.addEventListener('click',()=>finishLifeProvider('completed'));
-    $('life-provider-dialog')?.addEventListener('close',cancelLifeProvider);
-    $('lives-wait')?.addEventListener('click',()=>{const request=pendingLifeStart;pendingLifeStart=null;if(request){lifeRefresh({persist:true});if(lifeReady()&&!lifeWriteFailed&&lifeManager.canStart(lifeFeature.life,{tutorial:request.index<tutorialCount}))enterGame(request.index,{fresh:true,reason:request.reason});}});
-    $('lives-teach')?.addEventListener('click',()=>{pendingLifeStart=null;enterGame(0,{fresh:true,reason:'free_tutorial'});});
-    $('setting-lives-bypass')?.addEventListener('change',event=>{if(!lifeReady())return;const result=lifeManager.setDeveloperBypass(lifeFeature.life,event.target.checked);lifeCommit({...lifeFeature,life:result.state});renderLives();});
-    $('setting-mock-ad')?.addEventListener('change',event=>{if(!lifeReady())return;lifeCommit({...lifeFeature,provider:window.HexLifeProviders.setAdAvailable(lifeFeature.provider,event.target.checked)});renderLives();});
+    for(const button of document.querySelectorAll('[data-open-lives]'))on(button,'click',()=>openLives());
+    on($('lives-ad'),'click',()=>beginLifeProduct('ad_life'));
+    on($('lives-buy-one'),'click',()=>beginLifeProduct('single_life'));
+    on($('lives-buy-refill'),'click',()=>beginLifeProduct('refill_lives'));
+    on($('lives-buy-unlimited'),'click',()=>beginLifeProduct('unlimited_lives_30m'));
+    on($('setting-test-gold'),'click',()=>beginLifeProduct('test_gold_300'));
+    on($('life-provider-confirm'),'click',()=>finishLifeProvider('completed'));
+    on($('life-provider-dialog'),'close',cancelLifeProvider);
+    on($('lives-wait'),'click',()=>{const request=pendingLifeStart;pendingLifeStart=null;if(request){lifeRefresh({persist:true});if(lifeReady()&&!lifeWriteFailed&&lifeManager.canStart(lifeFeature.life,{tutorial:request.index<tutorialCount}))enterGame(request.index,{fresh:true,reason:request.reason});}});
+    on($('lives-teach'),'click',()=>{pendingLifeStart=null;enterGame(0,{fresh:true,reason:'free_tutorial'});});
+    on($('setting-lives-bypass'),'change',event=>{if(!lifeReady())return;const result=lifeManager.setDeveloperBypass(lifeFeature.life,event.target.checked);lifeCommit({...lifeFeature,life:result.state});renderLives();});
+    on($('setting-mock-ad'),'change',event=>{if(!lifeReady())return;lifeCommit({...lifeFeature,provider:window.HexLifeProviders.setAdAvailable(lifeFeature.provider,event.target.checked)});renderLives();});
     const tick=()=>{lifeRefresh();renderLives();};
-    window.setInterval(tick,1000);window.addEventListener('focus',()=>{lifeRefresh({persist:true});renderLives();});
-    document.addEventListener('visibilitychange',()=>{if(!document.hidden){lifeRefresh({persist:true});renderLives();}});
-    window.addEventListener('pagehide',()=>lifeRefresh({persist:true}));
-    window.HexLifeTestAdapter=Object.freeze({applyReceipt:receipt=>applyLifeReceipt(receipt)});
+    window.setInterval(()=>sessionAction(tick),1000);on(window,'focus',()=>{lifeRefresh({persist:true});renderLives();});
+    on(document,'visibilitychange',()=>{if(!document.hidden){lifeRefresh({persist:true});renderLives();}});
+    on(window,'pagehide',()=>lifeRefresh({persist:true}));
+    window.HexLifeTestAdapter=Object.freeze({applyReceipt:receipt=>sessionAction(()=>applyLifeReceipt(receipt))});
   }
   function persist() {
-    saved.current=active;
-    if(engine&&!attemptPending&&!saveBlocked){
-      saved.boards[active]=engine.snapshot();
-      if(activeAttempt)saved.attempts[active]={...activeAttempt};
+    if(sessionRestoring)return false;
+    captureGame();
+    // A terminal snapshot and its once-only life result share the same write.
+    if(lifeReady()&&engine&&activeAttempt&&!attemptPending&&!saveBlocked&&engine.status!=='playing'){
+      const result=lifeManager.settleAttempt(lifeFeature.life,lifeContext({metadata:activeAttempt,level:activeLevel,game:engine},engine.status==='won'?'won':'failed'));
+      lifeFeature={...lifeFeature,life:result.state};
     }
-    try {localStorage.setItem(key,JSON.stringify(saved));} catch (_) {}
+    return stageSession();
   }
   function startEvent(reason){
     const stats=activeStats();if(!stats||stats.started||engine.status!=='playing')return;
@@ -409,22 +439,22 @@
     const height=Math.round(Number(appViewport?.height)||window.innerHeight);
     if(Number.isFinite(height)&&height>0&&height!==appHeight){appHeight=height;document.documentElement.style.setProperty('--app-height',height+'px');}
   }
-  ['resize','orientationchange','pageshow'].forEach(name=>window.addEventListener(name,syncAppHeight,{passive:true}));
-  document.addEventListener('fullscreenchange',syncAppHeight);
+  ['resize','orientationchange','pageshow'].forEach(name=>on(window,name,syncAppHeight,{passive:true}));
+  on(document,'fullscreenchange',syncAppHeight);
   const settleViewport=()=>{if(presentation)finishPresentation(presentation);};
-  window.addEventListener('resize',settleViewport,{passive:true});window.addEventListener('orientationchange',settleViewport,{passive:true});
+  on(window,'resize',settleViewport,{passive:true});on(window,'orientationchange',settleViewport,{passive:true});
   appViewport?.addEventListener?.('resize',settleViewport,{passive:true});
   appViewport?.addEventListener?.('resize',syncAppHeight,{passive:true});
   syncAppHeight();
   function preventZoom(event){if(event.cancelable)event.preventDefault();}
   function preventPinch(event){preventZoom(event);stopPointer();}
-  ['gesturestart','gesturechange','gestureend'].forEach(name=>document.addEventListener(name,preventPinch,{passive:false}));
-  ['touchstart','touchmove'].forEach(name=>document.addEventListener(name,event=>{if(event.touches?.length>1)preventPinch(event);},{passive:false}));
-  document.addEventListener('wheel',event=>{if(event.ctrlKey||event.metaKey)preventZoom(event);},{passive:false});
-  document.addEventListener('dblclick',preventZoom);
-  window.addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&['+','-','=','0'].includes(event.key))preventZoom(event);});
+  ['gesturestart','gesturechange','gestureend'].forEach(name=>on(document,name,preventPinch,{passive:false}));
+  ['touchstart','touchmove'].forEach(name=>on(document,name,event=>{if(event.touches?.length>1)preventPinch(event);},{passive:false}));
+  on(document,'wheel',event=>{if(event.ctrlKey||event.metaKey)preventZoom(event);},{passive:false});
+  on(document,'dblclick',preventZoom);
+  on(window,'keydown',event=>{if((event.ctrlKey||event.metaKey)&&['+','-','=','0'].includes(event.key))preventZoom(event);});
   function topDialog(){return [...modalStack].reverse().map(id=>$(id)).find(dialog=>dialog.open)||[...document.querySelectorAll('dialog[open]')].at(-1)||null;}
-  const gameInputAllowed=()=>screen==='game'&&!paused&&!topDialog()&&!lifeDiscarded();
+  const gameInputAllowed=()=>!lifeWriteFailed&&!attemptPending&&!saveBlocked&&screen==='game'&&!paused&&!topDialog()&&!lifeDiscarded();
   function syncAudio(){document.body.classList.toggle('reduce-motion',reduceMotion());audio?.configure({sfx:saved.sound,music:saved.preferences.music,volume:saved.preferences.volume});audio?.setActive(!document.hidden&&!paused);}
   function unlockAudio(){syncAudio();audio?.unlock().catch(()=>{});}
   function openModal(id){
@@ -434,26 +464,26 @@
     const dialog=$(id);if(!dialog.open){dialog.showModal();modalStack.push(id);}
     document.body.classList.add('modal-open');
   }
-  document.addEventListener('hexrota:open-dialog',event=>{
+  on(document,'hexrota:open-dialog',event=>{
     if(event.detail?.id!=='install-dialog')return;
     event.preventDefault();openModal('install-dialog');
   });
   function closeModal(dialog){if(dialog?.open)dialog.close();}
   function closeAllDialogs(){[...document.querySelectorAll('dialog[open]')].reverse().forEach(closeModal);}
   document.querySelectorAll('dialog').forEach(dialog=>{
-    dialog.addEventListener('close',()=>{
+    on(dialog,'close',()=>{
       const index=modalStack.lastIndexOf(dialog.id);if(index>=0)modalStack.splice(index,1);
       if(dialog.id==='pause-dialog'){paused=false;syncAudio();}
       if(dialog.id==='pregame-dialog')pendingStage=null;
       if(dialog.id==='restart-dialog')pendingRestart=null;
       if(!topDialog())document.body.classList.remove('modal-open');
     });
-    dialog.addEventListener('click',e=>{
+    on(dialog,'click',e=>{
       if(e.target!==dialog)return;
       const r=dialog.getBoundingClientRect();
       if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeModal(dialog);
     });
-    dialog.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal(dialog)));
+    dialog.querySelectorAll('[data-close]').forEach(b=>on(b,'click',()=>closeModal(dialog)));
   });
   function tone(value=2,victory=false){if(victory)audio?.victory();else audio?.move(value);}
   function renderSound(){
@@ -622,6 +652,7 @@
     $('difficulty').textContent=isTutorial()?'Öğretici':activeAttempt?.variantId==='legacy-original'?'Kayıtlı bölüm':difficultyLabels[category]||activeLevel.difficulty?.label||'Bölüm';
     $('target').textContent=activeLevel.target;$('level-note').textContent=activeLevel.subtitle;
     if(isTutorial())focusIndex=activeLevel.steps[engine.turn]?.pair[0]||0;
+    if(lifeReady()&&active>=tutorialCount&&activeAttempt&&!attemptPending&&!saveBlocked){const registration=lifeManager.registerAttempt(lifeFeature.life,{attemptId:activeAttempt.attemptId,levelId:activeLevel.id,tutorial:activeLevel.kind==='tutorial',resume:!!restored});lifeFeature={...lifeFeature,life:registration.state};}
     markCompleted();renderLevels();render();persist();return !saveBlocked;
   }
   function geometry() {
@@ -994,10 +1025,10 @@
     if(enterGame(index,{fresh:true,reason}))toast(index<tutorialCount?'Öğretici baştan başladı.':'Yeni bir tahta hazır. Tekrar dene.');
   }
   function hintEvent(suggestion,kind='heuristic'){
-    const stats=activeStats();if(!stats)return;
+    return sessionAction(()=>{const stats=activeStats();if(!stats)return;
     stats.hintsUsed=validCounter(stats.hintsUsed)+1;persist();
     const source=suggestion?.source||suggestion?.kind||kind,guarantee=source==='proven_route'?'certified_route':source==='search_win'?'bounded_search':source==='guided'?'guided':'none';
-    emitEvent('hint_used',{hintKind:source,hintGuarantee:guarantee});
+    emitEvent('hint_used',{hintKind:source,hintGuarantee:guarantee});});
   }
   function cancelHint(){const job=hintJob;hintJob=null;if(job){clearTimeout(job.timer);job.worker?.terminate();job.resolve?.(null);}}
   async function hint(){
@@ -1010,7 +1041,7 @@
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=17');
+            job.worker=new Worker('./hint-worker.js?v=20');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:activeLevel,snapshot:engine.snapshot()});
@@ -1025,7 +1056,7 @@
     }catch(_){toast('İpucu şu anda hazır değil. Oynamaya devam edebilirsin.');}
     finally{if(hintJob===job){cancelHint();render();}}
   }
-  $('levels').addEventListener('click',e=>{
+  on($('levels'),'click',e=>{
     const b=e.target.closest('[data-level]');if(!b||b.disabled||+b.dataset.level===active)return;
     requestStage(+b.dataset.level);
   });
@@ -1041,7 +1072,7 @@
       return closest;
     }catch(_){return null;}
   }
-  $('board').addEventListener('pointerdown',e=>{
+  on($('board'),'pointerdown',e=>{
     if(!gameInputAllowed()||guideFeedback()||e.isPrimary===false||(e.button!==0&&e.pointerType!=='touch'))return;
     if(busy){e.preventDefault();finishPresentation(presentation);return;}
     if(engine.status!=='playing'||pointer)return;
@@ -1049,12 +1080,12 @@
     e.preventDefault();pointer={id:e.pointerId,index:+tile.dataset.index,x:e.clientX,y:e.clientY};
     try{$('board').setPointerCapture?.(e.pointerId);}catch(_){}
   });
-  window.addEventListener('pointermove',e=>{
+  on(window,'pointermove',e=>{
     if(!pointer||pointer.id!==e.pointerId)return;
     if(e.pointerType!=='touch'&&e.buttons===0)stopPointer();
     // No selection mutation here: jitter over the same tile remains a tap.
   });
-  window.addEventListener('pointerup',e=>{
+  on(window,'pointerup',e=>{
     if(!pointer||pointer.id!==e.pointerId)return;
     const start=pointer,target=tileAt(e);stopPointer();
     if(target===null)return;
@@ -1062,13 +1093,13 @@
     else if(Math.hypot(e.clientX-start.x,e.clientY-start.y)>=6)performSwap(start.index,target);
     else select(target);
   });
-  $('board').addEventListener('lostpointercapture',stopPointer);
-  window.addEventListener('pointercancel',stopPointer);
-  window.addEventListener('blur',()=>{stopPointer();if(presentation)finishPresentation(presentation);pauseGame();});
-  document.addEventListener('visibilitychange',()=>{stopPointer();if(document.hidden){if(presentation)finishPresentation(presentation);pauseGame();}syncAudio();});
-  window.addEventListener('pagehide',()=>{stopPointer();if(presentation)finishPresentation(presentation);});
-  $('board').addEventListener('click',e=>{if(e.detail===0){const tile=e.target.closest('[data-index]');if(tile)select(+tile.dataset.index);}});
-  $('board').addEventListener('keydown',e=>{
+  on($('board'),'lostpointercapture',stopPointer);
+  on(window,'pointercancel',stopPointer);
+  on(window,'blur',()=>{stopPointer();if(presentation)finishPresentation(presentation);pauseGame();});
+  on(document,'visibilitychange',()=>{stopPointer();if(document.hidden){if(presentation)finishPresentation(presentation);pauseGame();}syncAudio();});
+  on(window,'pagehide',()=>{stopPointer();if(presentation)finishPresentation(presentation);});
+  on($('board'),'click',e=>{if(e.detail===0){const tile=e.target.closest('[data-index]');if(tile)select(+tile.dataset.index);}});
+  on($('board'),'keydown',e=>{
     const tile=e.target.closest('[data-index]');if(!tile||!gameInputAllowed())return;if(guideFeedback()){e.preventDefault();return;}if(busy){e.preventDefault();finishPresentation(presentation);return;}
     const index=+tile.dataset.index;
     if(e.key==='Enter'||e.key===' '){e.preventDefault();select(index);return;}
@@ -1077,34 +1108,34 @@
     const next=activeLevel.cells.map((_,i)=>i).filter(i=>engine.adjacent(index,i)).map(i=>{const dx=positions[i].x-p.x,dy=positions[i].y-p.y;return {i,score:(dx*direction[0]+dy*direction[1])/Math.hypot(dx,dy)};}).filter(n=>n.score>0).sort((a,b)=>b.score-a.score)[0];
     if(next){focusIndex=next.i;for(const n of $('board').querySelectorAll('[data-index]'))n.setAttribute('tabindex',+n.dataset.index===focusIndex?'0':'-1');$('board').querySelector(`[data-index="${focusIndex}"]`)?.focus?.();}
   });
-  $('coach-skip').addEventListener('click',()=>{cancelPresentation();for(let i=0;i<tutorialCount;i++)if(!saved.done.includes(i))saved.done.push(i);saved.done.sort((a,b)=>a-b);enterGame(tutorialCount);});
-  $('coach-next')?.addEventListener('click',()=>{
+  on($('coach-skip'),'click',()=>{cancelPresentation();for(let i=0;i<tutorialCount;i++)if(!saved.done.includes(i))saved.done.push(i);saved.done.sort((a,b)=>a-b);enterGame(tutorialCount);});
+  on($('coach-next'),'click',()=>{
     if(!gameInputAllowed())return;
     const feedback=guideFeedback();if(!feedback)return;
     saved.guideAcks.push(feedback.id);selected=null;hinted=null;stopPointer();
     focusIndex=guidedStep()?.pair[0]??0;render();persist();
   });
-  $('tutorial-replay').addEventListener('click',()=>enterGame(0,{fresh:true}));
-  $('skip-animation').addEventListener('click',()=>finishPresentation(presentation));
-  $('reset').addEventListener('click',restart);$('retry').addEventListener('click',restart);$('hint').addEventListener('click',hint);
-  $('help').addEventListener('click',()=>openModal('help-dialog'));
-  $('sound').addEventListener('click',()=>{saved.sound=!saved.sound;renderSound();persist();unlockAudio();if(saved.sound)tone(3);});
-  $('continue').addEventListener('click',showResult);
-  $('next').addEventListener('click',()=>{closeModal($('win-dialog'));if(active===levels.length-1){showScreen('journey');return;}if(active<tutorialCount-1)enterGame(active+1,{fresh:true});else requestStage(active+1);});
-  $('review').addEventListener('click',()=>closeModal($('win-dialog')));
-  document.addEventListener('click',event=>{
+  on($('tutorial-replay'),'click',()=>enterGame(0,{fresh:true}));
+  on($('skip-animation'),'click',()=>finishPresentation(presentation));
+  on($('reset'),'click',restart);on($('retry'),'click',restart);on($('hint'),'click',hint);
+  on($('help'),'click',()=>openModal('help-dialog'));
+  on($('sound'),'click',()=>{saved.sound=!saved.sound;renderSound();persist();unlockAudio();if(saved.sound)tone(3);});
+  on($('continue'),'click',showResult);
+  on($('next'),'click',()=>{closeModal($('win-dialog'));if(active===levels.length-1){showScreen('journey');return;}if(active<tutorialCount-1)enterGame(active+1,{fresh:true});else requestStage(active+1);});
+  on($('review'),'click',()=>closeModal($('win-dialog')));
+  on(document,'click',event=>{
     const nav=event.target.closest('[data-nav]');if(nav){event.preventDefault();showScreen(nav.dataset.nav);return;}
     if(event.target.closest('[data-settings]')){event.preventDefault();openSettings();return;}
     const stage=event.target.closest('[data-stage]');if(stage&&!stage.disabled)requestStage(+stage.dataset.stage);
   });
-  $('home-play').addEventListener('click',()=>{unlockAudio();const next=nextStage();if(!next)showScreen('journey');else if(next.resume)enterGame(next.index);else requestStage(next.index);});
-  $('home-teach').addEventListener('click',()=>enterGame(0,{fresh:true}));
-  $('help-teach')?.addEventListener('click',()=>enterGame(0,{fresh:true}));
-  $('settings').addEventListener('click',event=>{event.stopPropagation();openSettings();});
-  $('pause').addEventListener('click',pauseGame);
-  $('pregame-start').addEventListener('click',()=>{const index=pendingStage;if(index===null)return;const checkpoint=validCheckpoint(index);if(saved.boards[index]&&!checkpoint&&variantCatalog){restart(index);return;}enterGame(index,{fresh:checkpoint?.status!=='playing'||lifeDiscarded(index),reason:checkpoint?'replay':'stage_entry'});});
-  $('pregame-restart').addEventListener('click',()=>{const index=pendingStage;if(index!==null)restart(index);});
-  $('restart-confirm')?.addEventListener('click',()=>{
+  on($('home-play'),'click',()=>{unlockAudio();const next=nextStage();if(!next)showScreen('journey');else if(next.resume)enterGame(next.index);else requestStage(next.index);});
+  on($('home-teach'),'click',()=>enterGame(0,{fresh:true}));
+  on($('help-teach'),'click',()=>enterGame(0,{fresh:true}));
+  on($('settings'),'click',event=>{event.stopPropagation();openSettings();});
+  on($('pause'),'click',pauseGame);
+  on($('pregame-start'),'click',()=>{const index=pendingStage;if(index===null)return;const checkpoint=validCheckpoint(index);if(saved.boards[index]&&!checkpoint&&variantCatalog){restart(index);return;}enterGame(index,{fresh:checkpoint?.status!=='playing'||lifeDiscarded(index),reason:checkpoint?'replay':'stage_entry'});});
+  on($('pregame-restart'),'click',()=>{const index=pendingStage;if(index!==null)restart(index);});
+  on($('restart-confirm'),'click',()=>{
     const request=pendingRestart;if(!request)return;lifeRefresh({persist:true});
     const entry=stageEntry(request.index),view=lifeReady()?lifeManager.view(lifeFeature.life):null;
     if(request.index>=tutorialCount&&entry?.game.status==='playing'&&entry.game.turn>0&&view&&!view.canStart){
@@ -1116,24 +1147,24 @@
     }
     if(enterGame(request.index,{fresh:true,reason:request.reason,lifeCostQuote:request.lifeCost}))toast('Yeni bir tahta hazır. Önceki denemen sıfırlandı.');
   });
-  $('pause-continue').addEventListener('click',()=>{closeModal($('pause-dialog'));unlockAudio();});
-  $('pause-restart').addEventListener('click',restart);
-  $('pause-home').addEventListener('click',()=>showScreen('home'));
-  $('pause-settings').addEventListener('click',event=>{event.stopPropagation();openSettings();});
-  $('win-home').addEventListener('click',()=>showScreen('home'));$('win-map').addEventListener('click',()=>showScreen('journey'));
-  $('lose-home').addEventListener('click',()=>showScreen('home'));$('lose-map').addEventListener('click',()=>showScreen('journey'));
+  on($('pause-continue'),'click',()=>{closeModal($('pause-dialog'));unlockAudio();});
+  on($('pause-restart'),'click',restart);
+  on($('pause-home'),'click',()=>showScreen('home'));
+  on($('pause-settings'),'click',event=>{event.stopPropagation();openSettings();});
+  on($('win-home'),'click',()=>showScreen('home'));on($('win-map'),'click',()=>showScreen('journey'));
+  on($('lose-home'),'click',()=>showScreen('home'));on($('lose-map'),'click',()=>showScreen('journey'));
   function savePreferences(){persist();renderSound();syncAudio();}
-  $('setting-sfx').addEventListener('change',event=>{saved.sound=event.target.checked;savePreferences();unlockAudio();if(saved.sound)tone(2);});
-  $('setting-music').addEventListener('change',event=>{saved.preferences.music=event.target.checked;savePreferences();unlockAudio();});
-  $('setting-motion').addEventListener('change',event=>{saved.preferences.motion=event.target.value;if(presentation)finishPresentation(presentation);savePreferences();});
-  $('setting-volume').addEventListener('input',event=>{saved.preferences.volume=Math.max(0,Math.min(1,Number(event.target.value)/100));$('volume-value').textContent=`%${Math.round(saved.preferences.volume*100)}`;savePreferences();});
-  $('setting-haptics').addEventListener('change',event=>{saved.preferences.haptics=event.target.checked;savePreferences();if(saved.preferences.haptics&&typeof navigator.vibrate==='function')try{navigator.vibrate(12);}catch(_){} });
-  $('settings-reset').addEventListener('click',()=>{
+  on($('setting-sfx'),'change',event=>{saved.sound=event.target.checked;savePreferences();unlockAudio();if(saved.sound)tone(2);});
+  on($('setting-music'),'change',event=>{saved.preferences.music=event.target.checked;savePreferences();unlockAudio();});
+  on($('setting-motion'),'change',event=>{saved.preferences.motion=event.target.value;if(presentation)finishPresentation(presentation);savePreferences();});
+  on($('setting-volume'),'input',event=>{saved.preferences.volume=Math.max(0,Math.min(1,Number(event.target.value)/100));$('volume-value').textContent=`%${Math.round(saved.preferences.volume*100)}`;savePreferences();});
+  on($('setting-haptics'),'change',event=>{saved.preferences.haptics=event.target.checked;savePreferences();if(saved.preferences.haptics&&typeof navigator.vibrate==='function')try{navigator.vibrate(12);}catch(_){} });
+  on($('settings-reset'),'click',()=>{
     lifeRefresh({persist:true});const entries=levels.map((_,index)=>stageEntry(index)),cost=discardCost(entries);pendingResetLifeCost=cost;
     if($('reset-description'))$('reset-description').textContent=`Bütün bölüm ilerlemen silinecek.${cost?` Oynanmış açık denemeleri silmek ${cost} can harcar.`:''} Canların yeniden doldurulmaz. Test Altının ve işlem kayıtların korunur.`;
     openModal('reset-dialog');
   });
-  $('reset-confirm').addEventListener('click',()=>{
+  on($('reset-confirm'),'click',()=>{
     lifeRefresh({persist:true});
     if(!lifeReady()){toast('Can verisi açılamadı. İlerlemen korundu.');return;}
     const currentResetCost=discardCost(levels.map((_,index)=>stageEntry(index)));
@@ -1148,11 +1179,11 @@
     if(!lifeCommit(lifeReset))return;
     for(let index=0;index<levels.length;index++)discardStage(index,'progress_reset');cancelPresentation();cancelHint();closeAllDialogs();saved.done=[];saved.boards={};saved.attempts={};saved.attemptStats={};saved.variantSelection.counts={};saved.variantSelection.recent={};saved.guideAcks=[];saved.records={};saved.current=0;active=0;loadLevel(0,true);showScreen('home',{replace:true});toast('Yolculuk sıfırlandı. Ses ve hareket tercihlerin korundu.');
   });
-  window.addEventListener('popstate',event=>{
+  on(window,'popstate',event=>{
     if(topDialog()){closeModal(topDialog());try{history.pushState({screen},'','#'+screen);}catch(_){}return;}
     const next=event.state?.screen||location.hash.slice(1)||'home';showScreen(next,{historyChange:false});
   });
-  window.addEventListener('keydown',event=>{
+  on(window,'keydown',event=>{
     if(event.ctrlKey||event.metaKey||event.altKey||event.repeat)return;
     if(event.key==='Escape'){
       if(topDialog()){event.preventDefault();closeModal(topDialog());return;}
@@ -1163,9 +1194,9 @@
     if(event.key.toLowerCase()==='r'){event.preventDefault();restart();}
     if(event.key.toLowerCase()==='h'){event.preventDefault();hint();}
   });
-  window.addEventListener('pagehide',()=>{audio?.stop();if(engine)persist();});
+  on(window,'pagehide',()=>{audio?.stop();if(engine)persist();});
   const motionQuery=window.matchMedia?.('(prefers-reduced-motion: reduce)');
   motionQuery?.addEventListener?.('change',()=>{if(saved.preferences.motion==='auto'){if(presentation&&reduceMotion())finishPresentation(presentation);syncAudio();}});
-  initializeLives();bindLivesUI();hydrateRecords();renderSound();loadLevel(active);showScreen('home',{replace:true});
+  sessionAction(()=>{initializeLives();bindLivesUI();hydrateRecords();renderSound();loadLevel(active);showScreen('home',{replace:true});});
   if(migrated)toast('İlerlemen korundu. Öğreticileri yolculuk menüsünden yeniden oynayabilirsin.');
-})();
+});

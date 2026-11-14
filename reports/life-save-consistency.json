@@ -1,0 +1,195 @@
+{
+  "schemaVersion": 1,
+  "scope": "PR4 Life & Save Consistency",
+  "branch": "fix/life-save-consistency-9-2",
+  "baseCommit": "1adefd90db277312d562a45fa7ce8ed068fc818f",
+  "generatedAtUtc": "2026-11-14T16:45:02.427740+00:00",
+  "status": "local_checks_passed_remote_ci_pending",
+  "baselineReproductions": [
+    {
+      "command": "node check-life-consistency.cjs",
+      "baselineExitCode": 1,
+      "failures": [
+        "attempt started during unlimited charged after expiry",
+        "completed verified ad rejected when regeneration filled pool",
+        "journal threshold disabled new games"
+      ]
+    },
+    {
+      "command": "node check-session-consistency.cjs",
+      "baselineExitCode": 1,
+      "failures": [
+        "failed game write still debited restart life from5to4",
+        "no authoritative atomic game-and-energy profile"
+      ]
+    }
+  ],
+  "implemented": {
+    "lifeStateVersion": 2,
+    "lifeRulesVersion": "lives-v2",
+    "configurationVersionUnchanged": true,
+    "canonicalStorageKey": "hexrota-profile-v2",
+    "canonicalProfileVersion": 2,
+    "compatibilityMirrors": [
+      "hexrota-match-v5",
+      "hexrota-lives-v1"
+    ],
+    "singleWriterPolicy": "One editable tab using browser Web Locks; second tab is read-only until close/retry. Unsupported capability fails closed.",
+    "activeLifeCap": 5,
+    "pendingVerifiedAdCredits": "Stored separately from active pool; credited when space opens, without another ad. Completed quota counted once.",
+    "attemptEntitlement": "Unlimited at attempt registration survives expiry and reload. Legacy missing registration captures only currently verifiable entitlement.",
+    "atomicFailurePolicy": "Game, variant selection, life, test wallet and provider outcome commit in one localStorage value. Canonical failure rolls back engine replay and transient UI; mirror failure cannot undo committed canonical outcome.",
+    "richLedgerRetention": 128,
+    "dedupPolicy": "Exact legacy identity tombstones retained; authenticated provider sequence ranges compacted. No arbitrary identity eviction or gameplay-capacity threshold.",
+    "pwaShellVersion": 20,
+    "realPaymentsOrAdsAdded": false
+  },
+  "checks": [
+    {
+      "command": "npm test",
+      "status": "passed",
+      "detail": "Full existing gameplay/UI/data suite,40variants,80provenpaths,10240reproducible balance runs; new core/session regression commands included."
+    },
+    {
+      "command": "node check-lives.cjs",
+      "status": "passed",
+      "groups": 22
+    },
+    {
+      "command": "node check-life-consistency.cjs",
+      "status": "passed",
+      "groups": 21
+    },
+    {
+      "command": "node check-session-consistency.cjs",
+      "status": "passed",
+      "groups": 7,
+      "includes": [
+        "failed restart atomic rollback",
+        "canonical authority",
+        "invalid canonical versions and values",
+        "stale revision and revoked writer",
+        "empty durable board restores correct engine identity",
+        "uncommitted provider request clears ephemeral ID",
+        "async hint stats and events rollback",
+        "verified receipt retry after failed storage without rewatch"
+      ]
+    },
+    {
+      "command": "node check-lives-ui.cjs",
+      "status": "passed",
+      "groups": 20
+    },
+    {
+      "command": "node generate-life-vectors.cjs --check && node check-life-vectors.cjs",
+      "status": "passed",
+      "v2Cases": 19,
+      "v2TransitionsAndProbes": 157,
+      "frozenV1StatesMigrated": 152,
+      "frozenV1Sha256": "b6e7ab6e2e801f710baef9f5ae5786fb7cda15d42cfdb8bbfe636eadda745c92"
+    },
+    {
+      "command": "CHROMIUM_EXECUTABLE=/usr/bin/chromium npm run test:session-browser",
+      "status": "passed",
+      "browser": "Chromium156.0.8078.79",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "isMobile": true,
+        "hasTouch": true
+      },
+      "groups": [
+        "two actual pages: exclusive lock,concurrent UI,read-only,close/retry handoff",
+        "quota rollback of board,attempt,wallet and life",
+        "authoritative recovery over stale or missing mirrors",
+        "completed-at-full ad,pendingcredit,reload and duplicate callback",
+        "unsupported lock capability preserves records without writing"
+      ]
+    },
+    {
+      "command": "npm run test:unity-rewards",
+      "status": "passed",
+      "dotnetSdk": "8.0.428",
+      "languageVersion": "C#7.3",
+      "sharedVectors": 104,
+      "factoryCases": 1,
+      "valid": 98,
+      "rejected": 7
+    },
+    {
+      "command": "node check-input.cjs && node check-ui.cjs",
+      "status": "passed",
+      "detail": "Rechecked after async hint transaction and non-mutating pointer-listener host changes."
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed"
+    }
+  ],
+  "preservedSources": [
+    {
+      "path": "dist/engine.js",
+      "sha256": "84cf60d3c1d1b395718ef3b9f0cb00ace213bafe41e0b61c1d7babd03e27ebec",
+      "unchangedFromBase": true
+    },
+    {
+      "path": "dist/levels.js",
+      "sha256": "912d974e9fbcabf77036b0fb1d3e1cc25962049cb598707241fcdb9cc6795bd4",
+      "unchangedFromBase": true
+    },
+    {
+      "path": "dist/tutorials.js",
+      "sha256": "b5ae419bffeb4fb684261baad425a74857a73cc6d6dd998f5d1def58c2ea4ee0",
+      "unchangedFromBase": true
+    },
+    {
+      "path": "dist/variants.json",
+      "sha256": "087caa9349785ad3cd2cea6ae01e38968307205cba0dad530110b9e78a657f7d",
+      "unchangedFromBase": true
+    },
+    {
+      "path": "dist/variants-data.js",
+      "sha256": "c0e98fff5fdb7cacf098d7615d0030883707fa432e2b00614cb21daf75d9c0a2",
+      "unchangedFromBase": true
+    },
+    {
+      "path": "fixtures/gameplay-vectors.json",
+      "sha256": "f88b4870bf78cb1c80bb15ff516a1b35f68c365b119765fa9ad1d5c197740efa",
+      "unchangedFromBase": true
+    },
+    {
+      "path": "fixtures/reward-vectors.json",
+      "sha256": "8fe29510db80358c7cd5c1197455d14d60e73763f829d698236c522c6504b0aa",
+      "unchangedFromBase": true
+    },
+    {
+      "path": "unity/Rewards/RewardDirector.cs",
+      "sha256": "4419352fb5971ea98c9c37583b6fa377c6ed3424f4afad9a58f93e44154c8ad9",
+      "unchangedFromBase": true
+    },
+    {
+      "path": "unity/Rewards/RewardTypes.cs",
+      "sha256": "9bf47b3109c6526c817bc4169e062ba0774495131be655728fbaa4488fe4dc98",
+      "unchangedFromBase": true
+    }
+  ],
+  "ci": {
+    "status": "pending_parent_pr_creation",
+    "addedJob": "browser-session-consistency",
+    "existingJobsPreserved": [
+      "gameplay-tests",
+      "csharp-reward-parity"
+    ]
+  },
+  "openValidation": [
+    "Physical iPhone and WebKit/iOS Safari were not tested.",
+    "No C# LifeManager implementation or life parity harness is claimed. The gameplay C# PR is independent of this branch."
+  ],
+  "knownLimits": [
+    "Arbitrary legacy identity tombstones consume finite local storage; physical quota can still reject a transaction safely. Rich rows are bounded at128.",
+    "Completed but not yet durably saved test receipt can retry in the live tab. Persistent storage failure followed by browser termination cannot guarantee the new local receipt; production provider must support durable redelivery.",
+    "A single writable tab per origin is intentional; this does not provide simultaneously editable same-profile tabs.",
+    "Device clock and development receipts are not trusted payment/ad validation.",
+    "Old v1 attempts did not record historical unlimited entitlement; migration does not invent an expired entitlement."
+  ]
+}
