@@ -1,21 +1,21 @@
 # Hexrota — Unity aktarım planı
 
-## Mevcut durum ve aktarım hedefi
+## Mevcut durum ve aktarım hedefi — 9.3
 
 Oynanışın referansı saf JavaScript motoru, sürümlü bölüm verileri ve kayıtlı test çıktılarıdır. Unity aktarımında önce aynı girdiden aynı oyun sonucunu üreten C# çekirdeği kurulmalı; çizim, ses, titreşim, dokunma ve cihaz servisleri bunun dışına bağlanmalıdır.
 
-9.2 Phase 1 ile `unity/Gameplay/` altında **saf C# 7.3 oyun çekirdeği** uygulanmıştır. Topoloji, eşleşme, takas, düşüş, kontrollü üretim, RNG, zincir, puan/zemin, kazanma/kaybetme, snapshot, klon ve replay gerçek .NET 8 çalıştırıcısıyla JS referansına karşılaştırılır. Ayrıntılı kapsam ve sınırlar [CSHARP_GAMEPLAY_PHASE1.md](CSHARP_GAMEPLAY_PHASE1.md) içindedir. `unity/Rewards/` içindeki mevcut Reward Director korunur. Unity sahnesi, mobil paket, gerçek ödeme ve canlı reklam entegrasyonu yapılmadı. Katalog/seçici, ipucu, deneme zarfı, can ve cihaz kayıt adaptörlerinin C# portları henüz yoktur; web bunların mevcut JS uygulamalarını kullanmaya devam eder.
+9.2 Phase 1 ile `unity/Gameplay/` altında **saf C# 7.3 oyun çekirdeği** uygulanmıştır. Topoloji, eşleşme, takas, düşüş, kontrollü üretim, RNG, zincir, puan/zemin, kazanma/kaybetme, snapshot, klon ve replay gerçek .NET 8 çalıştırıcısıyla JS referansına karşılaştırılır. Ayrıntılı kapsam ve sınırlar [CSHARP_GAMEPLAY_PHASE1.md](CSHARP_GAMEPLAY_PHASE1.md) içindedir. `unity/Rewards/` içindeki mevcut Reward Director korunur. Unity sahnesi, mobil paket, gerçek ödeme ve canlı reklam entegrasyonu yapılmadı. 9.3 çalışma dallarında katalog/seçici, deneme kimliği, LifeManager, ipucu, ödül adaptörü, saf uygulama oturumu, profil deposu/geçişi ve olay sözleşmesi eklendi. Web mevcut JS uygulamalarını kullanmaya devam eder; C# web uygulamasına bağlanmaz. Birleşik C# kabul testleri gerçek .NET 8 ile geçti; dört bağımsız PR ve Integration PR kullanıcı onayına bırakılmıştır. Bu doğrulama Unity cihaz entegrasyonu değildir. Uzak CI ve Vercel Preview sonucu Integration PR kontrollerinde izlenir; ayrıntılı yerel kanıt [CSHARP_9_3_VALIDATION.md](CSHARP_9_3_VALIDATION.md) içindedir.
 
 | Alan | Bu sürümde uygulanan | C# durumu |
 | --- | --- | --- |
 | Eşleşme, takas, düşüş, üretim, zincir, kazanma | `dist/engine.js`, `classic-v4` | `unity/Gameplay/` içinde uygulandı; tam dalga/snapshot parity testi var. |
-| 10 ana bölüm, her birinde 4 doğrulanmış varyant | `dist/variants.json`, `dist/attempts.js` | Katalog ve seçim karşılığı aktarılacak. |
-| T1/T2 | Sabit sayılar, tohumlar, yönlendirmeler | Saf çekirdekte iki sabit çözüm aynı veriden doğrulanır; öğretici UI/yönlendirmesi henüz C# değil. |
-| Kayıt devamı ve eski kayıt okuma | Snapshot v4, deneme kimliği v1, eski hamleleri tekrar oynatma | Motor snapshot v4 replay doğrulaması uygulandı; deneme zarfı, eski uygulama kayıt geçişi ve cihaz saklaması aktarılacak. |
-| İpucu | Çoklu doğrulanmış rota, sınırlı arama, açık garanti bilgisi | Aynı düğüm bütçesiyle önce saf C# karşılığı yapılacak. |
-| Ödül yöneticisi | Saf JS + C# 7.3, ortak ödül vektörleri | Uygulandı; Unity sunumuna bağlanması gerekiyor. |
-| Yerel olaylar | `dist/events.js`, tarayıcıda sınırlı yerel tampon | Aynı şema için cihaz adaptörü yapılacak. |
-| Can | `dist/lives.js`, kanonik `lives-config.json`, ayrı kayıt ve sahte sağlayıcı | C# karşılığı aktarılacak; ortak can JSON vektörleri hazır. |
+| 10 ana bölüm, her birinde 4 doğrulanmış varyant | `dist/variants.json`, `dist/attempts.js` | `unity/Catalog/`: `LevelCatalog`, `VariantSelector`, sürüm çözümü ve deneme/checkpoint DTO’ları uygulandı; 40 varyant/80 yol gerçek karşılaştırma kapsamındadır. |
+| T1/T2 | Sabit sayılar, tohumlar, yönlendirmeler | Katalog sabit öğretici verisini ve kimliğini yükler; controller yönlendirilmiş takası/onayı yönetir. Unity öğretici ekranı ve sunumu yapılmadı. |
+| Kayıt devamı ve eski kayıt okuma | Snapshot v4, deneme kimliği v1, eski hamleleri tekrar oynatma | Motor replay + katalog zarfı uygulandı. `unity/Application/` profil DTO’su, legacy normalizasyonu ve atomik CAS deposunu içerir; controller 28 gerçek web akışında 915 tam JSON karşılaştırmasını geçti. Native kalıcı depolama adaptörü yapılmadı. |
+| İpucu | Çoklu doğrulanmış rota, sınırlı arama, açık garanti bilgisi | `unity/Hints/HintSolver.cs`: üç kaynak sınıfı, doğrulanmış devam, düğüm bütçesi ve dış monoton saat politikası uygulandı. |
+| Ödül yöneticisi | Saf JS + C# 7.3, ortak ödül vektörleri | Mevcut Director korundu; `unity/RewardAdapter/` dalga girdisi/restore portu eklendi. Unity sunumu ayrı iştir. |
+| Yerel olaylar | `dist/events.js`, tarayıcıda sınırlı yerel tampon | `GameEventTracker` aynı saf doğrulama/ekleme sözleşmesini uygular; 580 gerçek JSON karşılaştırması var. Kalıcı yazım `IProfileStorage` dış adaptöründedir. |
+| Can | `dist/lives.js`, kanonik `lives-config.json`, ayrı kayıt ve sahte sağlayıcı | `unity/Lives/` güncel `lives-v2` portu, dış saat/doğrulayıcı ve v1 geçişi uygulandı. Uygulama katmanı ayrı TEST sağlayıcı/cüzdanı içerir; gerçek SDK yoktur. |
 | Ekonomi | Genel tasarım JSON'u; 9.1'de yalnızca TEST can cüzdanı/ürünleri | Gerçek mali sistem ve oyun içi yardım komutları uygulanmadı. |
 
 ## Modül eşlemesi
@@ -29,15 +29,15 @@ Aşağıdaki tablo uygulanmış saf çekirdekle gelecekteki uygulama/cihaz modü
 | Swap Validator | `adjacent()`, `legalMoves()`, `swap()` başlangıcı | Uygulandı: `Adjacent`, `LegalMoves`, `Swap`; geçersiz işlem durumu korur. |
 | Gravity System | `_gravity()` | Uygulandı: `Gravity`; kalan taş sırası ve gerçek kaynak/hedef kimlikleri korunur. |
 | Controlled Refill | `_newMatchesAt()`, `_fillVacancies()` | Uygulandı: `NewMatchesAt`, `FillVacancies`; sıralı minimum üçlü adayları ve aynı RNG tüketimi. |
-| RNG | `_random()`, deneme seçicinin `randomStep()` işlevi | `XorShift32` ve `HexMatch.Random` uygulandı; C# varyant seçicisi gelecekte ayrı RNG durumu kullanacak. |
+| RNG | `_random()`, deneme seçicinin `randomStep()` işlevi | `XorShift32` ve `HexMatch.Random` uygulandı; `VariantSelector` ayrı seçim RNG durumunu kullanır; motor RNG’sini değiştirmez. |
 | Cascade Resolver | `swap()` çözümleme döngüsü | Uygulandı: `HexMatch.Swap`; bütün dalgalar tek hamlede, sunumdan önce kesinleşir. |
-| Level Configuration | JS kaynakları, JSON dışa aktarımları ve varyant paketi | `LevelCatalog`, `ResolvedLevelConfig`: değişmez taban veri + seçilen başlangıç/tohum/çözüm yolları. |
-| Variant Selection | `HexAttempts.createCatalog().start()` | `VariantSelector`, `AttemptMetadata`: seçim geçmişiyle tekrarı azaltır; mağaza veya ödeme girdisi almaz. |
-| Hint Solver | `hint()` | `HintSolver`: klonlarda çalışır; doğrulanmış yol, aramayla bulunan kazanma ve sezgisel öneriyi ayırır. |
-| Save/Load | `_restore()`, `HexAttempts.restore()/checkpoint()`, uygulama bağlantısı | `HexMatch.Snapshot`, `Clone`, `Replay`, `Restore` uygulandı. `Restore` geçmişi yeniden oynatıp bütün motor alanlarını karşılaştırır; `AttemptRepository`, kimlik çözümü ve eski kayıt adaptörü henüz aktarılmadı. |
-| Reward Director | `rewards.js`, `reward-adapter.js`, `reward-rules.json` | Mevcut `RewardDirector.cs`, `RewardTypes.cs`; oyun dalgalarını girdi DTO'suna çeviren adaptör ayrıca bağlanır. |
-| Life Manager | `dist/lives.js`, `lives-config.json` ve uygulama bağlantısı | `LifeManager`, `LifeState`, `LifeConfig`, `LifeSettlement`; dış `IUtcClock`, `IReceiptVerifier`, ayrı kayıt adaptörü. Motorun RNG ve snapshot'ına dokunmaz. |
-| Economy Rules | `data/economy-design.json`, `life-providers.js` ve ekonomi belgesi | 9.1 TEST cüzdanı/sağlayıcısı ayrı adaptördür; gerçek `EconomyRules`, mali günlük ve oyun yardımları gelecekte yapılır. |
+| Level Configuration | JS kaynakları, JSON dışa aktarımları ve varyant paketi | Uygulandı: `LevelCatalog.FromDocuments`, `ResolveLevelWire`, `GameplayConfig`; değişmez taban + seçilen başlangıç/tohum/çözüm yolları. Çözülmüş tam veri wire map, oyun verisi mevcut `LevelConfig` olur; ayrı `ResolvedLevelConfig` tipi icat edilmedi. |
+| Variant Selection | `HexAttempts.createCatalog().start()` | Uygulandı: `VariantSelector.Select/RandomStep`, `AttemptMetadata`, `AttemptStart`, `AttemptCheckpoint`, `LevelDataVersionResolver`; yayın sırasını ve kimlik türünü korur, mağaza veya ödeme girdisi almaz. |
+| Hint Solver | `hint()` | Uygulandı: `HintSolver.Find`, `HintRoutes.Create`, `HintOptions`, `HintResult`, dış `IHintClock`; klonlarda çalışır ve üç kaynak sınıfını ayırır. |
+| Save/Load | `_restore()`, `HexAttempts.restore()/checkpoint()`, uygulama bağlantısı | `HexMatch.Snapshot`, `Clone`, `Replay`, `Restore` uygulandı. `Restore` geçmişi yeniden oynatıp bütün motor alanlarını karşılaştırır; `AttemptRepository`, `SaveMigration`, `SaveValidator`, `GameProfile`, `ProfileRepository` ve `IProfileStorage` uygulandı; gerçek cihaz dosya/DB adaptörü henüz yoktur. Controller’ın 28 gerçek web akışı ve ayrıca 11 native hata senaryosu doğrulanır; UI kaynaklı revision yazım adetleri ayrı repository testiyle ayrılır. |
+| Reward Director | `rewards.js`, `reward-adapter.js`, `reward-rules.json` | Mevcut `RewardDirector.cs`, `RewardTypes.cs` korunur; `Hexrota.RewardAdapterCore.RewardAdapter.RunsFor/Summarize/Restore` gerçek dalgaları ve replay geçmişini Director DTO’suna dönüştürür. |
+| Life Manager | `dist/lives.js`, `lives-config.json` ve uygulama bağlantısı | Uygulandı: `LifeManager`, `LifeConfig`, `LifeState`, `LifeSettlement`, `LifeTransaction`, `LifeOperationResult`; dış `IUtcClock`/`IReceiptVerifier`. Motor RNG/snapshot’ına dokunmaz. Kalıcı saklama LifeManager’ın sorumluluğu değildir. |
+| Economy Rules | `data/economy-design.json`, `life-providers.js` ve ekonomi belgesi | `DevelopmentLifeProvider` ve controller’daki TEST cüzdanı akışı uygulandı. Gerçek `EconomyRules`, ticari cüzdan/SDK ve oyun yardımları gelecekte yapılır. |
 
 `dist/app.js` içindeki ekran yönetimi, giriş, kayıt servisi ve sunum tek bir C# oyun motoruna kopyalanmamalıdır. Unity tarafında deneme akışını yöneten bir uygulama katmanı, saf çekirdekten ayrı bir sunum katmanı ve cihaz adaptörleri gerekir. Bu katmanın mevcut davranışı; ön izleme, onaylı yeniden başlatma, devam etme ve sonuç ekranı testlerinden alınır.
 
@@ -69,11 +69,11 @@ Kimliklerin tel üzerindeki türleri mevcut kayıtlarla aynı kalır:
 - Eski ana bölüm: `variantId = legacy-original`, `levelDataVersion = original-v1`.
 - Öğretici: `variantId = fixed`, `levelDataVersion = tutorials-v1`.
 
-`1` ve `"1"` deneme doğrulamasında aynı kimlik değildir. C# çekirdeğinde türü ve değeri taşıyan bir `LevelKey` kullanılabilir; JSON adaptörü mevcut sayı/dizge ayrımını korumalıdır. Bütün kimlikleri körlemesine `int` veya `string` yapmak eski kayıt sözleşmesini bozar.
+`1` ve `"1"` deneme doğrulamasında aynı kimlik değildir. Mevcut C# katalog kimliği `object` olarak türüyle taşır; `Wire.TypeKey`/strict karşılaştırma sayı-dizge ayrımını korur. Ayrı `LevelKey` tipi uygulanmış gibi kabul edilmez; platform JSON adaptörü bu ayrımı korumalıdır. Bütün kimlikleri körlemesine `int` veya `string` yapmak eski kayıt sözleşmesini bozar.
 
 Diğer dönüşüm sınırları da açıktır: hamleler ve çözüm yolları iç içe JSON dizileridir; `frame.compacted` boş hücreler için `null` içerir; yeni taşlarda `falls.from` değeri `null` olur. Bunları `-1` veya `0` ile değiştirmeyin. C# tarafında hamle yapısı, `int?[]` ara değerler ve nullable kaynak indeksleri kullanılabilir; wire JSON aynı kalır. JSON yükleyicisi tür birliğini, iç içe dizileri, nullable değerleri ve zorunlu alanların varlığını desteklemelidir. `JsonUtility` tek başına bu genel oyun sözleşmesini doğrudan çözmez. Mevcut düz ödül DTO'larında kullanılması, bütün oyun verisinin aynı yöntemle okunabileceği anlamına gelmez.
 
-Oyun ve katman değerleri tamsayıdır. RNG doğrudan `uint` okunur; `4294967295` dahil unsigned tohumlar işaretli dönüşümden geçirilmez. Phase 1 çekirdeği yayımlanmış bölüm kümesinin sayı, puan, hamle ve indeksleri için `int` kullanır; bu test edilen küme `Int32` sınırındadır. Gelecekte sınırı aşan yapılandırma kabul edilecekse DTO/hesap tipi ve ortak testler açıkça genişletilmelidir; keyfi büyüklükte JS sayılarına parity iddiası yoktur. Sayaç ve UTC zamanları gerektiğinde `long` olmalı, JS güvenli tamsayı sınırı aşılmamalıdır. İpucu sıralama ağırlıkları gelecekte C# `double` ile hesaplanmalıdır; `float` eşdeğer değildir. JSON alan sırası karşılaştırmada anlam taşımaz; hücre, palet, hamle ve sonuç dizilerinin sırası taşır.
+Oyun ve katman değerleri tamsayıdır. RNG doğrudan `uint` okunur; `4294967295` dahil unsigned tohumlar işaretli dönüşümden geçirilmez. Phase 1 çekirdeği yayımlanmış bölüm kümesinin sayı, puan, hamle ve indeksleri için `int` kullanır; bu test edilen küme `Int32` sınırındadır. Gelecekte sınırı aşan yapılandırma kabul edilecekse DTO/hesap tipi ve ortak testler açıkça genişletilmelidir; keyfi büyüklükte JS sayılarına parity iddiası yoktur. Sayaç ve UTC zamanları gerektiğinde `long` olmalı, JS güvenli tamsayı sınırı aşılmamalıdır. İpucu sıralama ağırlıkları C# portunda `double` ile hesaplanır; `float` eşdeğer değildir. JSON alan sırası karşılaştırmada anlam taşımaz; hücre, palet, hamle ve sonuç dizilerinin sırası taşır.
 
 ## Motor snapshot v4 ve deneme v1
 
@@ -104,7 +104,7 @@ attemptId: string
 attemptSerial: safe integer
 ```
 
-Saf `HexAttempts` API'si `start`, `resolveLevel`, `restore`, `checkpoint` ve `list` işlemlerini sağlar. `checkpoint(metadata, engine)` dışa taşınabilir `{...metadata, snapshot}` zarfı üretir. Bilinmeyen sürüm/varyant, yanlış Level ID türü, biçimi bozuk deneme kimliği ve aynı anda iki farklı kimlik kaynağı reddedilir. Hatalı yeni varyant kaydı eski orijinal kayıt diye yorumlanmaz.
+Saf JS `HexAttempts` API’si `start`, `resolveLevel`, `restore`, `checkpoint` ve `list` işlemlerini sağlar; C# karşılıkları `LevelCatalog.Start`, `ResolveLevelWire`, `Restore`, `Checkpoint` ve `List` olur. `checkpoint(metadata, engine)` dışa taşınabilir `{...metadata, snapshot}` zarfı üretir. Bilinmeyen sürüm/varyant, yanlış Level ID türü, biçimi bozuk deneme kimliği ve aynı anda iki farklı kimlik kaynağı reddedilir. Hatalı yeni varyant kaydı eski orijinal kayıt diye yorumlanmaz.
 
 Ana bölüm deneme kimliği `a-{levelId}-{attemptSerial}-{selectorStateHex8}` biçimindedir; hexadecimal bölüm küçük harfli ve sekiz hanelidir. Eski ana kayıt `legacy-{levelId}` ve seri `0` ile tanınır. Öğreticide uygulama katmanı `t-{tutorialId}-{serial}` veya eski kayıt için `legacy-{tutorialId}` üretir. Öğretici kimlik politikası kampanya varyant seçicisinden ayrıdır.
 
@@ -157,7 +157,7 @@ Reward Director v1 en az üç taş eşleşen dalgalar ve sıralı takaslar bekle
 
 9.2 can yöneticisinin kuralları [LIVES_DESIGN.md](LIVES_DESIGN.md) içinde dondurulmuştur. Bu katman iki ayrı işi yapar: yeni ana denemenin açılmasına izin vermek ve gerçek bir denemenin can sonucunu kimliğiyle bir kez kaydetmek. `HexMatch` içine can, tarih, cüzdan veya reklam verisi girmez. Mevcut 40 varyantın ve eski on bölümün kazanma yolları aynıdır.
 
-C# `LifeManager`, `createManager(config, { clock, verifyReceipt })` sözleşmesinin karşılığı olmalıdır. Clock UTC milisaniye `long` döndürür; her açık geçişte tek zaman örneği kullanılır. Saf çekirdek `DateTime.UtcNow`, Unity sahnesi, reklam/ödeme SDK'sı veya depolama çağırmaz. Doğrulayıcı enjekte edilir; verilmemiş doğrulayıcı bütün makbuzları reddeder. Unity'nin gerçek sağlayıcısı gelecekte bu sınırın dışına bağlanır; `development` makbuzu gerçek para kanıtı değildir. Can çekirdeği sağlayıcı adını bu test değerine kilitlemez; güvenilirliği enjekte edilen doğrulayıcı belirler, böylece gerçek adaptör eklendiğinde can kuralları yeniden yazılmaz.
+C# `LifeManager`, `createManager(config, { clock, verifyReceipt })` sözleşmesinin uygulanmış karşılığıdır; yapılandırma `LifeConfig`, saat `IUtcClock`, makbuz güveni `IReceiptVerifier` üzerinden sağlanır. Clock UTC milisaniye `long` döndürür; her açık geçişte tek zaman örneği kullanılır. Saf çekirdek `DateTime.UtcNow`, Unity sahnesi, reklam/ödeme SDK'sı veya depolama çağırmaz. Doğrulayıcı enjekte edilir; verilmemiş doğrulayıcı bütün makbuzları reddeder. Unity'nin gerçek sağlayıcısı gelecekte bu sınırın dışına bağlanır; `development` makbuzu gerçek para kanıtı değildir. Can çekirdeği sağlayıcı adını bu test değerine kilitlemez; güvenilirliği enjekte edilen doğrulayıcı belirler, böylece gerçek adaptör eklendiğinde can kuralları yeniden yazılmaz.
 
 Can DTO'su: `schemaVersion: 2`, `rulesVersion: lives-v2`, `registeredAttempts`, `pendingAdLives`, `settledArchive`, `transactionArchive`, `transactionStreams`, `lives`, nullable `regenAnchorUtc`, `lastSeenUtc`, nullable `unlimitedUntilUtc`, `developerBypass`, `settledAttempts`, `processedTransactions`, `protectionUsed`, `firstFailures`, `adUsage`. Can 0…5 tamsayıdır. Bütün UTC alanları güvenli JS tamsayı aralığında `long`; `null`, sıfırla değiştirilmez. Günlük reklam anahtarı `floor(effectiveUtc / 86400000)` olur, yerel saat dilimi değildir. `number:1` ve `string:1` koruma anahtarları farklı kalır.
 
@@ -184,7 +184,7 @@ hexrota-lives-v1:
 
 Eski makbuzun beş alanı: `transactionId`, `productId`, `provider: development`, `status: completed`, `verifiedAtUtc`. Yeni test makbuzları ayrıca doğrulanan `streamId`/`sequence` taşır; sağlayıcı v2 eski biçimi de okur. Ürünler `ad_life`, `single_life`, `refill_lives`, `unlimited_lives_30m`; açık test Altın yüklemesi sağlayıcı/cüzdanda ayrı `test_gold_300` ürünüdür. Doğrulayıcı makbuzu sağlayıcının tamamlanmış kaydıyla karşılaştırır; ödül miktarı veya fiyat callback'ten alınmaz. Aynı kimlik bir kez uygulanır; doğrulanmış fakat uygun olmayan işlem de tekrar ödüle dönmesin diye kaydedilir. Can ve işlem kimlikleri sessizce budanmaz; `maxLedgerEntries` ayrıntılı kayıt saklama eşiğidir; yeni oyunu engellemez. Tam kimlikli arşivler ve yalnızca doğrulanmış seri akışları için kapalı aralıklar tekrar bildirimi korur.
 
-C#'ta aynı sırayla korunacaklar:
+C# can portunda aynı sırayla korunan kurallar:
 
 1. Etkin zaman `max(clockUtc, lastSeenUtc)` olur. Geri alınan saat canı geri çekmez veya sınırsız/reklam hakkını yeniden yaratmaz; saat yakalayana kadar ilerleme donabilir. İleri alınan cihaz saati yerel prototipte güvenilir mali süre otoritesi değildir.
 2. Eksik can için geçen tam 30 dakikalar eklenir. İlk kayıp aralığı başlatır; sonraki kayıp veya +1 ödül mevcut aralığı kaydırmaz. Beşe ulaşınca başlangıç `null` olur; daha sonra eksilirse o andan yeni aralık başlar.
@@ -194,7 +194,7 @@ C#'ta aynı sırayla korunacaklar:
 6. İlk özellik geçişi eski bitmiş sonuçları `historical` olarak kabul eder, ücret almaz. Sonraki kesinti sonrası henüz işlenmemiş yeni sonuçlar tek kez uzlaştırılır. Bypass/sınırsız/koruma nedeniyle ücretsiz sonuç da kayıtlı kalır; ayar kapanınca geriye dönük ücret çıkmaz.
 7. Gelecekte +3/+5 aynı denemeyi açarsa ilk can sonucu korunur: ikinci kayıp yeniden kesmez, kazanma yeni kesinti veya otomatik iade üretmez. Yardım komutu uygulaması hâlâ yeni oyun-kuralı/kayıt sözleşmesi gerektirir.
 
-`fixtures/lives-vectors.json` can portunun ortak beklenen JSON'udur; `generate-life-vectors.cjs --check` güncelliği, `check-life-vectors.cjs` geçişleri kontrol eder. JS tarafındaki 16 örnekte 136 geçiş/probe doğrulanmıştır. C# LifeManager yazıldığında aynı dosyalar alan alan karşılaştırılmalıdır. Bu sürümde **C# can parity çalıştırıcısı yoktur**; derlenen C# oyun ve ödül testleri can portu sayılmaz.
+`fixtures/lives-vectors.json` güncel can portunun ortak beklenen JSON’udur; `fixtures/lives-vectors-v1.json` dondurulmuş eski kayıtları korur. `test:unity-lives` .NET 8 ile C# 7.3 portunu gerçekten derleyip tam durum/sonuç/görünüm JSON’unu karşılaştırır. Güncel fixture 19 senaryo ve 157 geçiş/probe içerir; v1 geçişleri, uzun günlük ve ek reddetme/saat/makbuz kontrolleri ayrıca çalışır. Kesin güncel toplam ve kapsam [CSHARP_LIVES.md](CSHARP_LIVES.md) ile komut çıktısında tutulur; eski 9.2’deki “C# can portu yok” durumu artık geçerli değildir.
 
 ## Ortak doğrulama vektörleri
 
@@ -221,38 +221,69 @@ npm run test:gameplay-vectors
 npm test
 npm run test:unity-rewards
 npm run test:unity-gameplay
+npm run test:unity-catalog
+npm run test:unity-lives
+npm run test:unity-hints
+npm run test:unity-reward-adapter
+npm run test:unity-session
 ```
 
-`generate-gameplay-vectors.cjs` bilinçli yeniden üretim aracıdır; `--check` dosyayı yazmaz. `check-gameplay-vectors.cjs` üreticiyi çağırmadan kontrol edilen JSON'u JS tarafında tekrar oynatır. Beklenen sonuç değişirse yalnızca yeniden üretip geçmek yerine kural/veri değişiminin gerekçesi incelenmelidir. Ayrı `test:unity-gameplay` komutu C# 7.3 çekirdeğini .NET 8 ile gerçekten derler ve çalıştırır; SDK yoksa başarısız olur. Ortak 71 örneğin mekanik çıktıları, 80 tam sertifikalı varyant yolu ve 120 ek yasal hamle dizisi karşılaştırılır. Snapshot devamı, açık `Replay`, değiştirilebilir dizilerden bağımsız `Clone`, klonda bir sonraki takas ve reddedilen kaydın önceki durumu bozmaması da denetlenir. İpucu çıktıları, 80 seçim örneği ve 9 deneme-zarfı reddetmesi bu C# aşamasının dışındadır; mevcut JS testleri bunları korur. Ayrıntılı sayılar ve sınırlamalar Phase 1 belgesindedir.
+`generate-gameplay-vectors.cjs` bilinçli yeniden üretim aracıdır; `--check` dosyayı yazmaz. `check-gameplay-vectors.cjs` üreticiyi çağırmadan kontrol edilen JSON'u JS tarafında tekrar oynatır. Beklenen sonuç değişirse yalnızca yeniden üretip geçmek yerine kural/veri değişiminin gerekçesi incelenmelidir. Ayrı `test:unity-gameplay` komutu C# 7.3 çekirdeğini .NET 8 ile gerçekten derler ve çalıştırır; SDK yoksa başarısız olur. Ortak 71 örneğin mekanik çıktıları, 80 tam sertifikalı varyant yolu ve 120 ek yasal hamle dizisi karşılaştırılır. Snapshot devamı, açık `Replay`, değiştirilebilir dizilerden bağımsız `Clone`, klonda bir sonraki takas ve reddedilen kaydın önceki durumu bozmaması da denetlenir. Phase 1 gameplay komutu seçici veya ipucu portu sayılmaz; 9.3’te bunlar ayrıca `test:unity-catalog` ve `test:unity-hints` altında gerçek C# karşılaştırmasına alınmıştır. 80 seçim ve 9 deneme-zarfı fixture’ı katalog kontrolüne de dahil edilir. Ayrıntılı sayılar ve sınırlamalar Phase 1 belgesindedir.
 
 Mevcut C# ödül karşılaştırması ayrı olarak `fixtures/reward-vectors.json` içindeki **104 vektör ve durum fabrikasını** .NET 8 ile C# 7.3 derleyerek karşılaştırır. 98 geçerli ve 7 reddedilen değerlendirme sayısı fabrika dahil toplamdır. Bu, bir Unity/iOS/Android paket testi değildir ve C# oyun çekirdeğinin tamamlandığı anlamına gelmez.
 
-## Aktarım sırası ve bitiş kapıları
+## 9.3 modülleri ve bitiş kapıları
 
-1. **Kısmen tamamlandı:** C# sıralı veri yapıları, `XorShift32` ve bağımsız .NET JSON test adaptörü var. Üretim katalog okuyucusu ve typed `LevelKey` gelecekte; mevcut test adaptörü `id` sayı/dizge türünü `JsonElement` olarak korur, çekirdek kimlik karşılaştırmaz.
-2. **Phase 1 tamamlandı:** Topoloji, eşleşme, takas, düşüş ve kontrollü üretim tam dalga/snapshot JSON parity ile doğrulanır.
-3. **Phase 1 tamamlandı:** Zincir, karıştırma, kazanma, klon, replay ve motor snapshot doğrulaması uygulandı. Öğretici/eski yollar ve 80 tam varyant yolu karşılaştırılır. Nadir güvenlik geri dönüşlerinin bütün dalları için ek adversarial test hâlâ gerekir.
-4. **Bekliyor:** C# katalog, seçim, deneme kimliği ve düğüm bütçeli ipucu. Varyantlar Phase 1 testinde JS katalog tarafından çözülmüş aynı `LevelConfig` ile çalışır; bu, C# seçici portu sayılmaz. `npm run test:unity-gameplay` ve ayrı CI işi şimdiden vardır.
-5. Ödül adaptörü gerçek deneme kimliğiyle mevcut C# Reward Director'a bağlanır. Tek değerlendirme, sessiz yükleme, animasyon iptali ve tercih testleri geçer.
-6. Can v2 çekirdeği, UTC clock, deneme sonuçlandırma ve makbuz adaptörü aktarılır; ortak can vektörleri ve sıfır can/kayıt devamı/aynı callback testleri eşleşir.
-7. Unity giriş, çizim, ses, titreşim, uygulama yaşam döngüsü ve yerel kayıt adaptörleri eklenir. Aynı hamle günlüğüyle masaüstü ve hedef fiziksel telefonlarda durum eşitliği, input gecikmesi ve bellek ölçülür.
-8. Gerçek ekonomi ve oyun içi yardımlar için ücretsiz çekirdeğin kabulünden ayrı bir sürümde komut günlüğü, güvenilir cüzdan, ödül adaptörü ve yardımlı sonuç testleri yapılır. Ücretsiz doğrulanmış yollar bu geçişin ön koşulu olarak kalır.
+| Katman | Gerçek C# API / veri sınırı | Kabul kapısı |
+| --- | --- | --- |
+| Ortak değerler | `unity/Contracts/Wire.cs`: strict sayı/tür, safe integer, eksik/null, derin kopya/eşdeğerlik | Ayrıntılar [CSHARP_WIRE_CONTRACTS.md](CSHARP_WIRE_CONTRACTS.md); yeni modül karşılaştırmalarında ortak kullanılır. |
+| Katalog ve deneme | `LevelCatalog.FromDocuments/Start/Restore/Checkpoint/List`, `VariantSelector`, `AttemptMetadata`, `AttemptCheckpoint`, `LevelDataVersionResolver` | `npm run test:unity-catalog`; 40 varyant, 80 tam yol, seçim sırası, legacy ve bozuk veri. [CSHARP_CATALOG.md](CSHARP_CATALOG.md). |
+| Gameplay | `BoardTopology`, `HexMatch`, `XorShift32`, snapshot/clone/replay | Mevcut `test:unity-gameplay` korunur; nadir güvenlik yollarının tamamının veya fiziksel cihazın ispatı değildir. |
+| Can | `LifeManager` + DTO’lar, `IUtcClock`, `IReceiptVerifier` | `npm run test:unity-lives`; v2 sonuçları, frozen v1 geçişi, tekilleştirme ve uzun günlük. [CSHARP_LIVES.md](CSHARP_LIVES.md). |
+| İpucu | `HintSolver.Find`, `HintRoutes.Create`, `HintOptions`, `HintResult`, `IHintClock` | `npm run test:unity-hints`; düğüm bütçeli deterministik sonuç/garanti, kaynak rota ve dış saat politikası. [CSHARP_HINTS.md](CSHARP_HINTS.md). |
+| Ödül | Mevcut `RewardDirector` + `RewardAdapter.RunsFor/Summarize/Restore` | `test:unity-rewards` ve `test:unity-reward-adapter`; Director vektörleri, tam dalga girdileri ve sessiz yükleme. [CSHARP_REWARD_ADAPTER.md](CSHARP_REWARD_ADAPTER.md). |
+| Profil ve uygulama | `GameSessionController`, `SessionCommand`, `AttemptRepository`, `GameProfile`, `ProfileRepository`, `SaveValidator`, `SaveMigration` | `npm run test:unity-session`; 915 tam JSON karşılaştırması, 28 gerçek `app.js` akışı ve ayrıca 11 native hata/guard senaryosu yerelde geçti. [CSHARP_APPLICATION.md](CSHARP_APPLICATION.md). |
+| Yerel olay | `GameEventTracker.CreateState/Validate/ValidateState/Append`, ham JSON için `CreateStateRaw/AppendRaw` | `node check-event-parity.cjs`: 580 tam JSON karşılaştırması, 462 birebir ret mesajı ve bütün girdilerde değişmezlik yerelde geçti; session komutunun parçası olarak CI’a bağlanır. |
+
+Bu modüller C# 7.3 sözdizimiyle saf çekirdektir. `unity/ParitySupport/WireJson.cs` ile `*ParityHarness` projeleri **.NET 8 test host’larıdır**; `System.Text.Json`, console veya dosya okumasının orada bulunması Unity çekirdeğinin bunlara bağımlı olduğu anlamına gelmez. Üretim Unity JSON adaptörü ayrıca seçilecek. SDK bulunamadığında C# yerine JS sonucunu başarı diye döndüren yol yoktur.
+
+İpucu güven sınırı kaynak varsayımından açıkça ayrılır: mevcut JS yazar yollarının zaten sertifikalı olduğunu varsayar. C# `HintRoutes.Create` hatalı/kazanmasız rota bağını reddeder, garantili devamı klonda yeniden doğrular. Yayımlanmış güvenilir yollar doğrudan parity kapsamındadır; bu ek C# reddetmesi JS’nin aynı girdiyi reddettiği gibi raporlanmaz. Gerçek duvar saatiyle kesilen iki aramanın aynı düğümde durduğu iddia edilmez.
+
+### Uygulama akışı ve atomik depolama
+
+`GameSessionController`, katalog, Gameplay, HintSolver, LifeManager ve Reward Adapter’ı birleştirir. `Preview` aktif kaydı veya seçim RNG’sini değiştirmez. `Enter`, `Swap`, `Hint`, `Retry`, `Restart`, `ReturnToMenu`, `Close`, `ResetProgress` ve TEST ürün akışları saf servisleri çağırır; ekran çizmez. T1/T2 yönlendirilmiş takasları/onayları controller tarafından okunur; metin/görsel sunumu Unity host’una aittir.
+
+`SessionCommand.expectedRevision`, `attemptId`, `turn`, UI’nın gözlediği komut zarfıdır. Gecikmiş/çift UI callback’leri aynı zarfı taşımalı; eski revizyon/deneme/tur reddedilmelidir. Yeni sahne bu korumayı atlayarak her callback’te yeni zarf üretmemelidir. Makbuz tekrarları ayrıca gerçek işlem kimliğiyle tekilleştirilir. İpucu sonucu gösterilmeden de aynı deneme/tur bağı korunmalıdır.
+
+Kanonik profil `hexrota-profile-v2 = { schemaVersion: 2, revision, game, energy }` biçimini korur. `ProfileRepository.Commit`, tek `IProfileStorage.CompareExchange(key, expectedRevision, next)` çağrısında oyun ve canı birlikte yazar. Uyum aynaları `hexrota-match-v5` / `hexrota-lives-v1` kanonik başarıdan sonra onarılabilir; ayna veya olay yazımı hatası başarılı oyunu geri almaz. Kanonik yazım hatasında controller önceki oyun/can/olay durumuna dönmelidir. Başarısız hamleye ait olay kalıcı yazımdan önce gönderilmez.
+
+`IProfileStorage` yalnız `Contains`, `Read`, atomik `CompareExchange` ve `Write` sınırını tanımlar. `MemoryProfileStorage` gerçek test/in-memory uygulamasıdır; **iOS/Android dosya, DB, kilitleme, crash-safe rename/fsync veya bulut eşitlemesi değildir**. Native kalıcı adaptör atomiklik, beklenen revizyon, kalıcı başarı/hata sonucu ve süreçler arası yarış semantiğini sağlamalıdır. Tek bir profil dosyasını art arda iki normal yazımla kaydetmek bu sözleşmenin karşılığı olmaz. Yeni native kayıt biçimi henüz icat edilmedi.
+
+`SaveMigration` mevcut v5 alanlarını normalize eder; v4/v3/v2 anahtarlarından mevcut iki öğretici indeks kaydırmasını korur. `AttemptRepository` doğru veri sürümünü katalogdan bulup snapshot geçmişini gerçek motorla doğrular. Hatalı/bilinmeyen profil veya snapshot yeni bir oyun gibi sessizce kabul edilmemelidir. Sıfır canla geçerli açık denemeye devam, kapanma/menü, son canla onaylı restart ve bekleyen ödülün tekrar teslimi birleşik oturum kapısının parçasıdır; bu akışlar gerçek JS/C# karşılaştırması ve ayrıca native hata testleriyle doğrulanmıştır.
+
+### Entegrasyondan sonra kalan platform işleri
+
+1. Unity proje/sahne kurulumu ve platform JSON + `IProfileStorage` adaptörü; UI, altı yönlü dokunma, üst çizim katmanındaki karşılıklı takas, animasyon, ses, titreşim ve yaşam döngüsü bağları.
+2. Unity/Mono/IL2CPP, AOT, hedef fiziksel telefonlarda deterministik replay, giriş gecikmesi, bellek ve ipucu zaman bütçesi. C# 7.3/.NET Standard derlemesi bunların yerine geçmez.
+3. Gerçek ticari sağlayıcı, güvenilir saat/doğrulama, cüzdan ve ekonomik yardım komutları ayrı kapsamdır; mevcut ücretsiz yollar ve eski okuyucular korunmalıdır.
 
 ## Unity öncesi açık kararlar
 
 - Gerçek oyuncularda ilk bağımsız hamle, puan/alan amacı, yeniden deneme ve zor/rahat bölüm ritmi; bot oranları insan oranı değildir. Kabul verileri [LEVEL_DESIGN.md](LEVEL_DESIGN.md) içindedir.
 - Unity sürümü, genel JSON okuyucusu ve iç içe diziler/kimlik birliği için DTO adaptörü; hedef cihazlar ve iş parçacığı/performans bütçesi.
-- C# can çalıştırıcısı ve Unity üretim kayıt/JSON adaptörlerinin API'si. Gameplay Phase 1 API/parity ve ayrı CI kapısı uygulanmıştır; can, seçici ve ipucu portları sıradadır.
+- Unity üretim JSON ve kalıcı `IProfileStorage` adaptörü; native atomiklik/revizyon ve bozuk kayıt kurtarma kullanıcı akışı. C# can/katalog/ipucu portları ve gerçek parity komutları uygulanmıştır; controller’ın birleşik kabul testleri geçmiştir; Unity host ve gerçek cihaz doğrulaması ayrıca yapılmalıdır.
 - Mevcut Level ID altında taban yapılandırma değiştirilecekse eski taban verilerin arşivlenmesi ve bozuk/bilinmeyen kayıt için kurtarma akışı.
 - Yardım ürünlerinin hangilerinin gerçekten gerekli olduğu, ücret adayları, tam komut semantiği, yardımlı sonuç ayrımı ve Reward Director'ın takas dışı eylem sözleşmesi.
 - Cihaz değiştirme/kayıt eşitleme, can saati otoritesi, kalıcı haklar ve mali işlem doğrulama; yerel replay, cihaz saati veya sahte sağlayıcı gerçek ödeme/reklam güvenliği sağlamaz.
 
 Bu kararlar görsel uygulama veya gelecekteki ürün kapsamıdır. Mevcut eşleşme, puan, düşüş, üretim, iki kazanma koşulu, eski kayıt tekrarı ve ücretsiz doğrulanmış başlangıç kuralları C# aktarımında yeniden tasarlanmayacaktır.
 
-## 9.2 can ve profil aktarım eki (uygulanmış web sözleşmesi)
+## Dondurulmuş 9.2 can/profil sözleşmesi — 9.3 portunda korunur
 
-`LifeStateV2`, `lives-v2` kural kimliğidir. `registerAttempt` çağrısı başlangıçtaki `unlimitedAtStart` hakkını kalıcı saklar; C# karşılığı süre bitişinde bunu yeniden hesaplamamalıdır. `pendingAdLives` aktif havuzdan ayrıdır: tamamlanan doğrulanmış reklam dolu havuzda saklanır, yer açılınca uygulanır. Aktif can üst sınırı yine 5'tir. Eski v1 DTO geçişi bakiye, zaman ve sonuç kimliklerini korur; eski kaydın bilinmeyen başlangıç hakkı tahmin edilmez.
+`LifeStateV2`, `lives-v2` kural kimliğidir. `registerAttempt` çağrısı başlangıçtaki `unlimitedAtStart` hakkını kalıcı saklar; C# portu süre bitişinde bunu yeniden hesaplamaz. `pendingAdLives` aktif havuzdan ayrıdır: tamamlanan doğrulanmış reklam dolu havuzda saklanır, yer açılınca uygulanır. Aktif can üst sınırı yine 5'tir. Eski v1 DTO geçişi bakiye, zaman ve sonuç kimliklerini korur; eski kaydın bilinmeyen başlangıç hakkı tahmin edilmez.
 
-Depolama adaptörü `ProfileV2 { schemaVersion, revision, game, energy }` zarfını **tek atomik işlem** olarak saklar. `game` hâlâ motor snapshot v4/v5 ilerleme sözleşmesidir; can çekirdeğine oyun RNG'si veya Unity API girmez. `energy` can durumunu, TEST cüzdanını ve sağlayıcı günlüğünü içerir. Native uygulama profil yazımı başarısızken tahta ve canı birlikte geri almalı; yalnızca canı kesinleştirmemelidir. Tek yazıcı/mutex ve revizyon kontrolü platform adaptörünün sorumluluğudur. Webin Web Locks tercihi saf C# çekirdeğine taşınacak bir bağımlılık değildir.
+Depolama adaptörü `ProfileV2 { schemaVersion, revision, game, energy }` zarfını **tek atomik işlem** olarak saklar. `game`, `hexrota-match-v5` ilerleme sözleşmesidir; içindeki motor snapshot sürümü **v4** kalır. Can çekirdeğine oyun RNG'si veya Unity API girmez. `energy` can durumunu, TEST cüzdanını ve sağlayıcı günlüğünü içerir. Native uygulama profil yazımı başarısızken tahta ve canı birlikte geri almalı; yalnızca canı kesinleştirmemelidir. Tek yazıcı/mutex ve revizyon kontrolü platform adaptörünün sorumluluğudur. Webin Web Locks tercihi saf C# çekirdeğine taşınacak bir bağımlılık değildir.
 
-`registeredAttempts`, ayrıntılı sonuç/işlem kayıtları ve tam kimlikli sıkıştırılmış arşivler JSON nesneleridir. `transactionStreams`/sağlayıcı `finalizedRanges` kapsayıcı başlangıç/bitiş aralıklarıdır; keyfi kimliklerin sayısal bölümünü varsayarak silmek yasaktır. Günlük eşiği oyunu kilitlemez. Ortak `fixtures/lives-vectors-v1.json` geçmişi ve `fixtures/lives-vectors.json` v2 sonuçları, can portu yapılınca ayrı derlenmiş parity kapısına alınmalıdır. Bu PR'da C# can portu yoktur. Kesin uygulama ayrıntıları [LIVES_DESIGN.md](LIVES_DESIGN.md) içindedir.
+`registeredAttempts`, ayrıntılı sonuç/işlem kayıtları ve tam kimlikli sıkıştırılmış arşivler JSON nesneleridir. `transactionStreams`/sağlayıcı `finalizedRanges` kapsayıcı başlangıç/bitiş aralıklarıdır; keyfi kimliklerin sayısal bölümünü varsayarak silmek yasaktır. Günlük eşiği oyunu kilitlemez. Ortak `fixtures/lives-vectors-v1.json` geçmişi ve `fixtures/lives-vectors.json` v2 sonuçları artık `test:unity-lives` altında gerçekten derlenmiş C# ile karşılaştırılır. Uygulama/profil bileşimi ayrıca `test:unity-session` kabul kapısındadır; native kalıcı adaptör hâlâ gelecekteki platform işidir. Kesin uygulama ayrıntıları [LIVES_DESIGN.md](LIVES_DESIGN.md) içindedir.
+
+Unity projesine yalnız saf `Gameplay`, `Rewards`, `Contracts`, `Catalog`, `Lives`, `Hints`, `RewardAdapter` ve `Application` kaynakları alınmalıdır. `ParitySupport` ile `*ParityHarness` klasörleri .NET 8 test host’larıdır; Unity Assets içine oyun script’i olarak kopyalanmaz. JSON okuyucusu ve kalıcı dosya/DB adaptörü host tarafında bağlanır.
