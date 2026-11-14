@@ -141,3 +141,23 @@ jobs:
           node-version: '22.22.2'
       - name: Check hidden-information independence and reproduce all audit trials
         run: npm run test:observable
+
+  csharp-hint-adapter-parity:
+    name: C# hints and reward adapter parity
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.2'
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Compile C# 7.3 and compare hints with node and injected clock budgets
+        run: npm run test:unity-hints
+      - name: Compile C# 7.3 and compare reward inputs and restored director state
+        run: npm run test:unity-reward-adapter
