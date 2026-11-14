@@ -50,3 +50,21 @@ jobs:
           dotnet-version: '8.0.x'
       - name: Compile C# 7.3 and compare JavaScript reward outputs
         run: npm run test:unity-rewards
+
+  csharp-gameplay-parity:
+    name: C# gameplay parity
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.2'
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Compile C# 7.3 and compare every gameplay wave and save
+        run: npm run test:unity-gameplay

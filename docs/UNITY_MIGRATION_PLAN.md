@@ -4,14 +4,14 @@
 
 Oynanışın referansı saf JavaScript motoru, sürümlü bölüm verileri ve kayıtlı test çıktılarıdır. Unity aktarımında önce aynı girdiden aynı oyun sonucunu üreten C# çekirdeği kurulmalı; çizim, ses, titreşim, dokunma ve cihaz servisleri bunun dışına bağlanmalıdır.
 
-Bu depoda **oyun motorunun C# uygulaması henüz yoktur**. C# olarak uygulanmış ve derlenerek karşılaştırılan parça `unity/Rewards/` içindeki Reward Director'dır. Unity sahnesi, mobil paket, gerçek ödeme ve canlı reklam entegrasyonu bu çalışmanın parçası değildir. 9.1'deki can çekirdeği ve sahte TEST işlemleri JS tarafında uygulanır; C# LifeManager henüz yazılmadı.
+9.2 Phase 1 ile `unity/Gameplay/` altında **saf C# 7.3 oyun çekirdeği** uygulanmıştır. Topoloji, eşleşme, takas, düşüş, kontrollü üretim, RNG, zincir, puan/zemin, kazanma/kaybetme, snapshot, klon ve replay gerçek .NET 8 çalıştırıcısıyla JS referansına karşılaştırılır. Ayrıntılı kapsam ve sınırlar [CSHARP_GAMEPLAY_PHASE1.md](CSHARP_GAMEPLAY_PHASE1.md) içindedir. `unity/Rewards/` içindeki mevcut Reward Director korunur. Unity sahnesi, mobil paket, gerçek ödeme ve canlı reklam entegrasyonu yapılmadı. Katalog/seçici, ipucu, deneme zarfı, can ve cihaz kayıt adaptörlerinin C# portları henüz yoktur; web bunların mevcut JS uygulamalarını kullanmaya devam eder.
 
 | Alan | Bu sürümde uygulanan | C# durumu |
 | --- | --- | --- |
-| Eşleşme, takas, düşüş, üretim, zincir, kazanma | `dist/engine.js`, `classic-v4` | Aktarılacak; ortak oyun vektörleri hazır. |
+| Eşleşme, takas, düşüş, üretim, zincir, kazanma | `dist/engine.js`, `classic-v4` | `unity/Gameplay/` içinde uygulandı; tam dalga/snapshot parity testi var. |
 | 10 ana bölüm, her birinde 4 doğrulanmış varyant | `dist/variants.json`, `dist/attempts.js` | Katalog ve seçim karşılığı aktarılacak. |
-| T1/T2 | Sabit sayılar, tohumlar, yönlendirmeler | Aynı veriden çalışacak; varyant seçimine katılmaz. |
-| Kayıt devamı ve eski kayıt okuma | Snapshot v4, deneme kimliği v1, eski hamleleri tekrar oynatma | Yerel dosya/cihaz adaptörü ve doğrulayıcı aktarılacak. |
+| T1/T2 | Sabit sayılar, tohumlar, yönlendirmeler | Saf çekirdekte iki sabit çözüm aynı veriden doğrulanır; öğretici UI/yönlendirmesi henüz C# değil. |
+| Kayıt devamı ve eski kayıt okuma | Snapshot v4, deneme kimliği v1, eski hamleleri tekrar oynatma | Motor snapshot v4 replay doğrulaması uygulandı; deneme zarfı, eski uygulama kayıt geçişi ve cihaz saklaması aktarılacak. |
 | İpucu | Çoklu doğrulanmış rota, sınırlı arama, açık garanti bilgisi | Aynı düğüm bütçesiyle önce saf C# karşılığı yapılacak. |
 | Ödül yöneticisi | Saf JS + C# 7.3, ortak ödül vektörleri | Uygulandı; Unity sunumuna bağlanması gerekiyor. |
 | Yerel olaylar | `dist/events.js`, tarayıcıda sınırlı yerel tampon | Aynı şema için cihaz adaptörü yapılacak. |
@@ -20,21 +20,21 @@ Bu depoda **oyun motorunun C# uygulaması henüz yoktur**. C# olarak uygulanmı�
 
 ## Modül eşlemesi
 
-Aşağıdaki C# adları hedef modüllerdir; Reward Director dışındakiler mevcut C# dosyası olarak sunulmuyor.
+Aşağıdaki tablo uygulanmış saf çekirdekle gelecekteki uygulama/cihaz modüllerini ayırır. Çekirdekte ilgili davranışlar bağımsız servis adlarıyla yeniden yazılmadı; mevcut JS sınırını koruyan `HexMatch` ve `BoardTopology` içinde bulunur.
 
 | Bileşen | Mevcut JS/veri kaynağı | C# karşılığı ve sınırı |
 | --- | --- | --- |
-| Hexagonal Board Model | `HexMatch`, `topology()` | `HexBoard`, `AxialCell`, `BoardTopology`: sıralı hücreler, değerler, kalan katlar, komşular, çizgiler ve sütunlar. Görsel konum hesaplamaz. |
-| Match Detection | `findMatches()` | `MatchDetector`: üç düz yönde en az üç eşit değer; kesişimler tek hücre olarak sayılır. |
-| Swap Validator | `adjacent()`, `legalMoves()`, `swap()` başlangıcı | `SwapValidator`: indeks, komşuluk ve gerçekten eşleşme oluşması. Geçersiz işlem bütün durumu korur. |
-| Gravity System | `_gravity()` | `GravityResolver`: sütundaki kalan taşların sırasını ve gerçek kaynak/hedef kimliklerini korur. |
-| Controlled Refill | `_newMatchesAt()`, `_fillVacancies()` | `ControlledRefill`: en az yeni üçlü oluşturan palet seçeneklerini bulur, bağları yalnızca oyun RNG'siyle çözer. |
-| RNG | `_random()`, deneme seçicinin `randomStep()` işlevi | `XorShift32`: iki ayrı durum; biri oyun üretimi, diğeri varyant seçimi içindir. |
-| Cascade Resolver | `swap()` çözümleme döngüsü | `CascadeResolver`: bütün dalgalar tek takas/hamle olarak kesinleşir; puan ve alan sonuçları sunumdan önce hesaplanır. |
+| Hexagonal Board Model | `HexMatch`, `topology()` | Uygulandı: `Cell`, `BoardTopology`, `HexMatch`; sıralı hücreler, değerler, katlar, komşular, çizgiler ve sütunlar. Görsel konum hesaplamaz. |
+| Match Detection | `findMatches()` | Uygulandı: `HexMatch.FindMatches`; üç düz yönde en az üç eşit değer, kesişimler tek sayılır. |
+| Swap Validator | `adjacent()`, `legalMoves()`, `swap()` başlangıcı | Uygulandı: `Adjacent`, `LegalMoves`, `Swap`; geçersiz işlem durumu korur. |
+| Gravity System | `_gravity()` | Uygulandı: `Gravity`; kalan taş sırası ve gerçek kaynak/hedef kimlikleri korunur. |
+| Controlled Refill | `_newMatchesAt()`, `_fillVacancies()` | Uygulandı: `NewMatchesAt`, `FillVacancies`; sıralı minimum üçlü adayları ve aynı RNG tüketimi. |
+| RNG | `_random()`, deneme seçicinin `randomStep()` işlevi | `XorShift32` ve `HexMatch.Random` uygulandı; C# varyant seçicisi gelecekte ayrı RNG durumu kullanacak. |
+| Cascade Resolver | `swap()` çözümleme döngüsü | Uygulandı: `HexMatch.Swap`; bütün dalgalar tek hamlede, sunumdan önce kesinleşir. |
 | Level Configuration | JS kaynakları, JSON dışa aktarımları ve varyant paketi | `LevelCatalog`, `ResolvedLevelConfig`: değişmez taban veri + seçilen başlangıç/tohum/çözüm yolları. |
 | Variant Selection | `HexAttempts.createCatalog().start()` | `VariantSelector`, `AttemptMetadata`: seçim geçmişiyle tekrarı azaltır; mağaza veya ödeme girdisi almaz. |
 | Hint Solver | `hint()` | `HintSolver`: klonlarda çalışır; doğrulanmış yol, aramayla bulunan kazanma ve sezgisel öneriyi ayırır. |
-| Save/Load | `_restore()`, `HexAttempts.restore()/checkpoint()`, uygulama bağlantısı | `SaveValidator`, `AttemptRepository`, eski kayıt adaptörü: kimliği çöz, bütün hamleleri tekrar oynat, tüm durumu karşılaştır. |
+| Save/Load | `_restore()`, `HexAttempts.restore()/checkpoint()`, uygulama bağlantısı | `HexMatch.Snapshot`, `Clone`, `Replay`, `Restore` uygulandı. `Restore` geçmişi yeniden oynatıp bütün motor alanlarını karşılaştırır; `AttemptRepository`, kimlik çözümü ve eski kayıt adaptörü henüz aktarılmadı. |
 | Reward Director | `rewards.js`, `reward-adapter.js`, `reward-rules.json` | Mevcut `RewardDirector.cs`, `RewardTypes.cs`; oyun dalgalarını girdi DTO'suna çeviren adaptör ayrıca bağlanır. |
 | Life Manager | `dist/lives.js`, `lives-config.json` ve uygulama bağlantısı | `LifeManager`, `LifeState`, `LifeConfig`, `LifeSettlement`; dış `IUtcClock`, `IReceiptVerifier`, ayrı kayıt adaptörü. Motorun RNG ve snapshot'ına dokunmaz. |
 | Economy Rules | `data/economy-design.json`, `life-providers.js` ve ekonomi belgesi | 9.1 TEST cüzdanı/sağlayıcısı ayrı adaptördür; gerçek `EconomyRules`, mali günlük ve oyun yardımları gelecekte yapılır. |
@@ -73,7 +73,7 @@ Kimliklerin tel üzerindeki türleri mevcut kayıtlarla aynı kalır:
 
 Diğer dönüşüm sınırları da açıktır: hamleler ve çözüm yolları iç içe JSON dizileridir; `frame.compacted` boş hücreler için `null` içerir; yeni taşlarda `falls.from` değeri `null` olur. Bunları `-1` veya `0` ile değiştirmeyin. C# tarafında hamle yapısı, `int?[]` ara değerler ve nullable kaynak indeksleri kullanılabilir; wire JSON aynı kalır. JSON yükleyicisi tür birliğini, iç içe dizileri, nullable değerleri ve zorunlu alanların varlığını desteklemelidir. `JsonUtility` tek başına bu genel oyun sözleşmesini doğrudan çözmez. Mevcut düz ödül DTO'larında kullanılması, bütün oyun verisinin aynı yöntemle okunabileceği anlamına gelmez.
 
-Oyun ve katman değerleri tamsayıdır. RNG `uint`, sayaçlar ve zaman damgaları gerektiğinde `long` olmalıdır; JS'nin güvenli tamsayı sınırı aşılmamalıdır. Puanı veya büyük tohumları önce işaretli 32-bit sayıya okuyup sonra dönüştürmeyin. İpucu sıralama ağırlıkları C# `double` ile hesaplanmalıdır; `float` eşdeğer değildir. JSON alan sırası karşılaştırmada anlam taşımaz; hücre, palet, hamle ve sonuç dizilerinin sırası taşır.
+Oyun ve katman değerleri tamsayıdır. RNG doğrudan `uint` okunur; `4294967295` dahil unsigned tohumlar işaretli dönüşümden geçirilmez. Phase 1 çekirdeği yayımlanmış bölüm kümesinin sayı, puan, hamle ve indeksleri için `int` kullanır; bu test edilen küme `Int32` sınırındadır. Gelecekte sınırı aşan yapılandırma kabul edilecekse DTO/hesap tipi ve ortak testler açıkça genişletilmelidir; keyfi büyüklükte JS sayılarına parity iddiası yoktur. Sayaç ve UTC zamanları gerektiğinde `long` olmalı, JS güvenli tamsayı sınırı aşılmamalıdır. İpucu sıralama ağırlıkları gelecekte C# `double` ile hesaplanmalıdır; `float` eşdeğer değildir. JSON alan sırası karşılaştırmada anlam taşımaz; hücre, palet, hamle ve sonuç dizilerinin sırası taşır.
 
 ## Motor snapshot v4 ve deneme v1
 
@@ -193,7 +193,7 @@ C#'ta aynı sırayla korunacaklar:
 6. İlk özellik geçişi eski bitmiş sonuçları `historical` olarak kabul eder, ücret almaz. Sonraki kesinti sonrası henüz işlenmemiş yeni sonuçlar tek kez uzlaştırılır. Bypass/sınırsız/koruma nedeniyle ücretsiz sonuç da kayıtlı kalır; ayar kapanınca geriye dönük ücret çıkmaz.
 7. Gelecekte +3/+5 aynı denemeyi açarsa ilk can sonucu korunur: ikinci kayıp yeniden kesmez, kazanma yeni kesinti veya otomatik iade üretmez. Yardım komutu uygulaması hâlâ yeni oyun-kuralı/kayıt sözleşmesi gerektirir.
 
-`fixtures/lives-vectors.json` can portunun ortak beklenen JSON'udur; `generate-life-vectors.cjs --check` güncelliği, `check-life-vectors.cjs` geçişleri kontrol eder. JS tarafındaki 16 örnekte 136 geçiş/probe doğrulanmıştır. C# LifeManager yazıldığında aynı dosyalar alan alan karşılaştırılmalıdır. Bu sürümde **C# can parity çalıştırıcısı yoktur**; mevcut derlenmiş C# testi yalnızca ödül yöneticisidir.
+`fixtures/lives-vectors.json` can portunun ortak beklenen JSON'udur; `generate-life-vectors.cjs --check` güncelliği, `check-life-vectors.cjs` geçişleri kontrol eder. JS tarafındaki 16 örnekte 136 geçiş/probe doğrulanmıştır. C# LifeManager yazıldığında aynı dosyalar alan alan karşılaştırılmalıdır. Bu sürümde **C# can parity çalıştırıcısı yoktur**; derlenen C# oyun ve ödül testleri can portu sayılmaz.
 
 ## Ortak doğrulama vektörleri
 
@@ -219,18 +219,19 @@ node check-gameplay-vectors.cjs
 npm run test:gameplay-vectors
 npm test
 npm run test:unity-rewards
+npm run test:unity-gameplay
 ```
 
-`generate-gameplay-vectors.cjs` bilinçli yeniden üretim aracıdır; `--check` dosyayı yazmaz. `check-gameplay-vectors.cjs` üreticiyi çağırmadan kontrol edilen JSON'u tekrar oynatır. Beklenen sonuç değişirse yalnızca yeniden üretip geçmek yerine kural/veri değişiminin gerekçesi incelenmelidir. Şu anda bu kontrol JS oyun davranışını doğrular; C# oyun motorunu çalıştırmaz.
+`generate-gameplay-vectors.cjs` bilinçli yeniden üretim aracıdır; `--check` dosyayı yazmaz. `check-gameplay-vectors.cjs` üreticiyi çağırmadan kontrol edilen JSON'u JS tarafında tekrar oynatır. Beklenen sonuç değişirse yalnızca yeniden üretip geçmek yerine kural/veri değişiminin gerekçesi incelenmelidir. Ayrı `test:unity-gameplay` komutu C# 7.3 çekirdeğini .NET 8 ile gerçekten derler ve çalıştırır; SDK yoksa başarısız olur. Ortak 71 örneğin mekanik çıktıları, 80 tam sertifikalı varyant yolu ve 120 ek yasal hamle dizisi karşılaştırılır. Snapshot devamı, açık `Replay`, değiştirilebilir dizilerden bağımsız `Clone`, klonda bir sonraki takas ve reddedilen kaydın önceki durumu bozmaması da denetlenir. İpucu çıktıları, 80 seçim örneği ve 9 deneme-zarfı reddetmesi bu C# aşamasının dışındadır; mevcut JS testleri bunları korur. Ayrıntılı sayılar ve sınırlamalar Phase 1 belgesindedir.
 
 Mevcut C# ödül karşılaştırması ayrı olarak `fixtures/reward-vectors.json` içindeki **104 vektör ve durum fabrikasını** .NET 8 ile C# 7.3 derleyerek karşılaştırır. 98 geçerli ve 7 reddedilen değerlendirme sayısı fabrika dahil toplamdır. Bu, bir Unity/iOS/Android paket testi değildir ve C# oyun çekirdeğinin tamamlandığı anlamına gelmez.
 
 ## Aktarım sırası ve bitiş kapıları
 
-1. JSON okuyucu, typed `LevelKey`, sıralı veri yapıları ve `XorShift32` yazılır. Bütün RNG/kimlik/reddetme vektörleri eşleşir.
-2. Topoloji, eşleşme, takas, düşüş ve kontrollü üretim aktarılır. Tam dalgalar ve snapshot'lar JS golden dosyasıyla alan alan karşılaştırılır; yalnızca sonuç puanı karşılaştırılmaz.
-3. Zincir, karıştırma, kazanma, klon ve replay doğrulaması eklenir. Öğreticiler ve eski on çözümün bütün adımları aynı kalır; bozuk kayıtlar reddedilir.
-4. Katalog, seçim, deneme kimliği, bütün varyant çözüm yolları ve düğüm bütçeli ipucu aktarılır. Aynı durumdan devam eden üretim ve garanti yolları karşılaştırılır. C# oyun parity komutu bu aşamada yazılacak; henüz depoda yoktur.
+1. **Kısmen tamamlandı:** C# sıralı veri yapıları, `XorShift32` ve bağımsız .NET JSON test adaptörü var. Üretim katalog okuyucusu ve typed `LevelKey` gelecekte; mevcut test adaptörü `id` sayı/dizge türünü `JsonElement` olarak korur, çekirdek kimlik karşılaştırmaz.
+2. **Phase 1 tamamlandı:** Topoloji, eşleşme, takas, düşüş ve kontrollü üretim tam dalga/snapshot JSON parity ile doğrulanır.
+3. **Phase 1 tamamlandı:** Zincir, karıştırma, kazanma, klon, replay ve motor snapshot doğrulaması uygulandı. Öğretici/eski yollar ve 80 tam varyant yolu karşılaştırılır. Nadir güvenlik geri dönüşlerinin bütün dalları için ek adversarial test hâlâ gerekir.
+4. **Bekliyor:** C# katalog, seçim, deneme kimliği ve düğüm bütçeli ipucu. Varyantlar Phase 1 testinde JS katalog tarafından çözülmüş aynı `LevelConfig` ile çalışır; bu, C# seçici portu sayılmaz. `npm run test:unity-gameplay` ve ayrı CI işi şimdiden vardır.
 5. Ödül adaptörü gerçek deneme kimliğiyle mevcut C# Reward Director'a bağlanır. Tek değerlendirme, sessiz yükleme, animasyon iptali ve tercih testleri geçer.
 6. Can v1 çekirdeği, UTC clock, deneme sonuçlandırma ve makbuz adaptörü aktarılır; ortak can vektörleri ve sıfır can/kayıt devamı/aynı callback testleri eşleşir.
 7. Unity giriş, çizim, ses, titreşim, uygulama yaşam döngüsü ve yerel kayıt adaptörleri eklenir. Aynı hamle günlüğüyle masaüstü ve hedef fiziksel telefonlarda durum eşitliği, input gecikmesi ve bellek ölçülür.
@@ -240,7 +241,7 @@ Mevcut C# ödül karşılaştırması ayrı olarak `fixtures/reward-vectors.json
 
 - Gerçek oyuncularda ilk bağımsız hamle, puan/alan amacı, yeniden deneme ve zor/rahat bölüm ritmi; bot oranları insan oranı değildir. Kabul verileri [LEVEL_DESIGN.md](LEVEL_DESIGN.md) içindedir.
 - Unity sürümü, genel JSON okuyucusu ve iç içe diziler/kimlik birliği için DTO adaptörü; hedef cihazlar ve iş parçacığı/performans bütçesi.
-- C# gameplay ve can test çalıştırıcılarının API'si ve CI kapıları; ortak dosyalar hazır, can ve oyun çekirdeği portları uygulanmadı.
+- C# can çalıştırıcısı ve Unity üretim kayıt/JSON adaptörlerinin API'si. Gameplay Phase 1 API/parity ve ayrı CI kapısı uygulanmıştır; can, seçici ve ipucu portları sıradadır.
 - Mevcut Level ID altında taban yapılandırma değiştirilecekse eski taban verilerin arşivlenmesi ve bozuk/bilinmeyen kayıt için kurtarma akışı.
 - Yardım ürünlerinin hangilerinin gerçekten gerekli olduğu, ücret adayları, tam komut semantiği, yardımlı sonuç ayrımı ve Reward Director'ın takas dışı eylem sözleşmesi.
 - Cihaz değiştirme/kayıt eşitleme, can saati otoritesi, kalıcı haklar ve mali işlem doğrulama; yerel replay, cihaz saati veya sahte sağlayıcı gerçek ödeme/reklam güvenliği sağlamaz.
