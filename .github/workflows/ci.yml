@@ -50,3 +50,94 @@ jobs:
           dotnet-version: '8.0.x'
       - name: Compile C# 7.3 and compare JavaScript reward outputs
         run: npm run test:unity-rewards
+
+  csharp-gameplay-parity:
+    name: C# gameplay parity
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.2'
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Compile C# 7.3 and compare every gameplay wave and save
+        run: npm run test:unity-gameplay
+
+  browser-session-consistency:
+    name: Chromium life and save consistency
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.2'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Test real two-tab locks, atomic save recovery and verified ad rewards
+        run: npm run test:session-browser
+      - name: Test combined mobile, canonical saves, observations and offline shell
+        run: npm run test:integration-browser
+
+  mobile-input-browser:
+    name: Mobile input in ${{ matrix.browser }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.2'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Install browser and system dependencies
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Test actual SVG geometry and pointer input
+        run: npm run test:mobile-browser
+        env:
+          HEXROTA_BROWSER: ${{ matrix.browser }}
+      - name: Verify both swap stones with actual screenshot pixels
+        run: npm run test:swap-visual
+        env:
+          HEXROTA_BROWSER: ${{ matrix.browser }}
+          HEXROTA_SWAP_SCREENSHOT_DIR: test-results/swap-${{ matrix.browser }}
+      - name: Keep swap screenshots and pixel report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: swap-visual-${{ matrix.browser }}
+          path: test-results/swap-${{ matrix.browser }}
+          if-no-files-found: warn
+          retention-days: 7
+
+  observable-difficulty-audit:
+    name: Observable difficulty audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.2'
+      - name: Check hidden-information independence and reproduce all audit trials
+        run: npm run test:observable

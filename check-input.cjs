@@ -4,14 +4,14 @@ const fs=require('node:fs');
 const assert=require('node:assert/strict');
 const {loadGame,savedLevel,savedGame,confirmRestart}=require('./qa-fixtures.cjs');
 const root=__dirname+'/dist/';
-const appSource=fs.readFileSync(root+'app.js','utf8');
+const appSource=fs.readFileSync(process.env.HEXROTA_INPUT_APP_SOURCE||root+'app.js','utf8');
 const storageKey=appSource.match(/const key\s*=\s*['"]([^'"]+)['"]/)?.[1];
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const unhandled=[],domErrors=[];
 process.on('unhandledRejection',reason=>unhandled.push(reason?.message||String(reason)));
 
 const all=w=>[...w.HEX_TUTORIALS,...w.HEX_LEVELS];
-function mount({motion='none',current=2,done=[0,1],boards={}}={}){
+function mount({motion='none',current=2,done=[0,1],boards={},transform=null}={}){
   const errors=[],captureCalls=[],activeCaptures=new Map(),animations=[];
   const vc=new VirtualConsole();
   vc.on('jsdomError',error=>{errors.push(error.message);domErrors.push(error.message);});
@@ -45,7 +45,7 @@ function mount({motion='none',current=2,done=[0,1],boards={}}={}){
     w.Element.prototype.getAnimations=()=>animations;
   }
   if(storageKey)w.localStorage.setItem(storageKey,JSON.stringify({current,done,boards,sound:false}));
-  loadGame(w,['levels.js','engine.js','tutorials.js','audio.js','app.js'],file=>fs.readFileSync(root+file,'utf8'),{originalBoards:current>=2?[current]:[]});
+  loadGame(w,['levels.js','engine.js','tutorials.js','audio.js','app.js'],file=>file==='app.js'?appSource:fs.readFileSync(root+file,'utf8'),{originalBoards:current>=2?[current]:[]});
   d.querySelector('[data-nav="journey"]').click();
   const stage=d.querySelector(`[data-stage="${current}"]`);assert(stage&&!stage.disabled,'fixture stage is accessible');stage.click();
   assert(d.getElementById('pregame-dialog').open,'fixture uses real stage preview');d.getElementById('pregame-start').click();
@@ -53,11 +53,25 @@ function mount({motion='none',current=2,done=[0,1],boards={}}={}){
   let hit=null;
   d.elementFromPoint=()=>typeof hit==='number'?d.querySelector(`#board [data-index="${hit}"]`):hit;
   const board=d.getElementById('board');
+  const attempts=[];
+  const originalSwap=w.HexMatch.prototype.swap;
+  w.HexMatch.prototype.swap=function(a,b){attempts.push([a,b]);return originalSwap.call(this,a,b);};
+  if(transform){
+    const {scale=1,x=170,y=200}=transform;
+    Object.defineProperty(w,'innerWidth',{value:1000,configurable:true});Object.defineProperty(w,'innerHeight',{value:900,configurable:true});
+    board.getScreenCTM=()=>({a:scale,b:0,c:0,d:scale,e:x,f:y,inverse(){return {a:1/scale,b:0,c:0,d:1/scale,e:-x/scale,f:-y/scale};}});
+    board.createSVGPoint=()=>({x:0,y:0,matrixTransform(m){return {x:m.a*this.x+m.c*this.y+m.e,y:m.b*this.x+m.d*this.y+m.f};}});
+  }
+  function center(index){
+    const raw=d.querySelector(`#board [data-index="${index}"]`).getAttribute('transform').match(/-?[\d.]+/g).map(Number);
+    const {scale=1,x=170,y=200}=transform||{};return {x:raw[0]*scale+x,y:raw[1]*scale+y};
+  }
+  function at(a,b,fraction=1,offset={x:0,y:0}){const from=center(a),to=center(b);return {x:from.x+(to.x-from.x)*fraction+offset.x,y:from.y+(to.y-from.y)*fraction+offset.y};}
   function setHit(index){hit=index;}
-  function send(type,index,{id=1,x=50,y=50,pointerType='touch',target}={}){
+  function send(type,index,{id=1,x=50,y=50,pointerType='touch',target,primary=true,coalesced}={}){
     if(index!==undefined)setHit(index);
     const event=new w.Event(type,{bubbles:true,cancelable:true});
-    Object.assign(event,{pointerId:id,pointerType,isPrimary:true,button:0,buttons:type==='pointerup'?0:1,clientX:x,clientY:y});
+    Object.assign(event,{pointerId:id,pointerType,isPrimary:primary,button:0,buttons:type==='pointerup'?0:1,clientX:x,clientY:y});if(coalesced)event.getCoalescedEvents=()=>coalesced.map(point=>({clientX:point.x,clientY:point.y}));
     (target||((type==='pointerdown')?d.querySelector(`#board [data-index="${index}"]`):board)).dispatchEvent(event);
   }
   function tap(index,options={}){send('pointerdown',index,options);send('pointerup',index,options);}
@@ -71,11 +85,98 @@ function mount({motion='none',current=2,done=[0,1],boards={}}={}){
   function isBusy(){return board.getAttribute('aria-busy')==='true';}
   async function idle(timeout=3600){const start=Date.now();while(isBusy()&&Date.now()-start<timeout)await pause(10);await pause(5);assert(!isBusy(),'presentation releases board before timeout');}
   function assertUnlocked(){assert.equal(board.getAttribute('aria-busy'),'false');assert.equal(d.getElementById('reset').disabled,false);}
-  return {dom,w,d,board,index:current,get level(){return savedLevel(w);},errors,captureCalls,activeCaptures,animations,send,tap,click,setHit,readSave,assertState,isBusy,idle,assertUnlocked,close:()=>dom.window.close()};
+  return {dom,w,d,board,index:current,attempts,center,at,get level(){return savedLevel(w);},errors,captureCalls,activeCaptures,animations,send,tap,click,setHit,readSave,assertState,isBusy,idle,assertUnlocked,close:()=>dom.window.close()};
 }
 
 const cases=[];
 function test(name,run){cases.push({name,run});}
+
+for(const [name,scale]of [['large',1],['small',.48]])test(`gesture short directional swipe inside the same stone is recognized on ${name} board`,async()=>{
+ const f=mount({transform:{scale,x:250,y:350}});try{
+  const pair=f.level.solution[0],start=f.center(pair[0]),finish=f.at(...pair,.44),before=f.readSave().boards[f.index];
+  f.send('pointerdown',pair[0],start);f.send('pointermove',pair[0],finish);f.send('pointerup',pair[0],finish);await f.idle();
+  assert.deepEqual(f.attempts,[Array.from(pair)],'direction is recognized even though pointerup still hits the source');
+  const model=new f.w.HexMatch(f.level,before);model.swap(...pair);f.assertState(model,'short swipe');
+ }finally{f.close();}
+});
+
+test('gesture entering the target then returning to the source preserves the intentional swap',async()=>{
+ const f=mount({transform:{scale:.7,x:250,y:350}});try{
+  const pair=f.level.solution[0],start=f.center(pair[0]),target=f.center(pair[1]);
+  f.send('pointerdown',pair[0],start);f.send('pointermove',pair[1],target);f.send('pointermove',pair[0],start);f.send('pointerup',pair[0],start);await f.idle();
+  assert.deepEqual(f.attempts,[Array.from(pair)],'a briefly crossed neighbor is remembered');
+ }finally{f.close();}
+});
+
+test('gesture fast release, slow drag and coalesced samples each produce one attempt',async()=>{
+ for(const mode of ['fast','slow','coalesced']){const f=mount({transform:{scale:.65,x:250,y:350}});try{
+  const pair=f.level.solution[0],start=f.center(pair[0]),target=f.center(pair[1]);f.send('pointerdown',pair[0],start);
+  if(mode==='slow')for(let i=1;i<=12;i++)f.send('pointermove',pair[0],f.at(...pair,i/12));
+  if(mode==='coalesced')f.send('pointermove',pair[0],{...start,coalesced:[f.at(...pair,.5),target,start]});
+  const finish=mode==='coalesced'?start:target;f.send('pointerup',pair[0],finish);f.send('pointerup',pair[1],finish);await f.idle();
+  assert.deepEqual(f.attempts,[Array.from(pair)],mode+' produces exactly one attempt, including duplicate up');
+ }finally{f.close();}}
+});
+
+test('gesture tile edge and unambiguous narrow gap start retain the source tile',async()=>{
+ for(const mode of ['edge','gap']){const f=mount({transform:{scale:.65,x:250,y:350}});try{
+  const pair=f.level.solution[0],from=f.center(pair[0]),to=f.center(pair[1]),distance=Math.hypot(to.x-from.x,to.y-from.y),offset=mode==='edge'?26:35;
+  const start={x:from.x+(to.x-from.x)*offset*.65/distance,y:from.y+(to.y-from.y)*offset*.65/distance};
+  const finish={x:start.x+(to.x-from.x)*.45,y:start.y+(to.y-from.y)*.45};
+  f.setHit(null);f.send('pointerdown',undefined,{...start,target:f.board});f.send('pointermove',undefined,finish);f.send('pointerup',undefined,finish);await f.idle();
+  assert.deepEqual(f.attempts,[Array.from(pair)],mode+' uses actual hex geometry when DOM hit misses');
+ }finally{f.close();}}
+});
+
+test('gesture exact gap bisector and contradictory directions remain uncommitted',async()=>{
+ const f=mount({transform:{scale:.7,x:250,y:350}});try{
+  const pair=f.level.solution[0],start=f.at(...pair,.5),finish=f.center(pair[1]);f.setHit(null);
+  f.send('pointerdown',undefined,{...start,target:f.board});f.send('pointermove',undefined,finish);f.send('pointerup',undefined,finish);assert.deepEqual(f.attempts,[],'exact gap bisector has no guessed source');
+  const game=new f.w.HexMatch(f.level),index=game.neighbors.findIndex(n=>n.length===6),[first,second]=game.neighbors[index];
+  f.send('pointerdown',index,f.center(index));f.send('pointermove',first,f.center(first));f.send('pointermove',second,f.center(second));f.send('pointerup',second,f.center(second));await f.idle();assert.deepEqual(f.attempts,[],'contradictory directions cancel rather than guess');
+ }finally{f.close();}
+});
+
+test('gesture resize, orientation, visibility and page exit cancel held input',async()=>{
+ for(const cancel of ['resize','orientationchange','visibilitychange','pagehide']){const f=mount({transform:{scale:.7,x:250,y:350}});try{
+  const pair=f.level.solution[0];f.send('pointerdown',pair[0],f.center(pair[0]));f.send('pointermove',pair[1],f.center(pair[1]));
+  (cancel==='visibilitychange'?f.d:f.w).dispatchEvent(new f.w.Event(cancel));f.send('pointerup',pair[1],f.center(pair[1]));await f.idle();assert.deepEqual(f.attempts,[],cancel+' cancels a held gesture');
+ }finally{f.close();}}
+});
+
+test('gesture directions recognize all six neighbors independently of whether a match is legal',async()=>{
+ const probe=mount();let index,neighbors;try{const g=new probe.w.HexMatch(probe.level);index=g.neighbors.findIndex(n=>n.length===6);neighbors=Array.from(g.neighbors[index]);}finally{probe.close();}
+ for(const target of neighbors){const f=mount({transform:{scale:.6,x:250,y:350}});try{
+  const start=f.center(index),finish=f.at(index,target,.52),before=JSON.stringify(f.readSave().boards[f.index]);
+  const model=new f.w.HexMatch(f.level);const expected=model.swap(index,target);f.attempts.length=0;
+  f.send('pointerdown',index,start);f.send('pointermove',index,finish);f.send('pointerup',index,finish);await f.idle();
+  assert.deepEqual(f.attempts,[[index,target]],'exactly one recognized neighbor attempt');
+  if(!expected.ok)assert.equal(JSON.stringify(f.readSave().boards[f.index]),before,'recognized invalid match preserves score, RNG and history');
+  else f.assertState(model,'recognized valid neighbor');
+ }finally{f.close();}}
+});
+
+test('gesture cancellation and competing touch do not commit a previously clear direction',async()=>{
+ for(const cancel of ['pointercancel','lostpointercapture','second-touch','viewport','viewport-return']){const f=mount({transform:{scale:.7,x:250,y:350}});try{
+  const pair=f.level.solution[0],start=f.center(pair[0]),target=f.center(pair[1]);
+  f.send('pointerdown',pair[0],start);f.send('pointermove',pair[1],target);
+  if(cancel==='second-touch')f.send('pointerdown',pair[1],{...target,id:2,primary:false});
+  else if(cancel==='viewport-return')f.send('pointermove',pair[1],{x:-20,y:target.y});
+  else if(cancel!=='viewport')f.send(cancel,pair[1],target);
+  f.send('pointerup',pair[1],cancel==='viewport'?{x:-20,y:target.y}:target);await f.idle();
+  assert.deepEqual(f.attempts,[],cancel+' never leaks an old target');
+ }finally{f.close();}}
+});
+
+test('gesture jitter and an ambiguous halfway direction do not invent a swap',async()=>{
+ const f=mount({transform:{scale:.7,x:250,y:350}});try{
+  const g=new f.w.HexMatch(f.level),index=g.neighbors.findIndex(n=>n.length===6),p=f.center(index);
+  f.send('pointerdown',index,p);f.send('pointermove',index,{x:p.x+7,y:p.y+3});f.send('pointerup',index,{x:p.x+7,y:p.y+3});assert.deepEqual(f.attempts,[]);
+  const vectors=Array.from(g.neighbors[index]).map(i=>({i,p:f.center(i)})).sort((a,b)=>Math.atan2(a.p.y-p.y,a.p.x-p.x)-Math.atan2(b.p.y-p.y,b.p.x-p.x));
+  const q={x:p.x+(vectors[0].p.x+vectors[1].p.x-2*p.x)*.32,y:p.y+(vectors[0].p.y+vectors[1].p.y-2*p.y)*.32};
+  f.send('pointerdown',index,p);f.send('pointermove',index,q);f.send('pointerup',index,q);await f.idle();assert.deepEqual(f.attempts,[],'uncertain thirty-degree bisector remains uncommitted');
+ }finally{f.close();}
+});
 
 test('second touch with 10px jitter still swaps selected neighbors',async()=>{
   const f=mount();try{
@@ -118,10 +219,10 @@ test('nonzero presentation supports skip and a strict total duration bound',asyn
     f.tap(pair[0]);f.tap(pair[1]);game.swap(...pair);
     assert(f.isBusy(),'test actually enters the animated path');
     assert(f.animations.length>0,'test actually calls the animation API');
-    const swaps=f.animations.filter(a=>a.target.classList.contains('gem')&&Array.isArray(a.frames)&&a.frames.length===2&&a.frames[0].transform==='translate(0px,0px)');
+    const swaps=f.animations.filter(a=>a.target.classList.contains('gem')&&a.target.closest('.swap-stone[data-swap-kind="valid"]')&&Array.isArray(a.frames)&&a.frames.length>=2&&a.frames[0].transform==='translate(0px,0px)');
     assert.equal(swaps.length,2,'both swapped stones visibly slide');
     assert(swaps.every(a=>a.options.duration>=280),'the swap remains on screen long enough to follow');
-    const skip=f.d.getElementById('skip-animation');assert(skip&&!skip.hidden,'visible skip control during effects');
+    const skip=f.d.getElementById('skip-animation');assert(skip&&skip.hidden,'animation skip must stay hidden so the board never resizes');
     f.click('skip-animation');await f.idle(150);f.assertUnlocked();f.assertState(game,'skipped presentation');
     f.click('reset');const resetLevel=f.level,resetPair=resetLevel.solution[0],resetGame=new f.w.HexMatch(resetLevel);resetGame.swap(...resetPair);const start=Date.now();f.tap(resetPair[0]);f.tap(resetPair[1]);await f.idle(3600);
     assert(Date.now()-start<3600,'long chains finish within the bounded presentation budget');
@@ -229,7 +330,7 @@ test('reduced motion completes without particles, API calls or a presentation wa
 
 (async()=>{
   const failed=[];
-  for(const {name,run} of cases){try{await run();console.log('✓ '+name);}catch(error){failed.push({name,error});console.error('✗ '+name+': '+error.message);}}
+  for(const {name,run} of cases.filter(item=>!process.env.HEXROTA_INPUT_FILTER||new RegExp(process.env.HEXROTA_INPUT_FILTER).test(item.name))){try{await run();console.log('✓ '+name);}catch(error){failed.push({name,error});console.error('✗ '+name+': '+error.message);}}
   await pause(20);
   if(unhandled.length)failed.push({name:'unhandled rejections',error:new Error(unhandled.join('; '))});
   if(domErrors.length)failed.push({name:'uncaught DOM errors',error:new Error(domErrors.join('; '))});
