@@ -1,9 +1,9 @@
-/* Real 9.1 integration: separate life saves, actual providers and untouched engine outcomes. */
+/* Real integration: atomic profile, legacy save migration, verified providers and untouched engine outcomes. */
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const {JSDOM,VirtualConsole}=require('jsdom');
 const root=__dirname+'/dist/',read=file=>fs.readFileSync(root+file,'utf8'),plain=value=>JSON.parse(JSON.stringify(value));
-const gameKey='hexrota-match-v5',lifeKey='hexrota-lives-v1',eventKey='hexrota-events-v1';
+const profileKey='hexrota-profile-v2',gameKey='hexrota-match-v5',lifeKey='hexrota-lives-v1',eventKey='hexrota-events-v1';
 const NOW=Date.UTC(2026,0,8,12),MINUTE=60000,tests=[],errors=[],unhandled=[];
 process.on('unhandledRejection',error=>unhandled.push(error?.message||String(error)));
 const test=(name,run)=>tests.push({name,run}),wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -30,10 +30,10 @@ function existing(stage=2,{turns=1,lost=false,legacy=false}={}){
  if(entry){saved.attempts={[stage]:plain(entry.metadata)};saved.attemptStats={[stage]:{attemptId:entry.metadata.attemptId,attemptNumber:1,started:true,terminalEvent:lost?'level_failed':null,hintsUsed:0,cascades}};saved.variantSelection.serial=7;saved.variantSelection.counts[base.id]=1;saved.variantSelection.recent[base.id]=[entry.metadata.variantId];}
  return {saved,game,metadata:entry?.metadata};
 }
-function mount({saved=fresh(),life,now=NOW,oldV4,writeFailure=false}={}){
+function mount({saved=fresh(),life,now=NOW,oldV4,profile,writeFailure=false}={}){
  const vc=new VirtualConsole();vc.on('jsdomError',error=>errors.push(error.message));
  const dom=new JSDOM(read('index.html'),{url:'https://hexrota-lives.example/',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});
- const w=dom.window,d=w.document,network=[];let utc=now;
+ const w=dom.window,d=w.document,network=[];let utc=now;w.HexSessionTestMode={isolated:true};
  w.Date.now=()=>utc;w.matchMedia=()=>({matches:true,addEventListener(){},removeEventListener(){}});
  w.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};w.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');this.dispatchEvent(new w.Event('close'));};
  w.HTMLElement.prototype.scrollIntoView=function(){};w.scrollTo=()=>{};
@@ -43,7 +43,8 @@ function mount({saved=fresh(),life,now=NOW,oldV4,writeFailure=false}={}){
  w.HexAudio=AudioStub;
  if(oldV4)w.localStorage.setItem('hexrota-match-v4',JSON.stringify(oldV4));else w.localStorage.setItem(gameKey,JSON.stringify(saved));
  if(life!==undefined)w.localStorage.setItem(lifeKey,JSON.stringify(life));
- if(writeFailure){const native=w.Storage.prototype.setItem;w.Storage.prototype.setItem=function(key,value){if(key===lifeKey)throw new w.DOMException('Life storage unavailable','QuotaExceededError');return native.call(this,key,value);};}
+ if(profile)w.localStorage.setItem(profileKey,JSON.stringify(profile));
+ if(writeFailure){const native=w.Storage.prototype.setItem;w.Storage.prototype.setItem=function(key,value){if(key===profileKey)throw new w.DOMException('Life storage unavailable','QuotaExceededError');return native.call(this,key,value);};}
  for(const script of d.querySelectorAll('script[src]')){const file=script.getAttribute('src').split('/').at(-1).split('?')[0];if(!['audio.js','pwa.js'].includes(file))w.eval(read(file));}
  const f={dom,w,d,network,get now(){return utc;},set now(value){utc=value;},save:()=>JSON.parse(w.localStorage.getItem(gameKey)),life:()=>JSON.parse(w.localStorage.getItem(lifeKey)),events:()=>JSON.parse(w.localStorage.getItem(eventKey)||'null'),close(){dom.window.close();}};
  f.node=selector=>{const n=d.querySelector(selector);assert(n,selector+' exists');return n;};f.click=selector=>f.node(selector).dispatchEvent(new w.MouseEvent('click',{bubbles:true,detail:0}));
@@ -164,13 +165,12 @@ test('returning offline refreshes 29/30/150-minute regeneration and unlimited ex
  const unlimited=mount({life:lifePool(0)});try{unlimited.click('#home-lives');unlimited.click('#lives-buy-unlimited');unlimited.click('#life-provider-confirm');assert.equal(unlimited.life().life.lives,0);unlimited.now=NOW+30*MINUTE;unlimited.return();assert.equal(unlimited.life().life.lives,1);assert.equal(unlimited.life().life.unlimitedUntilUtc,null);}finally{unlimited.close();}
 });
 
-test('an unlimited period expiring while reset consent is open requires a new cost quote before any debit',async()=>{
- const f=mount({life:lifePool(2)});try{
+test('an unlimited-start attempt keeps its waiver through expiry, reload and reset confirmation',async()=>{
+ let f=mount({life:lifePool(2)});try{
   f.click('#home-lives');f.click('#lives-buy-unlimited');f.click('#life-provider-confirm');f.click('#lives-wait');await enter(f);await move(f,plain(f.game().level.solution[0]));
-  const old=plain(f.save()),id=old.attempts[2].attemptId;f.click('#reset');assert(/can harca(?:maz|nmaz)|0 can/.test(f.node('#restart-description').textContent));
-  f.now=NOW+31*MINUTE;f.click('#restart-confirm');assert(f.node('#restart-dialog').open,'the changed fee cannot be accepted by the old zero-fee confirmation');assert(/1 can/.test(f.node('#restart-description').textContent));
-  assert.equal(f.life().life.lives,3,'normal regeneration is reconciled, but no cost has been charged');assert(!f.life().life.settledAttempts[id]?.discarded);assert.deepEqual(f.save().boards[2],old.boards[2]);
-  f.click('#restart-confirm');assert.equal(f.life().life.lives,2);assert.notEqual(f.save().attempts[2].attemptId,id);assert.equal(f.game().turn,0);
+  const saved=plain(f.save()),life=plain(f.life()),id=saved.attempts[2].attemptId;f.close();f=mount({saved,life,now:NOW+31*MINUTE});await enter(f);
+  f.click('#reset');assert(/can harca(?:maz|nmaz)|0 can/.test(f.node('#restart-description').textContent));f.click('#restart-confirm');
+  assert.equal(f.life().life.lives,3,'normal regeneration continues; the protected attempt costs nothing');assert.equal(f.life().life.settledAttempts[id].waiver,'unlimited');assert.notEqual(f.save().attempts[2].attemptId,id);assert.equal(f.game().turn,0);
  }finally{f.close();}
 });
 
@@ -195,7 +195,7 @@ test('progress reset preserves the life pool, protection and verified test walle
  }finally{f.close();}
 });
 
-test('an unwritable life store blocks new transactions without charging the in-memory wallet or erasing gameplay saves',async()=>{
+test('an unwritable authoritative profile blocks new transactions without charging the in-memory wallet or erasing gameplay saves',async()=>{
  const base=existing(),life=lifePool(2),f=mount({saved:base.saved,life,writeFailure:true});try{
   assert.deepEqual(f.save().boards[2],base.saved.boards[2]);f.click('#home-lives');const before=plain(f.life());f.click('#lives-buy-one');if(f.node('#life-provider-dialog').open)f.click('#life-provider-confirm');
   assert.deepEqual(f.life(),before);assert.deepEqual(f.save().boards[2],base.saved.boards[2]);noNetwork(f);
@@ -205,21 +205,21 @@ test('an unwritable life store blocks new transactions without charging the in-m
 test('a callback whose final aggregate write fails grants nothing and never partially debits test Gold',()=>{
  const f=mount({life:lifePool(2)});try{
   f.click('#home-lives');f.click('#lives-buy-one');assert(f.node('#life-provider-dialog').open);const before=plain(f.life());
-  const native=f.w.Storage.prototype.setItem;f.w.Storage.prototype.setItem=function(key,value){if(key===lifeKey)throw new f.w.DOMException('Final commit failed','QuotaExceededError');return native.call(this,key,value);};
+  const native=f.w.Storage.prototype.setItem;f.w.Storage.prototype.setItem=function(key,value){if(key===profileKey)throw new f.w.DOMException('Final commit failed','QuotaExceededError');return native.call(this,key,value);};
   f.click('#life-provider-confirm');assert.deepEqual(f.life(),before,'the provider receipt, wallet debit and life credit are committed together or not at all');assert.equal(f.life().life.lives,2);assert.equal(f.life().testWallet.gold,300);noNetwork(f);
  }finally{f.close();}
 });
 
-test('a lost game whose life commit failed settles once when storage recovers before retrying without reload',async()=>{
+test('a failed terminal transaction rolls back board, life and variant; retrying that move after recovery charges once',async()=>{
  const f=mount({saved:fresh(11)});try{
   await enter(f);const level=f.game().level;let route;
   for(let policy=0;policy<120&&!route;policy++){const g=new f.w.HexMatch(level);while(g.status==='playing'){const moves=g.legalMoves();g.swap(...moves[(g.turn*7+policy)%moves.length]);}if(g.status==='lost')route=plain(g.history);}
   assert(route);const oldId=f.save().attempts[11].attemptId;
   for(const pair of route.slice(0,-1))await move(f,pair);
-  const native=f.w.Storage.prototype.setItem;f.w.Storage.prototype.setItem=function(key,value){if(key===lifeKey)throw new f.w.DOMException('Loss settlement failed','QuotaExceededError');return native.call(this,key,value);};
-  await move(f,route.at(-1));await until(()=>f.node('#lose-dialog').open,'a saved loss remains reviewable even if the separate life write failed');
-  assert.equal(f.save().boards[11].movesLeft,0);assert.equal(f.life().life.lives,5);assert(!f.life().life.settledAttempts[oldId]);
-  f.w.Storage.prototype.setItem=native;f.click('#retry');assert.equal(f.life().life.lives,4,'recovered storage settles the old terminal attempt before a new one starts');assert.equal(f.life().life.settledAttempts[oldId].charged,true);assert.notEqual(f.save().attempts[11].attemptId,oldId);assert.equal(f.game().turn,0);
+  const before=plain(f.save()),native=f.w.Storage.prototype.setItem;f.w.Storage.prototype.setItem=function(key,value){if(key===profileKey)throw new f.w.DOMException('Loss settlement failed','QuotaExceededError');return native.call(this,key,value);};
+  await move(f,route.at(-1));assert.deepEqual(f.save(),before);assert.equal(f.life().life.lives,5);assert(!f.life().life.settledAttempts[oldId]);
+  f.w.Storage.prototype.setItem=native;f.return();await move(f,route.at(-1));await until(()=>f.node('#lose-dialog').open,'the repeated valid move can complete after storage recovers');assert.equal(f.life().life.lives,4);assert.equal(f.life().life.settledAttempts[oldId].charged,true);
+  f.click('#retry');assert.equal(f.life().life.lives,4);assert.notEqual(f.save().attempts[11].attemptId,oldId);
  }finally{f.close();}
 });
 
@@ -245,4 +245,6 @@ test('full progress reset explains played-attempt costs, supports cancellation a
  }finally{many.close();}
 });
 
-(async()=>{for(const {name,run}of tests){await run();console.log('✓ '+name);}assert.deepEqual(errors,[],'no browser exceptions');assert.deepEqual(unhandled,[],'no unhandled async life/provider failure');console.log('Life UI checks passed: '+tests.length+' groups with real modules, separate saves, verified local transactions and unchanged engine results.');})().catch(error=>{console.error(error);process.exitCode=1;});
+if(require.main===module)(async()=>{for(const {name,run}of tests){await run();console.log('✓ '+name);}assert.deepEqual(errors,[],'no browser exceptions');assert.deepEqual(unhandled,[],'no unhandled async life/provider failure');console.log('Life UI checks passed: '+tests.length+' groups with real modules, atomic profile saves, verified local transactions and unchanged engine results.');})().catch(error=>{console.error(error);process.exitCode=1;});
+
+module.exports={mount,fresh,existing,lifePool,plain,enter,move,wait,until,NOW,MINUTE};

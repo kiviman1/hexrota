@@ -68,3 +68,22 @@ jobs:
           dotnet-version: '8.0.x'
       - name: Compile C# 7.3 and compare every gameplay wave and save
         run: npm run test:unity-gameplay
+
+  browser-session-consistency:
+    name: Chromium life and save consistency
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.2'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Test real two-tab locks, atomic save recovery and verified ad rewards
+        run: npm run test:session-browser

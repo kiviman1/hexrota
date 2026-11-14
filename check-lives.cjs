@@ -28,7 +28,7 @@ function fixture(patch={}){
 }
 
 test('a new profile starts full; failure spends one life while winning and tutorials are free',()=>{
- const f=fixture();assert.equal(f.state.schemaVersion,1);assert.equal(f.state.lives,5);assert.equal(f.state.regenAnchorUtc,null);
+ const f=fixture();assert.equal(f.state.schemaVersion,2);assert.equal(f.state.lives,5);assert.equal(f.state.regenAnchorUtc,null);
  const before=plain(f.state),failed=f.settle({attemptId:'first-failure',levelId:1});
  assert.equal(f.state.lives,4);assert.equal(failed.applied,true);assert.equal(failed.charged,true);assert.equal(f.state.regenAnchorUtc,NOW);
  assert.equal(before.lives,5,'transitions leave the previous DTO unchanged');
@@ -72,11 +72,12 @@ test('callbacks are idempotent across serialization and mismatched/unverified re
  const defaultVerifier=HexLives.createManager(config,{clock:()=>NOW});assert.equal(defaultVerifier.applyTransaction(defaultVerifier.createState(),notIssued).applied,false,'omitting a verifier is fail-closed');
 });
 
-test('a verified but ineligible reward is permanently rejected instead of becoming a stored free claim',()=>{
- const f=fixture();const fullReceipt=f.receipt('ad_life');assert.equal(f.apply(fullReceipt).applied,false);
- f.spend(2);assert.equal(f.apply(fullReceipt).applied,false);assert.equal(f.state.lives,3);
- const first=f.receipt('ad_life');assert.equal(f.apply(first).applied,true);f.settle();
- const tooSoon=f.receipt('ad_life');assert.equal(f.apply(tooSoon).applied,false);
+test('a verified full-pool ad becomes a one-use banked credit while cooldown rejection stays final',()=>{
+ const f=fixture();const fullReceipt=f.receipt('ad_life');assert.equal(f.apply(fullReceipt).applied,true);
+ assert.equal(f.state.lives,5);assert.equal(f.state.pendingAdLives,1);assert.equal(f.state.adUsage.claims,1);
+ f.settle();assert.equal(f.state.lives,5);assert.equal(f.state.pendingAdLives,0);
+ assert.equal(f.apply(fullReceipt).applied,false);assert.equal(f.state.lives,5);
+ f.settle();const tooSoon=f.receipt('ad_life');assert.equal(f.apply(tooSoon).applied,false);
  f.now+=INTERVAL;f.refresh();const before=f.state.lives;assert.equal(f.apply(tooSoon).applied,false);assert.equal(f.state.lives,before);
 });
 
@@ -190,12 +191,13 @@ test('UTC midnight resets the daily ad quota without bypassing the previous clai
  f.now=Date.UTC(2026,0,9,0,20);f.refresh();assert.equal(f.manager.transactionAvailability(f.state,'ad_life').allowed,true);
 });
 
-test('ledger capacity fails closed and never evicts an old idempotency key',()=>{
+test('ledger compaction permits new games and never forgets old idempotency keys',()=>{
  const f=fixture({maxLedgerEntries:2});f.settle({attemptId:'kept-failure'});const receipt=f.receipt('single_life');f.apply(receipt);assert.equal(f.state.lives,5);
- const full=plain(f.state);assert.equal(f.manager.canStart(f.state),false,'a new attempt is blocked before its result could become untracked');
- assert.equal(f.settle({attemptId:'capacity-failure'}).applied,false);assert.equal(f.apply(f.receipt('unlimited_lives_30m')).applied,false);
- assert.deepEqual(plain(f.state),full);assert.equal(f.apply(receipt).applied,false);assert.equal(f.settle({attemptId:'kept-failure'}).applied,false);
- assert.equal(f.manager.canResume(f.state,'already-playing'),true,'an existing game is not destroyed by ledger saturation');
+ assert.equal(f.manager.canStart(f.state),true,'retention is not a maximum number of games');
+ assert.equal(f.settle({attemptId:'capacity-failure'}).applied,true);assert.equal(f.apply(f.receipt('unlimited_lives_30m')).applied,true);
+ assert(Object.keys(f.state.settledAttempts).length+Object.keys(f.state.processedTransactions).length<=2);
+ assert.equal(f.apply(receipt).applied,false);assert.equal(f.settle({attemptId:'kept-failure'}).applied,false);
+ assert.equal(f.manager.canResume(f.state,'already-playing'),true);
 });
 
 test('reserved JavaScript property names cannot bypass attempt or receipt idempotency',()=>{
@@ -213,6 +215,8 @@ test('each public action observes one clock sample, including composed HUD and e
  const actions=[
   ()=>manager.restore(state),()=>manager.reconcile(state),()=>manager.view(state),()=>manager.canStart(state),()=>manager.canResume(state,'existing'),
   ()=>manager.transactionAvailability(state,'ad_life'),()=>manager.setDeveloperBypass(state,true),
+  ()=>manager.registerAttempt(state,{attemptId:'registered',levelId:1,tutorial:false}),()=>manager.registeredAttemptFor(state,'registered'),
+  ()=>manager.settlementFor(state,'registered'),()=>manager.hasTransaction(state,'some-transaction'),
   ()=>manager.settleAttempt(state,{attemptId:'one-clock',levelId:1,tutorial:false,movesUsed:1,outcome:'failed'}),
   ()=>manager.applyTransaction(state,{transactionId:'one-receipt',productId:'single_life',provider:'development',status:'completed',verifiedAtUtc:NOW})
  ];
