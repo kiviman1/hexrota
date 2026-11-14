@@ -6,11 +6,11 @@ Telefon ve masaüstü için Türkçe altıgen sayı bulmacası. Sınırlı hamle
 
 ## Menü ve ekran akışı
 
-Oyun ana menüyle açılır. **Oyna** sıradaki açık bölümün hedeflerini gösterir; geçerli, yarım kalmış bir kayıt varsa **Devam et** aynı tahtayı ve hamle sayısını doğrudan açar. Bütün bölümler tamamlandığında ana eylem yeniden oynamak için bölüm patikasına götürür.
+Oyun ana menüyle açılır. Yeni oyuncu **Birlikte başlayalım** ile ilk örneği görür; sonraki bölümlerde **Oyna** hedefleri gösterir. Geçerli, yarım kalmış bir kayıt varsa **Devam et** aynı tahtayı ve hamle sayısını doğrudan açar. Bütün bölümler tamamlandığında ana eylem yeniden oynamak için bölüm patikasına götürür.
 
 - Ana menü: Oyna/Devam Et, öğrenme, bölüm seçimi, ayarlar ve kişisel kayıtlar.
 - Bölümler: T1/T2 ve 01–10 etiketli özgün patika; açık, tamamlanmış ve kilitli duraklar.
-- Bölüm öncesi: puan, yeşertilecek alan ve hamle bütçesi. Bir durağa bakıp vazgeçmek aktif tahtayı değiştirmez; Başla veya Devam Et değişikliği uygular.
+- Bölüm öncesi: T1'de `2 + 2 + 2 → +6 puan` örneği; sonraki duraklarda puan, yeşertilecek alan ve hamle bütçesi. Bir durağa bakıp vazgeçmek aktif tahtayı değiştirmez; Başla veya Devam Et değişikliği uygular.
 - Oyun/duraklatma: devam, yeniden başlatma, ayarlar ve ana menü. Arka plana geçiş oyunu duraklatır. Geç kalan efekt ve ipucu sonuçları menülerin üzerine geri gelmez.
 - Sonuçlar: sonraki bölüm, tekrar deneme, patika veya ana menü.
 - Kayıtlar: gerçekten doğrulanmış kazanmalardan en iyi bölüm puanı ve kalan hamle; bilinmeyen eski sonuçlar “—” olarak gösterilir.
@@ -20,6 +20,10 @@ Ayarlar; gerçek ses efektleri, yerel üretilen arka plan müziği, ortak ses d�
 ## 2 öğretici + 10 bölüm
 
 Yeni oyuncu iki kısa, oynanabilir öğreticiyle başlar. İlkinde 7 altıgen üzerinde komşu takası, üç eşleşme ekseni ve yeşil zemin; ikincisinde 9 altıgen üzerinde çift katman, doğal zincir ve puan/zemin hedeflerinin birlikte tamamlanması öğretilir. Her adımda gerçek bir takas yapılır; sıradaki çift vurgulanır. Yanlış öğretici hamlesi tahta veya bütçe değiştirmez. Öğreticiler atlanabilir veya yolculuk bölümünden yeniden oynanabilir.
+
+İlk öğretici tek eylemle başlar: işaretli komşuları kaydır veya sırayla dokun. Ok ve el hareketi yönü gösterir; oluşacak eşleşmenin diğer taşları görünür kalır. T1'de hedef puan ve hamle bütçesi arka planda korunurken ekranda kazanılan puan ve yeşil zemin öne çıkar; T2'de iki hedef ve hamle sayısı birlikte gösterilir.
+
+Üç açıklama oyuncu **Anladım, devam** düğmesine basana kadar kalır: T1'in ilk eşleşmesi, T2'nin ilk çift katman vuruşu ve T2'de puan tamamken son zeminin eksik kalması. Bu sırada yeni hamle ve ipucu kapalıdır; ayarlar, menü, yeniden başlatma ve öğreticiyi atlama kullanılabilir. Okunan açıklamalar `guideAcks` içinde, oyun motorunun checkpoint verisinden ayrı saklanır. Yeniden açılış aynı tahta ve bekleyen açıklamayla devam eder; onay puan veya hamle üretmez. Öğreticiyi baştan başlatmak yalnızca o öğreticinin onaylarını temizler.
 
 Ardından aynı kontrollü yenileme algoritmasını kullanan mevcut 10 bölüm gelir; bölüm verileri ve çözüm dizileri değiştirilmemiştir. Yolculuk etiketleri T1, T2, 01…10'dur. Kampanya ilerleme sayacı yalnızca 10 ana bölümü sayar.
 
@@ -41,7 +45,7 @@ Rastgele geçerli hamle denemeleri kaba zorluk kontrolüdür; insan oyun testini
 
 ## Görsel ve hareket sistemi
 
-Krem/orman yeşili arayüz, oyun alanını ve üç sabit hedef göstergesini öne çıkarır: puan, hedef, kalan hamle. Yeşil zemin taşlardan ayrı kalır. Masaüstünde bölüm listesi, telefonda kaydırılabilen kısa yolculuk şeridi kullanılır.
+Rakamlar taşların ana kimliğidir; her değer belirgin ve tutarlı bir renkle desteklenir. Taşın büyük rakamı eşleşince verdiği puanı, toprak rengi altlık henüz yeşermemiş zemini, yeşil altlık kalıcı ilerlemeyi gösterir. Çift katmanlı zeminde ikinci bir rakam yerine iki küçük nokta bulunur; her eşleşmede bir nokta azalır. T1'den sonra puan ve yeşil zemin iki ayrı hedef satırı olarak üstte yer alır; tamamlandıklarında ayrı onay işaretleri görünür. Bölüm seçimi ana menüdeki patikadadır.
 
 Her oyun dalgası gerçek taş kimliğiyle düşüş verisi taşır. Aynı sayılı taşlar bile sütundaki asıl başlangıç hücresinden hedefine kayar; yeni taşlar sütunun üstünden girer. Eşleşmeler kısa büyüme, parçacıklar, ışık halkası ve puan yazısıyla gösterilir. Düşüşte sütun gecikmesi ve hafif yerleşme vardır. Bu veriler oyun kurallarını, tohumları veya checkpoint sonuçlarını değiştirmez.
 
@@ -55,7 +59,7 @@ Destekleyen tarayıcılarda ipucu Web Worker'da aranır. İşçi açılamazsa k�
 
 ## Kayıt ve sürüm geçişi
 
-Kayıtlar `hexrota-match-v5` anahtarındadır. Sürüm 4'ten geçişte mevcut 10 bölümün indeksleri iki kaydırılır; hamle geçmişleri, tamamlanan bölümler ve ses tercihi korunur. Mevcut oyuncular için öğreticiler tamamlanmış sayılır ve tekrar oynanabilir. Daha eski eşleştirme sürümlerinden ilerleme/ses tercihi taşınır, uyumsuz tahta yeniden başlar. Yeni oyuncular ana menüde Oyna ile T1'e başlar. Sürüm 6 aynı v5 kayıt anahtarını ve aynı oyun kurallarını korur; ek olarak tercihleri ve gözlenen en iyi sonuçları saklar. Önceki kayıt anahtarlarına dokunulmaz.
+Kayıtlar `hexrota-match-v5` anahtarındadır. Sürüm 4'ten geçişte mevcut 10 bölümün indeksleri iki kaydırılır; hamle geçmişleri, tamamlanan bölümler ve ses tercihi korunur. Mevcut oyuncular için öğreticiler tamamlanmış sayılır ve tekrar oynanabilir. Daha eski eşleştirme sürümlerinden ilerleme/ses tercihi taşınır, uyumsuz tahta yeniden başlar. Yeni oyuncular ana menüde Birlikte başlayalım ile T1'e başlar. Aynı v5 kayıt anahtarı ve oyun kuralları korunur; tercihler, gözlenen en iyi sonuçlar ve öğretici onayları ayrıca saklanır. Önceki kayıt anahtarlarına dokunulmaz.
 
 ## Çalıştırma ve dosyalar
 
@@ -95,7 +99,7 @@ Ayarlar içinden bağlantı paylaşılabilir, destekleyen cihazlarda tam ekran a
 
 ## Tam ekran oyun görünümü
 
-Sürüm 8'de oyun alanı görünür ekran yüksekliğini kullanır. Oyun sırasında site başlığı, bölüm şeridi ve genel gezinme gizlenir; üstte puan/hedef, bölüm arması ve hamle, altta zemin ilerlemesi ve beş oyun kontrolü bulunur. Bölüm seçimi ana menüdeki patikadan yapılır. Dikey ve yatay yerleşimler, güvenli alanlar ve tarayıcı çubuklarının yüksekliği hesaba katılır. Görüntü boyutu değişikliği tahtayı veya hamle kaydını yeniden başlatmaz.
+Oyun alanı görünür ekran yüksekliğini kullanır. Oyun sırasında site başlığı, bölüm şeridi ve genel gezinme gizlenir; üstte puan ve zemin hedefleriyle hamle sayısı, altta oyun kontrolleri bulunur. İlk öğretici bu göstergeleri aşamalı olarak tanıtır. Bölüm seçimi ana menüdeki patikadan yapılır. Dikey ve yatay yerleşimler, güvenli alanlar ve tarayıcı çubuklarının yüksekliği hesaba katılır. Görüntü boyutu değişikliği tahtayı veya hamle kaydını yeniden başlatmaz.
 
 Uygulamada pinch, çift dokunma ve klavye/tekerlek yakınlaştırma hareketleri engellenir. Tek dokunuşlar, taş takası ve ayar pencerelerindeki kaydırma korunur. Tarayıcının kendi adres ve sistem çubuklarını gizlemek için desteklenen cihazlarda ana ekrana ekleme veya tam ekran seçeneği kullanılabilir.
 

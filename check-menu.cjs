@@ -45,7 +45,7 @@ function keypress(f,key){f.w.dispatchEvent(new f.w.KeyboardEvent('keydown',{key,
 function stage(f,index){return node(f,`[data-stage="${index}"]`);}
 function closeDialog(f,id){const dialog=node(f,'#'+id);const close=dialog.querySelector('[data-close]');assert(close,id+' has a close action');close.click();}
 async function enter(f){click(f,'#home-play');await settle();if(node(f,'#pregame-dialog').open){click(f,'#pregame-start');await settle();}screen(f,'game');}
-async function swap(f,pair){for(const index of pair)node(f,`#board [data-index="${index}"]`).dispatchEvent(new f.w.MouseEvent('click',{bubbles:true,detail:0}));await settle();}
+async function swap(f,pair){const next=f.d.getElementById('coach-next');if(next&&!next.hidden)next.click();for(const index of pair)node(f,`#board [data-index="${index}"]`).dispatchEvent(new f.w.MouseEvent('click',{bubbles:true,detail:0}));await settle();}
 function boardFingerprint(f){return JSON.stringify(f.save().boards);}
 const tests=[];const test=(name,run)=>tests.push({name,run});
 

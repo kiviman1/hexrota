@@ -11,7 +11,7 @@
   const icon = name => `<svg class="icon" aria-hidden="true"><use href="#i-${name}"/></svg>`;
   const reduceMotion=()=>saved.preferences.motion==='reduce'||(saved.preferences.motion==='auto'&&window.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true);
   const defaultPreferences={music:false,volume:.65,motion:'auto',haptics:false};
-  let saved={current:0,done:[],boards:{},sound:false,preferences:{...defaultPreferences},records:{}};
+  let saved={current:0,done:[],boards:{},guideAcks:[],sound:false,preferences:{...defaultPreferences},records:{}};
   function readSave(name){try{return JSON.parse(localStorage.getItem(name));}catch(_){return null;}}
   try {
     let raw=readSave(key);
@@ -29,6 +29,7 @@
       saved.done=Array.isArray(raw.done)?[...new Set(raw.done.filter(i=>Number.isInteger(i)&&i>=0&&i<levels.length))]:[];
       saved.current=Number.isInteger(raw.current)&&raw.current>=0&&raw.current<levels.length?raw.current:0;
       saved.sound=raw.sound===true;
+      saved.guideAcks=Array.isArray(raw.guideAcks)?[...new Set(raw.guideAcks.filter(id=>typeof id==='string'&&tutorials.some((level,index)=>level.steps.some((step,turn)=>step.acknowledge&&id===`${index}:${turn+1}`))))]:[];
       const preferences=raw.preferences||{};
       saved.preferences={music:preferences.music===true,volume:Number.isFinite(preferences.volume)?Math.max(0,Math.min(1,preferences.volume)):.65,motion:['auto','reduce','full'].includes(preferences.motion)?preferences.motion:'auto',haptics:preferences.haptics===true};
       if(raw.records&&typeof raw.records==='object')for(let i=0;i<levels.length;i++){
@@ -110,7 +111,12 @@
   const canOpen=i=>i===0||saved.done.includes(i-1)||saved.done.includes(i);
   const isTutorial=()=>active<tutorialCount;
   const stageLabel=i=>i<tutorialCount?`ÖĞREN ${pad(i+1)}`:`BÖLÜM ${pad(i-tutorialCount+1)}`;
-  const guidedStep=()=>isTutorial()&&engine?.status==='playing'?levels[active].steps[engine.turn]||null:null;
+  const guideFeedback=()=>{
+    if(busy||!isTutorial()||engine?.status!=='playing'||!engine.turn)return null;
+    const step=levels[active].steps[engine.turn-1],id=`${active}:${engine.turn}`;
+    return step?.acknowledge&&!saved.guideAcks.includes(id)?{step,id}:null;
+  };
+  const guidedStep=()=>isTutorial()&&engine?.status==='playing'&&!guideFeedback()?levels[active].steps[engine.turn]||null:null;
   const samePair=(a,b,p)=>p&&((a===p[0]&&b===p[1])||(a===p[1]&&b===p[0]));
   function persist() {
     saved.current=active;
@@ -207,8 +213,8 @@
   function updateMenus(){
     if(!$('home-play'))return;
     const next=nextStage(),completed=saved.done.filter(i=>i>=tutorialCount).length;
-    $('home-play-label').textContent=next?(next.resume?'Devam et':'Oyna'):'Yeniden keşfet';
-    $('home-play-detail').textContent=next?next.resume?`${stageLabel(next.index)} · ${validCheckpoint(next.index).movesLeft} hamle kaldı`:`${stageLabel(next.index)} · ${levels[next.index].name}`:'Bütün bölümler tamamlandı';
+    $('home-play-label').textContent=next?(next.resume?'Devam et':next.index===0?'Birlikte başlayalım':'Oyna'):'Yeniden keşfet';
+    $('home-play-detail').textContent=next?next.resume?`${stageLabel(next.index)} · ${validCheckpoint(next.index).movesLeft} hamle kaldı`:next.index===0?'İki komşuyu değiştir, 3 aynı sayıyı sırala.':`${stageLabel(next.index)} · ${levels[next.index].name}`:'Bütün bölümler tamamlandı';
     $('home-stage-name').textContent=next?levels[next.index].name:'On iki durak, tamamı yeşil.';
     $('home-progress-text').textContent=`${completed} / ${campaignCount} bölüm tamamlandı`;
     $('home-progress-fill').style.width=`${completed/campaignCount*100}%`;
@@ -249,8 +255,12 @@
     if(!Number.isInteger(index)||index<0||index>=levels.length||!canOpen(index))return;
     const level=levels[index],checkpoint=validCheckpoint(index),resume=checkpoint?.status==='playing'&&checkpoint.turn>0;
     pendingStage=index;
+    $('pregame-dialog').dataset.learning=index===0?'first':index<tutorialCount?'goals':'';
+    if($('pregame-lesson'))$('pregame-lesson').hidden=index!==0;
+    $('pregame-dialog').querySelector('.pregame-goals').hidden=index===0;
     $('pregame-tag').textContent=stageLabel(index);$('pregame-title').textContent=level.name;
-    $('pregame-description').textContent=resume?'Kaldığın yerden aynı tahta ve hamlelerle devam edebilirsin.':level.subtitle;
+    $('pregame-description').textContent=resume?'Kaldığın yerden aynı tahta ve hamlelerle devam et.':index===0?'İşaretli iki komşuyu değiştir. 3 aynı sayı bir çizgide buluşsun.':'Hamlelerin bitmeden hedef puana ulaş ve bütün zemini yeşile boya.';
+    if($('pregame-note'))$('pregame-note').textContent=index===0?'Şimdi birlikte ilk eşleşmeni yapalım.':'Kazanmak için iki hedefi de tamamla: puan ve yeşil zemin.';
     $('pregame-target').textContent=level.target;$('pregame-ground').textContent=resume?`${checkpoint.covered} / ${level.cells.length}`:level.cells.length;
     $('pregame-moves').textContent=resume?checkpoint.movesLeft:level.moves;
     $('pregame-start').textContent=resume?'Devam et':'Başla';$('pregame-restart').hidden=!resume;
@@ -289,8 +299,9 @@
     clearScoreReceipt();
     cancelPresentation();cancelHint();epoch++;clearTimeout(terminalTimer);stopPointer();busy=false;
     active=canOpen(index)?index:0;
+    if(fresh)saved.guideAcks=saved.guideAcks.filter(id=>!id.startsWith(`${active}:`));
     try {engine=new window.HexMatch(levels[active],fresh?null:saved.boards[active]||null);}
-    catch (_) {engine=new window.HexMatch(levels[active]);}
+    catch (_) {engine=new window.HexMatch(levels[active]);saved.guideAcks=saved.guideAcks.filter(id=>!id.startsWith(`${active}:`));}
     selected=null;hinted=null;focusIndex=0;comboText='';restoreRewards();
     $('level-tag').textContent=stageLabel(active);
     $('level-name').textContent=levels[active].name;
@@ -318,13 +329,19 @@
     const outer=poly(radius),inner=poly(radius*.78),matched=new Set(matching),dropped=new Set(falling);
     const highlightRadius=radius*.78-1.2,highlightHeight=highlightRadius*Math.sqrt(3)/2;
     const highlight=`M${(-.8*highlightRadius).toFixed(3)} ${(-.4*highlightHeight).toFixed(3)} L${(-.5*highlightRadius).toFixed(3)} ${(-highlightHeight).toFixed(3)} L${(.5*highlightRadius).toFixed(3)} ${(-highlightHeight).toFixed(3)} L${(.8*highlightRadius).toFixed(3)} ${(-.4*highlightHeight).toFixed(3)}`;
-    const interactive=!busy&&engine.status==='playing',guided=guidedStep(),pair=!busy&&guided?guided.pair:[];
-    return `<defs><filter id="tile-shadow" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="0" dy="2" stdDeviation="1" flood-color="#3d5031" flood-opacity=".06"/></filter></defs>${levels[active].cells.map((c,i)=>{
+    const interactive=!busy&&!guideFeedback()&&engine.status==='playing',guided=guidedStep(),pair=!busy&&guided?guided.pair:[],support=pair.length?guided.matchIndices.filter(i=>!pair.includes(i)):[];
+    let gesture='';
+    if(pair.length){
+      const source=positions[pair[0]],target=positions[pair[1]],dx=target.x-source.x,dy=target.y-source.y,length=Math.hypot(dx,dy),ux=dx/length,uy=dy/length,ox=-uy*17,oy=ux*17;
+      gesture=`<g class="tutorial-gesture" pointer-events="none" aria-hidden="true"><path class="tutorial-guide-line" d="M${source.x+ox+ux*17} ${source.y+oy+uy*17} L${target.x+ox-ux*17} ${target.y+oy-uy*17}" marker-end="url(#tutorial-arrow)"/><g transform="translate(${source.x+12},${source.y+15})"><g class="tutorial-guide-hand" style="--guide-dx:${dx}px;--guide-dy:${dy}px"><path d="M0 0 V-7 C0-10 5-10 5-7 V0 L7-3 C9-5 12-3 11-1 L12-2 C15-3 17-1 16 1 C19 0 21 3 19 6 L16 13 C15 15 13 16 10 16 H7 C5 16 4 15 3 13 L-4 6 C-6 3-3 0-1 2 L2 5"/></g></g></g>`;
+    }
+    return `<defs><filter id="tile-shadow" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="0" dy="2" stdDeviation="1" flood-color="#3d5031" flood-opacity=".06"/></filter><marker id="tutorial-arrow" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0 0 L6 3.5 L0 7 Z"/></marker></defs>${levels[active].cells.map((c,i)=>{
       const left=state.layers[i],green=left===0,partial=left>0&&left<(c.layers||1);
-      const classes=['hex-tile',`value-${state.values[i]}`,green?'floor-green':partial?'floor-partial':'floor-untouched',c.layers===2?'layered':'',selected===i?'selected':'',hinted?.includes(i)?'hinted':'',selected!==null&&engine.adjacent(selected,i)?'neighbor':'',matched.has(i)?'matching':'',dropped.has(i)?'falling':'',pair.includes(i)?'tutorial-focus':'',pair[0]===i?'tutorial-source':'',pair[1]===i?'tutorial-target':'',pair.length&&!pair.includes(i)?'tutorial-muted':''].filter(Boolean).join(' ');
+      const classes=['hex-tile',`value-${state.values[i]}`,green?'floor-green':partial?'floor-partial':'floor-untouched',c.layers===2?'layered':'',selected===i?'selected':'',hinted?.includes(i)?'hinted':'',selected!==null&&engine.adjacent(selected,i)?'neighbor':'',matched.has(i)?'matching':'',dropped.has(i)?'falling':'',pair.includes(i)?'tutorial-focus':'',support.includes(i)?'tutorial-support':'',pair[0]===i?'tutorial-source':'',pair[1]===i?'tutorial-target':'',pair.length&&!pair.includes(i)&&!support.includes(i)?'tutorial-muted':''].filter(Boolean).join(' ');
       const p=positions[i],ground=green?'zemin yeşil':`${left} eşleşme gerekiyor`;
-      return `<g transform="translate(${p.x},${p.y})" class="${classes}" data-index="${i}" role="button" tabindex="${i===focusIndex?0:-1}" aria-label="${state.values[i]} sayısı, ${ground}${selected===i?', seçili':''}${hinted?.includes(i)?', ipucu':''}" aria-pressed="${selected===i}" aria-disabled="${!interactive||(pair.length&&!pair.includes(i))}"><polygon class="floor-shape" points="${outer}"/><g class="gem"><polygon class="gem-back" points="${inner}" transform="translate(0 3.5)"/><polygon class="gem-shape" points="${inner}"/><path class="gem-highlight" d="${highlight}"/><text class="hex-number" text-anchor="middle" x="0" y="0">${state.values[i]}</text></g>${green?'<path class="floor-mark" d="m-4 29 3 3 6-7"/>':c.layers===2?`<text class="layer-count" text-anchor="middle" x="0" y="31">${left}</text>`:''}</g>`;
-    }).join('')}<g class="fx-layer" aria-hidden="true"></g>`;
+      const pips=c.layers===2&&!green?`<g class="layer-pips" aria-hidden="true">${Array.from({length:left},(_,dot)=>`<circle class="layer-pip" cx="${left===2?(dot?4:-4):0}" cy="31" r="2.5"/>`).join('')}</g>`:'';
+      return `<g transform="translate(${p.x},${p.y})" class="${classes}" data-index="${i}" role="button" tabindex="${i===focusIndex?0:-1}" aria-label="${state.values[i]} sayısı, ${ground}${selected===i?', seçili':''}${hinted?.includes(i)?', ipucu':''}" aria-pressed="${selected===i}" aria-disabled="${!interactive||(pair.length&&!pair.includes(i))}"><polygon class="floor-shape" points="${outer}"/><g class="gem"><polygon class="gem-back" points="${inner}" transform="translate(0 3.5)"/><polygon class="gem-shape" points="${inner}"/><path class="gem-highlight" d="${highlight}"/><text class="hex-number" text-anchor="middle" x="0" y="0">${state.values[i]}</text></g>${green?'<path class="floor-mark" d="m-4 29 3 3 6-7"/>':pips}</g>`;
+    }).join('')}${gesture}<g class="fx-layer" aria-hidden="true"></g>`;
   }
   function render(state=null,options={}) {
     const display=state||{values:engine.values,layers:engine.layers,score:engine.score,movesLeft:engine.movesLeft};
@@ -338,13 +355,14 @@
     $('move-counter').textContent=`${levels[active].moves-display.movesLeft} / ${levels[active].moves} HAMLE`;
     $('coverage').textContent=`${covered} / ${total}`;
     $('coverage-ring').style.strokeDashoffset=String(87.965*(1-covered/total));
-    $('hint').disabled=busy||!!hintJob||engine.status!=='playing';
+    $('hint').disabled=busy||!!hintJob||!!guideFeedback()||engine.status!=='playing';
     $('hint').querySelector('span').textContent=hintJob?'Aranıyor…':'İpucu';
     $('reset').disabled=false;
     $('skip-animation').hidden=!busy;
     $('continue').hidden=busy||engine.status==='playing';
     $('continue').textContent=engine.status==='lost'?'Yeniden dene →':'Devam et →';
     $('board').setAttribute('aria-busy',String(busy));
+    $('board').setAttribute('aria-disabled',String(busy||!!guideFeedback()||engine.status!=='playing'));
     $('board-stage').classList.toggle('busy',busy);
     $('last-combo').textContent=comboText;
     const status=$('board-status');status.className='board-status';
@@ -356,21 +374,33 @@
     else if(display.score>=levels[active].target)text=`Puan hedefi tamam! ${total-covered} zemini daha yeşile boya.`;
     else text='Bir taş seç; komşusuyla değiştirip üçlüyü oluştur.';
     $('status-text').textContent=text;
+    if($('ground-goal-check')){$('ground-goal-check').hidden=covered<total;$('ground-goal-check').setAttribute('aria-label',covered===total?'Yeşil zemin hedefi tamam':'Yeşil zemin hedefi sürüyor');}
+    if($('ground-label'))$('ground-label').textContent=active===0&&engine.turn===0?'Altındaki zemin yeşillenir':'Yeşil zemin';
+    if($('game-goal-title'))$('game-goal-title').textContent=active===0?'3 aynı sayıyı sırala':'İki hedefi de tamamla';
     renderCoach();
   }
   function renderCoach(){
-    const coach=$('tutorial-coach'),tutorial=isTutorial();coach.hidden=!tutorial||(engine.status!=='playing'&&!busy);
+    const coach=$('tutorial-coach'),tutorial=isTutorial(),feedback=guideFeedback();coach.hidden=!tutorial||(engine.status!=='playing'&&!busy);
+    document.body.dataset.learning=active===0?'first':tutorial?'goals':'';
+    document.body.dataset.hasLayers=String(levels[active].cells.some(cell=>cell.layers===2));
+    document.body.dataset.guideFeedback=String(!!feedback);
+    document.body.dataset.guideStep=tutorial?String(busy?Math.max(0,engine.turn-1):engine.turn):'';
+    if($('coach-next')){$('coach-next').hidden=!feedback;$('coach-next').disabled=!feedback;}
     if(!tutorial)return;
-    const steps=levels[active].steps,index=Math.min(engine.turn,steps.length-1),step=steps[index];
-    $('coach-step').textContent=`${busy?'İZLE · ':''}ADIM ${busy?Math.max(1,engine.turn):Math.min(engine.turn+1,steps.length)} / ${steps.length}`;
-    $('coach-title').textContent=levels[active].title||levels[active].name;
-    $('coach-text').textContent=busy?(steps[Math.max(0,engine.turn-1)].afterText||'Güzel! Şimdi taşların nasıl düştüğünü izle.'):step?.text||'Hazırsın!';
+    const steps=levels[active].steps,index=Math.min(engine.turn,steps.length-1),step=steps[index],previous=steps[Math.max(0,engine.turn-1)],showFeedback=busy||!!feedback;
+    $('coach-step').textContent=feedback?'BUNU HATIRLA':`${busy?'İZLE · ':''}ADIM ${busy?Math.max(1,engine.turn):Math.min(engine.turn+1,steps.length)} / ${steps.length}`;
+    $('coach-title').textContent=showFeedback?(previous.afterTitle||'İşte böyle!'):(step?.title||levels[active].title||levels[active].name);
+    const partner=selected!==null&&step?.pair.includes(selected)?step.pair.find(i=>i!==selected):null;
+    const destination=partner!==null?engine.values[partner]:null,dative={1:'e',2:'ye',3:'e',4:'e',5:'e',6:'ya',7:'ye',8:'e',9:'a'};
+    $('coach-text').textContent=showFeedback?(previous.afterText||'Taşlar düşüyor; yeşil zemin yerinde kalıyor.'):partner!==null?`Şimdi işaretli ${destination}’${dative[destination]||'e'} dokun.`:step?.text||'Hazırsın!';
+    if($('guide-explanation')){$('guide-explanation').hidden=active!==0||engine.turn>0||busy;$('guide-explanation').textContent='Aynı sayılar eşleşir. Üzerlerindeki sayılar toplanıp puan olur.';}
     $('coach-progress').style.width=`${engine.turn/steps.length*100}%`;
   }
   function renderScore(value){
     $('sum').textContent=value;
     $('score-progress').style.width=`${Math.min(1,value/levels[active].target)*100}%`;
-    $('score-goal-label').textContent=value>=levels[active].target?'HEDEF TAMAM':'HEDEF PUAN';
+    $('score-goal-label').textContent=active===0?'PUANIN':value>=levels[active].target?'HEDEF TAMAM':'HEDEF PUAN';
+    if($('score-goal-check')){$('score-goal-check').hidden=value<levels[active].target;$('score-goal-check').setAttribute('aria-label',value>=levels[active].target?'Puan hedefi tamam':'Puan hedefi sürüyor');}
   }
   function scoreEquation(frame){
     const values=frame.matched.map(index=>frame.before[index]);
@@ -570,7 +600,7 @@
     try{const positions=geometry().positions;for(const [from,to]of[[a,b],[b,a]]){const dx=(positions[to].x-positions[from].x)*.25,dy=(positions[to].y-positions[from].y)*.25;$('board').querySelector(`[data-index="${from}"] .gem`)?.animate([{transform:'translate(0px,0px)'},{transform:`translate(${dx}px,${dy}px)`,offset:.4},{transform:'translate(0px,0px)'}],{duration:motion.invalid,easing:'ease-out'});}}catch(_){}
   }
   async function performSwap(a,b) {
-    if(!gameInputAllowed())return;
+    if(!gameInputAllowed()||guideFeedback())return;
     if(busy){finishPresentation(presentation);return;}
     if(engine.status!=='playing')return;
     const guide=guidedStep();
@@ -603,7 +633,7 @@
     finally{finishPresentation(job);}
   }
   function select(index) {
-    if(!gameInputAllowed())return;
+    if(!gameInputAllowed()||guideFeedback())return;
     if(busy){finishPresentation(presentation);return;}
     if(engine.status!=='playing')return;
     const guide=guidedStep();
@@ -644,7 +674,7 @@
   }
   function cancelHint(){const job=hintJob;hintJob=null;if(job){clearTimeout(job.timer);job.worker?.terminate();job.resolve?.(null);}}
   async function hint(){
-    if(!gameInputAllowed()||busy||hintJob||engine.status!=='playing')return;
+    if(!gameInputAllowed()||guideFeedback()||busy||hintJob||engine.status!=='playing')return;
     const guide=guidedStep();if(guide){selected=null;hinted=guide.pair;render();toast(guide.text);return;}
     const job={token:epoch,game:engine,worker:null,timer:null,resolve:null};hintJob=job;render();
     let suggestion=null;
@@ -653,7 +683,7 @@
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=13');
+            job.worker=new Worker('./hint-worker.js?v=14');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:levels[active],snapshot:engine.snapshot()});
@@ -685,7 +715,7 @@
     }catch(_){return null;}
   }
   $('board').addEventListener('pointerdown',e=>{
-    if(!gameInputAllowed()||e.isPrimary===false||(e.button!==0&&e.pointerType!=='touch'))return;
+    if(!gameInputAllowed()||guideFeedback()||e.isPrimary===false||(e.button!==0&&e.pointerType!=='touch'))return;
     if(busy){e.preventDefault();finishPresentation(presentation);return;}
     if(engine.status!=='playing'||pointer)return;
     const tile=e.target.closest('[data-index]');if(!tile)return;
@@ -712,7 +742,7 @@
   window.addEventListener('pagehide',()=>{stopPointer();if(presentation)finishPresentation(presentation);});
   $('board').addEventListener('click',e=>{if(e.detail===0){const tile=e.target.closest('[data-index]');if(tile)select(+tile.dataset.index);}});
   $('board').addEventListener('keydown',e=>{
-    const tile=e.target.closest('[data-index]');if(!tile||!gameInputAllowed())return;if(busy){e.preventDefault();finishPresentation(presentation);return;}
+    const tile=e.target.closest('[data-index]');if(!tile||!gameInputAllowed())return;if(guideFeedback()){e.preventDefault();return;}if(busy){e.preventDefault();finishPresentation(presentation);return;}
     const index=+tile.dataset.index;
     if(e.key==='Enter'||e.key===' '){e.preventDefault();select(index);return;}
     const direction={ArrowRight:[1,0],ArrowLeft:[-1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];if(!direction)return;
@@ -721,6 +751,12 @@
     if(next){focusIndex=next.i;for(const n of $('board').querySelectorAll('[data-index]'))n.setAttribute('tabindex',+n.dataset.index===focusIndex?'0':'-1');$('board').querySelector(`[data-index="${focusIndex}"]`)?.focus?.();}
   });
   $('coach-skip').addEventListener('click',()=>{cancelPresentation();for(let i=0;i<tutorialCount;i++)if(!saved.done.includes(i))saved.done.push(i);saved.done.sort((a,b)=>a-b);enterGame(tutorialCount);});
+  $('coach-next')?.addEventListener('click',()=>{
+    if(!gameInputAllowed())return;
+    const feedback=guideFeedback();if(!feedback)return;
+    saved.guideAcks.push(feedback.id);selected=null;hinted=null;stopPointer();
+    focusIndex=guidedStep()?.pair[0]??0;render();persist();
+  });
   $('tutorial-replay').addEventListener('click',()=>enterGame(0,{fresh:true}));
   $('skip-animation').addEventListener('click',()=>finishPresentation(presentation));
   $('reset').addEventListener('click',restart);$('retry').addEventListener('click',restart);$('hint').addEventListener('click',hint);
@@ -736,6 +772,7 @@
   });
   $('home-play').addEventListener('click',()=>{unlockAudio();const next=nextStage();if(!next)showScreen('journey');else if(next.resume)enterGame(next.index);else requestStage(next.index);});
   $('home-teach').addEventListener('click',()=>enterGame(0,{fresh:true}));
+  $('help-teach')?.addEventListener('click',()=>enterGame(0,{fresh:true}));
   $('settings').addEventListener('click',event=>{event.stopPropagation();openSettings();});
   $('pause').addEventListener('click',pauseGame);
   $('pregame-start').addEventListener('click',()=>{const index=pendingStage;if(index===null)return;const checkpoint=validCheckpoint(index);enterGame(index,{fresh:checkpoint?.status!=='playing'});});
@@ -754,7 +791,7 @@
   $('setting-haptics').addEventListener('change',event=>{saved.preferences.haptics=event.target.checked;savePreferences();if(saved.preferences.haptics&&typeof navigator.vibrate==='function')try{navigator.vibrate(12);}catch(_){} });
   $('settings-reset').addEventListener('click',()=>openModal('reset-dialog'));
   $('reset-confirm').addEventListener('click',()=>{
-    cancelPresentation();cancelHint();closeAllDialogs();saved.done=[];saved.boards={};saved.records={};saved.current=0;active=0;loadLevel(0,true);showScreen('home',{replace:true});toast('Yolculuk sıfırlandı. Ses ve hareket tercihlerin korundu.');
+    cancelPresentation();cancelHint();closeAllDialogs();saved.done=[];saved.boards={};saved.guideAcks=[];saved.records={};saved.current=0;active=0;loadLevel(0,true);showScreen('home',{replace:true});toast('Yolculuk sıfırlandı. Ses ve hareket tercihlerin korundu.');
   });
   window.addEventListener('popstate',event=>{
     if(topDialog()){closeModal(topDialog());try{history.pushState({screen},'','#'+screen);}catch(_){}return;}

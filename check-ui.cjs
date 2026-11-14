@@ -34,7 +34,7 @@ function enterStage(w,index){
 }
 function tile(w,index){return w.document.querySelector(`#board [data-index="${index}"]`);}
 function select(w,index){click(w,`#board [data-index="${index}"]`);}
-async function swap(w,pair){select(w,pair[0]);select(w,pair[1]);await settle();}
+async function swap(w,pair){const next=w.document.getElementById('coach-next');if(next&&!next.hidden)next.click();select(w,pair[0]);select(w,pair[1]);await settle();}
 function numbers(w){return [...w.document.querySelectorAll('#board .hex-number')].map(node=>+node.textContent);}
 function readSave(w){return JSON.parse(w.localStorage.getItem(key));}
 function assertClassicShell(w){

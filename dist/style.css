@@ -235,3 +235,147 @@ body.reduce-motion .score-packet,body.reduce-motion .score-digit,body.reduce-mot
 .score-packet[data-reward-headline] .score-packet-chain{font-size:11px;letter-spacing:.7px;color:#fff3b7}
 .reward-goal-hit{filter:drop-shadow(0 0 8px #d8f69666)}
 body.reduce-motion .reward-goal-hit{filter:none}
+
+/* Teach the action first. Numerals identify stones; soil and pips describe the floor. */
+.hex-tile.value-1{--gem:#cab3ee;--gem-edge:#9e7bc6;--gem-back:#74569c;--number:#432d65}
+.hex-tile.value-2{--gem:#f6d37b;--gem-edge:#cda147;--gem-back:#9d7935;--number:#624713}
+.hex-tile.value-3{--gem:#f2ada1;--gem-edge:#cb7c70;--gem-back:#a8584c;--number:#6e332b}
+.hex-tile.value-4{--gem:#9ecfe9;--gem-edge:#6fabc9;--gem-back:#4d849d;--number:#244d66}
+.hex-tile.value-5{--gem:#e4a7d0;--gem-edge:#bb78ab;--gem-back:#91527f;--number:#612a54}
+.hex-number{font-size:30px;font-weight:750}
+.floor-shape{fill:#534b3c;stroke:#8d7b5a}
+.floor-partial .floor-shape{fill:#867748;stroke:#dfc47f}
+.layered.floor-untouched .floor-shape{stroke:#d7bc7e}
+.layer-pips{pointer-events:none}
+.layer-pip{fill:#fff3c9;stroke:#615233;stroke-width:.65}
+.legend-hex.untouched{background:#8d7b5a}
+.legend-hex.double{position:relative;background:#867748;width:17px;height:17px}
+.legend-hex.double:before,.legend-hex.double:after{content:"";position:absolute;top:7px;width:3px;height:3px;border-radius:50%;background:#fff3c9}
+.legend-hex.double:before{left:4px}.legend-hex.double:after{right:4px}
+body[data-has-layers="false"] .legend-double{display:none}
+.hex-tile.tutorial-muted,.hex-tile.tutorial-muted:hover{opacity:.3}
+.tutorial-support{opacity:1}
+.tutorial-support .gem-shape{stroke:#fff4bd;stroke-width:2}
+.tutorial-gesture,.tutorial-gesture *{pointer-events:none}
+.tutorial-guide-line{fill:none;stroke:#fff4b6;stroke-width:2.6;stroke-dasharray:4 3;stroke-linecap:round;opacity:.9}
+#tutorial-arrow path{fill:#fff4b6}
+.tutorial-guide-hand{animation:teaching-swipe 2.2s ease-in-out infinite}
+.tutorial-guide-hand path{fill:#fff6da;stroke:#234a37;stroke-width:1.4;stroke-linejoin:round;filter:drop-shadow(0 2px 2px #102e2477)}
+@keyframes teaching-swipe{0%,15%{transform:translate(0,0);opacity:1}70%,85%{transform:translate(var(--guide-dx),var(--guide-dy));opacity:1}95%,100%{transform:translate(var(--guide-dx),var(--guide-dy));opacity:0}}
+
+/* Both level goals stay together, with the move budget beside them. */
+body[data-screen="game"] .game-topbar{padding-bottom:12px}
+body[data-screen="game"] .game-context{display:flex;align-items:center;gap:12px;max-width:530px;margin:0 auto 10px;color:#edf6db}
+body[data-screen="game"] .game-context .level-tag{color:#bad298;font-size:10px;letter-spacing:.65px}
+body[data-screen="game"] #game-goal-title{font-size:16px;line-height:1.3;font-weight:650}
+body[data-screen="game"] .scoreboard{display:grid;grid-template-columns:minmax(0,1fr) 84px;gap:12px;align-items:stretch}
+body[data-screen="game"] .goals-panel{min-width:0;border:2px solid #c6d69d;border-radius:16px;background:linear-gradient(#fffdf0,#edf0d2);box-shadow:inset 0 2px #fff,0 3px 0 #0f3226}
+body[data-screen="game"] .hud-score.metric{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;column-gap:10px;min-height:58px;height:auto;padding:10px 32px 10px 12px;border:0;border-radius:14px 14px 0 0;background:none;box-shadow:none;text-align:left;overflow:visible}
+body[data-screen="game"] .hud-score>#score-goal-label{justify-content:flex-start;margin:0;font-size:10px;letter-spacing:.5px;color:#5e744c}
+body[data-screen="game"] .score-pair{justify-content:flex-end;gap:5px}
+body[data-screen="game"] .score-pair strong{font-size:28px;letter-spacing:-.7px}
+body[data-screen="game"] .score-pair #target{font-size:20px;font-weight:600;color:#677e54}
+body[data-screen="game"] .score-track{grid-column:1 / -1;width:100%;height:3px;margin-top:6px}
+body[data-screen="game"] .coverage.ground-goal{position:relative;justify-content:flex-start;min-height:41px;padding:8px 32px 9px 12px;border-top:1px solid #cfd9b4;gap:8px}
+body[data-screen="game"] .ground-goal .mini-progress{display:block;width:21px;height:21px;flex-shrink:0}
+body[data-screen="game"] .ground-goal .mini-progress svg{width:21px;height:21px}
+body[data-screen="game"] .ground-goal .mini-progress circle{stroke:#d0dcb9}
+body[data-screen="game"] .ground-goal #coverage-ring{stroke:#78a344}
+body[data-screen="game"] .ground-goal>div:nth-child(2){display:flex;flex:1;align-items:center;justify-content:space-between;gap:8px}
+body[data-screen="game"] .ground-goal #ground-label{font-size:12px;line-height:1.25;color:#5d744a}
+body[data-screen="game"] .ground-goal #coverage{font-size:16px;line-height:1;white-space:nowrap;color:#365b2e}
+body[data-screen="game"] .goal-check{position:absolute;right:8px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:19px;height:19px;margin:0;padding:2px;border-radius:50%;background:#64883c;color:#f1ffd2}
+body[data-screen="game"] .goal-check .icon{width:14px;height:14px;stroke-width:2.7}
+body[data-screen="game"] .hud-score>.goal-check{top:25px}
+body[data-screen="game"] .moves-badge.metric{height:auto;min-height:100px;padding:14px 6px 10px;display:flex;flex-direction:column;justify-content:center;border-radius:16px}
+body[data-screen="game"] .moves-badge>span{font-size:10px;margin-bottom:8px;letter-spacing:.7px}
+body[data-screen="game"] .moves-badge>strong{font-size:40px}
+body[data-screen="game"] .metric>#score-receipt{top:2px;right:6px;bottom:auto;min-width:26px;padding:2px 5px;border:0;font-size:10px;box-shadow:none}
+body[data-screen="game"][data-learning="first"] .scoreboard{grid-template-columns:1fr}
+body[data-screen="game"][data-learning="first"] .goals-panel{display:grid;grid-template-columns:1fr 1.45fr}
+body[data-screen="game"][data-learning="first"] .hud-score.metric{display:flex;flex-direction:column;justify-content:center;gap:6px;min-height:76px;padding:10px}
+body[data-screen="game"][data-learning="first"] .score-pair #sum{font-size:32px}
+body[data-screen="game"][data-learning="first"] .score-divider,body[data-screen="game"][data-learning="first"] #target,body[data-screen="game"][data-learning="first"] .score-track,body[data-screen="game"][data-learning="first"] .moves-badge{display:none}
+body[data-screen="game"][data-learning="first"] .coverage.ground-goal{border-top:0;border-left:1px solid #cfd9b4;padding:10px 27px 10px 12px;gap:9px}
+body[data-screen="game"][data-learning="first"] .ground-goal>div:nth-child(2){flex-direction:column;align-items:flex-start;gap:7px}
+body[data-screen="game"][data-learning="first"] .ground-goal #coverage{font-size:20px}
+
+/* The instruction is readable before, during and after the move. */
+body[data-screen="game"] .tutorial-coach{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;padding:13px 14px;gap:10px;margin-top:12px;background:#edf3d9}
+body[data-screen="game"] .coach-marker{display:none}
+body[data-screen="game"] .coach-copy{grid-column:1;grid-row:1}
+body[data-screen="game"] .coach-heading{display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin-bottom:5px}
+body[data-screen="game"] .coach-heading>span{font-size:9px;letter-spacing:.7px;color:#667e49}
+body[data-screen="game"] .coach-heading h3{font-size:18px;line-height:1.2;font-weight:750;color:#294e31}
+body[data-screen="game"] .coach-copy p{font-size:14px;line-height:1.45;color:#49613b}
+body[data-screen="game"] .coach-skip{grid-column:2;grid-row:1;align-self:start;font-size:11px;color:#49613b}
+.coach-next{grid-column:1 / -1;min-height:44px;display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 14px;border-radius:10px;background:#315937;color:#f1ffd7;font-size:14px;font-weight:700;box-shadow:0 2px 0 #193d2a}
+.coach-next:hover{background:#244c30}
+body[data-guide-feedback="true"] .tutorial-coach{border-color:#c3df8a;background:#eff7dc}
+body[data-screen="game"] .board-legend{font-size:10px;color:#b0c59b}
+.pregame-lesson{padding:18px 15px;margin:20px 0 12px;border:1px solid #d4dfbe;border-radius:15px;background:#f1f5e5}
+.lesson-example{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:15px}
+.demo-stone{display:grid;place-items:center;width:46px;height:43px;clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);background:#f6d37b;color:#624713;font-size:26px;font-weight:750}
+.demo-arrow{font-size:24px;color:#718c50;padding:0 3px}
+.lesson-example>strong{font-size:30px;line-height:1;color:#365e32;white-space:nowrap}
+.lesson-example small{display:block;font-size:12px;font-weight:500;margin-top:4px}
+.pregame-lesson p{margin:0;font-size:14px;line-height:1.55;color:#4f6540}
+.pregame-lesson p>strong{display:block;margin-bottom:6px;color:#294c30}
+.pregame-modal[data-learning="first"] .modal-symbol{display:none}
+.pregame-modal[data-learning="first"] .pregame-note{font-size:13px;line-height:1.5}
+
+@media(max-width:650px){
+ .home-art>svg{height:170px}.home-art{margin-bottom:-9px}
+ .home-copy h1{font-size:34px;line-height:1.12}
+ .home-description{font-size:14px;line-height:1.5;max-width:305px}
+ .home-teach{font-size:14px;min-height:46px;margin-top:12px;border:1px solid #cbdab4;border-radius:11px;width:100%;background:#edf3e1}
+}
+@media(max-width:360px){
+ body[data-screen="game"] .game-context{gap:8px;margin-bottom:8px}
+ body[data-screen="game"] #game-goal-title{font-size:14px}
+ body[data-screen="game"] .scoreboard{grid-template-columns:minmax(0,1fr) 68px;gap:9px}
+ body[data-screen="game"] .hud-score.metric{padding-left:9px;padding-right:26px;column-gap:6px}
+ body[data-screen="game"] .hud-score>#score-goal-label{font-size:9px;letter-spacing:0}
+ body[data-screen="game"] .score-pair strong{font-size:25px}
+ body[data-screen="game"] .score-pair #target{font-size:18px}
+ body[data-screen="game"] .coverage.ground-goal{padding-left:9px;padding-right:26px}
+ body[data-screen="game"] .ground-goal #ground-label{font-size:11px}
+ body[data-screen="game"] .ground-goal #coverage{font-size:14px}
+ body[data-screen="game"] .tutorial-coach{grid-template-columns:minmax(0,1fr) auto;padding:11px 10px;gap:8px}
+ body[data-screen="game"] .coach-copy{grid-column:1}.coach-next{grid-column:1 / -1}
+ body[data-screen="game"] .coach-skip{grid-column:2}
+ body[data-screen="game"] .coach-heading h3{font-size:17px}
+ .demo-stone{width:40px;height:38px}
+}
+@media(orientation:landscape) and (max-height:600px){
+ body[data-screen="game"] .game-context{flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:12px}
+ body[data-screen="game"] #game-goal-title{font-size:14px}
+ body[data-screen="game"] .scoreboard{display:flex;flex-direction:column;gap:11px}
+ body[data-screen="game"] .goals-panel{width:100%}
+ body[data-screen="game"] .hud-score.metric{display:flex;flex-direction:column;gap:6px;min-height:80px;padding:12px 8px}
+ body[data-screen="game"] .score-track{margin-top:1px}
+ body[data-screen="game"] .coverage.ground-goal{padding:10px 18px 10px 8px;gap:5px}
+ body[data-screen="game"] .ground-goal .mini-progress{display:none}
+ body[data-screen="game"] .ground-goal>div:nth-child(2){flex-direction:column;align-items:center;gap:8px}
+ body[data-screen="game"] .ground-goal #ground-label{font-size:12px}
+ body[data-screen="game"] .ground-goal #coverage{font-size:18px}
+ body[data-screen="game"] .moves-badge.metric{min-height:74px;padding:9px 5px}
+ body[data-screen="game"][data-learning="first"] .goals-panel{display:flex;flex-direction:column}
+ body[data-screen="game"][data-learning="first"] .coverage.ground-goal{border-left:0;border-top:1px solid #cfd9b4;padding:12px 18px 12px 8px}
+ body[data-screen="game"][data-learning="first"] .ground-goal>div:nth-child(2){align-items:center}
+ body[data-screen="game"] .tutorial-coach{grid-template-columns:minmax(0,1fr) auto;padding:9px 12px;gap:7px;margin-top:6px}
+ body[data-screen="game"] .coach-copy{grid-column:1}
+ body[data-screen="game"] .coach-skip{grid-column:2}
+ body[data-screen="game"] .coach-heading{flex-direction:row;align-items:center;gap:9px;margin-bottom:3px}
+ body[data-screen="game"] .coach-heading h3{font-size:16px}
+ body[data-screen="game"] .coach-copy p{font-size:13px;line-height:1.35}
+ body[data-screen="game"] .coach-next{grid-column:1 / -1;min-height:40px;padding:8px 12px;font-size:13px}
+}
+body.reduce-motion .tutorial-guide-hand{display:none}
+@media(prefers-reduced-motion:reduce){.tutorial-guide-hand{display:none}}
+body[data-screen="game"] .hud-score.metric{padding-right:36px}
+body[data-screen="game"][data-guide-feedback="true"] .tutorial-coach{grid-template-columns:minmax(0,1fr) 44px}
+body[data-screen="game"][data-guide-feedback="true"] .coach-copy{grid-column:1 / -1}
+body[data-screen="game"][data-guide-feedback="true"] .coach-next{grid-column:1;grid-row:2}
+body[data-screen="game"][data-guide-feedback="true"] .coach-skip{grid-column:2;grid-row:2;align-self:center;width:44px;min-width:44px;padding:6px 0;text-align:center;white-space:nowrap}
+body[data-guide-feedback="true"] .combo-feedback{display:none}
