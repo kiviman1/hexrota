@@ -19,6 +19,8 @@ Bu sürümde 2 sabit öğretici ve 10 ana bölüm vardır. Her ana bölümün 4 
 
 ## İlk 10 bölümün ritmi
 
+**9.2 denetim notu:** Aşağıdaki tablo mevcut tam bilgili kabul kapısının tarihsel ölçümüdür; görünür bilgiyle oyuncu erişilebilirliğini doğrulamaz. [Yeni zorluk denetimi](DIFFICULTY_AUDIT.md) gizli RNG okumayan dört ayrı modeli, 17.920 oyunu ve uygulanmamış dengeleme önerilerini içerir. Bu yeni ölçümde özellikle 6 ve 9 için rahatlama rolü, 5 için varyant benzerliği, 8 ve 10 için erişilebilirlik yeniden değerlendirilmelidir. Yayımlanmış bölüm verileri bu denetimde değiştirilmedi.
+
 Aşağıdaki yüzdeler **bot başarılarıdır**. Her varyant/model için 64 tekrar, bölüm/model için toplam 256 deneme vardır. Dört modelle 10.240 yeni varyant oyunu; ayrıca aynı yöntemle 2.560 orijinal tahta oyunu ölçülmüştür. Başarılar insan kazanma olasılığı değildir.
 
 | Bölüm | Tasarım rolü | Hücre | Hamle | Puan | Varyant | Rastgele % | Açgözlü % | Alan % | Planlama % | Zorluk endeksi |

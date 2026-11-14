@@ -1,0 +1,15 @@
+'use strict';
+const assert=require('node:assert/strict'),{createTracker}=require('./dist/playtest.js');
+let utc=100000,mono=0;const tracker=createTracker({now:()=>utc,monotonic:()=>mono,limit:10});
+const context={levelId:1,variantId:'v1',levelDataVersion:'variants-v1',attemptId:'attempt-1',attemptNumber:1,movesUsed:0,movesRemaining:10,score:0,targetScore:85,covered:0,totalCells:19,remainingLayers:19,cascades:0,hintsUsed:0,status:'playing'};
+assert.equal(tracker.recordEvent('level_started',context),false);assert.equal(tracker.exportData().events.length,0,'nothing recorded before consent');
+tracker.setEnabled(true);tracker.recordEvent('level_started',context);tracker.setActivity({playing:true,attemptId:context.attemptId});mono=500;tracker.setActivity({playing:false,attemptId:context.attemptId});mono=3000;tracker.setActivity({playing:true,attemptId:context.attemptId});mono=3300;
+assert.equal(tracker.snapshot().attempts[0].activeMs,800,'dialogs/background/animation do not count as active play');
+tracker.recordMove({attemptId:context.attemptId,turn:1,pair:[0,1],cells:[{q:0,r:0},{q:1,r:0}],scoreBefore:0,scoreAfter:9,movesRemaining:9,coveredBefore:0,coveredAfter:3,remainingLayers:16,waves:1,matchedIndices:[0,1,2]});
+tracker.recordEvent('hint_used',{...context,hintsUsed:1});tracker.recordEvent('level_failed',{...context,score:80,covered:18,movesUsed:10,movesRemaining:0,status:'lost'});tracker.setActivity({playing:false,attemptId:null});
+const failed=tracker.exportData().events.find(e=>e.name==='level_failed');assert.equal(failed.data.missingScore,5);assert.equal(failed.data.missingGround,1);assert.equal(failed.data.failureReason,'score_and_ground');
+const snapshot=tracker.snapshot(),reload=createTracker({now:()=>utc,monotonic:()=>mono,state:snapshot});assert.deepEqual(reload.snapshot(),snapshot,'local save restores terminal summaries and observed start');
+assert.throws(()=>tracker.recordEvent('level_started',{...context,email:'x@example.test'}),/Unexpected/);assert.throws(()=>tracker.recordEvent('level_started',{...context,variantId:{email:'private'}}),/Invalid/);assert.throws(()=>tracker.recordMove({attemptId:context.attemptId,turn:1,pair:[0,1],cells:[{q:0,r:0,email:'private'},{q:1,r:0}],scoreBefore:0,scoreAfter:9,movesRemaining:9,coveredBefore:0,coveredAfter:3,remainingLayers:16,waves:1,matchedIndices:[0,1,2]}),/Invalid/);
+for(let i=0;i<20;i++)tracker.recordEvent('life_blocked',{}, {requestedLevelId:1,reason:'lives_empty',lives:0,developerBypass:false});assert.equal(tracker.snapshot().events.length,10);assert.equal(tracker.snapshot().overflow,true,'incomplete window is explicitly flagged');
+tracker.setEnabled(false);const length=tracker.snapshot().events.length;tracker.recordEvent('hint_used',context);assert.equal(tracker.snapshot().events.length,length);tracker.clear();assert.equal(tracker.snapshot().enabled,false);assert.equal(tracker.snapshot().events.length,0);
+console.log('Local playtest passed: explicit consent, active-time exclusion, move/goal/life observations, JSON resume, PII rejection and bounded export.');

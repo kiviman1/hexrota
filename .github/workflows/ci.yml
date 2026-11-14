@@ -112,3 +112,17 @@ jobs:
         run: npm run test:mobile-browser
         env:
           HEXROTA_BROWSER: ${{ matrix.browser }}
+
+  observable-difficulty-audit:
+    name: Observable difficulty audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.2'
+      - name: Check hidden-information independence and reproduce all audit trials
+        run: npm run test:observable
