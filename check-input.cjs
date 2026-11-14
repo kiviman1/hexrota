@@ -222,7 +222,7 @@ test('nonzero presentation supports skip and a strict total duration bound',asyn
     const swaps=f.animations.filter(a=>a.target.classList.contains('gem')&&a.target.closest('.swap-stone[data-swap-kind="valid"]')&&Array.isArray(a.frames)&&a.frames.length>=2&&a.frames[0].transform==='translate(0px,0px)');
     assert.equal(swaps.length,2,'both swapped stones visibly slide');
     assert(swaps.every(a=>a.options.duration>=280),'the swap remains on screen long enough to follow');
-    const skip=f.d.getElementById('skip-animation');assert(skip&&!skip.hidden,'visible skip control during effects');
+    const skip=f.d.getElementById('skip-animation');assert(skip&&skip.hidden,'animation skip must stay hidden so the board never resizes');
     f.click('skip-animation');await f.idle(150);f.assertUnlocked();f.assertState(game,'skipped presentation');
     f.click('reset');const resetLevel=f.level,resetPair=resetLevel.solution[0],resetGame=new f.w.HexMatch(resetLevel);resetGame.swap(...resetPair);const start=Date.now();f.tap(resetPair[0]);f.tap(resetPair[1]);await f.idle(3600);
     assert(Date.now()-start<3600,'long chains finish within the bounded presentation budget');

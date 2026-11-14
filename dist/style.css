@@ -480,3 +480,6 @@ body[data-guide-feedback="true"] .combo-feedback{display:none}
 /* Leave the game board uncluttered; preserve assistive announcements and contextual action buttons. */
 #board-status{min-height:0px;padding:0px;margin:0}
 body[data-screen="game"] .board-stage{grid-template-rows:minmax(0,1fr) auto}
+
+/* The animation-skip button stays internal for lifecycle regression tests only; it never changes board height. */
+#skip-animation{display:none!important}

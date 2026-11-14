@@ -107,8 +107,18 @@ function toward(from,to,fraction){return {x:from.x+(to.x-from.x)*fraction,y:from
    assert.deepEqual(await f.attempts(),plain(f.level.solution.slice(0,2)));assert.deepEqual(await f.read(),plain(f.model.snapshot()));
   });
   await check('touch during animation only reveals result',async()=>{
-   const f=await open(390,844,{motion:'full'}),pair=f.level.solution[0];await f.gesture(f.points[pair[0]],[f.points[pair[1]]],{wait:false});assert.equal(await f.page.locator('#board').getAttribute('aria-busy'),'true');
-   await f.gesture(f.points[pair[0]],[f.points[pair[1]]]);await sameAttempt(f,pair);assert.equal((await f.read()).turn,1);
+   const f=await open(390,844,{motion:'full'}),pair=f.level.solution[0];
+   const initial=await f.page.locator('#board').boundingBox();
+   await f.gesture(f.points[pair[0]],[f.points[pair[1]]],{wait:false});
+   assert.equal(await f.page.locator('#board').getAttribute('aria-busy'),'true');
+   const active=await f.page.locator('#board').boundingBox();
+   assert.equal(await f.page.locator('#skip-animation').isVisible(),false,'the skip animation control is never visible');
+   assert(Math.abs(active.height-initial.height)<=1,'board height does not shrink when a swap animation starts');
+   assert(Math.abs(active.width-initial.width)<=1,'board width does not change when swap effects begin');
+   await f.gesture(f.points[pair[0]],[f.points[pair[1]]]);
+   const finished=await f.page.locator('#board').boundingBox();
+   assert(Math.abs(finished.height-initial.height)<=1,'board height remains stable after animation finishes');
+   await sameAttempt(f,pair);assert.equal((await f.read()).turn,1);
   });
   for(const stage of [0,1])await check(`T${stage+1} guided native input`,async()=>{const f=await open(390,844,{stage}),pair=f.level.solution[0];await f.gesture(f.points[pair[0]],[f.points[pair[1]]]);await sameAttempt(f,pair);});
   assert.deepEqual(errors,[],'no uncaught browser errors');

@@ -728,7 +728,7 @@ window.HexSessionStore.boot(function startApp(session) {
     $('hint').disabled=busy||!!hintJob||!!guideFeedback()||engine.status!=='playing';
     $('hint').querySelector('span').textContent=hintJob?'Aranıyor…':'İpucu';
     $('reset').disabled=false;
-    $('skip-animation').hidden=!busy;
+    $('skip-animation').hidden=true; // Permanent animation-skip control is intentionally hidden; board remains full-size.
     $('continue').hidden=busy||engine.status==='playing';
     $('continue').textContent=engine.status==='lost'?'Yeniden dene →':'Devam et →';
     $('board').setAttribute('aria-busy',String(busy));
@@ -1136,7 +1136,7 @@ window.HexSessionStore.boot(function startApp(session) {
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=23');
+            job.worker=new Worker('./hint-worker.js?v=24');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:activeLevel,snapshot:engine.snapshot()});

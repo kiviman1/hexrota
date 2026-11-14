@@ -85,7 +85,7 @@ test('the board help strip is removed without losing controls or accessible stat
   assert.equal(layout.minHeight,'0px','status has no reserved height');
   assert.equal(layout.paddingTop,'0px','no upper status gap');
   assert.equal(layout.paddingBottom,'0px','no lower status gap');
-  assert(f.node('continue')&&f.node('skip-animation'),'continue and animation skip controls remain');
+  assert(f.node('continue'),'contextual Continue action remains available');assert(f.node('skip-animation').hidden,'animation skip never takes visible space');
  }finally{f.close();}
 });
 
