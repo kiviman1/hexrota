@@ -131,7 +131,8 @@ test('the second lesson separates stone values, double ground and the two win co
   assert(engine.swap(...level.solution[0]).ok);await play(f,level.solution[0]);feedback(f);exact(f,engine,'double ground first hit');
   assert.equal(tile(f,4).querySelectorAll('.layer-pips circle').length,1,'one pip is left after the first hit');
   assert.equal(tile(f,0).querySelectorAll('.layer-pips circle').length,2,'untouched double ground keeps two pips');
-  assert(/iki|2/.test(f.node('#coach-text').textContent)&&/eşleşme/i.test(f.node('#coach-text').textContent),'feedback names the two-match requirement');
+  const doubleExplanation=f.node('#coach-text').textContent.toLocaleLowerCase('tr-TR');
+  assert(/iki|2/.test(doubleExplanation)&&/eşleşme/.test(doubleExplanation),'feedback names the two-match requirement');
   acknowledge(f);
   assert(engine.swap(...level.solution[1]).ok);await play(f,level.solution[1]);feedback(f,false);exact(f,engine,'chain uses one move');
   assert(engine.swap(...level.solution[2]).ok);await play(f,level.solution[2]);feedback(f);exact(f,engine,'score target with one ground remaining');
@@ -139,8 +140,9 @@ test('the second lesson separates stone values, double ground and the two win co
   assert.equal(f.node('#score-goal-check').hidden,false,'score goal visibly completes independently');
   assert.equal(f.node('#ground-goal-check').hidden,true,'unfinished ground goal remains visibly incomplete');
   assert.equal(f.node('#win-dialog').open,false,'score alone cannot complete the lesson');
-  const explanation=f.node('#coach-text').textContent;assert(/puan/i.test(explanation)&&/zemin/i.test(explanation),'feedback names both goals');
-  assert(/iki|ikisi|birlikte/i.test(explanation),'feedback says both conditions are required');
+  const explanation=f.node('#coach-text').textContent.toLocaleLowerCase('tr-TR');
+  assert(/puan/.test(explanation)&&/yeşil/.test(explanation),'feedback names the score and green area goals');
+  assert(/bitmedi|gerek|olmalı|kazan|tamamlan/.test(explanation),'feedback explains that score alone does not finish the level');
   acknowledge(f);assert.deepEqual(plain(f.save().guideAcks),['1:1','1:3']);
   assert(engine.swap(...level.solution[3]).ok);await play(f,level.solution[3]);exact(f,engine,'last ground completes both goals');
   assert.equal(f.node('#score-goal-check').hidden,false);assert.equal(f.node('#ground-goal-check').hidden,false,'both goal checks are visible only when both goals complete');

@@ -53,12 +53,12 @@
     switch(cue.labelKey){
       case 'long_run':return cue.value>=5?'Uzun bir rota!':'Güzel eşleşme!';
       case 'chain':return `${cue.value}. zincir!`;
-      case 'cross':return cue.value>=3?'Üç eksen bir arada!':'Çapraz eşleşme!';
+      case 'cross':return cue.value>=3?'Üç yönde eşleşti!':'Çapraz eşleşme!';
       case 'simultaneous':return 'Birden fazla eşleşme!';
-      case 'green':return 'Rota yeşeriyor!';
-      case 'doubles':return `${cue.value} çift zemin yeşil!`;
+      case 'green':return 'Yeni yerler yeşil!';
+      case 'doubles':return `${cue.value} yer daha yeşil!`;
       case 'score_goal':return 'Puan hedefi tamam!';
-      case 'ground_goal':return 'Bütün zemin yeşil!';
+      case 'ground_goal':return 'Her yer yeşil!';
       case 'last_move_win':return 'Tam zamanında!';
       case 'win':return 'Yeşil rota tamam!';
       default:return '';
@@ -214,7 +214,7 @@
     if(!$('home-play'))return;
     const next=nextStage(),completed=saved.done.filter(i=>i>=tutorialCount).length;
     $('home-play-label').textContent=next?(next.resume?'Devam et':next.index===0?'Birlikte başlayalım':'Oyna'):'Yeniden keşfet';
-    $('home-play-detail').textContent=next?next.resume?`${stageLabel(next.index)} · ${validCheckpoint(next.index).movesLeft} hamle kaldı`:next.index===0?'İki komşuyu değiştir, 3 aynı sayıyı sırala.':`${stageLabel(next.index)} · ${levels[next.index].name}`:'Bütün bölümler tamamlandı';
+    $('home-play-detail').textContent=next?next.resume?`${stageLabel(next.index)} · ${validCheckpoint(next.index).movesLeft} hamle kaldı`:next.index===0?'Aynı sayıları eşleştir, puan kazan.':`${stageLabel(next.index)} · ${levels[next.index].name}`:'Bütün bölümler tamamlandı';
     $('home-stage-name').textContent=next?levels[next.index].name:'On iki durak, tamamı yeşil.';
     $('home-progress-text').textContent=`${completed} / ${campaignCount} bölüm tamamlandı`;
     $('home-progress-fill').style.width=`${completed/campaignCount*100}%`;
@@ -259,8 +259,8 @@
     if($('pregame-lesson'))$('pregame-lesson').hidden=index!==0;
     $('pregame-dialog').querySelector('.pregame-goals').hidden=index===0;
     $('pregame-tag').textContent=stageLabel(index);$('pregame-title').textContent=level.name;
-    $('pregame-description').textContent=resume?'Kaldığın yerden aynı tahta ve hamlelerle devam et.':index===0?'İşaretli iki komşuyu değiştir. 3 aynı sayı bir çizgide buluşsun.':'Hamlelerin bitmeden hedef puana ulaş ve bütün zemini yeşile boya.';
-    if($('pregame-note'))$('pregame-note').textContent=index===0?'Şimdi birlikte ilk eşleşmeni yapalım.':'Kazanmak için iki hedefi de tamamla: puan ve yeşil zemin.';
+    $('pregame-description').textContent=resume?'Kaldığın yerden devam et.':index===0?'Parlayan 2 ile 1’in yerini değiştir.':`${level.target} puana ulaş ve her yeri yeşile boya. ${level.moves} hamlen var.`;
+    if($('pregame-note'))$('pregame-note').textContent=index===0?'Kaydırmak yerine iki taşa sırayla da dokunabilirsin.':'Bölümü bitirmek için puanın yeterli olmalı ve her yer yeşil olmalı.';
     $('pregame-target').textContent=level.target;$('pregame-ground').textContent=resume?`${checkpoint.covered} / ${level.cells.length}`:level.cells.length;
     $('pregame-moves').textContent=resume?checkpoint.movesLeft:level.moves;
     $('pregame-start').textContent=resume?'Devam et':'Başla';$('pregame-restart').hidden=!resume;
@@ -338,7 +338,7 @@
     return `<defs><filter id="tile-shadow" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="0" dy="2" stdDeviation="1" flood-color="#3d5031" flood-opacity=".06"/></filter><marker id="tutorial-arrow" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0 0 L6 3.5 L0 7 Z"/></marker></defs>${levels[active].cells.map((c,i)=>{
       const left=state.layers[i],green=left===0,partial=left>0&&left<(c.layers||1);
       const classes=['hex-tile',`value-${state.values[i]}`,green?'floor-green':partial?'floor-partial':'floor-untouched',c.layers===2?'layered':'',selected===i?'selected':'',hinted?.includes(i)?'hinted':'',selected!==null&&engine.adjacent(selected,i)?'neighbor':'',matched.has(i)?'matching':'',dropped.has(i)?'falling':'',pair.includes(i)?'tutorial-focus':'',support.includes(i)?'tutorial-support':'',pair[0]===i?'tutorial-source':'',pair[1]===i?'tutorial-target':'',pair.length&&!pair.includes(i)&&!support.includes(i)?'tutorial-muted':''].filter(Boolean).join(' ');
-      const p=positions[i],ground=green?'zemin yeşil':`${left} eşleşme gerekiyor`;
+      const p=positions[i],ground=green?'altı yeşil':`${left} eşleşme gerekiyor`;
       const pips=c.layers===2&&!green?`<g class="layer-pips" aria-hidden="true">${Array.from({length:left},(_,dot)=>`<circle class="layer-pip" cx="${left===2?(dot?4:-4):0}" cy="31" r="2.5"/>`).join('')}</g>`:'';
       return `<g transform="translate(${p.x},${p.y})" class="${classes}" data-index="${i}" role="button" tabindex="${i===focusIndex?0:-1}" aria-label="${state.values[i]} sayısı, ${ground}${selected===i?', seçili':''}${hinted?.includes(i)?', ipucu':''}" aria-pressed="${selected===i}" aria-disabled="${!interactive||(pair.length&&!pair.includes(i))}"><polygon class="floor-shape" points="${outer}"/><g class="gem"><polygon class="gem-back" points="${inner}" transform="translate(0 3.5)"/><polygon class="gem-shape" points="${inner}"/><path class="gem-highlight" d="${highlight}"/><text class="hex-number" text-anchor="middle" x="0" y="0">${state.values[i]}</text></g>${green?'<path class="floor-mark" d="m-4 29 3 3 6-7"/>':pips}</g>`;
     }).join('')}${gesture}<g class="fx-layer" aria-hidden="true"></g>`;
@@ -368,15 +368,16 @@
     const status=$('board-status');status.className='board-status';
     let text;
     if(options.message)text=options.message;
-    else if(engine.status==='won') {text='Hedef tamam, bütün zemin yeşil. Başardın!';status.classList.add('success');}
-    else if(engine.status==='lost'){text='Hamleler bitti. Aynı tahtada yeni bir plan deneyebilirsin.';status.classList.add('error');}
-    else if(selected!==null)text='Şimdi komşu bir taşı seç. Üç aynı sayıyı hizala.';
-    else if(display.score>=levels[active].target)text=`Puan hedefi tamam! ${total-covered} zemini daha yeşile boya.`;
-    else text='Bir taş seç; komşusuyla değiştirip üçlüyü oluştur.';
+    else if(engine.status==='won') {text='Puanın yeterli, her yer yeşil. Bölümü bitirdin!';status.classList.add('success');}
+    else if(engine.status==='lost'){text='Hamlelerin bitti. Yeniden deneyebilirsin.';status.classList.add('error');}
+    else if(guideFeedback())text='Yukarıdaki “Devam et” düğmesine dokun.';
+    else if(selected!==null)text='Şimdi yanındaki diğer taşa dokun.';
+    else if(display.score>=levels[active].target)text=`Puanın yeterli! Yeşile boyanacak ${total-covered} yer kaldı.`;
+    else text='Yan yana iki taşın yerini değiştir.';
     $('status-text').textContent=text;
-    if($('ground-goal-check')){$('ground-goal-check').hidden=covered<total;$('ground-goal-check').setAttribute('aria-label',covered===total?'Yeşil zemin hedefi tamam':'Yeşil zemin hedefi sürüyor');}
-    if($('ground-label'))$('ground-label').textContent=active===0&&engine.turn===0?'Altındaki zemin yeşillenir':'Yeşil zemin';
-    if($('game-goal-title'))$('game-goal-title').textContent=active===0?'3 aynı sayıyı sırala':'İki hedefi de tamamla';
+    if($('ground-goal-check')){$('ground-goal-check').hidden=covered<total;$('ground-goal-check').setAttribute('aria-label',covered===total?'Her yer yeşil':'Henüz her yer yeşil değil');}
+    if($('ground-label'))$('ground-label').textContent=active===0&&engine.turn===0?'Taşların altı yeşil olur':'Yeşil alan';
+    if($('game-goal-title'))$('game-goal-title').textContent=active===0?'Aynı sayıları eşleştir':'Puanı topla, alanı boya';
     renderCoach();
   }
   function renderCoach(){
@@ -388,12 +389,12 @@
     if($('coach-next')){$('coach-next').hidden=!feedback;$('coach-next').disabled=!feedback;}
     if(!tutorial)return;
     const steps=levels[active].steps,index=Math.min(engine.turn,steps.length-1),step=steps[index],previous=steps[Math.max(0,engine.turn-1)],showFeedback=busy||!!feedback;
-    $('coach-step').textContent=feedback?'BUNU HATIRLA':`${busy?'İZLE · ':''}ADIM ${busy?Math.max(1,engine.turn):Math.min(engine.turn+1,steps.length)} / ${steps.length}`;
+    $('coach-step').textContent=feedback?'BU HAMLEDE':`${busy?'İZLE · ':''}ADIM ${busy?Math.max(1,engine.turn):Math.min(engine.turn+1,steps.length)} / ${steps.length}`;
     $('coach-title').textContent=showFeedback?(previous.afterTitle||'İşte böyle!'):(step?.title||levels[active].title||levels[active].name);
     const partner=selected!==null&&step?.pair.includes(selected)?step.pair.find(i=>i!==selected):null;
-    const destination=partner!==null?engine.values[partner]:null,dative={1:'e',2:'ye',3:'e',4:'e',5:'e',6:'ya',7:'ye',8:'e',9:'a'};
-    $('coach-text').textContent=showFeedback?(previous.afterText||'Taşlar düşüyor; yeşil zemin yerinde kalıyor.'):partner!==null?`Şimdi işaretli ${destination}’${dative[destination]||'e'} dokun.`:step?.text||'Hazırsın!';
-    if($('guide-explanation')){$('guide-explanation').hidden=active!==0||engine.turn>0||busy;$('guide-explanation').textContent='Aynı sayılar eşleşir. Üzerlerindeki sayılar toplanıp puan olur.';}
+    const destination=partner!==null?engine.values[partner]:null;
+    $('coach-text').textContent=showFeedback?(previous.afterText||'Yeni taşlar geliyor. Yeşil alanlar yerinde kalıyor.'):partner!==null?`Şimdi parlayan ${destination} yazan taşa dokun.`:step?.text||'Hazırsın!';
+    if($('guide-explanation')){$('guide-explanation').hidden=active!==0||engine.turn>0||busy;$('guide-explanation').textContent='Aynı sayıdan 3 taşı eşleştir. Üç tane 2, toplam 6 puan kazandırır.';}
     $('coach-progress').style.width=`${engine.turn/steps.length*100}%`;
   }
   function renderScore(value){
@@ -585,11 +586,11 @@
       const f=frames[i],prior=i?frames[i-1]:null,score=before.score+frames.slice(0,i).reduce((n,frame)=>n+frame.scoreGain,0);
       const extra=i===1?frames.slice(2).reduce((sum,frame)=>sum+frame.scoreGain,0):0,gain=f.scoreGain+extra;
       comboText=`${i?`${i+1}. zincir · `:''}${scoreEquation(f)} puan${extra?` · Devamı +${extra}`:''}`;
-      render({values:f.before,layers:prior?prior.layers:before.layers,score,movesLeft:engine.movesLeft},{message:i?'Bir hamle, yeni bir zincir!':'Üçlü tamam. Şimdi zemine bak.'});
+      render({values:f.before,layers:prior?prior.layers:before.layers,score,movesLeft:engine.movesLeft},{message:i?'Yeni taşlar da eşleşti!':'Taşlar eşleşti. Puanlar toplanıyor.'});
       const task=flyScore(job,f,{wave:i+1,gain,destination:score+gain,extra,totalWaves:frames.length}).catch(()=>{});job.scoreTasks.push(task);
       matchEffects(job,f);if(!job.rewardPlan||typeof audio?.reward!=='function')tone(Math.min(5,i+1));await pause(motion.matchPause,job);
       if(job.controller.signal.aborted||presentation!==job)return;
-      render({values:f.after,layers:f.layers,score:score+f.scoreGain,movesLeft:engine.movesLeft},{falling:f.falls.map(x=>x.to),message:'Taşlar aşağı kayıyor; zemin yerinde kalıyor.'});
+      render({values:f.after,layers:f.layers,score:score+f.scoreGain,movesLeft:engine.movesLeft},{falling:f.falls.map(x=>x.to),message:'Yeni taşlar geliyor. Yeşil alanlar yerinde kalıyor.'});
       rewardMilestones(job,i+1,'ground');
       const duration=fallingGems(job,f);await Promise.all([pause(duration+10,job),task]);
     }
@@ -648,7 +649,7 @@
     $('win-eyebrow').textContent=final?'YOLCULUK TAMAMLANDI':`${stageLabel(active)} TAMAMLANDI`;
     $('win-title').textContent=learning?(active===0?'İlk adım tamam!':'Artık hazırsın!'):final?'Usta işi!':'Harika eşleşme!';
     if(completionReward&&!learning)$('win-title').textContent=rewardLabel(completionReward);
-    $('win-description').textContent=learning?(active===0?'Komşuları değiştirdin, üç eksende eşleştirdin. Şimdi hedefleri birlikte tanıyalım.':'Puan ve yeşil zemini birlikte tamamladın. Sırada on gerçek bulmaca var.'):final?'On bulmacanın tamamını yeşerttin. Her eşleşme bir adım oldu.':`${engine.movesLeft} hamle kala iki hedefi de tamamladın.`;
+    $('win-description').textContent=learning?(active===0?'İlk bölüm tamam. Şimdi puan hedefine de ulaşmayı deneyelim.':'Yeterli puan topladın ve her yeri yeşile boyadın. Şimdi kendi başına oyna.'):final?'10 bölümün hepsini bitirdin!':`${engine.movesLeft} hamlen kaldı. Bölümü bitirdin!`;
     $('win-total').textContent=engine.score;$('win-moves').textContent=engine.movesLeft;
     const nextText=final?'Yolculuğun başına dön':active===0?'İkinci öğreticiye geç':active===1?'İlk bölüme başla':`Bölüm ${pad(active-tutorialCount+2)} ile devam et`;
     $('next').innerHTML=`${nextText} ${icon('arrow')}`;
@@ -662,7 +663,7 @@
   }
   function showLoss() {
     $('lose-title').textContent='Bir plan daha?';
-    $('lose-description').textContent='Hamlelerin bitti. Önce eksik kalan zeminleri hedefleyerek aynı tahtayı yeniden deneyebilirsin.';
+    $('lose-description').textContent='Hamlelerin bitti. Altı yeşil olmayan taşları eşleştirmeyi dene.';
     $('lose-score').textContent=`${engine.score} / ${levels[active].target}`;
     $('lose-coverage').textContent=`${engine.covered} / ${levels[active].cells.length}`;
     openModal('lose-dialog');
@@ -683,7 +684,7 @@
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=14');
+            job.worker=new Worker('./hint-worker.js?v=15');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:levels[active],snapshot:engine.snapshot()});
@@ -693,7 +694,7 @@
       }
       if(hintJob!==job||job.token!==epoch||job.game!==engine)return;
       if(!suggestion)suggestion=engine.hint({maxMs:12,maxDepth:1});
-      if(suggestion?.pair){selected=null;hinted=suggestion.pair;toast('Parlayan iki taşı değiştir. Eksik kalan zeminlere ulaşan eşleşmeleri gözet.');}
+      if(suggestion?.pair){selected=null;hinted=suggestion.pair;toast('Parlayan iki taşın yerini değiştir.');}
       else toast('Şu anda ipucu bulunamadı. Başka bir üçlü arayabilirsin.');
     }catch(_){toast('İpucu şu anda hazır değil. Oynamaya devam edebilirsin.');}
     finally{if(hintJob===job){cancelHint();render();}}

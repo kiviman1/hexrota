@@ -23,7 +23,9 @@ Yeni oyuncu iki kısa, oynanabilir öğreticiyle başlar. İlkinde 7 altıgen ü
 
 İlk öğretici tek eylemle başlar: işaretli komşuları kaydır veya sırayla dokun. Ok ve el hareketi yönü gösterir; oluşacak eşleşmenin diğer taşları görünür kalır. T1'de hedef puan ve hamle bütçesi arka planda korunurken ekranda kazanılan puan ve yeşil zemin öne çıkar; T2'de iki hedef ve hamle sayısı birlikte gösterilir.
 
-Üç açıklama oyuncu **Anladım, devam** düğmesine basana kadar kalır: T1'in ilk eşleşmesi, T2'nin ilk çift katman vuruşu ve T2'de puan tamamken son zeminin eksik kalması. Bu sırada yeni hamle ve ipucu kapalıdır; ayarlar, menü, yeniden başlatma ve öğreticiyi atlama kullanılabilir. Okunan açıklamalar `guideAcks` içinde, oyun motorunun checkpoint verisinden ayrı saklanır. Yeniden açılış aynı tahta ve bekleyen açıklamayla devam eder; onay puan veya hamle üretmez. Öğreticiyi baştan başlatmak yalnızca o öğreticinin onaylarını temizler.
+Üç açıklama oyuncu **Devam et** düğmesine basana kadar kalır: T1'in ilk eşleşmesi, T2'nin ilk çift katman vuruşu ve T2'de puan tamamken son zeminin eksik kalması. Bu sırada yeni hamle ve ipucu kapalıdır; ayarlar, menü, yeniden başlatma ve öğreticiyi atlama kullanılabilir. Okunan açıklamalar `guideAcks` içinde, oyun motorunun checkpoint verisinden ayrı saklanır. Yeniden açılış aynı tahta ve bekleyen açıklamayla devam eder; onay puan veya hamle üretmez. Öğreticiyi baştan başlatmak yalnızca o öğreticinin onaylarını temizler.
+
+Öğretici ve yardım metinleri günlük Türkçeyle yazılır: hareket için “iki taşın yerini değiştir”, boyanan yer için “taşların altı” veya “yeşil alan” kullanılır. Talimatlar o an yapılacak hareketi söyler; puan, iki nokta ve bölümün bitmesi gerçek hamlelerden sonra açıklanır.
 
 Ardından aynı kontrollü yenileme algoritmasını kullanan mevcut 10 bölüm gelir; bölüm verileri ve çözüm dizileri değiştirilmemiştir. Yolculuk etiketleri T1, T2, 01…10'dur. Kampanya ilerleme sayacı yalnızca 10 ana bölümü sayar.
 
