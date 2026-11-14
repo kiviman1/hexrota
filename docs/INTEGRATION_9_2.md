@@ -19,7 +19,7 @@ Birleştirme sırası C# → can/kayıt → mobil giriş → görünür analiz/y
 - PR3'ün gözlemleri, PR4'ün canonical profil yazımı başarıyla bitmeden bağımsız gözlem anahtarına yazılmaz. Başarısız hamle/sonuç/yeniden başlatmada gözlem durumu işlem öncesine döner. Daha sonra yalnız sunum sırasında oluşan bir kayıt hatası, önceden kaydedilmiş hamlenin gözlemini geri sarmaz.
 - Oyun ve enerji tek `hexrota-profile-v2` değerinde saklanır. `hexrota-match-v5` ile `hexrota-lives-v1` uyumluluk aynaları korunur. Snapshot `classic-v4` davranışı değişmez; can v1→v2 geçişi ve v1 fixture arşivi korunur.
 - Paket ve lock sürümü birlikte `9.2.0` olur. İki geliştirme bağımlılığı aynı sabit sürümlerle korunur. Dört PR'ın bütün npm komutları ve alt kontrolleri bir aradadır.
-- Tek çevrimdışı shell sürümü **v21**: HTML script/CSS URL'leri, SW cache/allowlist/preload, uygulamanın hint Worker URL'si ve Worker'ın engine import'u birlikte güncellenir. `session-store.js` ile `playtest.js`, uygulamadan önce yüklenir ve çevrimdışı ön yüklenir. Güncelleme aktif oyunu kendiliğinden yeniden yüklemez.
+- İlk entegrasyondaki tek çevrimdışı shell sürümü **v21**: HTML script/CSS URL'leri, SW cache/allowlist/preload, uygulamanın hint Worker URL'si ve Worker'ın engine import'u birlikte güncellenir. `session-store.js` ile `playtest.js`, uygulamadan önce yüklenir ve çevrimdışı ön yüklenir. Güncelleme aktif oyunu kendiliğinden yeniden yüklemez.
 - CI'da gameplay/UI/veri, C# reward, C# gameplay, can/kayıt Chromium, mobil Chromium/WebKit matrisi ve görünür zorluk analizi korunur. Matris dahil yedi iş vardır. Yeni birleşik native tarayıcı kontrolü mevcut can/kayıt işine eklenir; hiçbir önceki test çıkarılmaz veya soft-fail yapılmaz.
 
 ## Birleşince bulunan ve düzeltilen hatalar
@@ -65,3 +65,19 @@ Integration PR'ı inceleme içindir. Onay olmadan `main` push'u, PR merge, produ
 - Kalıcı yazım tamamen kapalıyken sekme kapanırsa yeni yerel test makbuzunun teslimi garanti edilemez. Gerçek reklam/ödeme sağlayıcısı gelecekte güvenilir yeniden teslim sağlamalıdır.
 - C# ipucu, varyant seçimi, uygulama deneme zarfı, can ve kalıcı saklama portları henüz bu gameplay aşamasına dahil değildir.
 - Bölüm 6/9'un rahatlama rolü, 5'in varyant farkı ve 8/10'un zemin baskısı için insan testi gerekir. [DIFFICULTY_AUDIT.md](DIFFICULTY_AUDIT.md) önerileri bu entegrasyonda uygulanmadı.
+
+## SVG takas görünürlüğü düzeltmesi
+
+Sonraki PR #5 düzeltmesinde normal takasın piksel düzeyinde görünürlüğü incelendi. Chromium ve WebKit'te iki `.gem` kendi hücre gruplarında hareket ederken daha sonra çizilen hücrenin opak zemini önceki taşı kapatıyordu. Hareketin ortasında ve sonunda erken çizilen taşın renk ve sayı pikselleri kaybolurken karşı taş görünür kalıyordu. Bu görünürlük sorunu motorun takas sonucu veya eşleşme temizliği değildir.
+
+Takas görselleri, hücre zeminlerinden sonra çizilen ayrı geçici SVG `.swap-layer` katmanındaki `.swap-pair` ve `.swap-stone` gruplarında gösterilir. Kaynak taşların gerçek renkleri ve sayı boyaması kopyalanır; iki taş karşılıklı yay çizerek ilerler, tam ortada üst üste binip birbirini kapatmaz. Yollar on altı sabit ara adımla belirlenir ve görünür SVG sınırlarında tutulur; kaynak taşlar bu sırada gizlenip geçici görseller temizlenince gerçek durum yeniden çizilir. Eşleşme patlaması ve düşüş görselleri kendi mevcut yaşam döngüsünü kullanır. Atla/iptal/hızlı tekrar/arka plan/azaltılmış hareket durumları için geçici katmanın temizliği ayrıca sınanır. Oyun motoru, RNG, puan, can, bölüm ve kayıt kuralları bu sunum düzeltmesinin kapsamı dışındadır.
+
+Güncel çevrimdışı uygulama kabuğu **v22** olur: HTML, SW, uygulamanın hint Worker URL'si ve Worker import'u birlikte bu sürüme geçer. Önceki v21 entegrasyon raporu tarihsel çalıştırma kanıtı olarak korunur. Mevcut iki geliştirme bağımlılığına eklenen sabit `pngjs@7.0.0`, yalnızca testte gerçek PNG ekran görüntülerini okumak içindir; web oyununa yeni çalışma zamanı bağımlılığı eklemez.
+
+```sh
+npm run test:swap-lifecycle
+npm run test:swap-visual
+HEXROTA_BROWSER=webkit npm run test:swap-visual
+```
+
+Görsel test, gerçek tarayıcıda takasın başlangıç/orta/son karelerini PNG olarak okuyarak her iki taşın renk ve sayı görünürlüğünü sınar; yalnız DOM varlığı başarı sayılmaz. Mevcut Chromium/WebKit CI matrisinde bu kontrol önceki mobil giriş testinin ardından çalışır. Yeni yaşam döngüsü kontrolü önceki `npm test` zincirine eklenir; eski kontroller kaldırılmaz. Çalıştırma sonuçları PR'ın güncel commit kontrollerinden ve yeni görsel doğrulama raporundan değerlendirilmelidir. Fiziksel iPhone/iOS Safari doğrulaması henüz yapılmadı; masaüstü WebKit sonucu fiziksel cihaz kanıtı olarak sunulmaz.

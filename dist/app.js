@@ -57,7 +57,7 @@ window.HexSessionStore.boot(function startApp(session) {
   let active=saved.current,activeLevel=levels[saved.current],activeAttempt=null,attemptPending=true,saveBlocked=false,loadIssue=null,engine, selected=null, hinted=null, busy=false, focusIndex=0;
   let pointer=null, toastTimer, terminalTimer, epoch=0, comboText='',presentation=null,hintJob=null;
   const geometryCache=new Map();
-  let screen='home',paused=false,pendingStage=null,pendingRestart=null;
+  let screen='home',paused=false,pendingStage=null,pendingRestart=null,invalidPresentation=null;
   const modalStack=[];
   const audio=window.HexAudio?new window.HexAudio({sfx:saved.sound,music:saved.preferences.music,volume:saved.preferences.volume}):null;
   const difficultyLabels={very_easy:'Çok kolay',easy:'Kolay',medium:'Orta',medium_hard:'Orta-zor',challenge:'Meydan okuma',relief:'Rahatlama',hard:'Zor',final:'Final'};
@@ -465,7 +465,7 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   ['resize','orientationchange','pageshow'].forEach(name=>on(window,name,syncAppHeight,{passive:true}));
   on(document,'fullscreenchange',syncAppHeight);
-  const settleViewport=()=>{stopPointer();if(presentation)finishPresentation(presentation);};
+  const settleViewport=()=>{stopPointer();clearInvalidSwap();if(presentation)finishPresentation(presentation);};
   on(window,'resize',settleViewport,{passive:true});on(window,'orientationchange',settleViewport,{passive:true});
   appViewport?.addEventListener?.('resize',settleViewport,{passive:true});
   appViewport?.addEventListener?.('resize',syncAppHeight,{passive:true});
@@ -482,7 +482,7 @@ window.HexSessionStore.boot(function startApp(session) {
   function syncAudio(){document.body.classList.toggle('reduce-motion',reduceMotion());audio?.configure({sfx:saved.sound,music:saved.preferences.music,volume:saved.preferences.volume});audio?.setActive(!document.hidden&&!paused);}
   function unlockAudio(){syncAudio();audio?.unlock().catch(()=>{});}
   function openModal(id){
-    stopPointer();cancelHint();
+    stopPointer();cancelHint();clearInvalidSwap();
     if(presentation)finishPresentation(presentation);
     clearTimeout(terminalTimer);
     const dialog=$(id);if(!dialog.open){dialog.showModal();modalStack.push(id);}
@@ -710,9 +710,10 @@ window.HexSessionStore.boot(function startApp(session) {
       const p=positions[i],ground=green?'altı yeşil':`${left} eşleşme gerekiyor`;
       const pips=c.layers===2&&!green?`<g class="layer-pips" aria-hidden="true">${Array.from({length:left},(_,dot)=>`<circle class="layer-pip" cx="${left===2?(dot?4:-4):0}" cy="31" r="2.5"/>`).join('')}</g>`:'';
       return `<g transform="translate(${p.x},${p.y})" class="${classes}" data-index="${i}" role="button" tabindex="${i===focusIndex?0:-1}" aria-label="${state.values[i]} sayısı, ${ground}${selected===i?', seçili':''}${hinted?.includes(i)?', ipucu':''}" aria-pressed="${selected===i}" aria-disabled="${!interactive||(pair.length&&!pair.includes(i))}"><polygon class="floor-shape" points="${outer}"/><g class="gem"><polygon class="gem-back" points="${inner}" transform="translate(0 3.5)"/><polygon class="gem-shape" points="${inner}"/><path class="gem-highlight" d="${highlight}"/><text class="hex-number" text-anchor="middle" x="0" y="0">${state.values[i]}</text></g>${green?'<path class="floor-mark" d="m-4 29 3 3 6-7"/>':pips}</g>`;
-    }).join('')}${gesture}<g class="fx-layer" aria-hidden="true"></g>`;
+    }).join('')}${gesture}<g class="fx-layer" aria-hidden="true"></g><g class="swap-layer" aria-hidden="true" pointer-events="none"></g>`;
   }
   function render(state=null,options={}) {
+    clearInvalidSwap();
     const display=state||{values:engine.values,layers:engine.layers,score:engine.score,movesLeft:engine.movesLeft};
     const focused=document.activeElement?.closest?.('[data-index]')?.dataset.index;
     $('board').innerHTML=boardMarkup(display,options.matching||[],options.falling||[]);
@@ -875,8 +876,9 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   const canAnimate=()=>!document.hidden&&!reduceMotion()&&typeof window.Element.prototype.animate==='function';
   function cancelPresentation() {
+    clearInvalidSwap();
     const job=presentation;presentation=null;busy=false;
-    if(job){clearTimeout(job.watchdog);job.controller.abort();for(const a of job.animations)try{a.cancel?.();}catch(_){}for(const node of job.rewardNodes||[])node.classList.remove('reward-goal-hit');clearScoreReceipt();}
+    if(job){clearTimeout(job.watchdog);job.controller.abort();job.swapVisual?.cleanup();for(const a of job.animations)try{a.cancel?.();}catch(_){}for(const node of job.rewardNodes||[])node.classList.remove('reward-goal-hit');clearScoreReceipt();}
   }
   function finishPresentation(job) {
     if(!job||presentation!==job||job.token!==epoch)return;
@@ -908,6 +910,62 @@ window.HexSessionStore.boot(function startApp(session) {
     const animation=node.animate(frames,options);job.animations.push(animation);return animation;
   }
   function svgNode(name,attributes){const node=document.createElementNS('http://www.w3.org/2000/svg',name);for(const [key,value]of Object.entries(attributes))node.setAttribute(key,String(value));return node;}
+  // Only temporary gems live above the board. Floors and match effects retain
+  // their own positions, while every visual owner removes only its own nodes.
+  function swapVisual(job,a,b,kind='valid'){
+    const board=$('board'),layer=board.querySelector('.swap-layer'),positions=geometry().positions;
+    if(!layer)throw new Error('Swap drawing layer unavailable');
+    const group=svgNode('g',{class:'swap-pair','data-swap-kind':kind}),sources=[],stones=[];
+    let removed=false;
+    const cleanup=()=>{
+      if(removed)return;removed=true;group.remove();
+      for(const {node,visibility,priority}of sources){if(visibility)node.style.setProperty('visibility',visibility,priority);else node.style.removeProperty('visibility');}
+      job.controller.signal.removeEventListener('abort',cleanup);
+    };
+    const visual={stones,cleanup};job.swapVisual=visual;
+    job.controller.signal.addEventListener('abort',cleanup,{once:true});
+    try{
+      layer.appendChild(group);
+      for(const [from,to]of[[a,b],[b,a]]){
+        const original=board.querySelector(`[data-index="${from}"] .gem`);
+        if(!original)throw new Error('Swap gem unavailable');
+        const copy=original.cloneNode(true),position=positions[from],value=original.querySelector('.hex-number')?.textContent||'';
+        const wrapper=svgNode('g',{class:'swap-stone','data-swap-source':from,'data-swap-target':to,'data-swap-value':value,'data-swap-kind':kind,transform:`translate(${position.x},${position.y})`});
+        // Freeze actual paint, including number ink, before leaving the tile's
+        // inherited CSS-variable scope. WebKit must not resolve a new palette.
+        const paint=['fill','stroke','stroke-width','opacity','font-family','font-size','font-weight','text-anchor','dominant-baseline'];
+        const originals=[original,...original.querySelectorAll('*')],copies=[copy,...copy.querySelectorAll('*')];
+        originals.forEach((node,index)=>{const style=window.getComputedStyle(node);for(const property of paint){const value=style.getPropertyValue(property);if(value)copies[index].style.setProperty(property,value);}});
+        const style=window.getComputedStyle(original);
+        for(const property of ['--gem','--gem-edge','--gem-back','--number']){const value=style.getPropertyValue(property);if(value)wrapper.style.setProperty(property,value);}
+        copy.style.removeProperty('transform');copy.style.removeProperty('visibility');
+        wrapper.appendChild(copy);group.appendChild(wrapper);stones.push(copy);
+        sources.push({node:original,visibility:original.style.getPropertyValue('visibility'),priority:original.style.getPropertyPriority('visibility')});
+        original.style.visibility='hidden';
+      }
+      return visual;
+    }catch(error){cleanup();throw error;}
+  }
+  function swapPaths(a,b){
+    const {positions,radius,width,height}=geometry(),from=positions[a],to=positions[b];
+    const dx=to.x-from.x,dy=to.y-from.y,length=Math.hypot(dx,dy),nx=-dy/length,ny=dx/length;
+    const lane=Math.min(radius*.95,length*.5),inset=radius*.78+5,paths=[[],[]];
+    for(let step=0;step<=16;step++){
+      const t=step/16,bend=lane*Math.sin(Math.PI*t);
+      const points=[{x:from.x+dx*t+nx*bend,y:from.y+dy*t+ny*bend},{x:to.x-dx*t-nx*bend,y:to.y-dy*t-ny*bend}];
+      // Move the pair inward together near an edge, preserving separation and
+      // keeping the complete gem and number inside the SVG viewport.
+      const shift=(axis,size)=>Math.min(Math.max(0,-size/2+inset-Math.min(...points.map(p=>p[axis]))),size/2-inset-Math.max(...points.map(p=>p[axis])));
+      const sx=shift('x',width),sy=shift('y',height);
+      points.forEach((point,index)=>{const origin=index?to:from;paths[index].push({transform:`translate(${point.x+sx-origin.x}px,${point.y+sy-origin.y}px)`,offset:t});});
+    }
+    return paths;
+  }
+  function clearInvalidSwap(){
+    const job=invalidPresentation;invalidPresentation=null;if(!job)return;
+    clearTimeout(job.timer);job.controller.abort();job.swapVisual?.cleanup();
+    for(const animation of job.animations)try{animation.cancel?.();}catch(_){}
+  }
   function matchEffects(job,frame){
     const layer=$('board').querySelector('.fx-layer'),positions=geometry().positions;
     if(!layer)return;
@@ -944,9 +1002,11 @@ window.HexSessionStore.boot(function startApp(session) {
   async function presentSwap(job,a,b,before){
     if(!canAnimate())return;
     render(before,{message:'Taşlar yer değiştiriyor…'});
-    const pos=geometry().positions,dx=pos[b].x-pos[a].x,dy=pos[b].y-pos[a].y;
-    for(const [index,x,y]of[[a,dx,dy],[b,-dx,-dy]])animateElement(job,$('board').querySelector(`[data-index="${index}"] .gem`),[{transform:'translate(0px,0px)'},{transform:`translate(${x}px,${y}px)`}],{duration:motion.swap,easing:'cubic-bezier(.2,.7,.3,1)',fill:'forwards'});
-    await pause(motion.swap+5,job);
+    const visual=swapVisual(job,a,b),paths=swapPaths(a,b);
+    try{
+      visual.stones.forEach((node,index)=>animateElement(job,node,paths[index],{duration:motion.swap,easing:'cubic-bezier(.2,.7,.3,1)',fill:'forwards'}));
+      await pause(motion.swap+5,job);
+    }finally{visual.cleanup();}
     const frames=job.result.frames;
     // Resolve every wave in the engine; animate the first two so long chains
     // never delay input indefinitely. The final authoritative state follows.
@@ -966,8 +1026,17 @@ window.HexSessionStore.boot(function startApp(session) {
     await Promise.all(job.scoreTasks);
   }
   function invalidSwap(a,b){
+    clearInvalidSwap();
     if(!canAnimate())return;
-    try{const positions=geometry().positions;for(const [from,to]of[[a,b],[b,a]]){const dx=(positions[to].x-positions[from].x)*.25,dy=(positions[to].y-positions[from].y)*.25;$('board').querySelector(`[data-index="${from}"] .gem`)?.animate([{transform:'translate(0px,0px)'},{transform:`translate(${dx}px,${dy}px)`,offset:.4},{transform:'translate(0px,0px)'}],{duration:motion.invalid,easing:'ease-out'});}}catch(_){}
+    const job={controller:new AbortController(),animations:[],timer:null};invalidPresentation=job;
+    try{
+      const visual=swapVisual(job,a,b,'invalid'),positions=geometry().positions;
+      for(const [index,[from,to]]of[[a,b],[b,a]].entries()){
+        const dx=(positions[to].x-positions[from].x)*.25,dy=(positions[to].y-positions[from].y)*.25;
+        animateElement(job,visual.stones[index],[{transform:'translate(0px,0px)'},{transform:`translate(${dx}px,${dy}px)`,offset:.4},{transform:'translate(0px,0px)'}],{duration:motion.invalid,easing:'ease-out',fill:'both'});
+      }
+      job.timer=setTimeout(()=>{if(invalidPresentation===job)clearInvalidSwap();},motion.invalid+5);
+    }catch(_){clearInvalidSwap();}
   }
   async function performSwap(a,b) {
     if(!gameInputAllowed()||guideFeedback())return;
@@ -975,7 +1044,7 @@ window.HexSessionStore.boot(function startApp(session) {
     if(engine.status!=='playing')return;
     const guide=guidedStep();
     if(guide&&!samePair(a,b,guide.pair)){selected=null;hinted=guide.pair;render();toast('Bu adımda parlayan iki taşı değiştir. Hamlen harcanmadı.');return;}
-    clearScoreReceipt();cancelHint();
+    clearScoreReceipt();cancelHint();clearInvalidSwap();
     const checkpoint=engine.snapshot(),before={values:engine.values.slice(),layers:engine.layers.slice(),score:engine.score,movesLeft:engine.movesLeft};
     let result;
     try{result=engine.swap(a,b);}catch(_){
@@ -1067,7 +1136,7 @@ window.HexSessionStore.boot(function startApp(session) {
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=21');
+            job.worker=new Worker('./hint-worker.js?v=22');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:activeLevel,snapshot:engine.snapshot()});
@@ -1174,7 +1243,7 @@ window.HexSessionStore.boot(function startApp(session) {
   on(window,'pointercancel',cancelPointer);
   on(window,'blur',()=>{stopPointer();if(presentation)finishPresentation(presentation);pauseGame();});
   on(document,'visibilitychange',()=>{stopPointer();if(document.hidden){if(presentation)finishPresentation(presentation);pauseGame();}syncAudio();});
-  on(window,'pagehide',()=>{stopPointer();if(presentation)finishPresentation(presentation);});
+  on(window,'pagehide',()=>{stopPointer();clearInvalidSwap();if(presentation)finishPresentation(presentation);});
   on($('board'),'click',e=>{if(e.detail===0){const tile=e.target.closest('[data-index]');if(tile)select(+tile.dataset.index);}});
   on($('board'),'keydown',e=>{
     const tile=e.target.closest('[data-index]');if(!tile||!gameInputAllowed())return;if(guideFeedback()){e.preventDefault();return;}if(busy){e.preventDefault();finishPresentation(presentation);return;}
@@ -1233,7 +1302,7 @@ window.HexSessionStore.boot(function startApp(session) {
   function savePreferences(){persist();renderSound();syncAudio();}
   on($('setting-sfx'),'change',event=>{saved.sound=event.target.checked;savePreferences();unlockAudio();if(saved.sound)tone(2);});
   on($('setting-music'),'change',event=>{saved.preferences.music=event.target.checked;savePreferences();unlockAudio();});
-  on($('setting-motion'),'change',event=>{saved.preferences.motion=event.target.value;if(presentation)finishPresentation(presentation);savePreferences();});
+  on($('setting-motion'),'change',event=>{saved.preferences.motion=event.target.value;clearInvalidSwap();if(presentation)finishPresentation(presentation);savePreferences();});
   on($('setting-volume'),'input',event=>{saved.preferences.volume=Math.max(0,Math.min(1,Number(event.target.value)/100));$('volume-value').textContent=`%${Math.round(saved.preferences.volume*100)}`;savePreferences();});
   on($('setting-haptics'),'change',event=>{saved.preferences.haptics=event.target.checked;savePreferences();if(saved.preferences.haptics&&typeof navigator.vibrate==='function')try{navigator.vibrate(12);}catch(_){} });
   on($('settings-reset'),'click',()=>{
@@ -1273,7 +1342,7 @@ window.HexSessionStore.boot(function startApp(session) {
   });
   on(window,'pagehide',()=>{audio?.stop();if(engine)persist();});
   const motionQuery=window.matchMedia?.('(prefers-reduced-motion: reduce)');
-  motionQuery?.addEventListener?.('change',()=>{if(saved.preferences.motion==='auto'){if(presentation&&reduceMotion())finishPresentation(presentation);syncAudio();}});
+  motionQuery?.addEventListener?.('change',()=>{if(saved.preferences.motion==='auto'){if(reduceMotion()){clearInvalidSwap();if(presentation)finishPresentation(presentation);}syncAudio();}});
   function bindPlaytest(){
     if(!playtest)return;
     const toggle=$('setting-playtest');if(toggle){toggle.checked=playtest.snapshot().enabled;toggle.addEventListener('change',()=>{playtest.setEnabled(toggle.checked);syncPlaytestActivity();persistPlaytest();toast(toggle.checked?'Yerel oyuncu testi kaydı açık. Veri gönderilmez.':'Yerel oyuncu testi kaydı kapalı.');});}

@@ -219,7 +219,7 @@ test('nonzero presentation supports skip and a strict total duration bound',asyn
     f.tap(pair[0]);f.tap(pair[1]);game.swap(...pair);
     assert(f.isBusy(),'test actually enters the animated path');
     assert(f.animations.length>0,'test actually calls the animation API');
-    const swaps=f.animations.filter(a=>a.target.classList.contains('gem')&&Array.isArray(a.frames)&&a.frames.length===2&&a.frames[0].transform==='translate(0px,0px)');
+    const swaps=f.animations.filter(a=>a.target.classList.contains('gem')&&a.target.closest('.swap-stone[data-swap-kind="valid"]')&&Array.isArray(a.frames)&&a.frames.length>=2&&a.frames[0].transform==='translate(0px,0px)');
     assert.equal(swaps.length,2,'both swapped stones visibly slide');
     assert(swaps.every(a=>a.options.duration>=280),'the swap remains on screen long enough to follow');
     const skip=f.d.getElementById('skip-animation');assert(skip&&!skip.hidden,'visible skip control during effects');

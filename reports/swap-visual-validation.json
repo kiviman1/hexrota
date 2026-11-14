@@ -1,0 +1,796 @@
+{
+  "schemaVersion": 1,
+  "scope": "PR5 visual swap occlusion fix; local actual-browser evidence, see current PR checks for remote CI",
+  "branch": "integration/hexrota-9.2",
+  "baselineCommit": "98af91c1cc445b45faf7d917d5389f04713b665e",
+  "pwaShellVersion": 22,
+  "rootCause": "Cell-local SVG gem translation remained below later-painted opaque neighbor floors. Actual green-board captures lose all moving value-2 fill and number ink at150ms and300ms.",
+  "baselineGreenBoard": [
+    {
+      "browser": "chromium",
+      "pair": [
+        1,
+        6
+      ],
+      "original": [
+        {
+          "value": "2",
+          "fill": "rgb(246, 211, 123)",
+          "ink": "rgb(98, 71, 19)"
+        },
+        {
+          "value": "3",
+          "fill": "rgb(242, 173, 161)",
+          "ink": "rgb(110, 51, 43)"
+        }
+      ],
+      "phases": [
+        {
+          "phase": "start",
+          "time": 0,
+          "pixels": [
+            {
+              "index": 1,
+              "value": "2",
+              "fillPixels": 2178,
+              "inkPixels": 136
+            },
+            {
+              "index": 6,
+              "value": "3",
+              "fillPixels": 2182,
+              "inkPixels": 132
+            }
+          ]
+        },
+        {
+          "phase": "mid",
+          "time": 150,
+          "pixels": [
+            {
+              "index": 1,
+              "value": "2",
+              "fillPixels": 0,
+              "inkPixels": 0
+            },
+            {
+              "index": 6,
+              "value": "3",
+              "fillPixels": 2190,
+              "inkPixels": 132
+            }
+          ]
+        },
+        {
+          "phase": "end",
+          "time": 300,
+          "pixels": [
+            {
+              "index": 1,
+              "value": "2",
+              "fillPixels": 0,
+              "inkPixels": 0
+            },
+            {
+              "index": 6,
+              "value": "3",
+              "fillPixels": 2190,
+              "inkPixels": 132
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "browser": "webkit",
+      "pair": [
+        1,
+        6
+      ],
+      "original": [
+        {
+          "value": "2",
+          "fill": "rgb(246, 211, 123)",
+          "ink": "rgb(98, 71, 19)"
+        },
+        {
+          "value": "3",
+          "fill": "rgb(242, 173, 161)",
+          "ink": "rgb(110, 51, 43)"
+        }
+      ],
+      "phases": [
+        {
+          "phase": "start",
+          "time": 0,
+          "pixels": [
+            {
+              "index": 1,
+              "value": "2",
+              "fillPixels": 2164,
+              "inkPixels": 143
+            },
+            {
+              "index": 6,
+              "value": "3",
+              "fillPixels": 2172,
+              "inkPixels": 133
+            }
+          ]
+        },
+        {
+          "phase": "mid",
+          "time": 150,
+          "pixels": [
+            {
+              "index": 1,
+              "value": "2",
+              "fillPixels": 0,
+              "inkPixels": 0
+            },
+            {
+              "index": 6,
+              "value": "3",
+              "fillPixels": 2179,
+              "inkPixels": 133
+            }
+          ]
+        },
+        {
+          "phase": "end",
+          "time": 300,
+          "pixels": [
+            {
+              "index": 1,
+              "value": "2",
+              "fillPixels": 0,
+              "inkPixels": 0
+            },
+            {
+              "index": 6,
+              "value": "3",
+              "fillPixels": 2180,
+              "inkPixels": 133
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "fix": [
+    "Separate final SVG swap-layer with two job-owned reciprocal gem clones.",
+    "Explicit paint and font copy preserves inherited number/color styling after reparenting.",
+    "Opposing bounded paths keep both glyphs separate and inside the viewport.",
+    "Abort/finally owner cleanup restores original gems and removes clones before match effects.",
+    "Separate cancellable invalid-feedback owner cleans on subsequent input, render, modal, resize, pagehide and motion changes."
+  ],
+  "browsers": [
+    {
+      "browser": "chromium",
+      "checks": 16,
+      "passed": 16,
+      "pixelPhasesMs": [
+        0,
+        150,
+        300
+      ],
+      "pixelPhaseGroups": 8,
+      "minimumObservedFillRatio": 0.8599,
+      "minimumObservedNumberInkRatio": 0.7222,
+      "requiredFillRatio": 0.72,
+      "requiredNumberInkRatio": 0.65,
+      "rgbTolerancePerChannel": 12,
+      "greenDestinationEvidence": {
+        "name": "an authored progressed board keeps both gems painted over an already green destination",
+        "passed": true,
+        "phases": [
+          {
+            "phase": "start",
+            "time": 0,
+            "paint": [
+              {
+                "index": 1,
+                "value": "2",
+                "fillPixels": 2186,
+                "inkPixels": 136,
+                "referenceFill": 2178,
+                "referenceInk": 136
+              },
+              {
+                "index": 6,
+                "value": "3",
+                "fillPixels": 2190,
+                "inkPixels": 132,
+                "referenceFill": 2182,
+                "referenceInk": 132
+              }
+            ]
+          },
+          {
+            "phase": "mid",
+            "time": 150,
+            "paint": [
+              {
+                "index": 1,
+                "value": "2",
+                "fillPixels": 2182,
+                "inkPixels": 137,
+                "referenceFill": 2178,
+                "referenceInk": 136
+              },
+              {
+                "index": 6,
+                "value": "3",
+                "fillPixels": 2210,
+                "inkPixels": 129,
+                "referenceFill": 2182,
+                "referenceInk": 132
+              }
+            ]
+          },
+          {
+            "phase": "end",
+            "time": 300,
+            "paint": [
+              {
+                "index": 1,
+                "value": "2",
+                "fillPixels": 2188,
+                "inkPixels": 136,
+                "referenceFill": 2178,
+                "referenceInk": 136
+              },
+              {
+                "index": 6,
+                "value": "3",
+                "fillPixels": 2190,
+                "inkPixels": 132,
+                "referenceFill": 2182,
+                "referenceInk": 132
+              }
+            ]
+          }
+        ],
+        "paintedStones": 19
+      },
+      "smallScreenEvidence": {
+        "name": "small-screen top-edge swap keeps both complete painted numbers inside the board",
+        "passed": true,
+        "phases": [
+          {
+            "phase": "start",
+            "time": 0,
+            "paint": [
+              {
+                "index": 0,
+                "value": "3",
+                "fillPixels": 1082,
+                "inkPixels": 52,
+                "referenceFill": 1229,
+                "referenceInk": 72
+              },
+              {
+                "index": 2,
+                "value": "2",
+                "fillPixels": 1056,
+                "inkPixels": 62,
+                "referenceFill": 1228,
+                "referenceInk": 75
+              }
+            ]
+          },
+          {
+            "phase": "mid",
+            "time": 150,
+            "paint": [
+              {
+                "index": 0,
+                "value": "3",
+                "fillPixels": 1059,
+                "inkPixels": 52,
+                "referenceFill": 1229,
+                "referenceInk": 72
+              },
+              {
+                "index": 2,
+                "value": "2",
+                "fillPixels": 1078,
+                "inkPixels": 61,
+                "referenceFill": 1228,
+                "referenceInk": 75
+              }
+            ]
+          },
+          {
+            "phase": "end",
+            "time": 300,
+            "paint": [
+              {
+                "index": 0,
+                "value": "3",
+                "fillPixels": 1059,
+                "inkPixels": 52,
+                "referenceFill": 1229,
+                "referenceInk": 72
+              },
+              {
+                "index": 2,
+                "value": "2",
+                "fillPixels": 1079,
+                "inkPixels": 61,
+                "referenceFill": 1228,
+                "referenceInk": 75
+              }
+            ]
+          }
+        ],
+        "paintedStones": 19,
+        "feedbackBeforeResume": [
+          {
+            "index": 0,
+            "value": "1",
+            "inkPixels": 35
+          },
+          {
+            "index": 1,
+            "value": "3",
+            "inkPixels": 72
+          },
+          {
+            "index": 2,
+            "value": "3",
+            "inkPixels": 72
+          },
+          {
+            "index": 3,
+            "value": "3",
+            "inkPixels": 72
+          },
+          {
+            "index": 4,
+            "value": "2",
+            "inkPixels": 75
+          },
+          {
+            "index": 5,
+            "value": "1",
+            "inkPixels": 72
+          },
+          {
+            "index": 6,
+            "value": "3",
+            "inkPixels": 72
+          },
+          {
+            "index": 7,
+            "value": "1",
+            "inkPixels": 72
+          },
+          {
+            "index": 8,
+            "value": "1",
+            "inkPixels": 60
+          },
+          {
+            "index": 9,
+            "value": "4",
+            "inkPixels": 86
+          },
+          {
+            "index": 10,
+            "value": "2",
+            "inkPixels": 75
+          },
+          {
+            "index": 11,
+            "value": "2",
+            "inkPixels": 75
+          },
+          {
+            "index": 12,
+            "value": "1",
+            "inkPixels": 72
+          },
+          {
+            "index": 13,
+            "value": "1",
+            "inkPixels": 60
+          },
+          {
+            "index": 14,
+            "value": "2",
+            "inkPixels": 75
+          },
+          {
+            "index": 15,
+            "value": "4",
+            "inkPixels": 86
+          },
+          {
+            "index": 16,
+            "value": "3",
+            "inkPixels": 72
+          },
+          {
+            "index": 17,
+            "value": "3",
+            "inkPixels": 72
+          },
+          {
+            "index": 18,
+            "value": "4",
+            "inkPixels": 86
+          }
+        ],
+        "finalVerifiedAfterActualMenuResume": true
+      },
+      "physicalIPhoneTested": false
+    },
+    {
+      "browser": "webkit",
+      "checks": 16,
+      "passed": 16,
+      "pixelPhasesMs": [
+        0,
+        150,
+        300
+      ],
+      "pixelPhaseGroups": 8,
+      "minimumObservedFillRatio": 0.8583,
+      "minimumObservedNumberInkRatio": 0.8261,
+      "requiredFillRatio": 0.72,
+      "requiredNumberInkRatio": 0.65,
+      "rgbTolerancePerChannel": 12,
+      "greenDestinationEvidence": {
+        "name": "an authored progressed board keeps both gems painted over an already green destination",
+        "passed": true,
+        "phases": [
+          {
+            "phase": "start",
+            "time": 0,
+            "paint": [
+              {
+                "index": 1,
+                "value": "2",
+                "fillPixels": 2172,
+                "inkPixels": 143,
+                "referenceFill": 2164,
+                "referenceInk": 143
+              },
+              {
+                "index": 6,
+                "value": "3",
+                "fillPixels": 2180,
+                "inkPixels": 133,
+                "referenceFill": 2172,
+                "referenceInk": 133
+              }
+            ]
+          },
+          {
+            "phase": "mid",
+            "time": 150,
+            "paint": [
+              {
+                "index": 1,
+                "value": "2",
+                "fillPixels": 2183,
+                "inkPixels": 139,
+                "referenceFill": 2164,
+                "referenceInk": 143
+              },
+              {
+                "index": 6,
+                "value": "3",
+                "fillPixels": 2204,
+                "inkPixels": 131,
+                "referenceFill": 2172,
+                "referenceInk": 133
+              }
+            ]
+          },
+          {
+            "phase": "end",
+            "time": 300,
+            "paint": [
+              {
+                "index": 1,
+                "value": "2",
+                "fillPixels": 2173,
+                "inkPixels": 143,
+                "referenceFill": 2164,
+                "referenceInk": 143
+              },
+              {
+                "index": 6,
+                "value": "3",
+                "fillPixels": 2180,
+                "inkPixels": 133,
+                "referenceFill": 2172,
+                "referenceInk": 133
+              }
+            ]
+          }
+        ],
+        "paintedStones": 19
+      },
+      "smallScreenEvidence": {
+        "name": "small-screen top-edge swap keeps both complete painted numbers inside the board",
+        "passed": true,
+        "phases": [
+          {
+            "phase": "start",
+            "time": 0,
+            "paint": [
+              {
+                "index": 0,
+                "value": "3",
+                "fillPixels": 1075,
+                "inkPixels": 56,
+                "referenceFill": 1228,
+                "referenceInk": 67
+              },
+              {
+                "index": 2,
+                "value": "2",
+                "fillPixels": 1055,
+                "inkPixels": 57,
+                "referenceFill": 1225,
+                "referenceInk": 69
+              }
+            ]
+          },
+          {
+            "phase": "mid",
+            "time": 150,
+            "paint": [
+              {
+                "index": 0,
+                "value": "3",
+                "fillPixels": 1055,
+                "inkPixels": 56,
+                "referenceFill": 1228,
+                "referenceInk": 67
+              },
+              {
+                "index": 2,
+                "value": "2",
+                "fillPixels": 1072,
+                "inkPixels": 61,
+                "referenceFill": 1225,
+                "referenceInk": 69
+              }
+            ]
+          },
+          {
+            "phase": "end",
+            "time": 300,
+            "paint": [
+              {
+                "index": 0,
+                "value": "3",
+                "fillPixels": 1054,
+                "inkPixels": 56,
+                "referenceFill": 1228,
+                "referenceInk": 67
+              },
+              {
+                "index": 2,
+                "value": "2",
+                "fillPixels": 1074,
+                "inkPixels": 61,
+                "referenceFill": 1225,
+                "referenceInk": 69
+              }
+            ]
+          }
+        ],
+        "paintedStones": 19,
+        "feedbackBeforeResume": [
+          {
+            "index": 0,
+            "value": "1",
+            "inkPixels": 14
+          },
+          {
+            "index": 1,
+            "value": "3",
+            "inkPixels": 67
+          },
+          {
+            "index": 2,
+            "value": "3",
+            "inkPixels": 66
+          },
+          {
+            "index": 3,
+            "value": "3",
+            "inkPixels": 67
+          },
+          {
+            "index": 4,
+            "value": "2",
+            "inkPixels": 69
+          },
+          {
+            "index": 5,
+            "value": "1",
+            "inkPixels": 41
+          },
+          {
+            "index": 6,
+            "value": "3",
+            "inkPixels": 67
+          },
+          {
+            "index": 7,
+            "value": "1",
+            "inkPixels": 41
+          },
+          {
+            "index": 8,
+            "value": "1",
+            "inkPixels": 39
+          },
+          {
+            "index": 9,
+            "value": "4",
+            "inkPixels": 74
+          },
+          {
+            "index": 10,
+            "value": "2",
+            "inkPixels": 69
+          },
+          {
+            "index": 11,
+            "value": "2",
+            "inkPixels": 69
+          },
+          {
+            "index": 12,
+            "value": "1",
+            "inkPixels": 41
+          },
+          {
+            "index": 13,
+            "value": "1",
+            "inkPixels": 39
+          },
+          {
+            "index": 14,
+            "value": "2",
+            "inkPixels": 69
+          },
+          {
+            "index": 15,
+            "value": "4",
+            "inkPixels": 74
+          },
+          {
+            "index": 16,
+            "value": "3",
+            "inkPixels": 67
+          },
+          {
+            "index": 17,
+            "value": "3",
+            "inkPixels": 66
+          },
+          {
+            "index": 18,
+            "value": "4",
+            "inkPixels": 74
+          }
+        ],
+        "finalVerifiedAfterActualMenuResume": true
+      },
+      "physicalIPhoneTested": false
+    }
+  ],
+  "localChecks": [
+    {
+      "command": "npm test",
+      "exitCode": 0,
+      "includesSwapLifecycleGroups": 14
+    },
+    {
+      "command": "npm run test:unity-gameplay",
+      "exitCode": 0,
+      "validSwaps": 1913,
+      "certifiedRoutes": 80,
+      "intermediateWaveParity": true
+    },
+    {
+      "command": "npm run test:unity-rewards",
+      "exitCode": 0,
+      "vectors": 104,
+      "factoryCases": 1
+    },
+    {
+      "command": "node check-pwa.cjs",
+      "exitCode": 0,
+      "groups": 13
+    },
+    {
+      "command": "npm run test:integration-browser",
+      "exitCode": 0,
+      "groups": 6,
+      "actualOfflineShell": 22
+    },
+    {
+      "command": "npm run test:swap-visual",
+      "exitCode": 0,
+      "browser": "chromium",
+      "groups": 16
+    },
+    {
+      "command": "HEXROTA_BROWSER=webkit npm run test:swap-visual",
+      "exitCode": 0,
+      "groups": 16
+    }
+  ],
+  "preservedSources": [
+    {
+      "path": "dist/engine.js",
+      "sha256": "84cf60d3c1d1b395718ef3b9f0cb00ace213bafe41e0b61c1d7babd03e27ebec",
+      "unchangedFrom98af91c": true
+    },
+    {
+      "path": "dist/levels.js",
+      "sha256": "912d974e9fbcabf77036b0fb1d3e1cc25962049cb598707241fcdb9cc6795bd4",
+      "unchangedFrom98af91c": true
+    },
+    {
+      "path": "dist/tutorials.js",
+      "sha256": "b5ae419bffeb4fb684261baad425a74857a73cc6d6dd998f5d1def58c2ea4ee0",
+      "unchangedFrom98af91c": true
+    },
+    {
+      "path": "dist/variants.json",
+      "sha256": "087caa9349785ad3cd2cea6ae01e38968307205cba0dad530110b9e78a657f7d",
+      "unchangedFrom98af91c": true
+    },
+    {
+      "path": "dist/variants-data.js",
+      "sha256": "c0e98fff5fdb7cacf098d7615d0030883707fa432e2b00614cb21daf75d9c0a2",
+      "unchangedFrom98af91c": true
+    },
+    {
+      "path": "dist/lives.js",
+      "sha256": "b487085c64486268d96e769feb587988c7a49ec1f50f4288654191a06e39ed68",
+      "unchangedFrom98af91c": true
+    },
+    {
+      "path": "dist/session-store.js",
+      "sha256": "754b85ba101549695ddac951484bf60b4fcc0b4cf446de3c1f8a54b048eebb3e",
+      "unchangedFrom98af91c": true
+    },
+    {
+      "path": "dist/rewards.js",
+      "sha256": "d349bed5bf7299e141c23ee64eeb2d508f86a1e6fffe0b344985e4857b2e39c4",
+      "unchangedFrom98af91c": true
+    },
+    {
+      "path": "dist/reward-adapter.js",
+      "sha256": "f1b99fccc27c372f2906c5876bbbbd7c7b4e357338ca761edc047f31520aba3a",
+      "unchangedFrom98af91c": true
+    },
+    {
+      "path": "fixtures/gameplay-vectors.json",
+      "sha256": "f88b4870bf78cb1c80bb15ff516a1b35f68c365b119765fa9ad1d5c197740efa",
+      "unchangedFrom98af91c": true
+    },
+    {
+      "path": "unity/Rewards/RewardDirector.cs",
+      "sha256": "4419352fb5971ea98c9c37583b6fa377c6ed3424f4afad9a58f93e44154c8ad9",
+      "unchangedFrom98af91c": true
+    }
+  ],
+  "evidenceArtifacts": "Current CI mobile matrix uploads swap-visual-chromium and swap-visual-webkit PNG/JSON artifacts for7days; failed pixel assertions fail the job.",
+  "limits": [
+    "Physical iPhone/iOS Safari not tested. Desktop WebKit is not physical-device proof.",
+    "At320x568 an existing post-match +6 score chip partly covers a top static glyph in both old and new builds (14 ink pixels in WebKit). Strong moving-frame tests remain unchanged; final all19-glyph small-screen proof uses an actual menu/resume flow after verifying saved state and clean sources. This fix preserves existing match feedback."
+  ],
+  "generatedAtUtc": "2026-11-14T19:43:22.062957+00:00"
+}

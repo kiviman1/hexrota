@@ -472,3 +472,7 @@ body[data-guide-feedback="true"] .combo-feedback{display:none}
 @media(max-width:650px) and (max-height:620px) and (orientation:portrait){
  body[data-screen="home"] .home-play{padding-top:10px;padding-bottom:10px}
 }
+
+/* Transient swap gems paint after all floors; only their inner group moves. */
+.swap-layer,.swap-pair,.swap-stone{pointer-events:none}
+.swap-stone>.gem{transform-box:view-box;transform-origin:0 0}

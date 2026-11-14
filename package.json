@@ -4,7 +4,7 @@
   "private": true,
   "description": "Telefon ve masaüstünde oynanabilir, iki öğretici ve on bölümlü altıgen eşleştirme web uygulaması.",
   "scripts": {
-    "test": "node check-levels.mjs && node check-engine.mjs && node check-tutorials.mjs && node generate-variants.cjs --check && node check-variants.cjs && node check-attempts.cjs && node sync-lives-config.cjs --check && node check-lives.cjs && node check-life-consistency.cjs && node check-session-consistency.cjs && node generate-life-vectors.cjs --check && node check-life-vectors.cjs && node check-events.cjs && node check-audio.cjs && node check-ui.cjs && node check-onboarding.cjs && node check-input.cjs && node check-menu.cjs && node check-attempt-ui.cjs && node check-lives-ui.cjs && node check-pwa.cjs && node check-game-shell.cjs && node check-score.cjs && node sync-reward-rules.cjs --check && node generate-reward-vectors.cjs --check && node check-rewards.cjs && node check-reward-ui.cjs && node export-game-config.cjs --check && node generate-gameplay-vectors.cjs --check && node check-gameplay-vectors.cjs && node recheck-legacy-balance.cjs && node balance-variants.cjs --check && npm run test:playtest && npm run test:integration",
+    "test": "node check-levels.mjs && node check-engine.mjs && node check-tutorials.mjs && node generate-variants.cjs --check && node check-variants.cjs && node check-attempts.cjs && node sync-lives-config.cjs --check && node check-lives.cjs && node check-life-consistency.cjs && node check-session-consistency.cjs && node generate-life-vectors.cjs --check && node check-life-vectors.cjs && node check-events.cjs && node check-audio.cjs && node check-ui.cjs && node check-onboarding.cjs && node check-input.cjs && node check-menu.cjs && node check-attempt-ui.cjs && node check-lives-ui.cjs && node check-pwa.cjs && node check-game-shell.cjs && node check-score.cjs && node sync-reward-rules.cjs --check && node generate-reward-vectors.cjs --check && node check-rewards.cjs && node check-reward-ui.cjs && node export-game-config.cjs --check && node generate-gameplay-vectors.cjs --check && node check-gameplay-vectors.cjs && node recheck-legacy-balance.cjs && node balance-variants.cjs --check && npm run test:playtest && npm run test:integration && npm run test:swap-lifecycle",
     "rewards:sync": "node sync-reward-rules.cjs",
     "test:unity-rewards": "node check-reward-parity.cjs",
     "variants:generate": "node generate-variants.cjs --resume",
@@ -21,10 +21,13 @@
     "test:observable": "node check-observable.cjs && node audit-observable.cjs --check --quiet",
     "test:playtest": "node check-playtest.cjs && node check-playtest-ui.cjs",
     "test:integration": "node check-integration.cjs",
-    "test:integration-browser": "node check-integration-browser.cjs"
+    "test:integration-browser": "node check-integration-browser.cjs",
+    "test:swap-visual": "node check-swap-visual.cjs",
+    "test:swap-lifecycle": "node check-swap-lifecycle.cjs"
   },
   "devDependencies": {
     "jsdom": "31.0.1",
-    "playwright": "1.62.1"
+    "playwright": "1.62.1",
+    "pngjs": "7.0.0"
   }
 }
