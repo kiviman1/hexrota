@@ -1,0 +1,24 @@
+name: UI layout reference
+on:
+  push:
+    branches: [feat/comic-adventure-ui-9-6]
+    paths: ['.github/workflows/layout-reference.yml']
+permissions:
+  contents: read
+jobs:
+  reference:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: b2c59b968e871e973ffa701c464b095da37f098c
+          persist-credentials: false
+      - name: Archive exact reviewed source
+        run: git archive --format=tar.gz HEAD > /tmp/hexrota-layout-source.tar.gz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: layout-reference
+          path: /tmp/hexrota-layout-source.tar.gz
+          retention-days: 1
+          if-no-files-found: error
