@@ -27,6 +27,7 @@ const ordinary=fixture(1),cross=fixture(0),winning=fixture(level.solution.length
 function mount({which=ordinary,motion='full',sound=true,haptics=true}={}){
  const vc=new VirtualConsole();vc.on('jsdomError',error=>errors.push(error.message));
  const dom=new JSDOM(read('index.html'),{url:'https://hexrota-reward-ui.example/',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});
+ try{
  const w=dom.window,d=w.document,animations=[],packets=[],burstSnapshots=[],audio=[],vibrations=[];
  w.matchMedia=()=>({matches:motion==='reduce',addEventListener(){},removeEventListener(){}});
  w.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};
@@ -58,7 +59,7 @@ function mount({which=ordinary,motion='full',sound=true,haptics=true}={}){
   move(){this.record('move');}victory(){this.record('victory');}click(){}stop(){this.active=false;}dispose(){this.active=false;}
  }
  w.HexAudio=AudioStub;
- w.localStorage.setItem(key,JSON.stringify({current:2,done:[0,1,2],boards:{2:which.snapshot},sound,preferences:{music:false,volume:.65,motion,haptics}}));
+ w.localStorage.setItem(key,JSON.stringify({current:2,done:[0,1],boards:{2:which.snapshot},sound,preferences:{music:false,volume:.65,motion,haptics}}));
  const observed=new WeakSet();
  const observer=new w.MutationObserver(()=>{
   for(const packet of d.querySelectorAll('.score-packet')){
@@ -76,6 +77,7 @@ function mount({which=ordinary,motion='full',sound=true,haptics=true}={}){
  const clean=()=>{assert.equal(d.querySelectorAll('.score-packet,.score-digit,.score-burst-ring,.score-burst-spark,.reward-goal-hit,.score-arrival').length,0,'no stale score or reward visuals remain');};
  function exact(){assert.equal(+node('sum').textContent,which.expected.score,'feedback cannot change the score');assert.deepEqual(save().boards[2],which.expected,'feedback cannot mutate the saved engine/RNG state');assert.equal(+node('moves-left').textContent,which.expected.movesLeft);}
  return {w,d,which,node,click,save,enter,move,idle,busy,clean,exact,animations,packets,burstSnapshots,audio,vibrations,close(){observer.disconnect();dom.window.close();}};
+ }catch(error){dom.window.close();throw error;}
 }
 
 function goalAnimations(f){const coverage=f.d.querySelector('.coverage');return f.animations.filter(a=>coverage===a.target||coverage?.contains(a.target));}

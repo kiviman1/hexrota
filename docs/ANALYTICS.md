@@ -55,3 +55,11 @@ Gerçek oyuncu kaybı, günlük geri dönüş veya uzun vadeli tutma oranı içi
 ## 9.1 can kaydı
 
 Can kesintisi veya test ödülü yalnızca `level_failed` sayısından çıkarılmaz: koruma, sınırsız can, geliştirici geçişi ve daha önce kapatılmış deneme aynı olayın mali/can etkisini değiştirebilir. Yetkili yerel can sonucu ayrı `hexrota-lives-v1` işlem/deneme günlüğündedir. Test sağlayıcısı sonuçları gerçek reklam izlenmesi veya satış dönüşümü değildir. Mevcut olay şemasına kişisel ya da ödeme verisi eklenmemiştir.
+
+## 9.5 yardım ve kurtarmada yorumlama
+
+Ekonomi ve yardım komut defterleri otoritedir; sınırlı olay tamponu para/stok/can veya ilk kazanma hakkı oluşturamaz. `booster_used` mevcut v1 şemasında `greenBrush`, `colorKey`, `rescue5` kimliklerini kullanır. Kalıcı başarı satırı ve yeni command snapshot `assisted` işaretini taşır. Kişisel veri veya otomatik ağ gönderimi eklenmez.
+
+Kurtarmada aynı Attempt ID için ilk `level_failed` ardından `booster_used/rescue5` ve sonraki `level_completed` görülebilir. İlk başarısızlık, kurtarma hakkı kullanılmış bir denemenin son sonucu olarak tek başına yorumlanamaz. İkinci kayıp kanonik snapshot/attemptStats içinde gerçek kayıptır; v1 GameEvent akışında aynı deneme için ikinci `level_failed` üretilmez, ilk olay tampon dışına taşınmış olsa da bu kural korunur. Başarı oranında olay adlarını naifçe toplamak yerine deneme kimliği, kurtarma claim'i ve mevcut/sonlandırılmış sonuç birlikte kullanılmalıdır. Tampon dışına taşınmış kanıt eksik gözlem olarak raporlanır.
+
+İsteğe bağlı Playtest v1, gerçek kurtarma sonrası ikinci başarısızlığı `level_failed` / `reason:post_rescue_failure` ile yerel kaydeder. Bu ölçüm başarısız profil commit'inde geri alınır. Playtest v1'in ayrı export şeması genel booster olayını veya bütün yardım komutlarını içermez; fırça/anahtarla yardımlı denemeyi yalnız bu export'tan güvenilir biçimde ayırdığı iddia edilmez. Tam sınıflama için kanonik yerel komut/ekonomi kaydıyla ilişki veya ileride sürümlü ölçüm genişlemesi gerekir; bu çalışmada yeni analitik servisi/şeması uydurulmaz.

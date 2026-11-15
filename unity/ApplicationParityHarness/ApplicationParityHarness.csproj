@@ -3,6 +3,9 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="../Application/*.cs" />
+    <Compile Include="../Economy/*.cs" />
+    <Compile Include="../Commands/*.cs" />
+    <Compile Include="../Rescue/*.cs" />
     <Compile Include="../Contracts/*.cs" />
     <Compile Include="../ParitySupport/*.cs" />
     <Compile Include="../Gameplay/*.cs" />

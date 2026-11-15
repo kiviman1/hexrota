@@ -2,6 +2,28 @@
 
 Durum: Saf C# 7.3 uygulandı ve gerçek .NET 8 harness ile JavaScript kaynaklarına karşı sınandı. Web uygulaması bu katmanı çağırmaz. Unity sahnesi, platform dosya adaptörü, cihaz SDK'sı ve ağ servisi bu çalışma kapsamında oluşturulmadı.
 
+## 9.5 A: kalıcı tek tamamlama
+
+`GameSessionController`, `Hexrota.Economy.EconomyManager` kullanır. `Game.economy` ledger'ı aynı `hexrota-profile-v2` commit'inde saklanır; TEST cüzdanı ayrıdır. `CanOpen`, `Preview`, `Enter`, `Retry`, `Restart`, `Swap` ve `Hint` tamamlanmış veya sıradaki olmayan kampanya bölümünü reddeder. Öğreticiler ücretsiz yeniden oynanır. Kazanma, gerçek motor durumundan doğrulandıktan sonra 20 Altın/1 yıldız ve L3/L6 stok hediyesi atomik kaydedilir.
+
+Geçerli eski `done` kapalı kalır; replay ile doğrulanmış kazanma arşivi varsa geriye dönük tek ödül verilir. Kanıt yoksa hak incelemede kalır, bölüm yeniden açılmaz. Normal reset kalıcı ledger ve kazanma arşivlerini korur. Ayrıntı: [ECONOMY_CORE_9_5.md](ECONOMY_CORE_9_5.md). A doğrulamasında 915 tam oturum karşılaştırması/28 app.js akışı ve 16 native senaryo (önceki 11 + 5 yeni ilerleme/legacy/final/bozuk ledger sınırı) geçti. Aşama A karşılaştırma sayıları tarihsel referanstır.
+
+## 9.5 B: yardım komutları ve atomik envanter
+
+`AttemptRepository.RestoreSession` klasik v4 veya gerçek yardımlı komut replay'ini seçer; `ApplicationAttemptCheckpoint` doğru snapshot'ı taşır. Yardım komutu ile ekonomi debiti aynı kimlik/Attempt ID/türü korunmuş Level ID/ürün üzerinden iki yönlü bağlanır. Yardımsız all-swap yeni zarf, metadata'sız eski kayıtta gizlenen ücret, desteklenmeyen kullanım limiti ve bozuk sonuç ilk profil yazımından önce reddedilir.
+
+`PreviewBooster` hiçbir kaynak değiştirmeden gerçek sonuç ve savunmalı teklif kopyası döndürür. `UseBooster` önceden oluşturulmuş, revision/Attempt/tam snapshot/parametrelerle aynı zorunlu teklifi ister; yalnız `turn` veya boş komut guard'ı yeterli değildir. `PurchaseInventory`, 70/90 oyun Altınıyla bir stok alır. Stok, tahta, kazanma ödülü ve can aynı atomik kayıttadır. Yardım sonrası ipucu eski sertifikayı kullanmaz; Reward Director plan/durumu null, gerçek sonuç dalgaları sunum girdisidir. Klasik Director korunur.
+
+B doğrulaması: 1.005 tam JSON karşılaştırması, 30 gerçek app.js akışı, 25 native guard senaryosu; olay karşılaştırması 580/462 aynen korunur. Eksik/eski teklif, sıfır-turn değişim, yalnız revision ilerlemesi, kayıt hatası, bozuk ekonomik eşleme ve sıfır canla mevcut yardım kaydından devam dahildir. İkinci şans host'u C aşamasına aittir; B'de yetkisiz grant_moves yüklenmez.
+
+## 9.5 C: doğrulanmış ikinci şans
+
+`RescueOffer`, `ResumeForSecondChance`, `BeginRescueAd`, `CompleteRescueAd`, `ApplyRescueReceipt` ve `RescueWithGold` aynı Attempt ID'de +5 hamle yönetir. Saf RescueManager saati/verifier'ı dışarıdan alır; TEST provider gerçek reklam değildir. `game.rescue` mevcutsa sürümü ve biçimi ilk commit'ten önce doğrulanır. Yardım komutu, rescue claim, varsa aynı kimlikli 140 Altın debiti ve gerçek Life settlement birlikte eşlenir. Geçerli muafiyetler ve sonradan kazanılmış/discarded arşivler korunur; ikinci can kesilmez.
+
+Kanonik yazım başarısız olduğunda bilinen doğrulanmış tamamlanma özel bellekte pending delivery olarak korunur. Menü/aynı kayıp görünümü ve `RetryPendingRescueDelivery` açıktır; yeni deneme, reset, başka ücret veya yeniden reklamla hakkı kaybetme engellenir. Başarılı teslim bir kez temizler. Yeni process sonrasında host/sağlayıcı aynı doğrulanmış kanıtı yeniden teslim etmelidir; çekirdek dosya/SDK veya sahte kalıcı makbuz otoritesi oluşturmaz. Henüz izlenmemiş pending istek açık terk sırasında iptal edilir.
+
+C gerçek karşılaştırma: **1.190 tam JSON**, **34 app.js akışı**, **44 native senaryo**; olay **580 / 462** korunur. Gold/TEST ayrımı, başarısız save ve receipt redelivery, yanlış Life/ekonomi/komut bağları, null/bilinmeyen rescue, UTC gün değişimi, sıfır canla devam, normal takas sonrası archived restart, bilinen kaydedilmemiş kanıt, stale CAS ve tek slot olay tamponu dahildir. Kullanılamaz hamle teklifi için ayrı sentetik geometride gerçek replay testi vardır; yayımlanmış 40 tahta değiştirilmez.
+
 ## Bağımlılıklar ve kapsam
 
 Bu çalışma güncel `main` tabanlıdır; katalog, can ve ipucu/ödül adaptörü için henüz onaylanmamış bağımsız PR #6, #7 ve #8'in kaynak dallarını yerel olarak içerir. Bu bağımlılıkların birleştirilmesi GitHub PR'larının onaylanması veya `main`e birleştirilmesi anlamına gelmez. Integration PR bütün modülleri ayrıca sınar.

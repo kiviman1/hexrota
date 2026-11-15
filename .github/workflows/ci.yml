@@ -119,6 +119,32 @@ jobs:
         env:
           HEXROTA_BROWSER: ${{ matrix.browser }}
           HEXROTA_SWAP_SCREENSHOT_DIR: test-results/swap-${{ matrix.browser }}
+      - name: Verify one-clear rewards and mobile economy screens
+        run: npm run test:economy-browser
+        env:
+          HEXROTA_BROWSER: ${{ matrix.browser }}
+          HEXROTA_ECONOMY_SCREENSHOT_DIR: test-results/economy-${{ matrix.browser }}
+      - name: Verify permanent botanical progression and read-only mobile garden
+        run: npm run test:garden-browser
+        env:
+          HEXROTA_BROWSER: ${{ matrix.browser }}
+          HEXROTA_GARDEN_SCREENSHOT_DIR: test-results/garden-${{ matrix.browser }}
+      - name: Keep garden screenshots and browser results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: garden-mobile-${{ matrix.browser }}
+          path: test-results/garden-${{ matrix.browser }}
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Keep economy screenshots and browser results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: economy-mobile-${{ matrix.browser }}
+          path: test-results/economy-${{ matrix.browser }}
+          if-no-files-found: warn
+          retention-days: 7
       - name: Keep swap screenshots and pixel report
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -218,3 +244,100 @@ jobs:
         run: npm ci
       - name: Compile C# 7.3 and compare real app sessions, atomic saves and local events
         run: npm run test:unity-session
+
+  csharp-economy-parity:
+    name: C# progression and economy parity
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.2'
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Compile C# 7.3 and compare permanent progression and wallet ledgers
+        run: npm run test:unity-economy
+
+  csharp-command-parity:
+    name: C# assisted gameplay command parity
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.2'
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Compile C# 7.3 and compare every assisted command and intermediate wave
+        run: npm run test:unity-commands
+
+  csharp-rescue-parity:
+    name: C# second-chance and receipt parity
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.2'
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Compile C# 7.3 and compare rescue claims, receipts, quotas and clock recovery
+        run: npm run test:unity-rescue
+
+  balance-lab-economy-isolation:
+    name: Balance Lab economy isolation
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out integrated game
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.2'
+          cache: npm
+      - name: Install test dependencies
+        run: npm ci
+      - name: Install actual Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+      - name: Check out unmerged Lab only as a pinned isolated test fixture
+        uses: actions/checkout@v4
+        with:
+          ref: 85bc092d4d2e0dc01e91527b92a1d8cbf4664ca1
+          path: .lab-compat-fixture
+          persist-credentials: false
+      - name: Verify Lab cannot read or change the integrated economy in Chromium
+        run: npm run test:balance-lab-economy
+        env:
+          HEXROTA_LAB_SOURCE: ${{ github.workspace }}/.lab-compat-fixture
+          HEXROTA_BROWSER: chromium
+          HEXROTA_LAB_ECONOMY_REPORT_DIR: test-results/lab-economy-chromium
+      - name: Verify Lab cannot read or change the integrated economy in WebKit
+        run: npm run test:balance-lab-economy
+        env:
+          HEXROTA_LAB_SOURCE: ${{ github.workspace }}/.lab-compat-fixture
+          HEXROTA_BROWSER: webkit
+          HEXROTA_LAB_ECONOMY_REPORT_DIR: test-results/lab-economy-webkit
+      - name: Keep isolated Lab screenshots and privacy reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: balance-lab-economy-isolation
+          path: test-results/lab-economy-*
+          if-no-files-found: warn
+          retention-days: 7

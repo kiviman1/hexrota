@@ -1,0 +1,6 @@
+{
+  "dist/engine.js": "84cf60d3c1d1b395718ef3b9f0cb00ace213bafe41e0b61c1d7babd03e27ebec",
+  "unity/Gameplay/HexMatch.cs": "0fa32a43e6beef65ad95d6e6b6b0f7c1ec2aa827cea1c13d3ca41dce2b1b02ae",
+  "unity/Gameplay/GameplayTypes.cs": "fb3b3bd8d03b21015b6c0190f6cc9774db84b02fc4f26182370b66a40f313a91",
+  "unity/Gameplay/BoardTopology.cs": "7550a5db28858baf391b4869cf85a17be8c080e7213dae09a887c9ee32dbea2c"
+}

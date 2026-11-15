@@ -2,6 +2,7 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const {JSDOM,VirtualConsole}=require('jsdom');
+const {savedGame}=require('./qa-fixtures.cjs');
 const root=__dirname+'/dist/',read=file=>fs.readFileSync(root+file,'utf8'),plain=value=>JSON.parse(JSON.stringify(value));
 const profileKey='hexrota-profile-v2',gameKey='hexrota-match-v5',lifeKey='hexrota-lives-v1',eventKey='hexrota-events-v1';
 const NOW=Date.UTC(2026,0,8,12),MINUTE=60000,tests=[],errors=[],unhandled=[];
@@ -30,9 +31,10 @@ function existing(stage=2,{turns=1,lost=false,legacy=false}={}){
  if(entry){saved.attempts={[stage]:plain(entry.metadata)};saved.attemptStats={[stage]:{attemptId:entry.metadata.attemptId,attemptNumber:1,started:true,terminalEvent:lost?'level_failed':null,hintsUsed:0,cascades}};saved.variantSelection.serial=7;saved.variantSelection.counts[base.id]=1;saved.variantSelection.recent[base.id]=[entry.metadata.variantId];}
  return {saved,game,metadata:entry?.metadata};
 }
-function mount({saved=fresh(),life,now=NOW,oldV4,profile,writeFailure=false}={}){
+function mount({saved=fresh(),life,now=NOW,oldV4,profile,events,writeFailure=false}={}){
  const vc=new VirtualConsole();vc.on('jsdomError',error=>errors.push(error.message));
  const dom=new JSDOM(read('index.html'),{url:'https://hexrota-lives.example/',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});
+ try{
  const w=dom.window,d=w.document,network=[];let utc=now;w.HexSessionTestMode={isolated:true};
  w.Date.now=()=>utc;w.matchMedia=()=>({matches:true,addEventListener(){},removeEventListener(){}});
  w.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};w.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');this.dispatchEvent(new w.Event('close'));};
@@ -44,14 +46,16 @@ function mount({saved=fresh(),life,now=NOW,oldV4,profile,writeFailure=false}={})
  if(oldV4)w.localStorage.setItem('hexrota-match-v4',JSON.stringify(oldV4));else w.localStorage.setItem(gameKey,JSON.stringify(saved));
  if(life!==undefined)w.localStorage.setItem(lifeKey,JSON.stringify(life));
  if(profile)w.localStorage.setItem(profileKey,JSON.stringify(profile));
+ if(events!==undefined)w.localStorage.setItem(eventKey,JSON.stringify(events));
  if(writeFailure){const native=w.Storage.prototype.setItem;w.Storage.prototype.setItem=function(key,value){if(key===profileKey)throw new w.DOMException('Life storage unavailable','QuotaExceededError');return native.call(this,key,value);};}
  for(const script of d.querySelectorAll('script[src]')){const file=script.getAttribute('src').split('/').at(-1).split('?')[0];if(!['audio.js','pwa.js'].includes(file))w.eval(read(file));}
  const f={dom,w,d,network,get now(){return utc;},set now(value){utc=value;},save:()=>JSON.parse(w.localStorage.getItem(gameKey)),life:()=>JSON.parse(w.localStorage.getItem(lifeKey)),events:()=>JSON.parse(w.localStorage.getItem(eventKey)||'null'),close(){dom.window.close();}};
  f.node=selector=>{const n=d.querySelector(selector);assert(n,selector+' exists');return n;};f.click=selector=>f.node(selector).dispatchEvent(new w.MouseEvent('click',{bubbles:true,detail:0}));
  f.return=()=>{Object.defineProperty(d,'hidden',{configurable:true,value:false});d.dispatchEvent(new w.Event('visibilitychange'));w.dispatchEvent(new w.Event('focus'));};
  f.change=(selector,value)=>{const n=f.node(selector);n.checked=value;n.dispatchEvent(new w.Event('change',{bubbles:true}));};
- f.game=()=>{const s=f.save(),i=s.current,base=w.HEX_LEVELS[i-2],meta=s.attempts?.[i],level=i<2?w.HEX_TUTORIALS[i]:meta?w.HexAttempts.createCatalog(w.HEX_LEVELS,w.HEX_VARIANTS,w.HexMatch).resolveLevel(base.id,meta.variantId,meta.levelDataVersion):base;return new w.HexMatch(level,s.boards[i]);};
+ f.game=()=>savedGame(w);
  return f;
+ }catch(error){dom.window.close();throw error;}
 }
 async function enter(f){f.click('#home-play');if(f.node('#pregame-dialog').open)f.click('#pregame-start');await wait(1);}
 async function move(f,pair){for(const index of pair)f.click(`#board [data-index="${index}"]`);await until(()=>f.node('#board').getAttribute('aria-busy')==='false','move presentation ends');}
@@ -238,7 +242,9 @@ test('full progress reset explains played-attempt costs, supports cancellation a
   f.click('#game-settings');f.click('#settings-reset');assert(/1 can/.test(f.node('#reset-description').textContent));f.click('#reset-cancel');assert.deepEqual(f.save(),before);assert.deepEqual(f.life(),life);
   f.click('#settings-reset');f.click('#reset-confirm');assert.equal(f.life().life.lives,4);assert.deepEqual(f.save().boards,{});
  }finally{f.close();}
- const first=existing(2),second=existing(3),saved=plain(second.saved);saved.boards[2]=first.saved.boards[2];saved.attempts[2]=first.saved.attempts[2];saved.attemptStats[2]=first.saved.attemptStats[2];
+ const first=existing(2),second=existing(3),saved=plain(second.saved);saved.done=[0,1];saved.boards[2]=first.saved.boards[2];saved.attempts[2]=first.saved.attempts[2];saved.attemptStats[2]=first.saved.attemptStats[2];
+ // Older versions could retain several unfinished boards. Neither board is a permanent completion;
+ // a done flag on stage 2 would now correctly preserve that closed level as historical evidence.
  const many=mount({saved,life:lifePool(1)});try{
   many.click('#settings');many.click('#settings-reset');assert(/1 can/.test(many.node('#reset-description').textContent));many.click('#reset-confirm');assert.equal(many.life().life.lives,0);assert.deepEqual(many.save().boards,{});
   for(const meta of [first.metadata,second.metadata])assert.equal(many.life().life.settledAttempts[meta.attemptId].discarded,true,'each deleted played attempt is durably closed');
