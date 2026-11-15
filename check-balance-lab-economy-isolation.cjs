@@ -13,7 +13,7 @@ assert.equal(git(['rev-parse','HEAD']),PIN,'Lab source must be the exact reviewe
 const labAssets=['balance-lab.html','balance-lab.css','balance-lab.js','balance-lab-data.js','balance-lab-catalog.js'];
 for(const file of [...labAssets.map(file=>'dist/'+file),'data/balance-lab-9-4.json','fixtures/balance-lab-protected-9-4.json'])assert.equal(git(['diff','--exit-code',PIN,'--',file]),'','Pinned Lab asset was edited: '+file);
 const frozen=JSON.parse(fs.readFileSync(path.join(LAB,'fixtures/balance-lab-protected-9-4.json'),'utf8'));
-const approvedHostChanges=new Set(['dist/app.js','dist/index.html','dist/style.css','dist/sw.js','unity/Application/GameSessionController.cs','unity/Application/SaveMigration.cs','unity/ApplicationParityHarness/ApplicationParityHarness.csproj','unity/ApplicationParityHarness/Program.cs']);
+const approvedHostChanges=new Set(['dist/app.js','dist/index.html','dist/style.css','dist/sw.js','unity/Application/GameSessionController.cs','unity/Application/ProfileRepository.cs','dist/session-store.js','unity/Application/SaveMigration.cs','unity/ApplicationParityHarness/ApplicationParityHarness.csproj','unity/ApplicationParityHarness/Program.cs']);
 const changedHostFiles=[],sourceOnlyFiles=[];let immutableFiles=0;
 for(const [relative,expected]of Object.entries(frozen.sha256)){
  assert.equal(sha(fs.readFileSync(path.join(LAB,relative))),expected,'The pinned Lab reference itself drifted: '+relative);

@@ -165,3 +165,7 @@ Can ekranındaki reklam ve Altın işlemleri yalnızca **GELİŞTİRME TESTİ** 
 Ayarlar → **Geliştirme testi → Can sınırını kapat** bölüm dengelemesini beklemesiz yapar. Aynı alanda reklam yokluğunu deneme ve 300 Test Altını ekleme araçları bulunur. Geliştirici geçişi varsayılan kapalıdır; ilk üç bölümün ilk kayıp koruması da varsayılan kapalı, JSON'dan yapılandırılabilirdir.
 
 `npm run test:lives` zaman, tekrar bildirim, sıfır can, kayıt, sağlayıcı ve UI senaryolarını doğrular; genel `npm test` buna ek olarak 9.0'ın bütün bölüm/ödül/denge kontrollerini çalıştırır. [Can kuralları ve JSON sözleşmesi](docs/LIVES_DESIGN.md) Unity portunun referansıdır; C# can uygulaması henüz yazılmamıştır.
+
+## Kod bakımı ve mimari
+
+Yeni özellik eklemeden önce [modül sahipliği rehberini](docs/ARCHITECTURE.md) ve [9.5 bakım raporunu](docs/CODEBASE_AUDIT_9_5.md) okuyun. `npm run test:maintenance` kayıt sınırları, sabit sunum sözleşmesi, CSS kaynak üretimi ve bağımlılık kontrollerini çalıştırır. CSS için `src/styles/manifest.json` kaynak sırasını koruyun; `npm run styles:sync` ile tek teslim dosyasını yenileyin.

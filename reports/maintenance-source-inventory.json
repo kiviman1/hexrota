@@ -1,0 +1,714 @@
+{
+  "referenceCommit": "7deb686e1f4cd79aedd9763522c381ff145d216d",
+  "scope": "Runtime JS, portable C# and check scripts indexed; manual review focused on save/host/feature boundaries. File inventory is not exhaustive bug proof.",
+  "files": [
+    {
+      "path": "dist/app.js",
+      "bytes": 138312,
+      "lines": 1578,
+      "changedFromReference": true
+    },
+    {
+      "path": "dist/attempts.js",
+      "bytes": 9382,
+      "lines": 109,
+      "changedFromReference": false
+    },
+    {
+      "path": "dist/audio.js",
+      "bytes": 8754,
+      "lines": 202,
+      "changedFromReference": false
+    },
+    {
+      "path": "dist/board-input.js",
+      "bytes": 2530,
+      "lines": 44,
+      "changedFromReference": true
+    },
+    {
+      "path": "dist/board-view.js",
+      "bytes": 6292,
+      "lines": 60,
+      "changedFromReference": true
+    },
+    {
+      "path": "dist/commands.js",
+      "bytes": 10934,
+      "lines": 149,
+      "changedFromReference": false
+    },
+    {
+      "path": "dist/economy-config.js",
+      "bytes": 846,
+      "lines": 5,
+      "changedFromReference": false
+    },
+    {
+      "path": "dist/economy.js",
+      "bytes": 17025,
+      "lines": 106,
+      "changedFromReference": false
+    },
+    {
+      "path": "dist/engine.js",
+      "bytes": 14206,
+      "lines": 228,
+      "changedFromReference": false
+    },
+    {
+      "path": "dist/events.js",
+      "bytes": 4243,
+      "lines": 42,
+      "changedFromReference": false
+    },
+    {
+      "path": "dist/game-save.js",
+      "bytes": 5723,
+      "lines": 80,
+      "changedFromReference": true
+    },
+    {
+      "path": "dist/garden.js",
+      "bytes": 7016,
+      "lines": 50,
+      "changedFromReference": false
+    },
+    {
+      "path": "dist/hint-worker.js",
+      "bytes": 333,
+      "lines": 8,
+      "changedFromReference": true
+    },
+    {
+      "path": "dist/levels.js",
+      "bytes": 33386,
+      "lines": 2492,
+      "changedFromReference": false
+    },
+    {
+      "path": "dist/life-providers.js",
+      "bytes": 8951,
+      "lines": 77,
+      "changedFromReference": false
+    },
+    {
+      "path": "dist/lives-config.js",
+      "bytes": 569,
+      "lines": 2,
+      "changedFromReference": false
+    },
+    {
+      "path": "dist/lives.js",
+      "bytes": 24739,
+      "lines": 185,
+      "changedFromReference": false
+    },
+    {
+      "path": "dist/playtest.js",
+      "bytes": 8148,
+      "lines": 90,
+      "changedFromReference": false
+    },
+    {
+      "path": "dist/pwa.js",
+      "bytes": 5386,
+      "lines": 73,
+      "changedFromReference": false
+    },
+    {
+      "path": "dist/rescue.js",
+      "bytes": 19313,
+      "lines": 99,
+      "changedFromReference": false
+    },
+    {
+      "path": "dist/reward-adapter.js",
+      "bytes": 3599,
+      "lines": 62,
+      "changedFromReference": false
+    },
+    {
+      "path": "dist/reward-rules.js",
+      "bytes": 1040,
+      "lines": 65,
+      "changedFromReference": false
+    },
+    {
+      "path": "dist/rewards.js",
+      "bytes": 8747,
+      "lines": 104,
+      "changedFromReference": false
+    },
+    {
+      "path": "dist/score-presentation.js",
+      "bytes": 10048,
+      "lines": 118,
+      "changedFromReference": true
+    },
+    {
+      "path": "dist/session-store.js",
+      "bytes": 4681,
+      "lines": 70,
+      "changedFromReference": true
+    },
+    {
+      "path": "dist/sw.js",
+      "bytes": 5070,
+      "lines": 69,
+      "changedFromReference": true
+    },
+    {
+      "path": "dist/tutorials.js",
+      "bytes": 4123,
+      "lines": 132,
+      "changedFromReference": false
+    },
+    {
+      "path": "dist/variants-data.js",
+      "bytes": 21638,
+      "lines": 2,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/Application/DevelopmentLifeProvider.cs",
+      "bytes": 11822,
+      "lines": 101,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/Application/GameEventTracker.cs",
+      "bytes": 7027,
+      "lines": 82,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/Application/GameSessionController.Assistance.cs",
+      "bytes": 5937,
+      "lines": 82,
+      "changedFromReference": true
+    },
+    {
+      "path": "unity/Application/GameSessionController.Rescue.cs",
+      "bytes": 9344,
+      "lines": 117,
+      "changedFromReference": true
+    },
+    {
+      "path": "unity/Application/GameSessionController.cs",
+      "bytes": 41935,
+      "lines": 419,
+      "changedFromReference": true
+    },
+    {
+      "path": "unity/Application/ProfileRepository.cs",
+      "bytes": 6782,
+      "lines": 111,
+      "changedFromReference": true
+    },
+    {
+      "path": "unity/Application/SaveMigration.cs",
+      "bytes": 19001,
+      "lines": 192,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/ApplicationParityHarness/Program.cs",
+      "bytes": 12783,
+      "lines": 126,
+      "changedFromReference": true
+    },
+    {
+      "path": "unity/Catalog/AttemptMetadata.cs",
+      "bytes": 2895,
+      "lines": 43,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/Catalog/CatalogWire.cs",
+      "bytes": 5121,
+      "lines": 60,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/Catalog/LevelCatalog.cs",
+      "bytes": 19580,
+      "lines": 193,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/CatalogParityHarness/Program.cs",
+      "bytes": 5891,
+      "lines": 68,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/CommandParityHarness/Program.cs",
+      "bytes": 2868,
+      "lines": 59,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/Commands/AssistedGame.cs",
+      "bytes": 14297,
+      "lines": 192,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/Commands/CommandWire.cs",
+      "bytes": 1545,
+      "lines": 27,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/Contracts/Wire.cs",
+      "bytes": 9564,
+      "lines": 191,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/Economy/EconomyDefaults.cs",
+      "bytes": 1022,
+      "lines": 10,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/Economy/EconomyManager.cs",
+      "bytes": 24803,
+      "lines": 195,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/EconomyParityHarness/Program.cs",
+      "bytes": 2946,
+      "lines": 45,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/EventParityHarness/Program.cs",
+      "bytes": 1628,
+      "lines": 36,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/Gameplay/BoardTopology.cs",
+      "bytes": 5489,
+      "lines": 126,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/Gameplay/GameplayTypes.cs",
+      "bytes": 2321,
+      "lines": 95,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/Gameplay/HexMatch.cs",
+      "bytes": 14301,
+      "lines": 280,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/GameplayParityHarness/Program.cs",
+      "bytes": 12972,
+      "lines": 277,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/HintParityHarness/Program.cs",
+      "bytes": 8382,
+      "lines": 133,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/Hints/HintSolver.cs",
+      "bytes": 11220,
+      "lines": 202,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/Lives/LifeManager.cs",
+      "bytes": 31909,
+      "lines": 199,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/Lives/LifeTypes.cs",
+      "bytes": 7352,
+      "lines": 107,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/LivesParityHarness/Program.cs",
+      "bytes": 6821,
+      "lines": 83,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/ParityHarness/Program.cs",
+      "bytes": 7143,
+      "lines": 158,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/ParitySupport/WireJson.cs",
+      "bytes": 3351,
+      "lines": 72,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/Rescue/RescueManager.cs",
+      "bytes": 33334,
+      "lines": 299,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/RescueParityHarness/Program.cs",
+      "bytes": 5710,
+      "lines": 82,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/RewardAdapter/RewardAdapter.cs",
+      "bytes": 7666,
+      "lines": 161,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/RewardAdapterParityHarness/Program.cs",
+      "bytes": 7800,
+      "lines": 137,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/Rewards/RewardDirector.cs",
+      "bytes": 14990,
+      "lines": 244,
+      "changedFromReference": false
+    },
+    {
+      "path": "unity/Rewards/RewardTypes.cs",
+      "bytes": 3063,
+      "lines": 127,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-attempt-ui.cjs",
+      "bytes": 20183,
+      "lines": 186,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-attempts.cjs",
+      "bytes": 9488,
+      "lines": 103,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-audio.cjs",
+      "bytes": 13457,
+      "lines": 147,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-balance-lab-economy-isolation.cjs",
+      "bytes": 18552,
+      "lines": 144,
+      "changedFromReference": true
+    },
+    {
+      "path": "check-catalog-parity.cjs",
+      "bytes": 15673,
+      "lines": 90,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-command-parity.cjs",
+      "bytes": 2686,
+      "lines": 16,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-commands.cjs",
+      "bytes": 6152,
+      "lines": 52,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-economy-browser.cjs",
+      "bytes": 43398,
+      "lines": 211,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-economy-parity.cjs",
+      "bytes": 1866,
+      "lines": 14,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-economy.cjs",
+      "bytes": 7185,
+      "lines": 24,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-event-parity.cjs",
+      "bytes": 16108,
+      "lines": 165,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-events.cjs",
+      "bytes": 4811,
+      "lines": 41,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-game-shell.cjs",
+      "bytes": 10140,
+      "lines": 152,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-gameplay-parity.cjs",
+      "bytes": 12321,
+      "lines": 136,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-gameplay-vectors.cjs",
+      "bytes": 9638,
+      "lines": 124,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-garden-browser.cjs",
+      "bytes": 11845,
+      "lines": 82,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-garden-ui.cjs",
+      "bytes": 7404,
+      "lines": 75,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-garden.cjs",
+      "bytes": 5482,
+      "lines": 38,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-hints-parity.cjs",
+      "bytes": 10407,
+      "lines": 73,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-input.cjs",
+      "bytes": 24431,
+      "lines": 341,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-integration-browser.cjs",
+      "bytes": 13881,
+      "lines": 100,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-integration.cjs",
+      "bytes": 12157,
+      "lines": 111,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-inventory-ui.cjs",
+      "bytes": 17439,
+      "lines": 136,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-life-consistency.cjs",
+      "bytes": 16593,
+      "lines": 32,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-life-vectors.cjs",
+      "bytes": 3849,
+      "lines": 50,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-lives-parity.cjs",
+      "bytes": 14642,
+      "lines": 102,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-lives-ui.cjs",
+      "bytes": 27746,
+      "lines": 256,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-lives.cjs",
+      "bytes": 20400,
+      "lines": 240,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-maintenance.cjs",
+      "bytes": 8376,
+      "lines": 83,
+      "changedFromReference": true
+    },
+    {
+      "path": "check-menu.cjs",
+      "bytes": 16728,
+      "lines": 192,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-mobile-browser.cjs",
+      "bytes": 12086,
+      "lines": 129,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-observable.cjs",
+      "bytes": 4907,
+      "lines": 49,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-onboarding.cjs",
+      "bytes": 15575,
+      "lines": 183,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-playtest-ui.cjs",
+      "bytes": 16348,
+      "lines": 116,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-playtest.cjs",
+      "bytes": 3068,
+      "lines": 15,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-progression-ui.cjs",
+      "bytes": 10581,
+      "lines": 117,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-pwa.cjs",
+      "bytes": 21926,
+      "lines": 220,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-rescue-parity.cjs",
+      "bytes": 2483,
+      "lines": 14,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-rescue-transactions.cjs",
+      "bytes": 6736,
+      "lines": 21,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-rescue.cjs",
+      "bytes": 20553,
+      "lines": 113,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-reward-adapter-parity.cjs",
+      "bytes": 10625,
+      "lines": 101,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-reward-parity.cjs",
+      "bytes": 4625,
+      "lines": 63,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-reward-ui.cjs",
+      "bytes": 13671,
+      "lines": 167,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-rewards.cjs",
+      "bytes": 15028,
+      "lines": 178,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-score.cjs",
+      "bytes": 16956,
+      "lines": 195,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-second-chance-ui.cjs",
+      "bytes": 25415,
+      "lines": 138,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-session-browser.cjs",
+      "bytes": 7514,
+      "lines": 40,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-session-consistency.cjs",
+      "bytes": 6558,
+      "lines": 66,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-session-parity.cjs",
+      "bytes": 51670,
+      "lines": 281,
+      "changedFromReference": true
+    },
+    {
+      "path": "check-swap-lifecycle.cjs",
+      "bytes": 8564,
+      "lines": 103,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-swap-visual.cjs",
+      "bytes": 18961,
+      "lines": 144,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-ui.cjs",
+      "bytes": 16462,
+      "lines": 200,
+      "changedFromReference": false
+    },
+    {
+      "path": "check-variants.cjs",
+      "bytes": 4260,
+      "lines": 53,
+      "changedFromReference": false
+    }
+  ]
+}

@@ -61,7 +61,7 @@ internal static class Program
                 try
                 {
                     if (op == "open") { repositories[id] = new ProfileRepository(storage); result = repositories[id].Current(); }
-                    else if (op == "commit") result = repositories[id].Commit(W.Map(c["game"]), W.Map(c["energy"]));
+                    else if (op == "commit") result = repositories[id].Commit(c["game"] == null ? null : W.Map(c["game"]), c["energy"] == null ? null : W.Map(c["energy"]));
                     else if (op == "read") result = repositories[id].Read((string)c["key"]);
                     else if (op == "fail") { storage.FailProfileWrites = (bool)W.Get(c, "profile", false); storage.FailMirrorWrites = (bool)W.Get(c, "mirrors", false); storage.FailEventWrites = (bool)W.Get(c, "events", false); result = true; }
                     else if (op == "revoke") { repositories[id].Revoke(); result = true; }

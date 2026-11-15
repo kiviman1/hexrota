@@ -1,28 +1,51 @@
-/* Host persistence adapter. Gameplay snapshots remain unchanged. */
+/* Canonical profile persistence. The host owns the single-writer lock; this
+ * adapter validates every read/commit boundary and only updates memory after a
+ * successful authoritative write. Mirror writes are repairable, not commits. */
 (function(root){
  'use strict';
  const KEY='hexrota-profile-v2',GAME='hexrota-match-v5',ENERGY='hexrota-lives-v1',LOCK='hexrota-profile-writer-v2';
  const copy=value=>value==null?value:JSON.parse(JSON.stringify(value));
+ const isMap=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
+ function validateEnvelope(value){
+  if(!isMap(value)||value.schemaVersion!==2||!Number.isSafeInteger(value.revision)||value.revision<1||!isMap(value.game)||!isMap(value.energy))throw new Error('invalid_profile');
+ }
  function createStore(storage,{writable=true}={}){
   let revision=0,durable=null;
   const parse=key=>{const raw=storage.getItem(key);return raw===null?null:JSON.parse(raw);};
-  const canonicalRaw=storage.getItem(KEY),existing=canonicalRaw===null?null:JSON.parse(canonicalRaw);
-  if(canonicalRaw!==null&&(!existing||typeof existing!=='object'||Array.isArray(existing)))throw new Error('invalid_profile');
-  if(!existing){const game=parse(GAME),energy=parse(ENERGY);if(game&&energy)durable={schemaVersion:2,revision:0,game:copy(game),energy:copy(energy)};}
-  if(existing){if(existing.schemaVersion!==2||!Number.isSafeInteger(existing.revision)||existing.revision<1||!existing.game||typeof existing.game!=='object'||Array.isArray(existing.game)||!existing.energy||typeof existing.energy!=='object'||Array.isArray(existing.energy))throw new Error('invalid_profile');revision=existing.revision;durable=copy(existing);}
+  const canonicalRaw=storage.getItem(KEY);
+  if(canonicalRaw!==null){
+   const existing=JSON.parse(canonicalRaw);validateEnvelope(existing);
+   revision=existing.revision;durable=copy(existing);
+  }else{
+   const game=parse(GAME),energy=parse(ENERGY);
+   if(game&&energy)durable={schemaVersion:2,revision:0,game:copy(game),energy:copy(energy)};
+  }
   function current(){return copy(durable);}
-  function read(key){return durable?(key===GAME?copy(durable.game):key===ENERGY?copy(durable.energy):parse(key)):parse(key);}
+  function contains(key){return !!durable&&(key===GAME||key===ENERGY)||storage.getItem(key)!==null;}
+  function read(key){
+   if(durable&&key===GAME)return copy(durable.game);
+   if(durable&&key===ENERGY)return copy(durable.energy);
+   return parse(key);
+  }
   function commit(game,energy){
    if(!writable)throw new Error('read_only');
-   const latest=parse(KEY);if((latest?.revision||0)!==revision)throw new Error('stale_profile');
+   if(revision>=Number.MAX_SAFE_INTEGER)throw new Error('revision_exhausted');
+   if(!isMap(game)||!isMap(energy))throw new Error('invalid_profile');
+   const latestRaw=storage.getItem(KEY);let latestRevision=0;
+   if(latestRaw!==null){
+    const latest=JSON.parse(latestRaw);validateEnvelope(latest);latestRevision=latest.revision;
+   }
+   if(latestRevision!==revision)throw new Error('stale_profile');
    const next={schemaVersion:2,revision:revision+1,game:copy(game),energy:copy(energy)};
-   const encoded=JSON.stringify(next);storage.setItem(KEY,encoded);revision=next.revision;durable=next;
-   // Compatibility mirrors are repairable. A failed mirror must never undo a
-   // successful authoritative transaction or produce a second life debit.
+   validateEnvelope(next);
+   // Serialize before writing: bad input cannot partly replace durable state.
+   const encoded=JSON.stringify(next);storage.setItem(KEY,encoded);
+   revision=next.revision;durable=next;
+   // Never undo a successful canonical transaction because a mirror failed.
    for(const [key,value]of [[GAME,game],[ENERGY,energy]])try{storage.setItem(key,JSON.stringify(value));}catch(_){}
    return current();
   }
-  return {read,current,commit,get revision(){return revision;},revoke(){writable=false;}};
+  return {read,contains,current,commit,get revision(){return revision;},revoke(){writable=false;}};
  }
  function boot(start){
   const w=root;

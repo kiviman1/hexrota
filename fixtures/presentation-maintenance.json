@@ -1,0 +1,2399 @@
+{
+  "referenceCommit": "7deb686e1f4cd79aedd9763522c381ff145d216d",
+  "generator": "Captured solely from pre-refactor app.js closures; not regenerated from extracted modules.",
+  "sourceSha256": "d6841c14e624666cff009d4b751fb8721d3385797a98f8b8ef3e358ed18c7920",
+  "boards": [
+    {
+      "id": "tutorial-0",
+      "geometry": "eb427df12a4755e40e7e69620a4cd18980e4a7763b3127776cc9958c27f805ff",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "bb0e34609e387faeb01f738b796d619905aa66464c1f49aa9ed1b558d78c1e00"
+        },
+        {
+          "name": "selected",
+          "hash": "94fe25557fdd433062e08c0073cc9e9bcc59dc100dc66b807d3bdde74d5eaa42"
+        },
+        {
+          "name": "busy",
+          "hash": "364cfa024da258588068669b9343656bb0e34c571fb94dbe1b6642017f153c0f"
+        },
+        {
+          "name": "feedback",
+          "hash": "d27e5174ee3492e63aef3bf5b54577e5636ed48269df34db67258b8bc9feb73c"
+        },
+        {
+          "name": "guided",
+          "hash": "ae073c3813587e0ba253dcfc74b3b9d2cb8c1d012791744c387eb8277b41f788"
+        },
+        {
+          "name": "after-first",
+          "hash": "562a509131ab08ba63a469750b14e0b45ec2a1d9be75f8fbd7cd82c223386778"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            4,
+            3
+          ],
+          "hash": "14ee8ae35de122e2114e3da9a14913ce70b041ee73692120313526eccc643a40"
+        },
+        {
+          "pair": [
+            3,
+            4
+          ],
+          "hash": "d00688f0266ebd867c632feee9c70ce35fb895cdd36c4460aba2b7c0b9855f11"
+        }
+      ]
+    },
+    {
+      "id": "tutorial-1",
+      "geometry": "f4a7ce83945cc7482b87f99fd94c8c2b93f2142944083081cf47c930344d07e7",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "777b59b398f1b35a55d1c24394b145a280179712620a9675dc3356b2a805b6ea"
+        },
+        {
+          "name": "selected",
+          "hash": "aa761bacc271a756c0a649eb1f799430cd31b04e42756a6053e517a1ab650229"
+        },
+        {
+          "name": "busy",
+          "hash": "d2ce8ff7f17a8196d702568b9a2576611683b0ff53c5b2bc5b97cd8d619f82d6"
+        },
+        {
+          "name": "feedback",
+          "hash": "2fc0e2e2f9818ddfff0e75cf23cdf7df4b5d04a7b35c8918464bbad8685f0470"
+        },
+        {
+          "name": "guided",
+          "hash": "71d1cac75c3b375798b3a5f9d2052c234336cbfa6b32924e5051b6374bc2c207"
+        },
+        {
+          "name": "after-first",
+          "hash": "6fa878262512b4779e741d15c1d98bf31cd7334ce4b3093c1200edcaea851d37"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            2,
+            1
+          ],
+          "hash": "6263b6f6e7b7cbf4e2fa70f631d6d859138fc82e6862ee6506838efeaaa4117d"
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "hash": "05e7365820c093c05f24ced7f91961426c44a6be370a1eb92527348cdc68ba31"
+        }
+      ]
+    },
+    {
+      "id": "original-1",
+      "geometry": "f79144ada6fcd91eb1d2c44067272f294ce995543de0ef62c1c6cd6b0f76b2d1",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "ec08a2e6cf7958251e83622f913254189e3d8f3adb73890b1db5d3c22ca6c40f"
+        },
+        {
+          "name": "selected",
+          "hash": "8d108e49041387cecb26a277f63ccfe3817fa60202d0c627d5d0c2328b3db8b3"
+        },
+        {
+          "name": "busy",
+          "hash": "0685780b6b4455e4447c46e4be5a5ea74726d44b189e3ebf973d66b7f7370418"
+        },
+        {
+          "name": "feedback",
+          "hash": "e001d9ddf2231bd7dc2f4111b45f1a6bdd3af0089b4817e9a09a77b1330ea067"
+        },
+        {
+          "name": "guided",
+          "hash": "ec08a2e6cf7958251e83622f913254189e3d8f3adb73890b1db5d3c22ca6c40f"
+        },
+        {
+          "name": "after-first",
+          "hash": "98ba2326da98378d3c5e7b0a418ece9fef6fc310567f4917927d717f75304ef0"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            3,
+            6
+          ],
+          "hash": "42c48b8fcb9cbc6c8bff9467f92d7570ffab1a7dc97d7d58cca321721d97a9c9"
+        },
+        {
+          "pair": [
+            6,
+            3
+          ],
+          "hash": "93e57776cde2ce10be30dad8544b77d93a2f039c93a2fc9e09608ed6ea183a86"
+        }
+      ]
+    },
+    {
+      "id": "original-2",
+      "geometry": "f79144ada6fcd91eb1d2c44067272f294ce995543de0ef62c1c6cd6b0f76b2d1",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "fbf482bf73839475e301acbbd209e16632825e8f9fed30865ccf9b3b34fd1f99"
+        },
+        {
+          "name": "selected",
+          "hash": "23c2f6f6952791e3170314a663e7b4e8b62003d8f40f1edffce337700fd6f30a"
+        },
+        {
+          "name": "busy",
+          "hash": "2e933c1f6f55f4ef4e01d4857e496e37e5cca6557cc941443152a3d8aaa64170"
+        },
+        {
+          "name": "feedback",
+          "hash": "852dbe87a7cc6d7c1c8a4bf21a8cbfc23a1861746f88c6b3adacd5e098ff778a"
+        },
+        {
+          "name": "guided",
+          "hash": "fbf482bf73839475e301acbbd209e16632825e8f9fed30865ccf9b3b34fd1f99"
+        },
+        {
+          "name": "after-first",
+          "hash": "c2d0380bf6cfcd9f6c895107ba484afdc24636c633c9df591992a5d779043246"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            13,
+            11
+          ],
+          "hash": "b3df34223b1fe8041d2807ee09ff7ab11070ef15168831b977aaaf91aa9eddc2"
+        },
+        {
+          "pair": [
+            11,
+            13
+          ],
+          "hash": "a711fddf1123194155aceeeea4f59e484ecde9af4a8e2e49594968c90b5ab1ee"
+        }
+      ]
+    },
+    {
+      "id": "original-3",
+      "geometry": "f79144ada6fcd91eb1d2c44067272f294ce995543de0ef62c1c6cd6b0f76b2d1",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "b2780b3157aa2b9cbacf16c623c1d243138087d11fdc93938400285d3734c764"
+        },
+        {
+          "name": "selected",
+          "hash": "e4b05d372a0e71d8811ccad2c28a64481e0b5ed7c2ba00fa67ca666b62805e7e"
+        },
+        {
+          "name": "busy",
+          "hash": "615211236ff5bbdc14248a4abd51d31d6c4b26e09961c199b59ee92a18312dad"
+        },
+        {
+          "name": "feedback",
+          "hash": "b042aa98209c5a655cd1afef46b3e156eeee2cfe1950e95527d6e5369efd9174"
+        },
+        {
+          "name": "guided",
+          "hash": "b2780b3157aa2b9cbacf16c623c1d243138087d11fdc93938400285d3734c764"
+        },
+        {
+          "name": "after-first",
+          "hash": "078848d77ff5ff20f0ce3d6037c72e25e938c31eab7a19e95397a05826680222"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            9,
+            14
+          ],
+          "hash": "c228d854fee943fdedbaabb57af872d39e7ca89672a8bfb2f2fd4f55c62d14e1"
+        },
+        {
+          "pair": [
+            14,
+            9
+          ],
+          "hash": "fa30a0e08ecf56d4435f1bac4c827b47bd5f8a19a3bfe4b4d17c00f6585ac993"
+        }
+      ]
+    },
+    {
+      "id": "original-4",
+      "geometry": "fd99907441d791cbda7193deae772ab851d538e05bfec745419889cb1818bd91",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "5b50519b5fedd12bd5c2cc6190a124e9d4e809d3ade89b1c872a39d07093475b"
+        },
+        {
+          "name": "selected",
+          "hash": "194542f5a2b5d90cd233058e4074405b640bb383973dc35bf9017260bb418340"
+        },
+        {
+          "name": "busy",
+          "hash": "f81cea4a02e72046d948b056199938f3e4a1def4b3d23ded92815bba25675a0f"
+        },
+        {
+          "name": "feedback",
+          "hash": "a2b52e5a88741bcd30cd086a1d2e5d5c5d4194e0327c91d416faf7024d12b79f"
+        },
+        {
+          "name": "guided",
+          "hash": "5b50519b5fedd12bd5c2cc6190a124e9d4e809d3ade89b1c872a39d07093475b"
+        },
+        {
+          "name": "after-first",
+          "hash": "71d31c04d798b7446b7199f5a36e0154da12260ffd046568319ab233921c092a"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            2,
+            6
+          ],
+          "hash": "74a67d45bd478b5d42aa8cfabbc62c79f6f3e3a8d0134987de22e19c1cfef496"
+        },
+        {
+          "pair": [
+            6,
+            2
+          ],
+          "hash": "7979c5d2892fe1992114737870ecb62b6f0ee7e4625749d71f31e5fed3cffeda"
+        }
+      ]
+    },
+    {
+      "id": "original-5",
+      "geometry": "fd99907441d791cbda7193deae772ab851d538e05bfec745419889cb1818bd91",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "fd1309c6197e39e90d582ebd3678f359c8e5681b6266cf186a9de86b5ff0ac3e"
+        },
+        {
+          "name": "selected",
+          "hash": "aa27621e7e3146e5cfefe5e6cdb3a2305e2d2f3ec5902ae68caa6e3cfdb56118"
+        },
+        {
+          "name": "busy",
+          "hash": "4a945c3a252a42ff57e32d667ff1790611f4ea364c74e9e5b33c23d9fa7f5ac2"
+        },
+        {
+          "name": "feedback",
+          "hash": "eb5d57298c26bd2669fc0e8cf05b543a02dddcc7c5bc1d670954bb26a0fd8e57"
+        },
+        {
+          "name": "guided",
+          "hash": "fd1309c6197e39e90d582ebd3678f359c8e5681b6266cf186a9de86b5ff0ac3e"
+        },
+        {
+          "name": "after-first",
+          "hash": "7bf247c066ba2671153c521663675096bf84f161f3e80f833a52fe30aee07a12"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            3,
+            2
+          ],
+          "hash": "45bd5a703e5e11a62853553ec43d0829c897e82e4cf4e7deca960d6343a8a210"
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "hash": "3f98ca62e5f39dce796650876e9fc41a4bacd8af8c5204562f5f385550a91666"
+        }
+      ]
+    },
+    {
+      "id": "original-6",
+      "geometry": "fd99907441d791cbda7193deae772ab851d538e05bfec745419889cb1818bd91",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "6c3041033f0feda8c2980b36b2b96912414db86b97b2bc5b08ff28b54dd8273d"
+        },
+        {
+          "name": "selected",
+          "hash": "3c3c0922fbe21c7b4e53ebca8660f712aab150b8d6636fd55d9a6515583d5175"
+        },
+        {
+          "name": "busy",
+          "hash": "06ec67dbd783d07506b1b237a08b8053e3b74a181334120b84f3f374055c650a"
+        },
+        {
+          "name": "feedback",
+          "hash": "0cac30ead20826714baaaae6b402f2ead6424a5e56ab73614821115ec2bc35eb"
+        },
+        {
+          "name": "guided",
+          "hash": "6c3041033f0feda8c2980b36b2b96912414db86b97b2bc5b08ff28b54dd8273d"
+        },
+        {
+          "name": "after-first",
+          "hash": "2028f7394dd8a04a3be98c0665314ff4535e52718e9a198ac52865bbe9ad77c7"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            2,
+            6
+          ],
+          "hash": "74a67d45bd478b5d42aa8cfabbc62c79f6f3e3a8d0134987de22e19c1cfef496"
+        },
+        {
+          "pair": [
+            6,
+            2
+          ],
+          "hash": "7979c5d2892fe1992114737870ecb62b6f0ee7e4625749d71f31e5fed3cffeda"
+        }
+      ]
+    },
+    {
+      "id": "original-7",
+      "geometry": "69e9741536be33cb72929c858fcaff2ec3c4e8cc253d006650d39a2bde3826c7",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "840e5e8d2efe553b348810e2e489c229b954e06cc2d708879654357b785a4e2e"
+        },
+        {
+          "name": "selected",
+          "hash": "752f97e60103fd67ad8ac835eae99c3ea24be95b7ae19b506716f100221185ea"
+        },
+        {
+          "name": "busy",
+          "hash": "9cacf33e3ef6e9bfb72916f38bbcc6843c22fc785c19055fe550890fa0085665"
+        },
+        {
+          "name": "feedback",
+          "hash": "f055d8042b964a632c8ab0d75d8c606e0b22ace9539f307e9e5b3ee0a88a44a2"
+        },
+        {
+          "name": "guided",
+          "hash": "840e5e8d2efe553b348810e2e489c229b954e06cc2d708879654357b785a4e2e"
+        },
+        {
+          "name": "after-first",
+          "hash": "fe2b80053014bb8020b1b50c4513b9f0b48df8ffc9c25cd38666843c7c63c215"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            4,
+            2
+          ],
+          "hash": "706643bc0ddf5fea1314238a30270504bb43c8d1f06749329ffb1c96d8fb706d"
+        },
+        {
+          "pair": [
+            2,
+            4
+          ],
+          "hash": "76484c649180d263730e1403bf53310b38816ee248f1bebedcac3ae536edbd88"
+        }
+      ]
+    },
+    {
+      "id": "original-8",
+      "geometry": "69e9741536be33cb72929c858fcaff2ec3c4e8cc253d006650d39a2bde3826c7",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "78dd695c052a28c48c199daf8fc4d2b16c8519f794b693100f40b5476d6f6979"
+        },
+        {
+          "name": "selected",
+          "hash": "bb8f437e99e1b811521b59d96f8987df4ad2cafdd90bb0fa38f55bc37b4452ab"
+        },
+        {
+          "name": "busy",
+          "hash": "1083098d958aec28364377b789983d455f879a2b76058e366d54a0ed4ff0ad83"
+        },
+        {
+          "name": "feedback",
+          "hash": "a1a1df22ea5eba82787604abc3959904003172713b236e8dfe3d87d26db89ea1"
+        },
+        {
+          "name": "guided",
+          "hash": "78dd695c052a28c48c199daf8fc4d2b16c8519f794b693100f40b5476d6f6979"
+        },
+        {
+          "name": "after-first",
+          "hash": "ecbd22dce746bf22ec7ac7c0c65c6fe0cb1098bcb585fa8bdbed3e4f7610dfcf"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            16,
+            19
+          ],
+          "hash": "c050551bbd9fbb30a1cb70a858e3f396b657ee1b22724e20dc92bf7c12ded6f3"
+        },
+        {
+          "pair": [
+            19,
+            16
+          ],
+          "hash": "9b46014f2714ff95656688b5c2ea73eaad1bcccc5e7d6d58d9268f5529818c8e"
+        }
+      ]
+    },
+    {
+      "id": "original-9",
+      "geometry": "8922a63635bde930fb792f02a9267e872cf91e0ab581efec0ddc281cfb7be9bb",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "b22aee19efc896d4fd38478fe07f59aea8515628aeb3320fa80a4b13c4977be8"
+        },
+        {
+          "name": "selected",
+          "hash": "a7478df66e34ffdd7bc9097758f85879f9a90eab6ca24fc278d48f3035b5bb44"
+        },
+        {
+          "name": "busy",
+          "hash": "33268ae9df470bddb33b3ff82c5e2213a9c3170bd95648983fc8b2fa1d6062f9"
+        },
+        {
+          "name": "feedback",
+          "hash": "116ba3ae8cb7f9bf2912b162ae88de046f14b869b8aa2cf7e7551d9871bf4e78"
+        },
+        {
+          "name": "guided",
+          "hash": "b22aee19efc896d4fd38478fe07f59aea8515628aeb3320fa80a4b13c4977be8"
+        },
+        {
+          "name": "after-first",
+          "hash": "f45847a786104dc898c5cdda5c57583d1579a312a76de1ff351e114bd8a6347c"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            8,
+            12
+          ],
+          "hash": "42d02324d4b18c7efd1b4cf8e78dca87ba8196d43e19eed512319d2d00992669"
+        },
+        {
+          "pair": [
+            12,
+            8
+          ],
+          "hash": "dbb32949ea4a36c637c063e516a6cd9ac052d526b48bc47f46d3b6ba179493ba"
+        }
+      ]
+    },
+    {
+      "id": "original-10",
+      "geometry": "8922a63635bde930fb792f02a9267e872cf91e0ab581efec0ddc281cfb7be9bb",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "29e56abea9a198afa4cc8322b9e6298ea12782f3407c22c117fc832f769032fd"
+        },
+        {
+          "name": "selected",
+          "hash": "ff761cdbf9a698dd0da0fd8a8a0e8c2a356e6b5babbd1fd63dd3f563f9d0b8e4"
+        },
+        {
+          "name": "busy",
+          "hash": "76ec018b48460cf5c9e3fcb5d9fa4c36acb5ab941c9ee161a70d59226ec46d75"
+        },
+        {
+          "name": "feedback",
+          "hash": "13f5d7d881d1bf43d9c400b1a45562f07ecc40292b2aef1c4bc95f8fb8489bbe"
+        },
+        {
+          "name": "guided",
+          "hash": "29e56abea9a198afa4cc8322b9e6298ea12782f3407c22c117fc832f769032fd"
+        },
+        {
+          "name": "after-first",
+          "hash": "3f9ee271d299f1e82562db38f9a002ae37c93994266ba1d8559fd3998e92144f"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            13,
+            17
+          ],
+          "hash": "742f3d257a3ef53e6d0c446fef4ea5aeb8242b834c18cd993cc2840aa45e199b"
+        },
+        {
+          "pair": [
+            17,
+            13
+          ],
+          "hash": "8532c5720420bb5c54f18b8c45096e5d8ed7a05b2fec2bf5c3d5992af40927ed"
+        }
+      ]
+    },
+    {
+      "id": "variant-1-v1",
+      "geometry": "f79144ada6fcd91eb1d2c44067272f294ce995543de0ef62c1c6cd6b0f76b2d1",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "c655b900394fa1735c7c695147fa2ca9ba9aff37f1f417c07b641f44677098df"
+        },
+        {
+          "name": "selected",
+          "hash": "3736bc7fedf5c162f80851fbf9047d8c4319e52df8641d5514780b2fe8e33b14"
+        },
+        {
+          "name": "busy",
+          "hash": "bdf56d2dc853b2746165e5cd8a2683c19286d779d9ac1c5269c5e8366ee43d53"
+        },
+        {
+          "name": "feedback",
+          "hash": "5c41ceebe357f327f4c5f5658b671c97692c61242b8fc81b1ab81b3228ae0855"
+        },
+        {
+          "name": "guided",
+          "hash": "c655b900394fa1735c7c695147fa2ca9ba9aff37f1f417c07b641f44677098df"
+        },
+        {
+          "name": "after-first",
+          "hash": "dd36ba199321a93e41469cc74887fabe71f455bd5e401aa2d16604d375725824"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            14,
+            18
+          ],
+          "hash": "9b8261c2d65648ff490cb091c09f54f53b978b7538fecff1286b549128f0431b"
+        },
+        {
+          "pair": [
+            18,
+            14
+          ],
+          "hash": "ee6a9df34d2579f120850f201885bce1022a1dd6ca08d52a7861155c1088703b"
+        }
+      ]
+    },
+    {
+      "id": "variant-1-v2",
+      "geometry": "f79144ada6fcd91eb1d2c44067272f294ce995543de0ef62c1c6cd6b0f76b2d1",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "a13487c14d4798fc42f7346257110f7972b459a3841c87b4d735d63e508ecc7a"
+        },
+        {
+          "name": "selected",
+          "hash": "e2f38d81a03688beb77373610b1729224feb60e043cf9379521343459bf35acb"
+        },
+        {
+          "name": "busy",
+          "hash": "4af8273c42f31e6869ae63a4a10e3424511a68c3ed0e85db2d1da70b17da3ea6"
+        },
+        {
+          "name": "feedback",
+          "hash": "cd40a12d35faabef677278b0dc1e81037f23b3cca4cc530ac4284b0cf36fbd7b"
+        },
+        {
+          "name": "guided",
+          "hash": "a13487c14d4798fc42f7346257110f7972b459a3841c87b4d735d63e508ecc7a"
+        },
+        {
+          "name": "after-first",
+          "hash": "a96cecca6350e90c8170eac35136e6c6b6c7f1d915b45855c4c6abed0b5be278"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            7,
+            5
+          ],
+          "hash": "1fa5992cbe3976c141d828153f6df66aecb91140046b22bf077be8e5de284ef2"
+        },
+        {
+          "pair": [
+            5,
+            7
+          ],
+          "hash": "2bf52cce9151a5d00e623fb5da8be02d0a35ebbfbc2ee4b04753010f53bd638e"
+        }
+      ]
+    },
+    {
+      "id": "variant-1-v3",
+      "geometry": "f79144ada6fcd91eb1d2c44067272f294ce995543de0ef62c1c6cd6b0f76b2d1",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "28073e242d40ab1cc76a82796cf992096491e04cb9c7b24ecbfb93516557a70d"
+        },
+        {
+          "name": "selected",
+          "hash": "c4254999d1611dee3df6775aa2cebb21b21212201d92e6c99c336e33983a77ed"
+        },
+        {
+          "name": "busy",
+          "hash": "70c2021c29f386ff5fb8ca26dd7c6b29194348583c5cda97cfeb631446dcb910"
+        },
+        {
+          "name": "feedback",
+          "hash": "3e25dcc1f4dfec2ca5b7b5307c957e4773cc7dffa5bf17469682dd694484babd"
+        },
+        {
+          "name": "guided",
+          "hash": "28073e242d40ab1cc76a82796cf992096491e04cb9c7b24ecbfb93516557a70d"
+        },
+        {
+          "name": "after-first",
+          "hash": "ea46132ace3956c6a9f2a5fbefbf66bf8ea2e6e970cd32b480ed94a31162e76e"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            8,
+            6
+          ],
+          "hash": "85f425c2ffcec60424481d1a68b2c9bbb72409d40c6b705f8698214614ab4bca"
+        },
+        {
+          "pair": [
+            6,
+            8
+          ],
+          "hash": "d6d9d78dc74c998e634d3e3460483eefcc11f6cb3176d91382c7a6673fde47c4"
+        }
+      ]
+    },
+    {
+      "id": "variant-1-v4",
+      "geometry": "f79144ada6fcd91eb1d2c44067272f294ce995543de0ef62c1c6cd6b0f76b2d1",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "263b7079b1592f14706f4c991ae583242ccd3ce3d882c10c75bffd92dd2f79ed"
+        },
+        {
+          "name": "selected",
+          "hash": "ef7e103e0711e147f73eca8a6c5e8fb2182f4d0d0c95a964787ddcaaf9c4747d"
+        },
+        {
+          "name": "busy",
+          "hash": "a0e9f6c5a60daedd617456e51eb2d1ecd77deef351024370a6c5d510520dc9ec"
+        },
+        {
+          "name": "feedback",
+          "hash": "0a1fc0de9c164b27b7888a5c1e67abff22f9d8e7e511e5c29becaf83015c5590"
+        },
+        {
+          "name": "guided",
+          "hash": "263b7079b1592f14706f4c991ae583242ccd3ce3d882c10c75bffd92dd2f79ed"
+        },
+        {
+          "name": "after-first",
+          "hash": "cd5f958acf9be27ef454c02ed810045037970f8b332a75e8e00d1841ea9570aa"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            11,
+            9
+          ],
+          "hash": "14ee8ae35de122e2114e3da9a14913ce70b041ee73692120313526eccc643a40"
+        },
+        {
+          "pair": [
+            9,
+            11
+          ],
+          "hash": "d00688f0266ebd867c632feee9c70ce35fb895cdd36c4460aba2b7c0b9855f11"
+        }
+      ]
+    },
+    {
+      "id": "variant-2-v1",
+      "geometry": "f79144ada6fcd91eb1d2c44067272f294ce995543de0ef62c1c6cd6b0f76b2d1",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "b22addbc2d5e0ea83c81abb37eb392c8d0ceb0d830eeadc856c34c01400d5957"
+        },
+        {
+          "name": "selected",
+          "hash": "5e34f7e0f3ceec3dda14f4377269222b6ee52ae88d9415ee06b64b57c90bded9"
+        },
+        {
+          "name": "busy",
+          "hash": "6d155d855da23538271010590f2e3dfd8368607437a16b424b32779bb32b422e"
+        },
+        {
+          "name": "feedback",
+          "hash": "dbc68dfc666355005bdc2b9c921ecc794de10c38f60b8fb38fd5242ebf98a4fb"
+        },
+        {
+          "name": "guided",
+          "hash": "b22addbc2d5e0ea83c81abb37eb392c8d0ceb0d830eeadc856c34c01400d5957"
+        },
+        {
+          "name": "after-first",
+          "hash": "326ffa442f74e06c3c502b0feef9e7807512d4fcb8d089f8b5065b610e753515"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            7,
+            5
+          ],
+          "hash": "1fa5992cbe3976c141d828153f6df66aecb91140046b22bf077be8e5de284ef2"
+        },
+        {
+          "pair": [
+            5,
+            7
+          ],
+          "hash": "2bf52cce9151a5d00e623fb5da8be02d0a35ebbfbc2ee4b04753010f53bd638e"
+        }
+      ]
+    },
+    {
+      "id": "variant-2-v2",
+      "geometry": "f79144ada6fcd91eb1d2c44067272f294ce995543de0ef62c1c6cd6b0f76b2d1",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "1562241c0da256a3bd8fbe9161019f104bcdc564340fbec53b94d9260c1f151c"
+        },
+        {
+          "name": "selected",
+          "hash": "f3d02a6cf97f9d35d5625732b2170c93f78efee448b301b66dce9d59d6ee1473"
+        },
+        {
+          "name": "busy",
+          "hash": "b987a5b310144488b0ead570f6a4e9d7c1d417bd7139ff7126157f7b797b0ae4"
+        },
+        {
+          "name": "feedback",
+          "hash": "321ac838fb293cfbe844d0ee9c8061d67580f1a69d66fac1b7ad1fdc33f33cba"
+        },
+        {
+          "name": "guided",
+          "hash": "1562241c0da256a3bd8fbe9161019f104bcdc564340fbec53b94d9260c1f151c"
+        },
+        {
+          "name": "after-first",
+          "hash": "aaf736dd6ff1ae1673020e3ac6c2db2f02a9c6976310bab0b8ba2f5474760b90"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            9,
+            12
+          ],
+          "hash": "1df2d3191fbbdcab40be5a50af378183a518b92cd9689944892468a9546abfa6"
+        },
+        {
+          "pair": [
+            12,
+            9
+          ],
+          "hash": "638a236f711a2565c710bfd6d7bf518dc00e57e1804ea106964c224e3446a3fd"
+        }
+      ]
+    },
+    {
+      "id": "variant-2-v3",
+      "geometry": "f79144ada6fcd91eb1d2c44067272f294ce995543de0ef62c1c6cd6b0f76b2d1",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "450fed61e7cb8ac0a2682829b75f91e1c955d079359a3b65633d58722de1f6d9"
+        },
+        {
+          "name": "selected",
+          "hash": "a5123c4355ebf7240bb305deffbc85fbb6d017bbd9c6354641ee5d288939a21b"
+        },
+        {
+          "name": "busy",
+          "hash": "feec690faa4df4105fcec45f57c66adede0a551204e8e54137587d47cba72c9a"
+        },
+        {
+          "name": "feedback",
+          "hash": "6acda3d579e0ea37ad9f9697d46e111e7b89b756d966979bca85177f3f490ef4"
+        },
+        {
+          "name": "guided",
+          "hash": "450fed61e7cb8ac0a2682829b75f91e1c955d079359a3b65633d58722de1f6d9"
+        },
+        {
+          "name": "after-first",
+          "hash": "b8ebf2279bb2c343f4cc94c13518bbc1f7c00dcd1198b3be997945265f4a6eed"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            1,
+            4
+          ],
+          "hash": "b80392b3743af4d4414348f0d18db1b5f6dcc3f305c536d5ee5e9e44b0982ada"
+        },
+        {
+          "pair": [
+            4,
+            1
+          ],
+          "hash": "cbc917df62fc7fcb9b0beb7f1dfa19b079578cdd59752b7f7c44c79d73d4d522"
+        }
+      ]
+    },
+    {
+      "id": "variant-2-v4",
+      "geometry": "f79144ada6fcd91eb1d2c44067272f294ce995543de0ef62c1c6cd6b0f76b2d1",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "261bab4af7f93fa8ae2aa67fbb2c3127ca5da51ae5f17462eef078300402f1af"
+        },
+        {
+          "name": "selected",
+          "hash": "f35f02148d3bf4a4f34b7f0ed1951e0758308762514b34606552d033bc1186c9"
+        },
+        {
+          "name": "busy",
+          "hash": "fddb24843794ed67875154140d599aa3166f4579fff3188002f2d3bd693322be"
+        },
+        {
+          "name": "feedback",
+          "hash": "fecf471ef706f846ec31766cc396007310f02af020c775a0d0260ede0f76f82b"
+        },
+        {
+          "name": "guided",
+          "hash": "261bab4af7f93fa8ae2aa67fbb2c3127ca5da51ae5f17462eef078300402f1af"
+        },
+        {
+          "name": "after-first",
+          "hash": "b75bd97ea0903c57b21026516bb00495a0d003b11694a81a4c9ef08a9b7d9aab"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            11,
+            14
+          ],
+          "hash": "c050551bbd9fbb30a1cb70a858e3f396b657ee1b22724e20dc92bf7c12ded6f3"
+        },
+        {
+          "pair": [
+            14,
+            11
+          ],
+          "hash": "9b46014f2714ff95656688b5c2ea73eaad1bcccc5e7d6d58d9268f5529818c8e"
+        }
+      ]
+    },
+    {
+      "id": "variant-3-v1",
+      "geometry": "f79144ada6fcd91eb1d2c44067272f294ce995543de0ef62c1c6cd6b0f76b2d1",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "d2e69b3d7b9b3811ac23d94a12f580fa08dcc36badd2bccd6a6f96611b860d4c"
+        },
+        {
+          "name": "selected",
+          "hash": "925ef642de485e477f62bf3c36452d52583e20d3b26237323d3e508f47b60d0a"
+        },
+        {
+          "name": "busy",
+          "hash": "512c822882064e0a023608ce8dff5894a4ae65be1ef9cad704e67fdb4b3a0b5c"
+        },
+        {
+          "name": "feedback",
+          "hash": "106604a59fdaeea3c1063a6cc442b859986fbbadaf9f9398c917a3c3fb39560d"
+        },
+        {
+          "name": "guided",
+          "hash": "d2e69b3d7b9b3811ac23d94a12f580fa08dcc36badd2bccd6a6f96611b860d4c"
+        },
+        {
+          "name": "after-first",
+          "hash": "b66fa8059bbef22cc39493ab7e8ca26c496209298561737c71ab1f3723250105"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            9,
+            14
+          ],
+          "hash": "c228d854fee943fdedbaabb57af872d39e7ca89672a8bfb2f2fd4f55c62d14e1"
+        },
+        {
+          "pair": [
+            14,
+            9
+          ],
+          "hash": "fa30a0e08ecf56d4435f1bac4c827b47bd5f8a19a3bfe4b4d17c00f6585ac993"
+        }
+      ]
+    },
+    {
+      "id": "variant-3-v2",
+      "geometry": "f79144ada6fcd91eb1d2c44067272f294ce995543de0ef62c1c6cd6b0f76b2d1",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "d5494ff4448ad24fead831bbf6d372e4642e9a6359b7daf2791a3f0ef82a730e"
+        },
+        {
+          "name": "selected",
+          "hash": "d223c4810918e935d6903717a33752b37ee876f1381e15530b8b7c323bc59e72"
+        },
+        {
+          "name": "busy",
+          "hash": "ffc883034b36a5763494c02d30bbec99d4a68fe886175e84e98a4b801a5d9d78"
+        },
+        {
+          "name": "feedback",
+          "hash": "8127acb21394b3cc41cb66b7e3b91ac7c3fc39d0b0a24c1d3d3f6fbf9b7bfc8f"
+        },
+        {
+          "name": "guided",
+          "hash": "d5494ff4448ad24fead831bbf6d372e4642e9a6359b7daf2791a3f0ef82a730e"
+        },
+        {
+          "name": "after-first",
+          "hash": "405e1a66716c71c8c72cd0e31be72dbac6e8fb700bdf78f65a105519ee1fe05f"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            6,
+            9
+          ],
+          "hash": "7ef7f917125918f043ba373f9b7bc3471c6c6664f238fbedb82818c165212e1f"
+        },
+        {
+          "pair": [
+            9,
+            6
+          ],
+          "hash": "76c7d0a49d28c1914af615c73e348ea6061c4b66ec046f40d0f9e64739df2e17"
+        }
+      ]
+    },
+    {
+      "id": "variant-3-v3",
+      "geometry": "f79144ada6fcd91eb1d2c44067272f294ce995543de0ef62c1c6cd6b0f76b2d1",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "5d2395b7920059ff585316905f4b4d7d536ce9407329db16cc90cbafadbc46cb"
+        },
+        {
+          "name": "selected",
+          "hash": "9974154984dc8cc39101e519b8c08d690b64d28696d172025734883a46ad877a"
+        },
+        {
+          "name": "busy",
+          "hash": "bc84fb3cfde9a299a19bbd290016b045d7aa153b3f9a95eee19f70cba5bcf5d4"
+        },
+        {
+          "name": "feedback",
+          "hash": "745fb7dae07430cd25b1017bcb14d2ada2860fa5df9ef107d5202913b4acd0fa"
+        },
+        {
+          "name": "guided",
+          "hash": "5d2395b7920059ff585316905f4b4d7d536ce9407329db16cc90cbafadbc46cb"
+        },
+        {
+          "name": "after-first",
+          "hash": "da70a817edcfcb034d495bfed6cf0e2d03f4c37b6297c220b7c6a1b4cd321c3a"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            4,
+            7
+          ],
+          "hash": "3be7dfa123817a973c011f398b7c839a990daf33603fd717171c1cd143e815c6"
+        },
+        {
+          "pair": [
+            7,
+            4
+          ],
+          "hash": "0290f6cf98bee2b530cbc72e0ebb4b6d874abc78821ff3dd3d62f8e09d946462"
+        }
+      ]
+    },
+    {
+      "id": "variant-3-v4",
+      "geometry": "f79144ada6fcd91eb1d2c44067272f294ce995543de0ef62c1c6cd6b0f76b2d1",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "3e19310b5d96622ce535b72748b1119e63667312e04e08fb93aa99fd9f65ef4f"
+        },
+        {
+          "name": "selected",
+          "hash": "f1353690f8c48d7552c8945619dee2ef49c7de718ab25c5695d7ff98eca4d2e4"
+        },
+        {
+          "name": "busy",
+          "hash": "de29ff01fd16f99b5277282e414459e0d7bb716ffed3fc26208bc98f1f645938"
+        },
+        {
+          "name": "feedback",
+          "hash": "2eeb066ed372336ea1b6d214b5c32abc71b70af9a3003cfbcb14464c55ad00d5"
+        },
+        {
+          "name": "guided",
+          "hash": "3e19310b5d96622ce535b72748b1119e63667312e04e08fb93aa99fd9f65ef4f"
+        },
+        {
+          "name": "after-first",
+          "hash": "b0eab90eff1ec4f6a629bf5a7160f2ade5a0d0e864eb89bf26c771e50a0566f9"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            4,
+            9
+          ],
+          "hash": "913901c55013444d04e0c8cc1af2771bf5e1ad557b303478651f7edbbc5d833e"
+        },
+        {
+          "pair": [
+            9,
+            4
+          ],
+          "hash": "4e3d9e44137f955de21cc507685908e63b6ed8a7bcf24b12950c061a2e9de3e2"
+        }
+      ]
+    },
+    {
+      "id": "variant-4-v1",
+      "geometry": "fd99907441d791cbda7193deae772ab851d538e05bfec745419889cb1818bd91",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "78328c24d0d1a5a5bc1401974df41e2aa04538c338570e959f89e6426c94cbad"
+        },
+        {
+          "name": "selected",
+          "hash": "da966c9ae6d23c27a654b4f0308c2ff836019640c1f11e766e0e51bf58711497"
+        },
+        {
+          "name": "busy",
+          "hash": "0b46a23cfbb89f8bef4c2cdcd4eb6f80bbc7fe7e003eda59e4ec1ae8044d2351"
+        },
+        {
+          "name": "feedback",
+          "hash": "9486779dfb77e991ce966ecda948cf429443e11f15ade58801b8af3330088f81"
+        },
+        {
+          "name": "guided",
+          "hash": "78328c24d0d1a5a5bc1401974df41e2aa04538c338570e959f89e6426c94cbad"
+        },
+        {
+          "name": "after-first",
+          "hash": "7551ddba23c6dd9c4035d6da5df6d253198f78200fd3911d10fcab61f6f5ed82"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            19,
+            21
+          ],
+          "hash": "62fc89bcc9e6a7bf5e0796a4783d0b23e4bc41843e110ac71558b12b86504146"
+        },
+        {
+          "pair": [
+            21,
+            19
+          ],
+          "hash": "182930a661bff7025f444a10af1dd1ff4950ae88d9c713ef2d69c552a17ea140"
+        }
+      ]
+    },
+    {
+      "id": "variant-4-v2",
+      "geometry": "fd99907441d791cbda7193deae772ab851d538e05bfec745419889cb1818bd91",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "bb017743b71caea414b99dc9f40c194940f3d3081a830bfa7d53103f602ccbbf"
+        },
+        {
+          "name": "selected",
+          "hash": "ecdda92b60c871d7888cbc93d413075564e07272f33f1942f9a57477e88c334b"
+        },
+        {
+          "name": "busy",
+          "hash": "a898d20c717085e7b992c9e71b0062d215112bd41f0ed42d9769aa48493583c0"
+        },
+        {
+          "name": "feedback",
+          "hash": "eb3c6b8bf4a4200005c28b98499a0ad9e7c381ad92a488a1e5649fe4cb09bea0"
+        },
+        {
+          "name": "guided",
+          "hash": "bb017743b71caea414b99dc9f40c194940f3d3081a830bfa7d53103f602ccbbf"
+        },
+        {
+          "name": "after-first",
+          "hash": "2030a13908698812663ae90b4474be3717768e5b69bc5dbf3e0d575e1676bdf7"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            8,
+            11
+          ],
+          "hash": "7ef7f917125918f043ba373f9b7bc3471c6c6664f238fbedb82818c165212e1f"
+        },
+        {
+          "pair": [
+            11,
+            8
+          ],
+          "hash": "76c7d0a49d28c1914af615c73e348ea6061c4b66ec046f40d0f9e64739df2e17"
+        }
+      ]
+    },
+    {
+      "id": "variant-4-v3",
+      "geometry": "fd99907441d791cbda7193deae772ab851d538e05bfec745419889cb1818bd91",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "ee363e6a2358e7f10f51553fece5c1faeae8279114d2f5a91386b3c827370890"
+        },
+        {
+          "name": "selected",
+          "hash": "465d14f96c2e21eafb38b63a1bcbd57d208faa66629cf30c191e5a2ef3bed87e"
+        },
+        {
+          "name": "busy",
+          "hash": "c20be89a402700ee232fc2c14efbf2d649a7cc350a55a8e581b174a13a2d8d04"
+        },
+        {
+          "name": "feedback",
+          "hash": "13a2d40ece0ebb3b30cc09ee80994bb2424854e1b25423d88e38172c4367060f"
+        },
+        {
+          "name": "guided",
+          "hash": "ee363e6a2358e7f10f51553fece5c1faeae8279114d2f5a91386b3c827370890"
+        },
+        {
+          "name": "after-first",
+          "hash": "b135a5c64cc195740baba1e8a9e102f1744503cce7244a2f9c17b450525d79b3"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            16,
+            19
+          ],
+          "hash": "7ccb017c99a1d9cbebfa17d00ac3a0fb8c2521f238bb652126931a1761b368a5"
+        },
+        {
+          "pair": [
+            19,
+            16
+          ],
+          "hash": "a1d1a2116b6ced793fe205c1a9b0116eba5b9e07c881b70bd8751e71da7cdbcb"
+        }
+      ]
+    },
+    {
+      "id": "variant-4-v4",
+      "geometry": "fd99907441d791cbda7193deae772ab851d538e05bfec745419889cb1818bd91",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "6256093325a7f1ca7bbeef80b963f263142472b5cbad0d0ebb6aff5003fd41a8"
+        },
+        {
+          "name": "selected",
+          "hash": "4debeb6db1145a51114557ab5add7da7802f78dcbb1addc4e6dc48e92f783808"
+        },
+        {
+          "name": "busy",
+          "hash": "e9e98627cde32bda1ad1bb4578a09d97c1c63ab5cae67d71bd31351c36f87535"
+        },
+        {
+          "name": "feedback",
+          "hash": "2ef2147cfb3e7aa52b22eeea5fe812907b4cbe61c172778e6bb8b7b35d30d1ad"
+        },
+        {
+          "name": "guided",
+          "hash": "6256093325a7f1ca7bbeef80b963f263142472b5cbad0d0ebb6aff5003fd41a8"
+        },
+        {
+          "name": "after-first",
+          "hash": "7c5256fa7b9b71ff689c00247c3ac4c6ec6351613b8d9b32bccb2922fca02039"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            19,
+            17
+          ],
+          "hash": "92dcbbfed3f576a9890fa095d624825b9e8ed94eed1d1a3dda9b7fc3fc97b469"
+        },
+        {
+          "pair": [
+            17,
+            19
+          ],
+          "hash": "0df4a1c7ad58162ed05ebae05e873e457be9486a8b14cb07ddbb5f84b7dc216b"
+        }
+      ]
+    },
+    {
+      "id": "variant-5-v1",
+      "geometry": "fd99907441d791cbda7193deae772ab851d538e05bfec745419889cb1818bd91",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "ec498830b317bfeb5cbcd12822a4fb85b621dcf3900e2c50f8eaf1b0cd31eff9"
+        },
+        {
+          "name": "selected",
+          "hash": "8ee8e5b7d0818f256fc8ffad8bd36c8bd30422fad5810acc716f512f5e812f97"
+        },
+        {
+          "name": "busy",
+          "hash": "005f63d368d190877dbcdcd310d8b431058295601d4831b734559dbd3e286f39"
+        },
+        {
+          "name": "feedback",
+          "hash": "27ba81cf53ed3163b3b2bd2a0c499dddda276d989eee369d9e521189228219ca"
+        },
+        {
+          "name": "guided",
+          "hash": "ec498830b317bfeb5cbcd12822a4fb85b621dcf3900e2c50f8eaf1b0cd31eff9"
+        },
+        {
+          "name": "after-first",
+          "hash": "e5d643d03c70660eb0c2ebdd77dc8aa58001dc81fc20a2a2820ce57819a486a5"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            18,
+            20
+          ],
+          "hash": "e1d441e3fcaefc61396f942444806b569fa85c55104f4a2359582f1d237257ff"
+        },
+        {
+          "pair": [
+            20,
+            18
+          ],
+          "hash": "2a4bc090fa1fccf84683002c836503984bb92573d4254bed18d7293ec90f48f9"
+        }
+      ]
+    },
+    {
+      "id": "variant-5-v2",
+      "geometry": "fd99907441d791cbda7193deae772ab851d538e05bfec745419889cb1818bd91",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "7c8be511f2ef7e1d87f76910de26f42e6837ed21a5ef968039bf1c58f223ae48"
+        },
+        {
+          "name": "selected",
+          "hash": "081a7dbf24f3228b06f91565f18a6340d6df5464f9920b09185606dee348ff89"
+        },
+        {
+          "name": "busy",
+          "hash": "c903f9d6dff4b89e891ecb88b9ec02da2a0b87a28a2510ab93e7db463a4c561b"
+        },
+        {
+          "name": "feedback",
+          "hash": "81aef349f73a312ed50bc9cfa89f3a1a79dcc57fd7f053b0019c88c4562459cc"
+        },
+        {
+          "name": "guided",
+          "hash": "7c8be511f2ef7e1d87f76910de26f42e6837ed21a5ef968039bf1c58f223ae48"
+        },
+        {
+          "name": "after-first",
+          "hash": "d92e689d988aa7ecbc2a3b9b10fcf03e26336388881b1e07a3b2e308efc44663"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            9,
+            12
+          ],
+          "hash": "78688f124a66d910b4a45f0cf6b68abb9c2c33307e86577163bf1be67a14e109"
+        },
+        {
+          "pair": [
+            12,
+            9
+          ],
+          "hash": "0d1125bbe3e3666831b853a4401fe8461caa85d5eb0f59dd520da032d310ad35"
+        }
+      ]
+    },
+    {
+      "id": "variant-5-v3",
+      "geometry": "fd99907441d791cbda7193deae772ab851d538e05bfec745419889cb1818bd91",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "a3743c66f5e153f913051aaba6cc62995baa932b297526a549e7ccf68a99a3cf"
+        },
+        {
+          "name": "selected",
+          "hash": "ffb9be107390770c46492beea8a23898e03e5ec40973a561eca7dc2bd6ea3a1a"
+        },
+        {
+          "name": "busy",
+          "hash": "0f6ba95833453b4523107a677be1e731aeefa3d8b7d6dfad6d262873b5059197"
+        },
+        {
+          "name": "feedback",
+          "hash": "3f5fe4a491932c79fa45c7f05d79f198fd67ced4155dcd08ec7ad9d0636274d2"
+        },
+        {
+          "name": "guided",
+          "hash": "a3743c66f5e153f913051aaba6cc62995baa932b297526a549e7ccf68a99a3cf"
+        },
+        {
+          "name": "after-first",
+          "hash": "64d8454243f6a5aa403b60ae4ce3a57468f73bb2b0b2a8019b370ec49d3fe15c"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            2,
+            6
+          ],
+          "hash": "74a67d45bd478b5d42aa8cfabbc62c79f6f3e3a8d0134987de22e19c1cfef496"
+        },
+        {
+          "pair": [
+            6,
+            2
+          ],
+          "hash": "7979c5d2892fe1992114737870ecb62b6f0ee7e4625749d71f31e5fed3cffeda"
+        }
+      ]
+    },
+    {
+      "id": "variant-5-v4",
+      "geometry": "fd99907441d791cbda7193deae772ab851d538e05bfec745419889cb1818bd91",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "fab0e113793e6a6a3271127014c0b2ea72a830b1726ac2d384cf9e6ed40f218c"
+        },
+        {
+          "name": "selected",
+          "hash": "9d85382b5112a96aae74f4cf4bbb0543ec2a30e8e9051cd1086d3ec22309cfb4"
+        },
+        {
+          "name": "busy",
+          "hash": "bea74693becaf997d89d4d22e8011ca416255830524b40ceb1b7ded4ee8d72a6"
+        },
+        {
+          "name": "feedback",
+          "hash": "d2513982e342ad09cb16a2355e4a12a2c4c44f967ddb6d63dc8b06bb48f67b20"
+        },
+        {
+          "name": "guided",
+          "hash": "fab0e113793e6a6a3271127014c0b2ea72a830b1726ac2d384cf9e6ed40f218c"
+        },
+        {
+          "name": "after-first",
+          "hash": "874db390eb3f0fc2f2218e9412fb914d39a92f8fd1e81d5921a184a053a9c889"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            6,
+            9
+          ],
+          "hash": "3be7dfa123817a973c011f398b7c839a990daf33603fd717171c1cd143e815c6"
+        },
+        {
+          "pair": [
+            9,
+            6
+          ],
+          "hash": "0290f6cf98bee2b530cbc72e0ebb4b6d874abc78821ff3dd3d62f8e09d946462"
+        }
+      ]
+    },
+    {
+      "id": "variant-6-v1",
+      "geometry": "fd99907441d791cbda7193deae772ab851d538e05bfec745419889cb1818bd91",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "3f35d43b443b1206ab44c4ca9a0109dbace82380f8b0211b769c0811f3a5a42e"
+        },
+        {
+          "name": "selected",
+          "hash": "b145fd55aa5e7e19b77ebb23676b4fa6edb1428ef7c5c6f1133497f1a0a4074c"
+        },
+        {
+          "name": "busy",
+          "hash": "87ae2b2f0090fde49139665799af4a387698fe033720c613e5783cea812ef597"
+        },
+        {
+          "name": "feedback",
+          "hash": "817a3ec52443539169841a4cd932df9e42a3dd47ffb8ab354f54d44e019c9061"
+        },
+        {
+          "name": "guided",
+          "hash": "3f35d43b443b1206ab44c4ca9a0109dbace82380f8b0211b769c0811f3a5a42e"
+        },
+        {
+          "name": "after-first",
+          "hash": "4e320b29d887d30ecb20fc34a58b94fd50901fc29c2609f8dc726aec47979d7c"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            6,
+            11
+          ],
+          "hash": "913901c55013444d04e0c8cc1af2771bf5e1ad557b303478651f7edbbc5d833e"
+        },
+        {
+          "pair": [
+            11,
+            6
+          ],
+          "hash": "4e3d9e44137f955de21cc507685908e63b6ed8a7bcf24b12950c061a2e9de3e2"
+        }
+      ]
+    },
+    {
+      "id": "variant-6-v2",
+      "geometry": "fd99907441d791cbda7193deae772ab851d538e05bfec745419889cb1818bd91",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "c904a214a9914c89440aeadc0ce6f73a8e668320d2b084c8f507164f69936083"
+        },
+        {
+          "name": "selected",
+          "hash": "e0514357639b7bdb678975c82a977ec5b7774afbaed05091adfec7d34ec5f371"
+        },
+        {
+          "name": "busy",
+          "hash": "566c87400c92185992a13d1a0f89ec620fa6b2054c38b2e1e2d8130b7b32bd72"
+        },
+        {
+          "name": "feedback",
+          "hash": "33ea50280da3b9ebf50fa1021a29762b5e02f1baf1013bca65be4fae4105f0af"
+        },
+        {
+          "name": "guided",
+          "hash": "c904a214a9914c89440aeadc0ce6f73a8e668320d2b084c8f507164f69936083"
+        },
+        {
+          "name": "after-first",
+          "hash": "13d6dfd6cb84dcf58b6ad8cbfab9a1b95dc65656eafc7fdef638c47947c4f0fb"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            13,
+            11
+          ],
+          "hash": "14ee8ae35de122e2114e3da9a14913ce70b041ee73692120313526eccc643a40"
+        },
+        {
+          "pair": [
+            11,
+            13
+          ],
+          "hash": "d00688f0266ebd867c632feee9c70ce35fb895cdd36c4460aba2b7c0b9855f11"
+        }
+      ]
+    },
+    {
+      "id": "variant-6-v3",
+      "geometry": "fd99907441d791cbda7193deae772ab851d538e05bfec745419889cb1818bd91",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "1852f918a4cf44daa80d7f37c8165f4238d0120e0fa1fbbe41c32c50ca0592ef"
+        },
+        {
+          "name": "selected",
+          "hash": "e010ec94a8b0e20954826656b9aab12bf2e7b7518f049c807174ebc090db1c3e"
+        },
+        {
+          "name": "busy",
+          "hash": "42cf620d4ac8e00bb72edb7b92d471b5a606d229b9f9f0f790d16ef063341cd8"
+        },
+        {
+          "name": "feedback",
+          "hash": "f203f929fa288d239d6c6d285229f8c660f1826b34934713a45bfe71d5c1de78"
+        },
+        {
+          "name": "guided",
+          "hash": "1852f918a4cf44daa80d7f37c8165f4238d0120e0fa1fbbe41c32c50ca0592ef"
+        },
+        {
+          "name": "after-first",
+          "hash": "369fe9621d433090845be4dcba8aebb9b0387d0f19de0e8c28db74762797385a"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            18,
+            20
+          ],
+          "hash": "e1d441e3fcaefc61396f942444806b569fa85c55104f4a2359582f1d237257ff"
+        },
+        {
+          "pair": [
+            20,
+            18
+          ],
+          "hash": "2a4bc090fa1fccf84683002c836503984bb92573d4254bed18d7293ec90f48f9"
+        }
+      ]
+    },
+    {
+      "id": "variant-6-v4",
+      "geometry": "fd99907441d791cbda7193deae772ab851d538e05bfec745419889cb1818bd91",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "07999b8071c871b53b2326047e476297a1c4af9254891c7bf3a90d5752f88c20"
+        },
+        {
+          "name": "selected",
+          "hash": "d9c461c903ad90a8e42b51fc85e1ca5c41960c2880d32d4a5282f27637f2e75d"
+        },
+        {
+          "name": "busy",
+          "hash": "e46c892a31aaaabf67e26263326362372e278d56b8f3e981ac169da6684d2776"
+        },
+        {
+          "name": "feedback",
+          "hash": "41a75cc4f961fc913910e4fe75b1a15f9815d32b9378f435b35bfc0a035ea9d9"
+        },
+        {
+          "name": "guided",
+          "hash": "07999b8071c871b53b2326047e476297a1c4af9254891c7bf3a90d5752f88c20"
+        },
+        {
+          "name": "after-first",
+          "hash": "1cf65891ae6a97f06373e3b3f2b66b916eef08706f1a6a153df31eb1bf7b499f"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            11,
+            16
+          ],
+          "hash": "c228d854fee943fdedbaabb57af872d39e7ca89672a8bfb2f2fd4f55c62d14e1"
+        },
+        {
+          "pair": [
+            16,
+            11
+          ],
+          "hash": "fa30a0e08ecf56d4435f1bac4c827b47bd5f8a19a3bfe4b4d17c00f6585ac993"
+        }
+      ]
+    },
+    {
+      "id": "variant-7-v1",
+      "geometry": "69e9741536be33cb72929c858fcaff2ec3c4e8cc253d006650d39a2bde3826c7",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "81f00ce70a7a1b29b799c12dd07de8c302c76379ed41e6570065cdf0ec3c715e"
+        },
+        {
+          "name": "selected",
+          "hash": "8cdf1a4d633db8ccd36093a4ffadf659a11c3d4c7b0f9bd819356341bb679a34"
+        },
+        {
+          "name": "busy",
+          "hash": "4bd82f8e4f239cefda100aa6e1d63b8476d8782235f1e440a10312dc46ef6cf7"
+        },
+        {
+          "name": "feedback",
+          "hash": "1192d4b4f96dbec5901102d02c0dba68e64fd0f1b3d6cdfa746c061516463cb9"
+        },
+        {
+          "name": "guided",
+          "hash": "81f00ce70a7a1b29b799c12dd07de8c302c76379ed41e6570065cdf0ec3c715e"
+        },
+        {
+          "name": "after-first",
+          "hash": "f1e7f77594d368626edbba4e0ce16291c2e178550aedddb9df81ffd98bbfab6c"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            11,
+            16
+          ],
+          "hash": "3a61e4e9ab5116c20b289f3b9755b04ba0572e845ed0fb85b1d03e513aeae89c"
+        },
+        {
+          "pair": [
+            16,
+            11
+          ],
+          "hash": "6a41665d8b6b17c2b65270a8141133f2021cab2b9219bbc92d315315f689fe8f"
+        }
+      ]
+    },
+    {
+      "id": "variant-7-v2",
+      "geometry": "69e9741536be33cb72929c858fcaff2ec3c4e8cc253d006650d39a2bde3826c7",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "bc6d37fa5a79f563e6f69b5fc681b852b40c8b9049a94a1cf5e479dc563fb971"
+        },
+        {
+          "name": "selected",
+          "hash": "93fbb181a74bb796e5c49a7cb0370f2007ea6ccdf136a22369a0a4a61b4e1b44"
+        },
+        {
+          "name": "busy",
+          "hash": "d49bef8f9eaf6119a45cddfce15e3d496cd770b399302b85515b7c4ee8016465"
+        },
+        {
+          "name": "feedback",
+          "hash": "e8df2753627fed133ba4a269322b655b74569f14b756619520e02086ed7a4aa4"
+        },
+        {
+          "name": "guided",
+          "hash": "bc6d37fa5a79f563e6f69b5fc681b852b40c8b9049a94a1cf5e479dc563fb971"
+        },
+        {
+          "name": "after-first",
+          "hash": "1be11d128cf2617d970f7dabedf882772efc5e883bea523ea954eb3b8438c961"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            23,
+            21
+          ],
+          "hash": "6bd1ed739db2b6f3c2bd700eef9f2c72c24c77ff5d52c3742626fd0a0f444a38"
+        },
+        {
+          "pair": [
+            21,
+            23
+          ],
+          "hash": "b14e3f22cb35ae99d4649417ba436f98c3e9b9b2fed50262c5566ca095246c2e"
+        }
+      ]
+    },
+    {
+      "id": "variant-7-v3",
+      "geometry": "69e9741536be33cb72929c858fcaff2ec3c4e8cc253d006650d39a2bde3826c7",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "75fa26948b6b24a8f293d4d91fc5253014dec50d15d9bfb6b4c3c1dda1b5d448"
+        },
+        {
+          "name": "selected",
+          "hash": "707ab9b7e2f1605669e1100c7927327e2387ce97da21293ebd52c2b79f26620f"
+        },
+        {
+          "name": "busy",
+          "hash": "6ab8dab267ee7746054e761d72f465713ee43321c9063a2a764ebc46f3955539"
+        },
+        {
+          "name": "feedback",
+          "hash": "cf2093c127603f4341f0827ff5ecd5d1561e623da3918e4c7169967d8a18df05"
+        },
+        {
+          "name": "guided",
+          "hash": "75fa26948b6b24a8f293d4d91fc5253014dec50d15d9bfb6b4c3c1dda1b5d448"
+        },
+        {
+          "name": "after-first",
+          "hash": "9b173190f19bbb9f201a99d29842e54931b29e61a15f301898c89ad7c051a8ca"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            13,
+            16
+          ],
+          "hash": "eea4acb3107353a4dc35f125572f9b53edd2c7ad7a452dd88d1c5d9e38dc1112"
+        },
+        {
+          "pair": [
+            16,
+            13
+          ],
+          "hash": "fc367b47d3c17543eabb2df28f07dfee0240312c54f8904ba3595f4820507ed9"
+        }
+      ]
+    },
+    {
+      "id": "variant-7-v4",
+      "geometry": "69e9741536be33cb72929c858fcaff2ec3c4e8cc253d006650d39a2bde3826c7",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "40a17487306f5cd6a712cfcd298071c4c797c4f00533bcb46a2c877ff8d58388"
+        },
+        {
+          "name": "selected",
+          "hash": "92d22f01373e9a19360d44b9201ec5b7f59d2dca9aa764d6a0ab5da3e7f37993"
+        },
+        {
+          "name": "busy",
+          "hash": "72e429e9161e419f20273a1d08b63562cf9330095c6abf982d3d78020881c183"
+        },
+        {
+          "name": "feedback",
+          "hash": "81f652086b4b7db8b95c047f692a90b6faddff9dc5040a364c94fbf8191daaeb"
+        },
+        {
+          "name": "guided",
+          "hash": "40a17487306f5cd6a712cfcd298071c4c797c4f00533bcb46a2c877ff8d58388"
+        },
+        {
+          "name": "after-first",
+          "hash": "5eb2f5a1ea69e242df33c775d0e15ea3fdecd284ae369a9daf1b4a5b392e449b"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            14,
+            17
+          ],
+          "hash": "1df2d3191fbbdcab40be5a50af378183a518b92cd9689944892468a9546abfa6"
+        },
+        {
+          "pair": [
+            17,
+            14
+          ],
+          "hash": "638a236f711a2565c710bfd6d7bf518dc00e57e1804ea106964c224e3446a3fd"
+        }
+      ]
+    },
+    {
+      "id": "variant-8-v1",
+      "geometry": "69e9741536be33cb72929c858fcaff2ec3c4e8cc253d006650d39a2bde3826c7",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "dd91275b4cda90abbc771f88d52ab75ff0fec41add848f8c347c67eb8c79a8dc"
+        },
+        {
+          "name": "selected",
+          "hash": "6a0b190aa02234ac074868be1de0c2af6d2d5f2f80d51a158f9a6118c27610d1"
+        },
+        {
+          "name": "busy",
+          "hash": "2822d8628de4e5db456beb038923b718929ba01c371fd89e7c69b8163785a44a"
+        },
+        {
+          "name": "feedback",
+          "hash": "45127f2406a628ae44231745d96f63e1d2dd505c58d70e49fb541b7937256ffd"
+        },
+        {
+          "name": "guided",
+          "hash": "dd91275b4cda90abbc771f88d52ab75ff0fec41add848f8c347c67eb8c79a8dc"
+        },
+        {
+          "name": "after-first",
+          "hash": "c6312984df90591e91d66b3c317a3db7d3b4f4cc1adede045cb5be755b353e65"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            11,
+            16
+          ],
+          "hash": "3a61e4e9ab5116c20b289f3b9755b04ba0572e845ed0fb85b1d03e513aeae89c"
+        },
+        {
+          "pair": [
+            16,
+            11
+          ],
+          "hash": "6a41665d8b6b17c2b65270a8141133f2021cab2b9219bbc92d315315f689fe8f"
+        }
+      ]
+    },
+    {
+      "id": "variant-8-v2",
+      "geometry": "69e9741536be33cb72929c858fcaff2ec3c4e8cc253d006650d39a2bde3826c7",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "a33c7cde80bcab92327a844da2948c6f7b448674f0b4afb07e4de4c11db25bf0"
+        },
+        {
+          "name": "selected",
+          "hash": "91d0504075cd600f60cdb9a4c3fc957360a51264e6a746bf50f072e77e3643d4"
+        },
+        {
+          "name": "busy",
+          "hash": "085e519ab7bac6e338bb19fb7c2ab0e0f8f6a396a4748c36704aa22b5fe8680d"
+        },
+        {
+          "name": "feedback",
+          "hash": "8672b8285469d4fc551d878312d9fbf2d4e969a5ae77d4fbfbc04cd7978df52a"
+        },
+        {
+          "name": "guided",
+          "hash": "a33c7cde80bcab92327a844da2948c6f7b448674f0b4afb07e4de4c11db25bf0"
+        },
+        {
+          "name": "after-first",
+          "hash": "738554b3645319d4aa3bcf1b1173e6262f79b1d4f1948511b28b56c17608c0f8"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            21,
+            24
+          ],
+          "hash": "e1d441e3fcaefc61396f942444806b569fa85c55104f4a2359582f1d237257ff"
+        },
+        {
+          "pair": [
+            24,
+            21
+          ],
+          "hash": "2a4bc090fa1fccf84683002c836503984bb92573d4254bed18d7293ec90f48f9"
+        }
+      ]
+    },
+    {
+      "id": "variant-8-v3",
+      "geometry": "69e9741536be33cb72929c858fcaff2ec3c4e8cc253d006650d39a2bde3826c7",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "dd2c30d999f06584da1ffde49f8b5847ca094bc9263ea4fce94abffdf4537ea4"
+        },
+        {
+          "name": "selected",
+          "hash": "f5ca5050a77273d44caa46060b885a5958b71a583eb4bba911992c8d63b2d883"
+        },
+        {
+          "name": "busy",
+          "hash": "e8bc7f0f95e1171b9855723d914dbe5880887f5d5f9c93853a5d9652aa6bfd81"
+        },
+        {
+          "name": "feedback",
+          "hash": "76dae32d8b1af7675747a86608c6876826619ceacb4ef9bb030b66c3ed706b8c"
+        },
+        {
+          "name": "guided",
+          "hash": "dd2c30d999f06584da1ffde49f8b5847ca094bc9263ea4fce94abffdf4537ea4"
+        },
+        {
+          "name": "after-first",
+          "hash": "f1d5e6f7361c1e0795e5f7dd670a53b9f5a397c04f7b7f242df8c90cc5cbed07"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            9,
+            7
+          ],
+          "hash": "842b80c40e4322103fda783696045e99742db59967666ef6738cd9fe5d8c94da"
+        },
+        {
+          "pair": [
+            7,
+            9
+          ],
+          "hash": "ab7e499d1b7e392756e952c5e45029c95a55c728c1c23c0d5a87713b1b4733a3"
+        }
+      ]
+    },
+    {
+      "id": "variant-8-v4",
+      "geometry": "69e9741536be33cb72929c858fcaff2ec3c4e8cc253d006650d39a2bde3826c7",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "eec707aebcfaa45a0310c42a56f7c5127942226cfa13c8843fd3a8bd05eb38b8"
+        },
+        {
+          "name": "selected",
+          "hash": "479b7cb0bfb8e3708e75d4cc985d2930c9f845c1a647a806c6b97668dd38f018"
+        },
+        {
+          "name": "busy",
+          "hash": "aed663496d283d73eb6a8dbbd2c3daddcc9d62b049bca1891fd5d98e83900a52"
+        },
+        {
+          "name": "feedback",
+          "hash": "32d8b8ebc05d6448f16d4eb5e0ac2abf727da53405d9721a54b0bb8467369b74"
+        },
+        {
+          "name": "guided",
+          "hash": "eec707aebcfaa45a0310c42a56f7c5127942226cfa13c8843fd3a8bd05eb38b8"
+        },
+        {
+          "name": "after-first",
+          "hash": "497ddba231ab82a5cdb1751de1e69cd9440bf60412d2b3af230a9802a6ed7588"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            3,
+            6
+          ],
+          "hash": "d8cc026ca48be912dd28f61bc7479c883785189878b5e1d8231ea454739ae601"
+        },
+        {
+          "pair": [
+            6,
+            3
+          ],
+          "hash": "c99f660d17ab16ad0f24282764218a699f2e1f6c6a43a3bd76d874173696b285"
+        }
+      ]
+    },
+    {
+      "id": "variant-9-v1",
+      "geometry": "8922a63635bde930fb792f02a9267e872cf91e0ab581efec0ddc281cfb7be9bb",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "76d4e1b4e97d30383559f2343f69f5d72e782ea6d4aa4bd7017987400f165bd5"
+        },
+        {
+          "name": "selected",
+          "hash": "f3da8ea5d2a7048ce568a6d62a65d4f52e8e0a018db13a6d02e998654e78acc6"
+        },
+        {
+          "name": "busy",
+          "hash": "44c09e8cc5a11cc35b5710177084bd6ea0e356c8be8575d87ac0f0ede2433721"
+        },
+        {
+          "name": "feedback",
+          "hash": "7c280c134ff3672898c587bd61452d81ff4ba4aabbe4e1ce43ac0417887798c1"
+        },
+        {
+          "name": "guided",
+          "hash": "76d4e1b4e97d30383559f2343f69f5d72e782ea6d4aa4bd7017987400f165bd5"
+        },
+        {
+          "name": "after-first",
+          "hash": "844e2d30a82707b6d72b4dcf3126ce7547de7d389dd227291fb305e189cf09a7"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            7,
+            4
+          ],
+          "hash": "45bd5a703e5e11a62853553ec43d0829c897e82e4cf4e7deca960d6343a8a210"
+        },
+        {
+          "pair": [
+            4,
+            7
+          ],
+          "hash": "3f98ca62e5f39dce796650876e9fc41a4bacd8af8c5204562f5f385550a91666"
+        }
+      ]
+    },
+    {
+      "id": "variant-9-v2",
+      "geometry": "8922a63635bde930fb792f02a9267e872cf91e0ab581efec0ddc281cfb7be9bb",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "019aaddbd4955ae7a64249551953bf864b9e00f4cecb7d7fa6b74cbbaaecfe76"
+        },
+        {
+          "name": "selected",
+          "hash": "a9660e557147f92cdc79100b917e627dc8a2083899384bd96c889a26c5108abf"
+        },
+        {
+          "name": "busy",
+          "hash": "7bbdb1c0fb1950ae728117bfd53aba0033b8848061b73480ae3f4ccf77e403b0"
+        },
+        {
+          "name": "feedback",
+          "hash": "cf8c17890ea9dab7854e38c9ca7d1ad001795b2d9eb51b139783b3f916581788"
+        },
+        {
+          "name": "guided",
+          "hash": "019aaddbd4955ae7a64249551953bf864b9e00f4cecb7d7fa6b74cbbaaecfe76"
+        },
+        {
+          "name": "after-first",
+          "hash": "083b484154e0b71a9545676f0c257f19bdc92e4d8007ae850c7e679005d94caa"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            24,
+            21
+          ],
+          "hash": "b3df34223b1fe8041d2807ee09ff7ab11070ef15168831b977aaaf91aa9eddc2"
+        },
+        {
+          "pair": [
+            21,
+            24
+          ],
+          "hash": "a711fddf1123194155aceeeea4f59e484ecde9af4a8e2e49594968c90b5ab1ee"
+        }
+      ]
+    },
+    {
+      "id": "variant-9-v3",
+      "geometry": "8922a63635bde930fb792f02a9267e872cf91e0ab581efec0ddc281cfb7be9bb",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "ff97d17ca41f4fb3f11ba0434bf7a1efa1da2aada1a3e7ea2e7c9b74f11d841f"
+        },
+        {
+          "name": "selected",
+          "hash": "8bde00e003881691db36646ac98af93e8a80cb206e7cdef09681858eb4e71c0f"
+        },
+        {
+          "name": "busy",
+          "hash": "60e67eac0fafcd46eb7bfc98e987415f695996160aae1eaa0e8e4c931fc5659b"
+        },
+        {
+          "name": "feedback",
+          "hash": "7c35f466a40c12d3bc6cb0d2cd17aa5b42fb5a99a2df0d46093c037948acd0cc"
+        },
+        {
+          "name": "guided",
+          "hash": "ff97d17ca41f4fb3f11ba0434bf7a1efa1da2aada1a3e7ea2e7c9b74f11d841f"
+        },
+        {
+          "name": "after-first",
+          "hash": "2a8055159883c4ea114afd2805e0634d41aa4d9d6fd2c057a168dcde7b3158c5"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            7,
+            11
+          ],
+          "hash": "b80392b3743af4d4414348f0d18db1b5f6dcc3f305c536d5ee5e9e44b0982ada"
+        },
+        {
+          "pair": [
+            11,
+            7
+          ],
+          "hash": "cbc917df62fc7fcb9b0beb7f1dfa19b079578cdd59752b7f7c44c79d73d4d522"
+        }
+      ]
+    },
+    {
+      "id": "variant-9-v4",
+      "geometry": "8922a63635bde930fb792f02a9267e872cf91e0ab581efec0ddc281cfb7be9bb",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "69f398d5bbf5913aac779daa4fef5c5d28dfd60efbe2e567fbe9d5e10ed8a84b"
+        },
+        {
+          "name": "selected",
+          "hash": "e003d61e45774fc32e8bee730f34d14e0e1902fe9d472aed5f016c5a209ff8b8"
+        },
+        {
+          "name": "busy",
+          "hash": "85ced304e59af73b3c710b2fa9c61fb0f9636b836cf4fa68f50e7e2d51fd2c0e"
+        },
+        {
+          "name": "feedback",
+          "hash": "65fe29d0303299a92b11e971fb6ea466b7bcf231a825391b7e25fece3a213c17"
+        },
+        {
+          "name": "guided",
+          "hash": "69f398d5bbf5913aac779daa4fef5c5d28dfd60efbe2e567fbe9d5e10ed8a84b"
+        },
+        {
+          "name": "after-first",
+          "hash": "9c0d6b5f3c3a3b99dbb073c950befe8e1fffa1d2902cefd28dfbe34c1825e438"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            25,
+            22
+          ],
+          "hash": "d39fe031c5863e6b6dcdd98ba73fd073c40d8c95e7137f4c3d4d50bc77dc3b56"
+        },
+        {
+          "pair": [
+            22,
+            25
+          ],
+          "hash": "6416fe285390d054f4b90ac47fe356757f21a6176b5f59e79c2784a04a9772d9"
+        }
+      ]
+    },
+    {
+      "id": "variant-10-v1",
+      "geometry": "8922a63635bde930fb792f02a9267e872cf91e0ab581efec0ddc281cfb7be9bb",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "44c88d16322a1a222655dcf623e51d98ba5fee03de744c14ba29f0aae75d0536"
+        },
+        {
+          "name": "selected",
+          "hash": "49b00104c2eba38eb5d81cc294548ed2600bf718521c7d8b7b5b9c5646acf08e"
+        },
+        {
+          "name": "busy",
+          "hash": "1aa0487827f59cd9ff34b26a949c0e298a9e0c9ead6762aa552c41e455cca6f2"
+        },
+        {
+          "name": "feedback",
+          "hash": "b0c15b564cbd8d47ea14ec9ded270dc5a0b37f6bac785671ba4d949e6fd1ebef"
+        },
+        {
+          "name": "guided",
+          "hash": "44c88d16322a1a222655dcf623e51d98ba5fee03de744c14ba29f0aae75d0536"
+        },
+        {
+          "name": "after-first",
+          "hash": "74ac3e9aded5960385ed0032553ca39ff9fbe52aa38ea68ef215493b2ec12427"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            24,
+            28
+          ],
+          "hash": "0729eb71133aaded67f328602be7555a7972ffd27caaa614c9935d85fa123841"
+        },
+        {
+          "pair": [
+            28,
+            24
+          ],
+          "hash": "eeb485c5a4ec7aaf58adfac1a87568329b29fa207fa0104b57a489ffbf60ff58"
+        }
+      ]
+    },
+    {
+      "id": "variant-10-v2",
+      "geometry": "8922a63635bde930fb792f02a9267e872cf91e0ab581efec0ddc281cfb7be9bb",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "8334c47330ef4c81788d0572447fb81032d21d0b061563bd4352f03d81b1063d"
+        },
+        {
+          "name": "selected",
+          "hash": "43dd850dd426ff602509e1125061b457e45e0ddb6ee00159604c42698ba82514"
+        },
+        {
+          "name": "busy",
+          "hash": "09ef062362ce937fec9220d805a2a548be637f4cf4473cc5c140a725946ed484"
+        },
+        {
+          "name": "feedback",
+          "hash": "3727d9ef6557198d1edb11da956d52640c832c18f6d46b6ea95423e14fd1fad8"
+        },
+        {
+          "name": "guided",
+          "hash": "8334c47330ef4c81788d0572447fb81032d21d0b061563bd4352f03d81b1063d"
+        },
+        {
+          "name": "after-first",
+          "hash": "ad35030b9d590bf00df68a2608e352b3e5ae435a1a196c97c3ec9eb76f6b7c1a"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            29,
+            33
+          ],
+          "hash": "62fc89bcc9e6a7bf5e0796a4783d0b23e4bc41843e110ac71558b12b86504146"
+        },
+        {
+          "pair": [
+            33,
+            29
+          ],
+          "hash": "182930a661bff7025f444a10af1dd1ff4950ae88d9c713ef2d69c552a17ea140"
+        }
+      ]
+    },
+    {
+      "id": "variant-10-v3",
+      "geometry": "8922a63635bde930fb792f02a9267e872cf91e0ab581efec0ddc281cfb7be9bb",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "75226ae0d615a537b519e4669c83ff426b2cc3786a4a1f96cbf3ea027e174c70"
+        },
+        {
+          "name": "selected",
+          "hash": "cc5385a33b4a3db7a35037082559ebbebd273f801f27649be2d2a809d40abcdd"
+        },
+        {
+          "name": "busy",
+          "hash": "74540fcd1858bd2e36de06350c97250fa00986de74b6b82ee19f036d2452f2ab"
+        },
+        {
+          "name": "feedback",
+          "hash": "47b61fc0f56db3f53789cfdd247e328938c51eccc0523636c547028598d866c9"
+        },
+        {
+          "name": "guided",
+          "hash": "75226ae0d615a537b519e4669c83ff426b2cc3786a4a1f96cbf3ea027e174c70"
+        },
+        {
+          "name": "after-first",
+          "hash": "7bb3fda758af996c76807011ccdfc42db00836fb9713a00618896c434105c34e"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            14,
+            21
+          ],
+          "hash": "3a61e4e9ab5116c20b289f3b9755b04ba0572e845ed0fb85b1d03e513aeae89c"
+        },
+        {
+          "pair": [
+            21,
+            14
+          ],
+          "hash": "6a41665d8b6b17c2b65270a8141133f2021cab2b9219bbc92d315315f689fe8f"
+        }
+      ]
+    },
+    {
+      "id": "variant-10-v4",
+      "geometry": "8922a63635bde930fb792f02a9267e872cf91e0ab581efec0ddc281cfb7be9bb",
+      "views": [
+        {
+          "name": "idle",
+          "hash": "9812b4771b2ace290fd48c329e13f3799dbb8638457f2f7fa7d70b9b686da659"
+        },
+        {
+          "name": "selected",
+          "hash": "16546502e8a511642032c559751155af3a77192b8d3cf05ce38c96daaed22d27"
+        },
+        {
+          "name": "busy",
+          "hash": "2cf31b9ddbf5f39e6691b2b2a1b6713e8f8503b632fe1afc474e600b532b031e"
+        },
+        {
+          "name": "feedback",
+          "hash": "63daad9165d727c6bdad094e9698cf77e88bf0bb45d93a1e92df593220e70034"
+        },
+        {
+          "name": "guided",
+          "hash": "9812b4771b2ace290fd48c329e13f3799dbb8638457f2f7fa7d70b9b686da659"
+        },
+        {
+          "name": "after-first",
+          "hash": "22d69c69b3bb091934632c9c74ff86e1ce17c75c0f89ddaaaad37fdbcb46c0d2"
+        }
+      ],
+      "paths": [
+        {
+          "pair": [
+            24,
+            21
+          ],
+          "hash": "b3df34223b1fe8041d2807ee09ff7ab11070ef15168831b977aaaf91aa9eddc2"
+        },
+        {
+          "pair": [
+            21,
+            24
+          ],
+          "hash": "a711fddf1123194155aceeeea4f59e484ecde9af4a8e2e49594968c90b5ab1ee"
+        }
+      ]
+    }
+  ]
+}

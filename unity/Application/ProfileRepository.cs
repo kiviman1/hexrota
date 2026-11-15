@@ -63,6 +63,7 @@ namespace Hexrota.Application
         {
             if (!writable) throw new ProfileStorageException("read_only");
             if (revision >= W.MaxSafeInteger) throw new ProfileStorageException("revision_exhausted");
+            if (game == null || energy == null) throw new ProfileStorageException("invalid_profile");
             var next = W.Obj("schemaVersion", 2L, "revision", revision + 1L, "game", W.Copy(game), "energy", W.Copy(energy));
             if (!storage.CompareExchange(ProfileKey, revision, next)) throw new ProfileStorageException("stale_profile");
             revision++; durable = next;

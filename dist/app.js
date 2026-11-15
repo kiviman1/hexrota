@@ -14,53 +14,15 @@ window.HexSessionStore.boot(function startApp(session) {
   const pad = n => String(n).padStart(2, '0');
   const icon = name => `<svg class="icon" aria-hidden="true"><use href="#i-${name}"/></svg>`;
   const reduceMotion=()=>saved.preferences.motion==='reduce'||(saved.preferences.motion==='auto'&&window.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true);
-  const defaultPreferences={music:false,volume:.65,motion:'auto',haptics:false};
-  let saved={current:0,done:[],boards:{},attempts:{},attemptStats:{},variantSelection:{seed:0,serial:0,counts:{},recent:{}},guideAcks:[],sound:false,preferences:{...defaultPreferences},records:{}};
+  let saved = window.HexGameSave.defaults();
+  // Optional observation data may fail independently; progression uses strict reads.
   function readSave(name){try{return session?session.read(name):JSON.parse(localStorage.getItem(name));}catch(_){return null;}}
   try {
-    let raw=readSave(key);
-    if(raw!==null&&(!raw||typeof raw!=='object'||Array.isArray(raw)))throw new Error('invalid_game_save');
-    if(!raw){
-      const previousKey=['hexrota-match-v4','hexrota-match-v3','hexrota-match-v2'].find(name=>readSave(name));
-      const previous=previousKey?readSave(previousKey):null;
-      if(previous){
-        if(typeof previous!=='object'||Array.isArray(previous))throw new Error('invalid_legacy_game_save');
-        sourceSaveKey=previousKey;
-        const boards={};
-        if(previousKey==='hexrota-match-v4'&&previous.boards)for(let i=0;i<campaignCount;i++)if(previous.boards[i])boards[i+tutorialCount]=previous.boards[i];
-        raw={current:Number.isInteger(previous.current)?previous.current+tutorialCount:tutorialCount,done:[...tutorials.map((_,i)=>i),...(Array.isArray(previous.done)?previous.done.filter(i=>Number.isInteger(i)&&i>=0&&i<campaignCount).map(i=>i+tutorialCount):[])],boards,sound:previous.sound,...(Object.prototype.hasOwnProperty.call(previous,'economy')?{economy:previous.economy}:{}),...(Object.prototype.hasOwnProperty.call(previous,'rescue')?{rescue:previous.rescue}:{})};
-        migrated=true;
-      }
-    }
-    if(raw&&typeof raw==='object'){
-      if(Object.prototype.hasOwnProperty.call(raw,'economy'))saved.economy=raw.economy;
-      if(Object.prototype.hasOwnProperty.call(raw,'rescue'))saved.rescue=raw.rescue;
-      saved.done=Array.isArray(raw.done)?[...new Set(raw.done.filter(i=>Number.isInteger(i)&&i>=0&&i<levels.length))]:[];
-      saved.current=Number.isInteger(raw.current)&&raw.current>=0&&raw.current<levels.length?raw.current:0;
-      saved.sound=raw.sound===true;
-      saved.guideAcks=Array.isArray(raw.guideAcks)?[...new Set(raw.guideAcks.filter(id=>typeof id==='string'&&tutorials.some((level,index)=>level.steps.some((step,turn)=>step.acknowledge&&id===`${index}:${turn+1}`))))]:[];
-      const preferences=raw.preferences||{};
-      saved.preferences={music:preferences.music===true,volume:Number.isFinite(preferences.volume)?Math.max(0,Math.min(1,preferences.volume)):.65,motion:['auto','reduce','full'].includes(preferences.motion)?preferences.motion:'auto',haptics:preferences.haptics===true};
-      if(raw.records&&typeof raw.records==='object')for(let i=0;i<levels.length;i++){
-        const r=raw.records[i];
-        if(r&&Number.isInteger(r.score)&&r.score>=0&&r.score<=1000000&&Number.isInteger(r.movesLeft)&&r.movesLeft>=0&&r.movesLeft<=levels[i].moves)saved.records[i]={score:r.score,movesLeft:r.movesLeft,plays:Number.isInteger(r.plays)&&r.plays>=0?Math.min(r.plays,1000000):0};
-      }
-      if(raw.boards&&typeof raw.boards==='object')for(let i=0;i<levels.length;i++)if(raw.boards[i]&&typeof raw.boards[i]==='object')saved.boards[i]=raw.boards[i];
-      if(raw.attempts&&typeof raw.attempts==='object')for(let i=0;i<levels.length;i++)if(Object.prototype.hasOwnProperty.call(raw.attempts,i))saved.attempts[i]=raw.attempts[i];
-      if(raw.attemptStats&&typeof raw.attemptStats==='object')for(let i=0;i<levels.length;i++)if(raw.attemptStats[i]&&typeof raw.attemptStats[i]==='object'&&!Array.isArray(raw.attemptStats[i]))saved.attemptStats[i]=raw.attemptStats[i];
-      const selection=raw.variantSelection;
-      if(selection&&typeof selection==='object'){
-        if(Number.isInteger(selection.seed)&&selection.seed>0&&selection.seed<=0xffffffff)saved.variantSelection.seed=selection.seed;
-        if(Number.isSafeInteger(selection.serial)&&selection.serial>=0)saved.variantSelection.serial=selection.serial;
-        for(const level of levels){
-          const id=String(level.id),count=selection.counts?.[id],recent=selection.recent?.[id];
-          if(Number.isSafeInteger(count)&&count>=0)saved.variantSelection.counts[id]=count;
-          if(Array.isArray(recent))saved.variantSelection.recent[id]=recent.filter(value=>typeof value==='string'&&value.length<=80).slice(-16);
-        }
-      }
-
-    }else saved.sound=readSave('hexrota-v1')?.sound===true;
-  }catch(_){gameLoadIssue='invalid';}
+    const loaded = window.HexGameSave.load({
+      read: name => session.read(name), contains: name => session.contains(name), levels, tutorials
+    });
+    saved = loaded.saved; sourceSaveKey = loaded.sourceSaveKey; migrated = loaded.migrated;
+  } catch (_) { gameLoadIssue = 'invalid'; }
   let active=saved.current,activeLevel=levels[saved.current],activeAttempt=null,attemptPending=true,saveBlocked=false,loadIssue=null,engine, selected=null, hinted=null, busy=false, focusIndex=0;
   let pointer=null, toastTimer, terminalTimer, epoch=0, comboText='',presentation=null,hintJob=null;
   const geometryCache=new Map();
@@ -1054,37 +1016,19 @@ window.HexSessionStore.boot(function startApp(session) {
     if(lifeReady()&&active>=tutorialCount&&activeAttempt&&!attemptPending&&!saveBlocked){const registration=lifeManager.registerAttempt(lifeFeature.life,{attemptId:activeAttempt.attemptId,levelId:activeLevel.id,tutorial:activeLevel.kind==='tutorial',resume:!!restored});lifeFeature={...lifeFeature,life:registration.state};}
     markCompleted();renderLevels();render();persist();return !saveBlocked;
   }
+  // Geometry and markup are pure: the host supplies all current view state.
   function geometry() {
-    if(geometryCache.has(active))return geometryCache.get(active);
-    const step=44,radius=40;
-    let positions=activeLevel.cells.map(c=>({x:1.5*step*c.q,y:Math.sqrt(3)*step*(c.r+c.q/2)}));
-    const xs=positions.map(p=>p.x),ys=positions.map(p=>p.y);
-    const cx=(Math.min(...xs)+Math.max(...xs))/2,cy=(Math.min(...ys)+Math.max(...ys))/2;
-    positions=positions.map(p=>({x:p.x-cx,y:p.y-cy}));
-    const width=Math.max(isTutorial()?275:370,Math.max(...xs)-Math.min(...xs)+radius*2+24);
-    const height=Math.max(isTutorial()?260:300,Math.max(...ys)-Math.min(...ys)+radius*Math.sqrt(3)+26);
-    const data={positions,radius,width,height};geometryCache.set(active,data);return data;
+    if (!geometryCache.has(active)) geometryCache.set(active, window.HexBoardView.geometry(activeLevel, isTutorial()));
+    return geometryCache.get(active);
   }
-  function boardMarkup(state,matching=[],falling=[]) {
-    const {positions,radius,width,height}=geometry();
-    $('board').setAttribute('viewBox',`${-width/2} ${-height/2} ${width} ${height}`);
-    const poly=r=>Array.from({length:6},(_,i)=>`${(r*Math.cos(i*Math.PI/3)).toFixed(3)},${(r*Math.sin(i*Math.PI/3)).toFixed(3)}`).join(' ');
-    const outer=poly(radius),inner=poly(radius*.78),matched=new Set(matching),dropped=new Set(falling);
-    const highlightRadius=radius*.78-1.2,highlightHeight=highlightRadius*Math.sqrt(3)/2;
-    const highlight=`M${(-.8*highlightRadius).toFixed(3)} ${(-.4*highlightHeight).toFixed(3)} L${(-.5*highlightRadius).toFixed(3)} ${(-highlightHeight).toFixed(3)} L${(.5*highlightRadius).toFixed(3)} ${(-highlightHeight).toFixed(3)} L${(.8*highlightRadius).toFixed(3)} ${(-.4*highlightHeight).toFixed(3)}`;
-    const interactive=!busy&&!guideFeedback()&&engine.status==='playing',guided=guidedStep(),pair=!busy&&guided?guided.pair:[],support=pair.length?guided.matchIndices.filter(i=>!pair.includes(i)):[];
-    let gesture='';
-    if(pair.length){
-      const source=positions[pair[0]],target=positions[pair[1]],dx=target.x-source.x,dy=target.y-source.y,length=Math.hypot(dx,dy),ux=dx/length,uy=dy/length,ox=-uy*17,oy=ux*17;
-      gesture=`<g class="tutorial-gesture" pointer-events="none" aria-hidden="true"><path class="tutorial-guide-line" d="M${source.x+ox+ux*17} ${source.y+oy+uy*17} L${target.x+ox-ux*17} ${target.y+oy-uy*17}" marker-end="url(#tutorial-arrow)"/><g transform="translate(${source.x+12},${source.y+15})"><g class="tutorial-guide-hand" style="--guide-dx:${dx}px;--guide-dy:${dy}px"><path d="M0 0 V-7 C0-10 5-10 5-7 V0 L7-3 C9-5 12-3 11-1 L12-2 C15-3 17-1 16 1 C19 0 21 3 19 6 L16 13 C15 15 13 16 10 16 H7 C5 16 4 15 3 13 L-4 6 C-6 3-3 0-1 2 L2 5"/></g></g></g>`;
-    }
-    return `<defs><filter id="tile-shadow" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="0" dy="2" stdDeviation="1" flood-color="#3d5031" flood-opacity=".06"/></filter><marker id="tutorial-arrow" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0 0 L6 3.5 L0 7 Z"/></marker></defs>${activeLevel.cells.map((c,i)=>{
-      const left=state.layers[i],green=left===0,partial=left>0&&left<(c.layers||1);
-      const classes=['hex-tile',`value-${state.values[i]}`,green?'floor-green':partial?'floor-partial':'floor-untouched',c.layers===2?'layered':'',selected===i?'selected':'',hinted?.includes(i)?'hinted':'',selected!==null&&engine.adjacent(selected,i)?'neighbor':'',matched.has(i)?'matching':'',dropped.has(i)?'falling':'',pair.includes(i)?'tutorial-focus':'',support.includes(i)?'tutorial-support':'',pair[0]===i?'tutorial-source':'',pair[1]===i?'tutorial-target':'',pair.length&&!pair.includes(i)&&!support.includes(i)?'tutorial-muted':''].filter(Boolean).join(' ');
-      const p=positions[i],ground=green?'altı yeşil':`${left} eşleşme gerekiyor`;
-      const pips=c.layers===2&&!green?`<g class="layer-pips" aria-hidden="true">${Array.from({length:left},(_,dot)=>`<circle class="layer-pip" cx="${left===2?(dot?4:-4):0}" cy="31" r="2.5"/>`).join('')}</g>`:'';
-      return `<g transform="translate(${p.x},${p.y})" class="${classes}" data-index="${i}" role="button" tabindex="${i===focusIndex?0:-1}" aria-label="${state.values[i]} sayısı, ${ground}${selected===i?', seçili':''}${hinted?.includes(i)?', ipucu':''}" aria-pressed="${selected===i}" aria-disabled="${!interactive||(pair.length&&!pair.includes(i))}"><polygon class="floor-shape" points="${outer}"/><g class="gem"><polygon class="gem-back" points="${inner}" transform="translate(0 3.5)"/><polygon class="gem-shape" points="${inner}"/><path class="gem-highlight" d="${highlight}"/><text class="hex-number" text-anchor="middle" x="0" y="0">${state.values[i]}</text></g>${green?'<path class="floor-mark" d="m-4 29 3 3 6-7"/>':pips}</g>`;
-    }).join('')}${gesture}<g class="fx-layer" aria-hidden="true"></g><g class="swap-layer" aria-hidden="true" pointer-events="none"></g>`;
+  function boardMarkup(state, matching = [], falling = []) {
+    const layout = geometry(), { width, height } = layout;
+    $('board').setAttribute('viewBox', `${-width/2} ${-height/2} ${width} ${height}`);
+    return window.HexBoardView.markup(activeLevel, state, layout, {
+      matching, falling, busy, feedback: !!guideFeedback(), status: engine.status,
+      guided: guidedStep(), selected, hinted, focusIndex,
+      selectedNeighbors: selected === null ? [] : engine.neighbors[selected]
+    });
   }
   function render(state=null,options={}) {
     clearInvalidSwap();
@@ -1148,107 +1092,15 @@ window.HexSessionStore.boot(function startApp(session) {
     $('score-goal-label').textContent=active===0?'PUANIN':value>=activeLevel.target?'HEDEF TAMAM':'HEDEF PUAN';
     if($('score-goal-check')){$('score-goal-check').hidden=value<activeLevel.target;$('score-goal-check').setAttribute('aria-label',value>=activeLevel.target?'Puan hedefi tamam':'Puan hedefi sürüyor');}
   }
-  function scoreEquation(frame){
-    const values=frame.matched.map(index=>frame.before[index]);
-    const counts=new Map();for(const value of values)counts.set(value,(counts.get(value)||0)+1);
-    const terms=values.length<=5?values.join(' + '):[...counts].map(([value,count])=>count===1?String(value):`${count} × ${value}`).join(' + ');
-    return `${terms} = ${frame.scoreGain}`;
-  }
-  function clearScoreReceipt(){
-    const receipt=$('score-receipt');if(receipt)receipt.textContent='';
-    $('sum')?.closest('.hud-score')?.classList.remove('score-arrival');
-  }
-  function countScore(job,target){
-    const from=job.scoreDisplay;
-    if(job.controller.signal.aborted||presentation!==job)return Promise.resolve();
-    if(typeof requestAnimationFrame!=='function'){job.scoreDisplay=target;renderScore(target);return Promise.resolve();}
-    return new Promise(resolve=>{
-      const start=performance.now();let frame;
-      const done=()=>{cancelAnimationFrame(frame);job.controller.signal.removeEventListener('abort',done);resolve();};
-      const step=now=>{
-        if(job.controller.signal.aborted||presentation!==job){done();return;}
-        const progress=Math.min(1,(now-start)/motion.count),value=Math.round(from+(target-from)*(1-Math.pow(1-progress,3)));
-        job.scoreDisplay=value;renderScore(value);
-        if(progress<1)frame=requestAnimationFrame(step);else done();
-      };
-      job.controller.signal.addEventListener('abort',done,{once:true});frame=requestAnimationFrame(step);
-    });
-  }
-  async function flyScore(job,frame,{wave,gain,destination,extra=0,totalWaves=1}){
-    const signal=job.controller.signal,nodes=new Set();
-    const remove=()=>{for(const node of nodes)node.remove();};
-    const current=()=>!signal.aborted&&presentation===job&&canAnimate();
-    try{
-      if(!current())return;
-      let layer=$('score-effects');
-      if(!layer){layer=document.createElement('div');layer.id='score-effects';layer.setAttribute('aria-hidden','true');document.body.appendChild(layer);}
-      const positions=geometry().positions,view=geometry(),board=$('board'),rect=board.getBoundingClientRect();
-      const center=frame.matched.reduce((p,index)=>({x:p.x+positions[index].x/frame.matched.length,y:p.y+positions[index].y/frame.matched.length}),{x:0,y:0});
-      let matrix;try{matrix=board.getScreenCTM();}catch(_){}
-      const onScreen=position=>{
-        try{const point=board.createSVGPoint();point.x=position.x;point.y=position.y;const mapped=point.matrixTransform(matrix);if(Number.isFinite(mapped.x)&&Number.isFinite(mapped.y))return mapped;}catch(_){}
-        const scale=Math.min(rect.width/view.width,rect.height/view.height);
-        return {x:rect.left+rect.width/2+position.x*scale,y:rect.top+rect.height/2+position.y*scale};
-      };
-      const origin=onScreen(center),viewportWidth=window.innerWidth||390,viewportHeight=Number(appViewport?.height)||window.innerHeight||700;
-      const target=$('sum').getBoundingClientRect(),hud=$('sum').closest('.hud-score'),hudRect=hud?.getBoundingClientRect();
-      const end={x:target.width?target.left+target.width/2:64,y:target.height?target.top+target.height/2:64};
-      const add=(className,point)=>{
-        const node=document.createElement('div');node.className=className;node.style.left=point.x+'px';node.style.top=point.y+'px';node.style.translate='-50% -50%';nodes.add(node);layer.appendChild(node);return node;
-      };
-      const packet=add('score-packet',origin);packet.style.zIndex='2';packet.dataset.gain=String(gain);packet.dataset.wave=String(wave);packet.dataset.destinationScore=String(destination);packet.dataset.phase='collect';
-      const waveCue=rewardForWave(job,wave),headline=rewardHeadline(job,wave);
-      const cue=headline&&(!waveCue||headline.tier>waveCue.tier)?headline:waveCue;
-      if(cue){packet.dataset.rewardTier=String(cue.tier);packet.dataset.rewardReason=cue.reason;packet.dataset.rewardWave=String(cue.wave);}
-      if(headline)packet.dataset.rewardHeadline=headline.reason;
-      const chain=document.createElement('span');chain.className='score-packet-chain';chain.textContent=headline?rewardLabel(headline):wave===1?'':extra?`${wave}–${totalWaves}. ZİNCİR`:`${wave}. ZİNCİR`;
-      const amount=document.createElement('strong');amount.className='score-packet-gain';amount.textContent=`+${gain}`;packet.append(chain,amount);
-      const packetRect=packet.getBoundingClientRect(),peakScale=Math.max(1,(cue?.scalePermille||1300)/1000)*1.08,halfWidth=(packetRect.width||120)*peakScale/2,halfHeight=(packetRect.height||70)*peakScale/2;
-      const maxY=Math.max(halfHeight+12,viewportHeight-halfHeight-12),minY=Math.min(maxY,viewportWidth>viewportHeight?halfHeight+12:(hudRect?.bottom||80)+halfHeight+8);
-      const start={x:Math.max(halfWidth+12,Math.min(viewportWidth-halfWidth-12,origin.x)),y:Math.max(minY,Math.min(maxY,origin.y))};
-      packet.style.left=start.x+'px';packet.style.top=start.y+'px';amount.textContent='';amount.style.opacity='0';
-      signal.addEventListener('abort',remove,{once:true});
-      const sources=frame.matched.map(index=>({index,value:frame.before[index],point:onScreen(positions[index])}));
-      if(extra)sources.push({index:null,value:extra,point:{x:start.x+35,y:Math.min(viewportHeight-24,start.y+42)}});
-      const batches=new Map();
-      for(const [order,source]of sources.entries()){
-        const delay=sources.length>1?Math.round(order/(sources.length-1)*6)*(motion.spread/6):0,at=motion.digit+delay;
-        const digit=add('score-digit'+(source.index===null?' score-digit-extra':''),source.point);digit.style.zIndex='3';digit.dataset.value=String(source.value);
-        if(source.index===null){digit.dataset.source='chains';digit.textContent=`+${source.value}`;}
-        else{digit.dataset.index=String(source.index);digit.textContent=String(source.value);const original=board.querySelector(`[data-index="${source.index}"] .hex-number`);if(original)original.style.opacity='0';}
-        const dx=start.x-source.point.x,dy=start.y-source.point.y;
-        animateElement(job,digit,[{transform:'translate(0px,0px) scale(1)',opacity:1},{transform:`translate(${dx*.25}px,${dy*.25-12}px) scale(1.2)`,opacity:1,offset:.3},{transform:`translate(${dx}px,${dy}px) scale(.5)`,opacity:0}],{duration:motion.digit,delay,easing:'cubic-bezier(.35,.02,.68,1)',fill:'both'});
-        if(!batches.has(at))batches.set(at,[]);batches.get(at).push({value:source.value,digit});
-      }
-      let elapsed=0,collected=0;
-      for(const [at,batch]of batches){
-        await pause(at-elapsed,job);if(!current())return;elapsed=at;
-        for(const source of batch){collected+=source.value;source.digit.remove();}
-        amount.style.opacity='1';amount.textContent=`+${collected}`;packet.dataset.collected=String(collected);
-        animateElement(job,amount,[{transform:'scale(.8)'},{transform:'scale(1.08)',offset:.45},{transform:'scale(1)'}],{duration:motion.collectPulse,easing:'ease-out'});
-      }
-      amount.textContent=`+${gain}`;packet.dataset.phase='pop';
-      animateElement(job,packet,[{transform:'scale(.75)',opacity:1},{transform:`scale(${(cue?.scalePermille||1300)/1000})`,opacity:1,offset:.42},{transform:'scale(1)',opacity:1}],{duration:motion.pop,easing:'cubic-bezier(.2,.9,.35,1)',fill:'forwards'});
-      rewardFeedback(job,cue);
-      for(let n=0;n<(cue?.rings||1);n++){
-        const ring=add('score-burst-ring',start);
-        animateElement(job,ring,[{transform:`scale(${.3+n*.15})`,opacity:.95},{transform:`scale(${1.65+n*.4})`,opacity:0}],{duration:motion.pop+motion.hold,easing:'ease-out',fill:'forwards'});
-      }
-      const sparkCount=cue?.sparks??10;
-      for(let i=0;i<sparkCount;i++){
-        const spark=add('score-burst-spark',start),angle=i*Math.PI*2/sparkCount,distance=42+(i%3)*12+(cue?.tier||0)*4;
-        animateElement(job,spark,[{transform:'translate(0px,0px) scale(1)',opacity:1},{transform:`translate(${Math.cos(angle)*distance}px,${Math.sin(angle)*distance}px) scale(.15) rotate(100deg)`,opacity:0}],{duration:motion.pop+motion.hold,easing:'ease-out',fill:'forwards'});
-      }
-      await pause(motion.pop+motion.hold,job);if(!current())return;
-      packet.dataset.phase='fly';chain.style.opacity='0';const dx=end.x-start.x,dy=end.y-start.y;
-      animateElement(job,packet,[{transform:'translate(0px,0px) scale(1)',opacity:1},{transform:`translate(${dx*.38-14}px,${dy*.6-16}px) scale(.8)`,opacity:1,offset:.6},{transform:`translate(${dx}px,${dy}px) scale(.18)`,opacity:0}],{duration:motion.flight,easing:'cubic-bezier(.3,.1,.5,1)',fill:'forwards'});
-      await pause(motion.flight,job);if(!current())return;
-      packet.dataset.phase='arrived';packet.dataset.arrived='true';hud?.classList.add('score-arrival');rewardMilestones(job,wave,'score');
-      const receipt=$('score-receipt');if(receipt)receipt.textContent=`+${gain}`;
-      animateElement(job,hud,[{transform:'scale(1)'},{transform:'scale(1.065)',offset:.4},{transform:'scale(1)'}],{duration:motion.arrival,easing:'ease-out'});
-      await countScore(job,destination);
-    }finally{signal.removeEventListener('abort',remove);remove();}
-  }
+  // Presentation modules cannot mutate authoritative game/profile state.
+  const scorePresentation=window.HexScorePresentation.create({
+    window,document,motion,getPresentation:()=>presentation,geometry,renderScore,
+    pause,animateElement,canAnimate:()=>canAnimate(),rewardForWave,rewardHeadline,
+    rewardLabel,rewardFeedback,rewardMilestones
+  });
+  function scoreEquation(frame){return scorePresentation.scoreEquation(frame);}
+  function clearScoreReceipt(){return scorePresentation.clearScoreReceipt();}
+  function flyScore(job,frame,options){return scorePresentation.flyScore(job,frame,options);}
   const canAnimate=()=>!document.hidden&&!reduceMotion()&&typeof window.Element.prototype.animate==='function';
   function cancelPresentation() {
     clearInvalidSwap();
@@ -1321,21 +1173,7 @@ window.HexSessionStore.boot(function startApp(session) {
       return visual;
     }catch(error){cleanup();throw error;}
   }
-  function swapPaths(a,b){
-    const {positions,radius,width,height}=geometry(),from=positions[a],to=positions[b];
-    const dx=to.x-from.x,dy=to.y-from.y,length=Math.hypot(dx,dy),nx=-dy/length,ny=dx/length;
-    const lane=Math.min(radius*.95,length*.5),inset=radius*.78+5,paths=[[],[]];
-    for(let step=0;step<=16;step++){
-      const t=step/16,bend=lane*Math.sin(Math.PI*t);
-      const points=[{x:from.x+dx*t+nx*bend,y:from.y+dy*t+ny*bend},{x:to.x-dx*t-nx*bend,y:to.y-dy*t-ny*bend}];
-      // Move the pair inward together near an edge, preserving separation and
-      // keeping the complete gem and number inside the SVG viewport.
-      const shift=(axis,size)=>Math.min(Math.max(0,-size/2+inset-Math.min(...points.map(p=>p[axis]))),size/2-inset-Math.max(...points.map(p=>p[axis])));
-      const sx=shift('x',width),sy=shift('y',height);
-      points.forEach((point,index)=>{const origin=index?to:from;paths[index].push({transform:`translate(${point.x+sx-origin.x}px,${point.y+sy-origin.y}px)`,offset:t});});
-    }
-    return paths;
-  }
+  function swapPaths(a, b) { return window.HexBoardView.swapPaths(geometry(), a, b); }
   function clearInvalidSwap(){
     const job=invalidPresentation;invalidPresentation=null;if(!job)return;
     clearTimeout(job.timer);job.controller.abort();job.swapVisual?.cleanup();
@@ -1529,7 +1367,7 @@ window.HexSessionStore.boot(function startApp(session) {
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=28');
+            job.worker=new Worker('./hint-worker.js?v=29');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:activeLevel,snapshot:engine.snapshot()});
@@ -1562,37 +1400,16 @@ window.HexSessionStore.boot(function startApp(session) {
     const tile=node?.closest?.('[data-index]');
     if(tile&&$('board').contains(tile))return +tile.dataset.index;
     const local=boardPoint(e);if(!local)return null;
-    const {positions,radius}=geometry(),matrix=$('board').getScreenCTM();
-    const scale=Math.min(Math.hypot(matrix.a,matrix.b),Math.hypot(matrix.c,matrix.d));
-    const padding=Math.min(6,3/Math.max(.1,scale));
-    const nearest=positions.map((point,index)=>({index,x:Math.abs(local.x-point.x),y:Math.abs(local.y-point.y),distance:Math.hypot(local.x-point.x,local.y-point.y)})).sort((a,b)=>a.distance-b.distance);
-    const point=nearest[0];if(!point)return null;
-    const inside=pad=>point.x<=radius+pad&&point.y<=radius*Math.sqrt(3)/2+pad&&Math.sqrt(3)*point.x+point.y<=Math.sqrt(3)*radius+pad*2;
-    if(inside(0))return point.index;
-    // A small edge allowance covers narrow gaps, but never guesses their bisector.
-    return inside(padding)&&(!nearest[1]||nearest[1].distance-point.distance>padding)?point.index:null;
+    return window.HexBoardInput.hitTest(local, geometry(), $('board').getScreenCTM());
   }
-  function samplePointer(e){
-    const gesture=pointer;if(!gesture)return;
-    if(outsideViewport(e)){gesture.invalid=true;return;}
-    gesture.maxDistance=Math.max(gesture.maxDistance,Math.hypot(e.clientX-gesture.x,e.clientY-gesture.y));
-    if(!gesture.local)return;
-    const local=boardPoint(e,gesture.inverse);if(!local){gesture.invalid=true;return;}
-    const dx=local.x-gesture.local.x,dy=local.y-gesture.local.y,length=Math.hypot(dx,dy);
-    if(!length||gesture.maxDistance<12)return;
-    let choice=null,alignment=-1;
-    for(const neighbor of gesture.neighbors){
-      const cosine=(dx*neighbor.dx+dy*neighbor.dy)/(length*neighbor.distance);
-      if(cosine<Math.cos(Math.PI/8)||cosine<=alignment)continue;
-      const along=length*cosine,threshold=Math.max(12,Math.min(20,neighbor.screenDistance*.28))*neighbor.distance/neighbor.screenDistance;
-      if(along<threshold)continue;
-      choice=neighbor.index;alignment=cosine;
-    }
-    if(choice===null)return;
-    if(gesture.target===null)gesture.target=choice;
-    else if(gesture.target!==choice)gesture.conflicted=true;
+  function samplePointer(e) {
+    if (!pointer) return;
+    const local = pointer.local ? boardPoint(e, pointer.inverse) : null;
+    window.HexBoardInput.sample(pointer, e, local, { width: window.innerWidth, height: window.innerHeight });
   }
-  function outsideViewport(e){return !Number.isFinite(e.clientX)||!Number.isFinite(e.clientY)||e.clientX<0||e.clientY<0||e.clientX>window.innerWidth||e.clientY>window.innerHeight;}
+  function outsideViewport(e) {
+    return window.HexBoardInput.outsideViewport(e, { width: window.innerWidth, height: window.innerHeight });
+  }
   on($('board'),'pointerdown',e=>{
     if(pointer&&pointer.id!==e.pointerId){stopPointer();return;}
     if(!gameInputAllowed()||guideFeedback()||e.isPrimary===false||(e.button!==0&&e.pointerType!=='touch'))return;
