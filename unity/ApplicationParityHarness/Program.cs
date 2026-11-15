@@ -74,7 +74,7 @@ internal static class Program
             return output;
         }
         var campaign = W.List(input["levels"]).Select(W.Map).ToList(); var tutorials = W.List(input["tutorials"]).Select(W.Map).ToList(); var levels = tutorials.Concat(campaign).ToList(); var catalog = new LevelCatalog(campaign, input["variants"], tutorials); var clock = new Clock { now = W.Integer(input["now"]) }; var store = new MemoryProfileStorage(); foreach (var pair in W.Map(W.Get(input, "storage", W.Obj()))) store.SeedPresent(pair.Key, pair.Value);
-        GameSessionController controller = null; var outputs = W.Arr();
+        GameSessionController controller = null; object lastBoosterQuote = null; var outputs = W.Arr();
         Func<object> snapshot = () => W.Obj("game", controller.GameSave, "energy", controller.EnergySave, "events", controller.EventSave, "view", controller.View(), "rewards", JsonWire(controller.CurrentRewards), "rewardPlan", JsonWire(controller.LastRewardPlan));
         foreach (object raw in W.List(input["commands"]))
         {
@@ -87,8 +87,11 @@ internal static class Program
                 else if (op == "otherWriter") { new GameSessionController(catalog, levels, tutorials.Count, new ProfileRepository(store), W.Map(input["lifeConfig"]), clock, W.UInt32(input["selectionSeed"]), (string)W.Get(input, "providerNamespace", "ui-test"), null, null, W.Has(input, "economyConfig") ? W.Map(input["economyConfig"]) : null); result = true; }
                 else if (op == "enter") result = controller.Enter(W.Int32(c["stage"]), (bool)W.Get(c, "fresh", false), (string)W.Get(c, "reason", "stage_entry"), (bool)W.Get(c, "confirmed", false), W.Has(c, "maximumCharge") ? (int?)W.Int32(c["maximumCharge"]) : null, envelope);
                 else if (op == "swap") { var pair = W.List(c["pair"]); result = controller.Swap(W.Int32(pair[0]), W.Int32(pair[1]), envelope); }
+                else if (op == "previewBooster") { result = controller.PreviewBooster((string)c["itemId"], W.Int32(c["index"]), W.Has(c, "value") ? (int?)W.Int32(c["value"]) : null, (string)c["operationId"], envelope); lastBoosterQuote = W.Clone(W.Get(result, "quote")); }
+                else if (op == "useBooster") result = controller.UseBooster((string)c["itemId"], W.Int32(c["index"]), W.Has(c, "value") ? (int?)W.Int32(c["value"]) : null, (string)c["operationId"], envelope, W.Equal(W.Get(c, "quoteFromPreview"), true) ? lastBoosterQuote : W.Get(c, "quote"));
+                else if (op == "purchaseInventory") result = controller.PurchaseInventory((string)c["itemId"], (string)c["operationId"], envelope);
                 else if (op == "preview") result = controller.Preview(W.Int32(c["stage"]));
-                else if (op == "hint") result = controller.Hint(new HintOptions { maxNodes = 5000, maxDepth = 3, beamWidth = 10 }, null, envelope);
+                else if (op == "hint") result = controller.Hint(new HintOptions { maxNodes = 5000, maxDepth = W.Has(c, "maxDepth") ? W.Number(c["maxDepth"]) : 3, beamWidth = 10 }, null, envelope);
                 else if (op == "ack") result = controller.AcknowledgeTutorial(envelope);
                 else if (op == "restart") result = controller.Restart((bool)W.Get(c, "confirmed", false), W.Has(c, "maximumCharge") ? (int?)W.Int32(c["maximumCharge"]) : null, envelope);
                 else if (op == "retry") result = controller.Retry((string)W.Get(c, "reason", "retry"), envelope);

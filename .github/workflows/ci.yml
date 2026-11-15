@@ -249,3 +249,21 @@ jobs:
           dotnet-version: '8.0.x'
       - name: Compile C# 7.3 and compare permanent progression and wallet ledgers
         run: npm run test:unity-economy
+
+  csharp-command-parity:
+    name: C# assisted gameplay command parity
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.2'
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Compile C# 7.3 and compare every assisted command and intermediate wave
+        run: npm run test:unity-commands

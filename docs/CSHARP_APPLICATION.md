@@ -6,7 +6,15 @@ Durum: Saf C# 7.3 uygulandı ve gerçek .NET 8 harness ile JavaScript kaynaklar�
 
 `GameSessionController`, `Hexrota.Economy.EconomyManager` kullanır. `Game.economy` ledger'ı aynı `hexrota-profile-v2` commit'inde saklanır; TEST cüzdanı ayrıdır. `CanOpen`, `Preview`, `Enter`, `Retry`, `Restart`, `Swap` ve `Hint` tamamlanmış veya sıradaki olmayan kampanya bölümünü reddeder. Öğreticiler ücretsiz yeniden oynanır. Kazanma, gerçek motor durumundan doğrulandıktan sonra 20 Altın/1 yıldız ve L3/L6 stok hediyesi atomik kaydedilir.
 
-Geçerli eski `done` kapalı kalır; replay ile doğrulanmış kazanma arşivi varsa geriye dönük tek ödül verilir. Kanıt yoksa hak incelemede kalır, bölüm yeniden açılmaz. Normal reset kalıcı ledger ve kazanma arşivlerini korur. Ayrıntı: [ECONOMY_CORE_9_5.md](ECONOMY_CORE_9_5.md). A doğrulamasında 915 tam oturum karşılaştırması/28 app.js akışı ve 16 native senaryo (önceki 11 + 5 yeni ilerleme/legacy/final/bozuk ledger sınırı) geçti. Aşama B/C yeni yardım/ikinci şans API'leri bu aşamaya henüz bağlanmamıştır.
+Geçerli eski `done` kapalı kalır; replay ile doğrulanmış kazanma arşivi varsa geriye dönük tek ödül verilir. Kanıt yoksa hak incelemede kalır, bölüm yeniden açılmaz. Normal reset kalıcı ledger ve kazanma arşivlerini korur. Ayrıntı: [ECONOMY_CORE_9_5.md](ECONOMY_CORE_9_5.md). A doğrulamasında 915 tam oturum karşılaştırması/28 app.js akışı ve 16 native senaryo (önceki 11 + 5 yeni ilerleme/legacy/final/bozuk ledger sınırı) geçti. Aşama A karşılaştırma sayıları tarihsel referanstır.
+
+## 9.5 B: yardım komutları ve atomik envanter
+
+`AttemptRepository.RestoreSession` klasik v4 veya gerçek yardımlı komut replay'ini seçer; `ApplicationAttemptCheckpoint` doğru snapshot'ı taşır. Yardım komutu ile ekonomi debiti aynı kimlik/Attempt ID/türü korunmuş Level ID/ürün üzerinden iki yönlü bağlanır. Yardımsız all-swap yeni zarf, metadata'sız eski kayıtta gizlenen ücret, desteklenmeyen kullanım limiti ve bozuk sonuç ilk profil yazımından önce reddedilir.
+
+`PreviewBooster` hiçbir kaynak değiştirmeden gerçek sonuç ve savunmalı teklif kopyası döndürür. `UseBooster` önceden oluşturulmuş, revision/Attempt/tam snapshot/parametrelerle aynı zorunlu teklifi ister; yalnız `turn` veya boş komut guard'ı yeterli değildir. `PurchaseInventory`, 70/90 oyun Altınıyla bir stok alır. Stok, tahta, kazanma ödülü ve can aynı atomik kayıttadır. Yardım sonrası ipucu eski sertifikayı kullanmaz; Reward Director plan/durumu null, gerçek sonuç dalgaları sunum girdisidir. Klasik Director korunur.
+
+B doğrulaması: 1.005 tam JSON karşılaştırması, 30 gerçek app.js akışı, 25 native guard senaryosu; olay karşılaştırması 580/462 aynen korunur. Eksik/eski teklif, sıfır-turn değişim, yalnız revision ilerlemesi, kayıt hatası, bozuk ekonomik eşleme ve sıfır canla mevcut yardım kaydından devam dahildir. İkinci şans host'u C aşamasına aittir; B'de yetkisiz grant_moves yüklenmez.
 
 ## Bağımlılıklar ve kapsam
 

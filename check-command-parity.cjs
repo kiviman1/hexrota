@@ -1,0 +1,16 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),os=require('node:os'),{spawnSync}=require('node:child_process');
+const {buildSuite}=require('./lib/command-scenarios.cjs'),root=__dirname;
+function sdk(){for(const executable of [...new Set([process.env.DOTNET_PATH,'dotnet','/workspace/scratch/dotnet/dotnet',path.join(os.homedir(),'.dotnet','dotnet')].filter(Boolean))]){const found=spawnSync(executable,['--version'],{encoding:'utf8',timeout:15000});if(found.status===0&&/^8\./.test(found.stdout.trim()))return {executable,version:found.stdout.trim()};}throw Error('Command parity requires a real .NET8 SDK; no JavaScript fallback.');}
+function run(executable,args,options={}){const result=spawnSync(executable,args,{cwd:root,encoding:'utf8',maxBuffer:256*1024*1024,timeout:240000,...options});if(result.error)throw result.error;if(result.status!==0)throw Error(result.stdout+'\n'+result.stderr);return result.stdout;}
+let temp;
+try{
+ const suite=buildSuite();assert.deepEqual(suite.fixture,JSON.parse(fs.readFileSync(path.join(root,'fixtures/command-vectors.json'),'utf8')),'frozen shared vectors');const dotnet=sdk();temp=fs.mkdtempSync(path.join(os.tmpdir(),'hexrota-command-parity-'));const bin=path.join(temp,'bin'),env={...process.env,DOTNET_CLI_TELEMETRY_OPTOUT:'1',DOTNET_SKIP_FIRST_TIME_EXPERIENCE:'1',DOTNET_NOLOGO:'1'};
+ run(dotnet.executable,['build',path.join(root,'unity/CommandParityHarness/Hexrota.CommandParity.csproj'),'--configuration','Release','--nologo','--verbosity','quiet','--output',bin,'-p:BaseIntermediateOutputPath='+path.join(temp,'obj')+path.sep,'-p:RestoreConfigFile='+path.join(root,'unity/CommandParityHarness/NuGet.Config')],{env});
+ const actual=run(dotnet.executable,[path.join(bin,'Hexrota.CommandParity.dll')],{env,input:suite.requests.map(value=>JSON.stringify(value)).join('\n')+'\n'}).trim().split(/\r?\n/).filter(Boolean).map(line=>JSON.parse(line));assert.equal(actual.length,suite.expected.length);
+ let waves=0,steps=0;for(let index=0;index<actual.length;index++){
+  assert.deepEqual(actual[index],suite.expected[index],suite.fixture.cases[index].name+' full JSON parity (waves, gravity, refill, RNG, command history and checkpoint)');
+  for(const step of actual[index].steps||[]){steps++;waves+=(step.result.frames||[]).length;}
+ }
+ console.log('Real C# command parity passed: '+JSON.stringify({...suite.fixture.counts,comparisons:actual.length,steps,waves,dotnetSdk:dotnet.version,languageVersion:'7.3',expectedSha256:suite.fixture.expectedSha256}));
+}catch(error){console.error(error.stack||error);process.exitCode=1;}finally{if(temp)fs.rmSync(temp,{recursive:true,force:true});}

@@ -9,6 +9,7 @@ window.HexSessionStore.boot(function startApp(session) {
   if(window.HexAttempts)try{variantCatalog=window.HexAttempts.createCatalog(window.HEX_LEVELS,window.HEX_VARIANTS||null,window.HexMatch);}catch(_){try{variantCatalog=window.HexAttempts.createCatalog(window.HEX_LEVELS,null,window.HexMatch);}catch(_){}}
   const motion={swap:300,digit:240,spread:180,collectPulse:100,pop:200,hold:140,flight:380,count:140,arrival:220,burst:220,ring:300,particle:320,matchPause:430,fall:380,fallStagger:70,columnDelay:16,invalid:280,budget:3300};
   let sourceSaveKey=key;
+  let gameLoadIssue=null;
   let migrated=false,economyManager=null,economyIssue=null,lastEconomyReward=null;
   const pad = n => String(n).padStart(2, '0');
   const icon = name => `<svg class="icon" aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -18,14 +19,16 @@ window.HexSessionStore.boot(function startApp(session) {
   function readSave(name){try{return session?session.read(name):JSON.parse(localStorage.getItem(name));}catch(_){return null;}}
   try {
     let raw=readSave(key);
+    if(raw!==null&&(!raw||typeof raw!=='object'||Array.isArray(raw)))throw new Error('invalid_game_save');
     if(!raw){
       const previousKey=['hexrota-match-v4','hexrota-match-v3','hexrota-match-v2'].find(name=>readSave(name));
       const previous=previousKey?readSave(previousKey):null;
       if(previous){
+        if(typeof previous!=='object'||Array.isArray(previous))throw new Error('invalid_legacy_game_save');
         sourceSaveKey=previousKey;
         const boards={};
         if(previousKey==='hexrota-match-v4'&&previous.boards)for(let i=0;i<campaignCount;i++)if(previous.boards[i])boards[i+tutorialCount]=previous.boards[i];
-        raw={current:Number.isInteger(previous.current)?previous.current+tutorialCount:tutorialCount,done:[...tutorials.map((_,i)=>i),...(Array.isArray(previous.done)?previous.done.filter(i=>Number.isInteger(i)&&i>=0&&i<campaignCount).map(i=>i+tutorialCount):[])],boards,sound:previous.sound};
+        raw={current:Number.isInteger(previous.current)?previous.current+tutorialCount:tutorialCount,done:[...tutorials.map((_,i)=>i),...(Array.isArray(previous.done)?previous.done.filter(i=>Number.isInteger(i)&&i>=0&&i<campaignCount).map(i=>i+tutorialCount):[])],boards,sound:previous.sound,...(Object.prototype.hasOwnProperty.call(previous,'economy')?{economy:previous.economy}:{})};
         migrated=true;
       }
     }
@@ -56,11 +59,12 @@ window.HexSessionStore.boot(function startApp(session) {
       }
 
     }else saved.sound=readSave('hexrota-v1')?.sound===true;
-  }catch(_){}
+  }catch(_){gameLoadIssue='invalid';}
   let active=saved.current,activeLevel=levels[saved.current],activeAttempt=null,attemptPending=true,saveBlocked=false,loadIssue=null,engine, selected=null, hinted=null, busy=false, focusIndex=0;
   let pointer=null, toastTimer, terminalTimer, epoch=0, comboText='',presentation=null,hintJob=null;
   const geometryCache=new Map();
   let screen='home',paused=false,pendingStage=null,pendingRestart=null,invalidPresentation=null;
+  let assistanceMode=null,pendingAssistance=null;
   const modalStack=[];
   const audio=window.HexAudio?new window.HexAudio({sfx:saved.sound,music:saved.preferences.music,volume:saved.preferences.volume}):null;
   const difficultyLabels={very_easy:'Çok kolay',easy:'Kolay',medium:'Orta',medium_hard:'Orta-zor',challenge:'Meydan okuma',relief:'Rahatlama',hard:'Zor',final:'Final'};
@@ -84,10 +88,11 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   function restoreRewards(){
     rewardState=null;completionReward=null;completionRewardPlayed=false;
-    if(!rewardReady())return;
+    if(!rewardReady()||engine?.assisted)return;
     try{rewardState=window.HexRewardAdapter.restore(activeLevel,engine.snapshot(),window.HEX_REWARD_RULES,window.HexMatch,window.HexRewards,activeAttempt?.attemptId||String(activeLevel.id)).state;}catch(_){}
   }
   function planRewards(before,result){
+    if(engine?.assisted){rewardState=null;completionReward=null;completionRewardPlayed=false;return null;}
     if(!rewardReady())return null;
     try{
       if(!rewardState)rewardState=window.HexRewardAdapter.restore(activeLevel,before,window.HEX_REWARD_RULES,window.HexMatch,window.HexRewards,activeAttempt?.attemptId||String(activeLevel.id)).state;
@@ -130,6 +135,7 @@ window.HexSessionStore.boot(function startApp(session) {
   const canOpen=i=>Number.isInteger(i)&&i>=0&&i<levels.length&&!economyIssue&&!!economyManager?.canEnter(saved.economy,levels[i].id);
   const campaignCleared=i=>i>=tutorialCount&&!!economyView()?.cleared.includes(levels[i]?.id);
   function initializeEconomy(){
+    if(gameLoadIssue)throw new Error('invalid_game_save');
     if(!window.HexEconomy||!window.HEX_ECONOMY_CONFIG)throw new Error('economy_unavailable');
     economyManager=window.HexEconomy.createManager(window.HEX_ECONOMY_CONFIG);
     if(Object.prototype.hasOwnProperty.call(saved,'economy'))economyManager.restore(saved.economy);
@@ -142,6 +148,7 @@ window.HexSessionStore.boot(function startApp(session) {
     const migratedEconomy=economyManager.migrate(saved.economy??null,{done:saved.done,verifiedLevelIds,sourceKey:sourceSaveKey});
     saved.economy=migratedEconomy.state;
     syncCompletedCampaign();
+    validateAssistedCheckpoints();
     if(!canOpen(saved.current))saved.current=nextCampaignIndex()??0;
     active=saved.current;activeLevel=levels[active];
   }
@@ -161,12 +168,113 @@ window.HexSessionStore.boot(function startApp(session) {
   function renderEconomy(){
     const view=economyView();if(!view)return;
     for(const [selector,value]of [['[data-game-gold]',view.gold],['[data-game-stars]',view.stars],['[data-green-brush]',view.inventory.greenBrush],['[data-color-key]',view.inventory.colorKey]])document.querySelectorAll(selector).forEach(node=>{node.textContent=String(value);});
+    if($('inventory-dialog')?.open)renderInventory();
     const pending=view.pendingReviewLevelIds||[];
     $('progression-notice').hidden=!pending.length;
     $('progression-notice').textContent=pending.length?'Eski tamamlamaların korundu. Bazı eski sonuçların kanıtı bulunamadığı için ödülleri inceleme bekliyor. Bu bölümler yeniden açılmaz.':'';
     $('garden-progress-title').textContent=view.campaignComplete?'On başarı, kalıcı bir bahçe.':`${view.stars} yıldızlık bir yolculuk.`;
     $('garden-progress-copy').textContent=view.campaignComplete?'Bütün ana bölümleri tamamladın. Kazandığın yıldızlar ve ödüller burada korunuyor.':'Her ana bölümü ilk kez tamamladığında 1 yıldız kazanırsın. Tamamlanan bölümler tekrar açılmaz.';
   }
+  function assistanceLimits(){
+    return {greenBrush:window.HEX_ECONOMY_CONFIG.inventory.greenBrush.maxPerAttempt,colorKey:window.HEX_ECONOMY_CONFIG.inventory.colorKey.maxPerAttempt,rescue:window.HEX_ECONOMY_CONFIG.rescue.maxPerAttempt};
+  }
+  function validateAssistanceBindings(game,metadata){
+    const commands=Array.isArray(game.commands)?game.commands:[],assistance=commands.filter(command=>command.type!=='swap');
+    if(!saved.economy){if(assistance.length)throw new Error('Assisted checkpoint has no economy');return;}
+    const state=economyManager.restore(saved.economy),bound=new Set();
+    for(const command of assistance){
+      const itemId=command.type==='green_brush'?'greenBrush':command.type==='color_key'?'colorKey':null;
+      if(!itemId)throw new Error('Unsupported assisted command');
+      const row=state.transactions[command.id];
+      if(!row||row.kind!=='use'||row.itemId!==itemId||row.attemptId!==metadata.attemptId||row.levelId!==metadata.levelId)throw new Error('Assisted command has no matching inventory debit');
+      bound.add(command.id);
+    }
+    for(const [id,row]of Object.entries(state.transactions))if(row.attemptId===metadata.attemptId&&['use','rescue'].includes(row.kind)&&!bound.has(id))throw new Error('Present checkpoint omits a paid command');
+  }
+  function validateAssistedCheckpoints(){
+    const transactions=saved.economy.transactions;
+    for(let index=tutorialCount;index<levels.length;index++){
+      const snapshot=saved.boards[index];if(!snapshot)continue;
+      const attemptIds=[saved.attempts[index]?.attemptId,`legacy-${levels[index].id}`];
+      const charged=Object.values(transactions).some(row=>attemptIds.includes(row.attemptId)&&['use','rescue'].includes(row.kind));
+      if(snapshot.rulesVersion==='assisted-v1'||charged)restoredStage(index);
+    }
+  }
+  function inventoryUsage(itemId){return validCounter(engine?.usage?.[itemId]);}
+  function inventoryPlayable(){return screen==='game'&&canOpen(active)&&active>=tutorialCount&&!attemptPending&&!saveBlocked&&!lifeWriteFailed&&!lifeDiscarded()&&!paused&&!busy&&engine?.status==='playing';}
+  function renderInventory(){
+    const view=economyView();if(!view)return;
+    for(const [itemId,suffix]of [['greenBrush','green-brush'],['colorKey','color-key']]){
+      const config=window.HEX_ECONOMY_CONFIG.inventory[itemId],unlocked=view.unlocks[itemId],used=inventoryUsage(itemId)>=config.maxPerAttempt;
+      $('inventory-'+suffix+'-stock').textContent=String(view.inventory[itemId]);
+      $('inventory-'+suffix+'-note').textContent=!unlocked?`${config.unlockAfterLevelId}. bölümden sonra açılır.`:used?'Bu denemede kullandın. Yeni denemede yeniden kullanabilirsin.':`Bu denemede en fazla ${config.maxPerAttempt} kez kullanabilirsin.`;
+      $('use-'+suffix).disabled=!inventoryPlayable()||!unlocked||used||view.inventory[itemId]===0;
+      $('buy-'+suffix).disabled=!inventoryPlayable()||!unlocked||view.gold<config.costGold;
+      $('buy-'+suffix).textContent=`${config.costGold} Altınla +1 al`;
+    }
+  }
+  function cancelAssistance(){assistanceMode=null;pendingAssistance=null;if($('assistance-target-prompt'))$('assistance-target-prompt').hidden=true;if($('assistance-confirm'))$('assistance-confirm').disabled=true;}
+  function beginAssistance(itemId){
+    if(!inventoryPlayable())return;
+    const view=economyView(),config=window.HEX_ECONOMY_CONFIG.inventory[itemId];
+    if(!view.unlocks[itemId]||view.inventory[itemId]<1||inventoryUsage(itemId)>=config.maxPerAttempt)return;
+    closeModal($('inventory-dialog'));cancelHint();stopPointer();selected=null;hinted=null;
+    assistanceMode={itemId,attemptId:activeAttempt.attemptId,epoch};pendingAssistance=null;
+    $('assistance-target-copy').textContent=itemId==='greenBrush'?'Yeşertmek istediğin zemine dokun.':'Sayısını değiştirmek istediğin taşa dokun.';
+    $('assistance-target-prompt').hidden=false;render();
+  }
+  function commandGame(){return engine.assisted?engine.clone():new window.HexAssistedGame(activeLevel,{attemptId:activeAttempt.attemptId,limits:assistanceLimits()},engine.snapshot());}
+  function chooseAssistanceTarget(index){
+    const mode=assistanceMode;
+    if(!mode||!inventoryPlayable()||mode.attemptId!==activeAttempt.attemptId||mode.epoch!==epoch||!Number.isInteger(index)||index<0||index>=engine.total){cancelAssistance();return;}
+    if(mode.itemId==='greenBrush'&&engine.layers[index]===0){toast('Burası zaten yeşil. Katı kalan bir zemin seç.');return;}
+    const model=commandGame(),commandId=`assist:${activeAttempt.attemptId}:${model.commands.length+1}:${mode.itemId}`;
+    pendingAssistance={itemId:mode.itemId,index,commandId,game:engine,attemptId:activeAttempt.attemptId,epoch,revision:session.revision,snapshot:JSON.stringify(engine.snapshot()),model,preview:null,command:null};
+    assistanceMode=null;$('assistance-target-prompt').hidden=true;
+    const key=mode.itemId==='colorKey';$('assistance-title').textContent=key?'Renk Anahtarı':'Yeşil Fırça';
+    $('assistance-description').textContent=key?`${engine.values[index]} yazan taşı seçtin. İzin verilen başka bir sayıyı sen seç. Hamle harcamazsın.`:`Bu zemindeki ${engine.layers[index]} katı ${engine.layers[index]-1} kata indir. Taşın sayısı değişmez; hamle harcamaz, puan eklemez.`;
+    $('assistance-value-label').hidden=!key;
+    $('assistance-value').innerHTML='<option value="">Sayı seç</option>'+activeLevel.palette.filter(value=>value!==engine.values[index]).map(value=>`<option value="${value}">${value}</option>`).join('');
+    $('assistance-value').value='';updateAssistancePreview();openModal('assistance-dialog');
+  }
+  function updateAssistancePreview(){
+    const pending=pendingAssistance;if(!pending)return;
+    const value=$('assistance-value').value;
+    if(pending.itemId==='colorKey'&&value===''){$('assistance-preview').textContent='Önce yeni sayıyı seç. Oluşacak puanı kullanmadan önce göreceksin.';$('assistance-confirm').disabled=true;pending.preview=null;return;}
+    const command=pending.itemId==='greenBrush'?{id:pending.commandId,type:'green_brush',index:pending.index}:{id:pending.commandId,type:'color_key',index:pending.index,value:Number(value)};
+    const preview=pending.model.preview(command);pending.command=command;pending.preview=preview;
+    $('assistance-confirm').disabled=!preview.result.ok;
+    $('assistance-confirm').textContent=`1 ${pending.itemId==='greenBrush'?'Yeşil Fırça':'Renk Anahtarı'} kullan`;
+    $('assistance-preview').innerHTML=preview.result.ok?`<strong>+${preview.result.scoreGain} puan · ${preview.result.layersRemoved} zemin katı</strong><span>0 hamle · Çantandan 1 adet düşer.</span>${pending.itemId==='colorKey'&&!preview.result.frames.length?'<p>Şu an eşleşme oluşmuyor. Taşı sonraki hamlen için değiştiriyorsun.</p>':''}${preview.result.reshuffled?'<p>Bu değişimden sonra hamle kalmadığı için taşlar karıştırılacak. Zemin korunur.</p>':''}${preview.status==='won'?'<p>Bu işlemle bölüm tamamlanır.</p>':''}`:'Bu hücrede kullanılamıyor. Başka bir hedef seç.';
+  }
+  async function confirmAssistance(){
+    const pending=pendingAssistance;
+    if(!pending?.preview?.result.ok)return;
+    if(!inventoryPlayable()||pending.game!==engine||pending.attemptId!==activeAttempt.attemptId||pending.epoch!==epoch||pending.revision!==session.revision||pending.snapshot!==JSON.stringify(engine.snapshot())||(pending.itemId==='colorKey'&&String(pending.command?.value)!==$('assistance-value').value)){closeModal($('assistance-dialog'));cancelAssistance();toast('Tahtan veya kaydın değişti. Sonucu yeniden kontrol edip kullan.');return;}
+    const debit=economyManager.consume(saved.economy,{operationId:pending.commandId,itemId:pending.itemId,attemptId:pending.attemptId,levelId:activeLevel.id});
+    if(!debit.applied){closeModal($('assistance-dialog'));cancelAssistance();toast('Bu güçlendirici şu anda kullanılamıyor. Çantan korundu.');return;}
+    const before={values:engine.values.slice(),layers:engine.layers.slice(),score:engine.score,movesLeft:engine.movesLeft};
+    const next=pending.model.clone(),result=next.apply(pending.command);if(!result.ok||result.duplicate)return;
+    closeModal($('assistance-dialog'));cancelAssistance();clearScoreReceipt();cancelHint();clearInvalidSwap();stopPointer();engine=next;saved.economy=debit.state;
+    rewardState=null;completionReward=null;completionRewardPlayed=false;
+    const stats=activeStats();if(stats)stats.cascades=validCounter(stats.cascades)+Math.max(0,result.frames.length-1);
+    const job={token:++epoch,result,controller:new AbortController(),animations:[],watchdog:null,scoreDisplay:before.score,scoreTasks:[],rewardPlan:null,rewardCueIds:new Set(),rewardMilestoneIds:new Set(),rewardNodes:new Set(),rewardHeadlineUsed:false,assistanceItem:pending.itemId,assistanceIndex:pending.index};
+    presentation=job;busy=true;selected=null;hinted=null;comboText='';syncPlaytestActivity();
+    try{
+      markCompleted(true);persist();settleActiveLife();emitEvent('booster_used',{boosterId:pending.itemId});terminalEvent();
+      if(!commitSession())return;
+      job.committed=true;renderLevels();updateMenus();
+      job.watchdog=setTimeout(()=>finishPresentation(job),motion.budget);await presentSwap(job,null,null,before);
+    }catch(_){if(!job.committed){sessionDirty=false;restoreDurable();toast('Güçlendirici kaydedilemedi. Tahtan ve çantan korundu.');}}
+    finally{finishPresentation(job);}
+  }
+  function purchaseInventory(itemId){
+    if(!inventoryPlayable())return;
+    const operationId=`purchase:${itemId}:${Object.keys(saved.economy.transactions).length+1}`;
+    const result=economyManager.purchase(saved.economy,{operationId,itemId});if(!result.applied){renderInventory();toast(result.reason==='insufficient_gold'?'Altının yetmiyor.':'Bu ürün henüz açılamıyor.');return;}
+    saved.economy=result.state;persist();if(!commitSession())return;renderEconomy();renderInventory();toast('Çantana 1 adet eklendi.');
+  }
+
   const isTutorial=()=>active<tutorialCount;
   const stageLabel=i=>i<tutorialCount?`ÖĞREN ${pad(i+1)}`:`BÖLÜM ${pad(i-tutorialCount+1)}`;
   const guideFeedback=()=>{
@@ -191,7 +299,20 @@ window.HexSessionStore.boot(function startApp(session) {
   function restoredStage(index){
     const snapshot=saved.boards[index];if(!snapshot)return null;
     const base=levels[index];
-    if(index>=tutorialCount&&variantCatalog)return variantCatalog.restore(base.id,snapshot,saved.attempts[index]);
+    if(index>=tutorialCount&&variantCatalog){
+      if(snapshot.rulesVersion==='assisted-v1'){
+        if(!window.HexAssistedGame)throw new Error('Assisted game module is unavailable');
+        const metadata=saved.attempts[index];
+        if(!metadata||metadata.levelId!==base.id)throw new Error('Saved assisted identity cannot be verified');
+        const resolved=variantCatalog.resolveLevel(base.id,metadata.variantId,metadata.levelDataVersion);
+        const checked=variantCatalog.restore(base.id,new window.HexMatch(resolved).snapshot(),metadata);
+        const game=new window.HexAssistedGame(checked.level,{attemptId:checked.metadata.attemptId,limits:assistanceLimits()},snapshot);
+        if(!game.assisted)throw new Error('Unassisted command envelope is not a campaign checkpoint');
+        validateAssistanceBindings(game,checked.metadata);
+        return {...checked,game,snapshot};
+      }
+      const restored=variantCatalog.restore(base.id,snapshot,saved.attempts[index]);validateAssistanceBindings(restored.game,restored.metadata);return restored;
+    }
     let metadata;
     if(index>=tutorialCount){
       metadata={attemptVersion:1,levelId:base.id,variantId:'legacy-original',levelDataVersion:'original-v1',attemptId:`legacy-${base.id}`,attemptSerial:0};
@@ -201,20 +322,23 @@ window.HexSessionStore.boot(function startApp(session) {
       const provided=saved.attempts[index],serial=validCounter(provided?.attemptSerial),expected=tutorialMetadata(index,serial);
       metadata=provided&&Object.keys(expected).every(field=>provided[field]===expected[field])?expected:tutorialMetadata(index);
     }
-    return {metadata,level:base,game:new window.HexMatch(base,snapshot),snapshot,legacy:true};
+    if(snapshot.rulesVersion==='assisted-v1')throw new Error('Assisted checkpoints require the verified campaign catalog');
+    const game=new window.HexMatch(base,snapshot);if(index>=tutorialCount)validateAssistanceBindings(game,metadata);
+    return {metadata,level:base,game,snapshot,legacy:true};
   }
   function statsFor(index,entry,fresh=false){
     if(!entry?.metadata)return null;
     const previous=saved.attemptStats[index],same=!fresh&&previous?.attemptId===entry.metadata.attemptId,id=String(entry.level.id);
     saved.variantSelection.counts[id]=Math.max(1,validCounter(saved.variantSelection.counts[id]),same?validCounter(previous.attemptNumber):0);
     if(same){
-      previous.attemptNumber=Math.max(1,validCounter(previous.attemptNumber));previous.started=previous.started===true||entry.game.turn>0;
+      previous.attemptNumber=Math.max(1,validCounter(previous.attemptNumber));previous.started=previous.started===true||entry.game.turn>0||entry.game.assisted===true;
       previous.terminalEvent=['level_completed','level_failed','level_abandoned'].includes(previous.terminalEvent)?previous.terminalEvent:null;
       previous.hintsUsed=validCounter(previous.hintsUsed);previous.cascades=validCounter(previous.cascades);return previous;
     }
-    let cascades=0;const replay=new window.HexMatch(entry.level);
-    for(const pair of entry.game.history){const result=replay.swap(...pair);if(result.ok)cascades+=Math.max(0,result.frames.length-1);}
-    const stats={attemptId:entry.metadata.attemptId,attemptNumber:saved.variantSelection.counts[String(entry.level.id)]||1,started:!fresh&&entry.game.turn>0,terminalEvent:!fresh&&entry.game.status!=='playing'?(entry.game.status==='won'?'level_completed':'level_failed'):null,hintsUsed:0,cascades};
+    let cascades=0;
+    if(entry.game.assisted){const replay=new window.HexAssistedGame(entry.level,{attemptId:entry.metadata.attemptId,limits:assistanceLimits()});for(const command of entry.game.commands){const result=replay.apply(command);if(result.ok)cascades+=Math.max(0,result.frames.length-1);}}
+    else{const replay=new window.HexMatch(entry.level);for(const pair of entry.game.history){const result=replay.swap(...pair);if(result.ok)cascades+=Math.max(0,result.frames.length-1);}}
+    const stats={attemptId:entry.metadata.attemptId,attemptNumber:saved.variantSelection.counts[String(entry.level.id)]||1,started:!fresh&&(entry.game.turn>0||entry.game.assisted===true),terminalEvent:!fresh&&entry.game.status!=='playing'?(entry.game.status==='won'?'level_completed':'level_failed'):null,hintsUsed:0,cascades};
     saved.attemptStats[index]=stats;return stats;
   }
   function activeStats(){return activeAttempt?saved.attemptStats[active]:null;}
@@ -268,7 +392,7 @@ window.HexSessionStore.boot(function startApp(session) {
     if(economyManager)try{if(Object.prototype.hasOwnProperty.call(saved,'economy'))saved.economy=economyManager.restore(saved.economy);else initializeEconomy();syncCompletedCampaign();}catch(_){economyIssue='invalid';}lifeFeature=window.HexLifePrototype.validate(durable.energy,lifeManager);active=saved.current;
     try{if(!canOpen(active)){active=nextCampaignIndex()??0;saved.current=active;}
       const entry=restoredStage(active);if(entry){engine=entry.game;activeLevel=entry.level;activeAttempt=entry.metadata;attemptPending=false;saveBlocked=false;}else{activeLevel=levels[active];engine=new window.HexMatch(activeLevel);activeAttempt=null;attemptPending=true;saveBlocked=false;loadIssue=null;}}catch(_){saveBlocked=true;}
-    sessionRestoring=true;try{cancelPresentation();cancelHint();selected=null;pendingStage=null;pendingRestart=null;pendingResetLifeCost=null;if(pendingLifeProvider&&!lifeFeature.provider.transactions[pendingLifeProvider]&&!pendingLifeReceipt){pendingLifeProvider=null;if($('life-provider-dialog')?.open)closeModal($('life-provider-dialog'));}if(attemptPending)showScreen('home',{replace:true});restoreRewards();renderLevels();render();renderLives();}catch(_){}finally{sessionRestoring=false;}
+    sessionRestoring=true;try{cancelAssistance();cancelPresentation();cancelHint();selected=null;pendingStage=null;pendingRestart=null;pendingResetLifeCost=null;if(pendingLifeProvider&&!lifeFeature.provider.transactions[pendingLifeProvider]&&!pendingLifeReceipt){pendingLifeProvider=null;if($('life-provider-dialog')?.open)closeModal($('life-provider-dialog'));}if(attemptPending)showScreen('home',{replace:true});restoreRewards();renderLevels();render();renderLives();}catch(_){}finally{sessionRestoring=false;}
   }
   function commitSession(){
     sessionDirty=false;if(sessionRestoring||!lifeFeature)return true;
@@ -527,7 +651,7 @@ window.HexSessionStore.boot(function startApp(session) {
   function syncAudio(){document.body.classList.toggle('reduce-motion',reduceMotion());audio?.configure({sfx:saved.sound,music:saved.preferences.music,volume:saved.preferences.volume});audio?.setActive(!document.hidden&&!paused);}
   function unlockAudio(){syncAudio();audio?.unlock().catch(()=>{});}
   function openModal(id){
-    stopPointer();cancelHint();clearInvalidSwap();
+    stopPointer();cancelHint();clearInvalidSwap();if(id!=='assistance-dialog')cancelAssistance();
     if(presentation)finishPresentation(presentation);
     clearTimeout(terminalTimer);
     const dialog=$(id);if(!dialog.open){dialog.showModal();modalStack.push(id);}
@@ -545,6 +669,7 @@ window.HexSessionStore.boot(function startApp(session) {
       if(dialog.id==='pause-dialog'){paused=false;syncAudio();}
       if(dialog.id==='pregame-dialog')pendingStage=null;
       if(dialog.id==='restart-dialog')pendingRestart=null;
+      if(dialog.id==='assistance-dialog')pendingAssistance=null;
       if(!topDialog())document.body.classList.remove('modal-open');syncPlaytestActivity();
     });
     on(dialog,'click',e=>{
@@ -576,9 +701,11 @@ window.HexSessionStore.boot(function startApp(session) {
   function nextStage(){
     const campaignIndex=nextCampaignIndex();
     if(campaignIndex===null||campaignIndex<0)return null;
+    const activeCheckpoint=validCheckpoint(saved.current);
+    if(canOpen(saved.current)&&activeCheckpoint?.status==='playing'&&(activeCheckpoint.turn>0||activeCheckpoint.assisted)&&!lifeDiscarded(saved.current))return {index:saved.current,resume:true};
     const tutorialIndex=tutorials.findIndex((_,index)=>!saved.done.includes(index));
     const index=tutorialIndex>=0?tutorialIndex:campaignIndex,current=validCheckpoint(index);
-    return {index,resume:current?.status==='playing'&&current.turn>0&&!lifeDiscarded(index)};
+    return {index,resume:current?.status==='playing'&&(current.turn>0||current.assisted)&&!lifeDiscarded(index)};
   }
   function updateMenus(){
     if(!$('home-play'))return;
@@ -600,14 +727,14 @@ window.HexSessionStore.boot(function startApp(session) {
     $('record-score').textContent=records.length?Math.max(...records.map(([,r])=>r.score)).toLocaleString('tr-TR'):'—';
     $('record-bestmoves').textContent=records.length?Math.max(...records.map(([,r])=>r.movesLeft)):'—';
     $('records-list').innerHTML=levels.slice(tutorialCount).map((level,offset)=>{
-      const index=offset+tutorialCount,record=saved.records[index];
-      return `<tr><th scope="row"><span class="record-stage">${pad(offset+1)}</span> ${level.name}${saved.done.includes(index)?'<span class="record-complete" aria-label="Tamamlandı">✓</span>':''}</th><td>${record?record.score.toLocaleString('tr-TR'):'—'}</td><td>${record?record.movesLeft:'—'}</td></tr>`;
+      const index=offset+tutorialCount,record=saved.records[index],assisted=Object.values(saved.economy?.transactions||{}).some(row=>row?.kind==='clear'&&row.levelId===level.id&&row.assisted);
+      return `<tr><th scope="row"><span class="record-stage">${pad(offset+1)}</span> ${level.name}${assisted?'<span class="assisted-record-label">Yardımla tamamlandı</span>':''}${saved.done.includes(index)?'<span class="record-complete" aria-label="Tamamlandı">✓</span>':''}</th><td>${record?record.score.toLocaleString('tr-TR'):'—'}</td><td>${record?record.movesLeft:'—'}</td></tr>`;
     }).join('');
     const achievements=[['İlk eşleşme','İlk öğreticiyi tamamla.',!!saved.records[0]],['İki hedef, bir plan','İkinci öğreticiyi tamamla.',!!saved.records[1]],['Yolun yarısı','Beş ana bölümü tamamla.',completed>=5],['Yeşil yolculuk','On ana bölümü tamamla.',completed===campaignCount]];
     $('achievement-list').innerHTML=achievements.map(([name,text,earned])=>`<div class="achievement${earned?' earned':''}"><span class="achievement-mark" aria-hidden="true">${earned?'✓':'◇'}</span><div><strong>${name}</strong><p>${text}</p></div><span class="achievement-state">${earned?'Tamamlandı':'Sırada'}</span></div>`).join('');
   }
   function showScreen(next,{replace=false,historyChange=true}={}){
-    const previousScreen=screen;
+    const previousScreen=screen;cancelAssistance();
     if(!['home','journey','game','records','garden'].includes(next))next='home';
     if(presentation)finishPresentation(presentation);
     if(next!=='game')clearScoreReceipt();
@@ -652,7 +779,7 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   function requestStage(index){
     if(!Number.isInteger(index)||index<0||index>=levels.length||!canOpen(index))return;
-    const level=levels[index],checkpoint=validCheckpoint(index),resume=checkpoint?.status==='playing'&&checkpoint.turn>0&&!lifeDiscarded(index),blocked=!!saved.boards[index]&&!checkpoint;
+    const level=levels[index],checkpoint=validCheckpoint(index),resume=checkpoint?.status==='playing'&&(checkpoint.turn>0||checkpoint.assisted)&&!lifeDiscarded(index),blocked=!!saved.boards[index]&&!checkpoint;
     pendingStage=index;
     $('pregame-dialog').dataset.learning=index===0?'first':index<tutorialCount?'goals':'';
     if($('pregame-lesson'))$('pregame-lesson').hidden=index!==0;
@@ -693,7 +820,7 @@ window.HexSessionStore.boot(function startApp(session) {
     if(engine.status!=='won')return;
     if(active>=tutorialCount){
       if(played){
-        const result=economyManager.complete(saved.economy,{levelId:activeLevel.id,attemptId:activeAttempt?.attemptId,status:'won',verified:true,assisted:false,tutorial:false});
+        const result=economyManager.complete(saved.economy,{levelId:activeLevel.id,attemptId:activeAttempt?.attemptId,status:'won',verified:true,assisted:engine.assisted===true,tutorial:false});
         saved.economy=result.state;
         if(result.applied)lastEconomyReward={...result.reward,attemptId:activeAttempt.attemptId};
       }
@@ -703,7 +830,7 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   function loadLevel(index,fresh=false,{activate=false}={}) {
     if(activate&&!campaignEntryAllowed(index))return false;
-    clearScoreReceipt();
+    clearScoreReceipt();cancelAssistance();
     cancelPresentation();cancelHint();epoch++;clearTimeout(terminalTimer);stopPointer();busy=false;
     active=canOpen(index)?index:nextCampaignIndex()??0;lastEconomyReward=null;activeLevel=levels[active];activeAttempt=null;attemptPending=true;saveBlocked=false;loadIssue=null;
     if(fresh)saved.guideAcks=saved.guideAcks.filter(id=>!id.startsWith(`${active}:`));
@@ -785,6 +912,7 @@ window.HexSessionStore.boot(function startApp(session) {
     $('hint').disabled=busy||!!hintJob||!!guideFeedback()||engine.status!=='playing';
     $('hint').querySelector('span').textContent=hintJob?'Aranıyor…':'İpucu';
     $('reset').disabled=false;
+    $('open-inventory').hidden=isTutorial();$('open-inventory').disabled=busy||engine.status!=='playing'||attemptPending||saveBlocked;
     $('skip-animation').hidden=true; // Permanent animation-skip control is intentionally hidden; board remains full-size.
     $('continue').hidden=busy||engine.status==='playing';
     $('continue').textContent=engine.status==='lost'?'Yeniden dene →':'Devam et →';
@@ -941,7 +1069,7 @@ window.HexSessionStore.boot(function startApp(session) {
     if(!job||presentation!==job||job.token!==epoch)return;
     cancelPresentation();
     const result=job.result;
-    comboText=`+${result.scoreGain} puan${result.frames.length>1?` · ${result.frames.length} zincir`:''}`;
+    comboText=job.assistanceItem==='greenBrush'?'Zeminden bir kat azaldı.':job.assistanceItem&&result.scoreGain===0?'Taşın sayısı değişti.':`+${result.scoreGain} puan${result.frames.length>1?` · ${result.frames.length} zincir`:''}`;
     const deferred=job.rewardPlan?.headline;if(deferred&&!deferred.completion&&!job.rewardHeadlineUsed){comboText=rewardLabel(deferred)+' · '+comboText;job.rewardHeadlineUsed=true;}
     if(result.reshuffled)comboText+=' · Karıştırıldı';
     try{renderLevels();render();persist();}
@@ -949,7 +1077,7 @@ window.HexSessionStore.boot(function startApp(session) {
     finally{
       busy=false;$('board').setAttribute('aria-busy','false');$('board-stage').classList.remove('busy');$('reset').disabled=false;$('skip-animation').hidden=true;
     }
-    const receipt=$('score-receipt');if(receipt)receipt.textContent=`+${result.scoreGain}`;
+    const receipt=$('score-receipt');if(receipt)receipt.textContent=result.scoreGain?`+${result.scoreGain}`:'';
     if(result.reshuffled)toast('Eşleşme kalmadı; sayılar karıştırıldı. Zemin ve hamlelerin korundu.');
     if(screen==='game'&&!paused&&engine.status!=='playing'&&!document.hidden){
       terminalTimer=setTimeout(()=>{if(job.token===epoch&&screen==='game'&&!paused&&!document.hidden&&!topDialog())showResult();},80);
@@ -1058,12 +1186,18 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   async function presentSwap(job,a,b,before){
     if(!canAnimate())return;
+    if(job.assistanceItem){
+      render({...before,values:job.result.frames[0]?.before||engine.values},{message:'Güçlendiricin uygulanıyor.'});
+      const stone=$('board').querySelector(`[data-index="${job.assistanceIndex}"] ${job.assistanceItem==='greenBrush'?'.floor-shape':'.gem'}`);
+      animateElement(job,stone,[{opacity:.7},{opacity:1}],{duration:180,easing:'ease-out'});await pause(180,job);
+    }else{
     render(before,{message:'Taşlar yer değiştiriyor…'});
     const visual=swapVisual(job,a,b),paths=swapPaths(a,b);
     try{
       visual.stones.forEach((node,index)=>animateElement(job,node,paths[index],{duration:motion.swap,easing:'cubic-bezier(.2,.7,.3,1)',fill:'forwards'}));
       await pause(motion.swap+5,job);
     }finally{visual.cleanup();}
+    }
     const frames=job.result.frames;
     // Resolve every wave in the engine; animate the first two so long chains
     // never delay input indefinitely. The final authoritative state follows.
@@ -1097,6 +1231,7 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   async function performSwap(a,b) {
     if(!gameInputAllowed()||guideFeedback())return;
+    if(assistanceMode){chooseAssistanceTarget(a);return;}
     if(busy){finishPresentation(presentation);return;}
     if(engine.status!=='playing')return;
     const guide=guidedStep();
@@ -1105,7 +1240,7 @@ window.HexSessionStore.boot(function startApp(session) {
     const checkpoint=engine.snapshot(),before={values:engine.values.slice(),layers:engine.layers.slice(),score:engine.score,movesLeft:engine.movesLeft};
     let result;
     try{result=engine.swap(a,b);}catch(_){
-      try{engine=new window.HexMatch(activeLevel,checkpoint);}catch(_){engine=new window.HexMatch(activeLevel);}
+      try{engine=checkpoint.rulesVersion==='assisted-v1'?new window.HexAssistedGame(activeLevel,{attemptId:activeAttempt.attemptId,limits:assistanceLimits()},checkpoint):new window.HexMatch(activeLevel,checkpoint);}catch(_){saveBlocked=true;}
       selected=null;render();toast('Bu hamle tamamlanamadı. Tahta geri yüklendi; tekrar deneyebilirsin.');return;
     }
     if(!result.ok){
@@ -1135,6 +1270,7 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   function select(index) {
     if(!gameInputAllowed()||guideFeedback())return;
+    if(assistanceMode){chooseAssistanceTarget(index);return;}
     if(busy){finishPresentation(presentation);return;}
     if(engine.status!=='playing')return;
     const guide=guidedStep();
@@ -1150,7 +1286,7 @@ window.HexSessionStore.boot(function startApp(session) {
     $('win-title').textContent=learning?(active===0?'İlk adım tamam!':'Artık hazırsın!'):final?'Usta işi!':'Harika eşleşme!';
     if(completionReward&&!learning)$('win-title').textContent=rewardLabel(completionReward);
     $('win-description').textContent=learning?(active===0?'İlk bölüm tamam. Şimdi puan hedefine de ulaşmayı deneyelim.':'Yeterli puan topladın ve her yeri yeşile boyadın. Şimdi kendi başına oyna.'):final?'10 bölümün hepsini bitirdin!':`${engine.movesLeft} hamlen kaldı. Bölümü bitirdin!`;
-    $('win-total').textContent=engine.score;$('win-moves').textContent=engine.movesLeft;
+    $('win-total').textContent=engine.score;$('win-moves').textContent=engine.movesLeft;$('win-assisted').hidden=learning||!engine.assisted;
     const nextText=economyView()?.campaignComplete?'Bahçeni gör':active===0?'İkinci öğreticiye geç':active===1?'İlk bölüme başla':`Bölüm ${pad(active-tutorialCount+2)} ile devam et`;
     $('next').innerHTML=`${nextText} ${icon('arrow')}`;
     const grant=lastEconomyReward?.attemptId===activeAttempt?.attemptId?lastEconomyReward:null;
@@ -1194,15 +1330,16 @@ window.HexSessionStore.boot(function startApp(session) {
   function cancelHint(){const job=hintJob;hintJob=null;if(job){clearTimeout(job.timer);job.worker?.terminate();job.resolve?.(null);}}
   async function hint(){
     if(!gameInputAllowed()||guideFeedback()||busy||hintJob||engine.status!=='playing')return;
+    cancelAssistance();
     const guide=guidedStep();if(guide){selected=null;hinted=guide.pair;hintEvent({kind:'guided',guarantee:'guided'},'guided');render();toast(guide.text);return;}
     const job={token:epoch,game:engine,worker:null,timer:null,resolve:null};hintJob=job;render();
     let suggestion=null;
     try{
-      if(typeof window.Worker==='function'){
+      if(typeof window.Worker==='function'&&!engine.assisted){
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=25');
+            job.worker=new Worker('./hint-worker.js?v=26');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:activeLevel,snapshot:engine.snapshot()});
@@ -1273,6 +1410,7 @@ window.HexSessionStore.boot(function startApp(session) {
     if(engine.status!=='playing'||pointer||outsideViewport(e))return;
     const downTile=e.target.closest?.('[data-index]');
     const index=downTile&&$('board').contains(downTile)?+downTile.dataset.index:tileAt(e);if(index===null)return;
+    if(assistanceMode){e.preventDefault();select(index);return;}
     const matrix=$('board').getScreenCTM?.(),local=boardPoint(e),positions=geometry().positions,from=positions[index];
     let inverse=null;try{inverse=matrix?.inverse();}catch(_){}
     const neighbors=local&&matrix?engine.neighbors[index].map(index=>{
@@ -1307,9 +1445,9 @@ window.HexSessionStore.boot(function startApp(session) {
   const cancelPointer=e=>{if(pointer&&(e.pointerId===undefined||e.pointerId===pointer.id))stopPointer();};
   on($('board'),'lostpointercapture',cancelPointer);
   on(window,'pointercancel',cancelPointer);
-  on(window,'blur',()=>{stopPointer();if(presentation)finishPresentation(presentation);pauseGame();});
-  on(document,'visibilitychange',()=>{stopPointer();if(document.hidden){if(presentation)finishPresentation(presentation);pauseGame();}syncAudio();});
-  on(window,'pagehide',()=>{stopPointer();clearInvalidSwap();if(presentation)finishPresentation(presentation);});
+  on(window,'blur',()=>{cancelAssistance();stopPointer();if(presentation)finishPresentation(presentation);pauseGame();});
+  on(document,'visibilitychange',()=>{if(document.hidden)cancelAssistance();stopPointer();if(document.hidden){if(presentation)finishPresentation(presentation);pauseGame();}syncAudio();});
+  on(window,'pagehide',()=>{cancelAssistance();stopPointer();clearInvalidSwap();if(presentation)finishPresentation(presentation);});
   on($('board'),'click',e=>{if(e.detail===0){const tile=e.target.closest('[data-index]');if(tile)select(+tile.dataset.index);}});
   on($('board'),'keydown',e=>{
     const tile=e.target.closest('[data-index]');if(!tile||!gameInputAllowed())return;if(guideFeedback()){e.preventDefault();return;}if(busy){e.preventDefault();finishPresentation(presentation);return;}
@@ -1327,6 +1465,11 @@ window.HexSessionStore.boot(function startApp(session) {
     saved.guideAcks.push(feedback.id);selected=null;hinted=null;stopPointer();
     focusIndex=guidedStep()?.pair[0]??0;render();persist();
   });
+  on($('open-inventory'),'click',()=>{if(!inventoryPlayable())return;renderInventory();openModal('inventory-dialog');});
+  on($('use-green-brush'),'click',()=>beginAssistance('greenBrush'));on($('use-color-key'),'click',()=>beginAssistance('colorKey'));
+  on($('buy-green-brush'),'click',()=>purchaseInventory('greenBrush'));on($('buy-color-key'),'click',()=>purchaseInventory('colorKey'));
+  on($('assistance-value'),'change',updateAssistancePreview);on($('assistance-confirm'),'click',confirmAssistance);
+  on($('assistance-target-cancel'),'click',()=>{cancelAssistance();render();});
   on($('tutorial-replay'),'click',()=>enterGame(0,{fresh:true}));
   on($('skip-animation'),'click',()=>finishPresentation(presentation));
   on($('reset'),'click',restart);on($('retry'),'click',restart);on($('hint'),'click',hint);
@@ -1399,6 +1542,7 @@ window.HexSessionStore.boot(function startApp(session) {
   on(window,'keydown',event=>{
     if(event.ctrlKey||event.metaKey||event.altKey||event.repeat)return;
     if(event.key==='Escape'){
+      if(assistanceMode&&!topDialog()){event.preventDefault();cancelAssistance();return;}
       if(topDialog()){event.preventDefault();closeModal(topDialog());return;}
       if(screen==='game'){event.preventDefault();pauseGame();return;}
       if(screen!=='home'){event.preventDefault();showScreen('home');}return;

@@ -2,6 +2,7 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const {JSDOM,VirtualConsole}=require('jsdom');
+const {savedGame}=require('./qa-fixtures.cjs');
 const root=__dirname+'/dist/',read=file=>fs.readFileSync(root+file,'utf8'),plain=value=>JSON.parse(JSON.stringify(value));
 const profileKey='hexrota-profile-v2',gameKey='hexrota-match-v5',lifeKey='hexrota-lives-v1',eventKey='hexrota-events-v1';
 const NOW=Date.UTC(2026,0,8,12),MINUTE=60000,tests=[],errors=[],unhandled=[];
@@ -33,6 +34,7 @@ function existing(stage=2,{turns=1,lost=false,legacy=false}={}){
 function mount({saved=fresh(),life,now=NOW,oldV4,profile,writeFailure=false}={}){
  const vc=new VirtualConsole();vc.on('jsdomError',error=>errors.push(error.message));
  const dom=new JSDOM(read('index.html'),{url:'https://hexrota-lives.example/',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});
+ try{
  const w=dom.window,d=w.document,network=[];let utc=now;w.HexSessionTestMode={isolated:true};
  w.Date.now=()=>utc;w.matchMedia=()=>({matches:true,addEventListener(){},removeEventListener(){}});
  w.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};w.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');this.dispatchEvent(new w.Event('close'));};
@@ -50,8 +52,9 @@ function mount({saved=fresh(),life,now=NOW,oldV4,profile,writeFailure=false}={})
  f.node=selector=>{const n=d.querySelector(selector);assert(n,selector+' exists');return n;};f.click=selector=>f.node(selector).dispatchEvent(new w.MouseEvent('click',{bubbles:true,detail:0}));
  f.return=()=>{Object.defineProperty(d,'hidden',{configurable:true,value:false});d.dispatchEvent(new w.Event('visibilitychange'));w.dispatchEvent(new w.Event('focus'));};
  f.change=(selector,value)=>{const n=f.node(selector);n.checked=value;n.dispatchEvent(new w.Event('change',{bubbles:true}));};
- f.game=()=>{const s=f.save(),i=s.current,base=w.HEX_LEVELS[i-2],meta=s.attempts?.[i],level=i<2?w.HEX_TUTORIALS[i]:meta?w.HexAttempts.createCatalog(w.HEX_LEVELS,w.HEX_VARIANTS,w.HexMatch).resolveLevel(base.id,meta.variantId,meta.levelDataVersion):base;return new w.HexMatch(level,s.boards[i]);};
+ f.game=()=>savedGame(w);
  return f;
+ }catch(error){dom.window.close();throw error;}
 }
 async function enter(f){f.click('#home-play');if(f.node('#pregame-dialog').open)f.click('#pregame-start');await wait(1);}
 async function move(f,pair){for(const index of pair)f.click(`#board [data-index="${index}"]`);await until(()=>f.node('#board').getAttribute('aria-busy')==='false','move presentation ends');}

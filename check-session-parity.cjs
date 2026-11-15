@@ -7,7 +7,7 @@ const {spawnSync}=require('node:child_process');
 const {mount,fresh,existing,lifePool,plain,enter,move,wait,until,NOW,MINUTE}=require('./check-lives-ui.cjs');
 const root=__dirname,PK='hexrota-profile-v2',GK='hexrota-match-v5',LK='hexrota-lives-v1',EK='hexrota-events-v1';
 const context={window:{},performance};vm.createContext(context);
-for(const file of ['engine.js','levels.js','tutorials.js','variants-data.js','attempts.js','lives-config.js','lives.js','life-providers.js','session-store.js','reward-rules.js','rewards.js','reward-adapter.js','economy-config.js','economy.js'])vm.runInContext(fs.readFileSync(path.join(root,'dist',file),'utf8'),context,{filename:file});
+for(const file of ['engine.js','levels.js','tutorials.js','variants-data.js','attempts.js','lives-config.js','lives.js','life-providers.js','session-store.js','reward-rules.js','rewards.js','reward-adapter.js','economy-config.js','economy.js','commands.js'])vm.runInContext(fs.readFileSync(path.join(root,'dist',file),'utf8'),context,{filename:file});
 const R=context.window,config={levels:plain(R.HEX_LEVELS),tutorials:plain(R.HEX_TUTORIALS),variants:plain(R.HEX_VARIANTS),lifeConfig:plain(R.HEX_LIVES_CONFIG),economyConfig:plain(R.HEX_ECONOMY_CONFIG),now:NOW,selectionSeed:0x41abca,providerNamespace:'ui-test',rewardRules:plain(R.HEX_REWARD_RULES)};
 function dotnet(){for(const cmd of [...new Set([process.env.DOTNET_PATH,'dotnet','/workspace/scratch/dotnet/dotnet',path.join(os.homedir(),'.dotnet','dotnet')].filter(Boolean))]){const p=spawnSync(cmd,['--version'],{encoding:'utf8'});if(p.status===0&&/^8\./.test(p.stdout.trim()))return cmd;}throw Error('Session parity requires a real .NET 8 SDK. No JavaScript fallback is permitted.');}
 const sdk=dotnet(),build=fs.mkdtempSync(path.join(os.tmpdir(),'hexrota-session-'));
@@ -19,11 +19,32 @@ function nativeCase(label,input,check){nativeChecks.set(cases.length,check);add(
 function catchError(fn){try{return fn();}catch(e){return {error:e.message};}}
 function providerCase(label,state,commands){let current=state;const output=[];for(const c of commands){let result=catchError(()=>{let r;if(c.op==='create'){r=R.HexLifeProviders.createState({namespace:c.namespace||'hexrota-test',adAvailable:c.adAvailable??true});current=r;}else if(c.op==='normalize'){R.HexLifeProviders.validate(current);r=plain(current);if(r.schemaVersion===1){r.schemaVersion=2;r.finalizedRanges=[];}current=r;}else if(c.op==='validate')r=R.HexLifeProviders.validate(current);else if(c.op==='begin'){r=R.HexLifeProviders.begin(current,{productId:c.product,nowUtc:c.now});current=r.state;}else if(c.op==='complete'){r=R.HexLifeProviders.complete(current,c.id,{nowUtc:c.now,outcome:c.outcome||'completed'});current=r.state;}else if(c.op==='verify')r=R.HexLifeProviders.verify(current,c.receipt);else if(c.op==='finalize'){r=R.HexLifeProviders.finalize(current,c.id);current=r;}else if(c.op==='ad'){r=R.HexLifeProviders.setAdAvailable(current,c.value);current=r;}return plain(r);});output.push({result,state:plain(current??null)});}add(label,{mode:'provider',state,commands},output);}
 function repositoryCase(label,initial,commands){const values=new Map(Object.entries(plain(initial)).map(([k,v])=>[k,JSON.stringify(v)]));let failure={};const storage={getItem:key=>values.has(key)?values.get(key):null,setItem(key,value){if(key===PK&&failure.profile||[GK,LK].includes(key)&&failure.mirrors||key===EK&&failure.events)throw Error('storage');values.set(key,value);}};const repositories={},output=[];for(const c of commands){let result=catchError(()=>{const id=c.writer||'a',op=c.op;let r;if(op==='open'){repositories[id]=R.HexSessionStore.createStore(storage);r=repositories[id].current();}else if(op==='commit')r=repositories[id].commit(c.game,c.energy);else if(op==='read')r=repositories[id].read(c.key);else if(op==='fail'){failure=c;r=true;}else if(op==='revoke'){repositories[id].revoke();r=true;}else if(op==='write'){storage.setItem(c.key,JSON.stringify(c.value));r=true;}return plain(r);});const id=c.writer||'a';output.push({result,storage:Object.fromEntries([...values].filter(([key])=>[PK,GK,LK,EK].includes(key)).map(([k,v])=>[k,JSON.parse(v)])),revision:repositories[id]?.revision??null,current:repositories[id]?.current()??null});}add(label,{mode:'repository',storage:initial,commands},output);}
-function snap(f){const profile=JSON.parse(f.w.localStorage.getItem(PK)||'null'),game=plain(profile?.game||f.save()),energy=plain(profile?.energy||f.life()),index=game.current,metadata=game.attempts?.[index]||null,snapshot=game.boards?.[index]||null,base=index<2?f.w.HEX_TUTORIALS[index]:f.w.HEX_LEVELS[index-2],level=index<2?base:metadata?f.w.HexAttempts.createCatalog(f.w.HEX_LEVELS,f.w.HEX_VARIANTS,f.w.HexMatch).resolveLevel(base.id,metadata.variantId,metadata.levelDataVersion):base,engine=snapshot?new f.w.HexMatch(level,snapshot):null;return {game,energy,events:plain(f.events()),view:{stage:index,pending:!snapshot,metadata,snapshot,status:engine?.status??null,life:plain(f.w.HexLives.createManager(f.w.HEX_LIVES_CONFIG,{clock:()=>f.now}).view(energy.life))},rewards:engine?plain(f.w.HexRewardAdapter.restore(engine.level,engine.snapshot(),f.w.HEX_REWARD_RULES,f.w.HexMatch,f.w.HexRewards,metadata?.attemptId||String(engine.level.id)).state):null};}
+function snap(f){
+ const profile=JSON.parse(f.w.localStorage.getItem(PK)||'null'),game=plain(profile?.game||f.save()),energy=plain(profile?.energy||f.life()),index=game.current,metadata=game.attempts?.[index]||null,snapshot=game.boards?.[index]||null;
+ const base=index<2?f.w.HEX_TUTORIALS[index]:f.w.HEX_LEVELS[index-2],level=index<2?base:metadata?f.w.HexAttempts.createCatalog(f.w.HEX_LEVELS,f.w.HEX_VARIANTS,f.w.HexMatch).resolveLevel(base.id,metadata.variantId,metadata.levelDataVersion):base;
+ const engine=snapshot?(snapshot.rulesVersion==='assisted-v1'?new f.w.HexAssistedGame(level,{attemptId:metadata.attemptId,limits:{greenBrush:1,colorKey:1,rescue:1}},snapshot):new f.w.HexMatch(level,snapshot)):null;
+ return {game,energy,events:plain(f.events()),view:{stage:index,pending:!snapshot,metadata,snapshot,status:engine?.status??null,life:plain(f.w.HexLives.createManager(f.w.HEX_LIVES_CONFIG,{clock:()=>f.now}).view(energy.life))},rewards:engine&&!engine.assisted?plain(f.w.HexRewardAdapter.restore(engine.level,engine.snapshot(),f.w.HEX_REWARD_RULES,f.w.HexMatch,f.w.HexRewards,metadata?.attemptId||String(engine.level.id)).state):null};
+}
 async function flow(label,options,steps){const f=mount(options),commands=[{op:'boot'}],gold=[snap(f)];const input={...config,storage:{[GK]:plain(options.saved||fresh()),...(options.life!==undefined?{[LK]:plain(options.life)}:{}),...(options.profile?{[PK]:plain(options.profile)}:{}),...(options.oldV4?{'hexrota-match-v4':plain(options.oldV4)}:{})}};if(options.oldV4)delete input.storage[GK];input.providerNamespace=f.life().provider.namespace;input.selectionSeed=f.save().variantSelection.seed;try{for(const step of steps){commands.push(step.command);await step.run(f);gold.push(snap(f));}add(label,{...input,commands},{flow:gold});flowCount++;}finally{f.close();}}
 const op=(command,run)=>({command,run});
 function stageEntry(stage,reason='stage_entry',freshValue=true){return op({op:'enter',stage,fresh:freshValue,reason},async f=>{f.click(`[data-stage="${stage}"]`);f.click('#pregame-start');await wait(1);});}
 function restartStep(confirmed=true){return op({op:'restart',confirmed},async f=>{f.click('#reset');if(f.node('#restart-dialog').open)f.click(confirmed?'#restart-confirm':'#restart-cancel');await wait(1);});}
+function rewardedSave(stage){
+ const saved=existing(stage,{turns:0}).saved;
+ for(let prior=2;prior<stage;prior++){
+  const first=existing(prior,{turns:0}),level=R.HexAttempts.createCatalog(R.HEX_LEVELS,R.HEX_VARIANTS,R.HexMatch).resolveLevel(R.HEX_LEVELS[prior-2].id,first.metadata.variantId,first.metadata.levelDataVersion),won=existing(prior,{turns:level.solution.length});
+  for(const key of ['boards','attempts','attemptStats'])saved[key][prior]=plain(won.saved[key][prior]);
+  const id=String(level.id);saved.variantSelection.counts[id]=1;saved.variantSelection.recent[id]=[first.metadata.variantId];
+ }
+ return saved;
+}
+function assistanceId(saved,itemId){const snapshot=saved.boards[saved.current],attempt=saved.attempts[saved.current];return `assist:${attempt.attemptId}:${(snapshot.commands?.length??snapshot.history.length)+1}:${itemId}`;}
+async function chooseBooster(f,itemId,index,value){
+ f.click('#open-inventory');f.click(itemId==='greenBrush'?'#use-green-brush':'#use-color-key');f.click(`#board [data-index="${index}"]`);
+ assert(f.node('#assistance-dialog').open,'the real assistance preview opens');
+ if(itemId==='colorKey'){f.node('#assistance-value').value=String(value);f.node('#assistance-value').dispatchEvent(new f.w.Event('change',{bubbles:true}));}
+}
+async function confirmBooster(f){f.click('#assistance-confirm');await until(()=>f.node('#board').getAttribute('aria-busy')==='false','assistance presentation ends');}
 
 function writeFailure(f,flags){if(!f._nativeSetItem){f._nativeSetItem=f.w.Storage.prototype.setItem;f.w.Storage.prototype.setItem=function(key,value){const x=f._failure||{};if(key===PK&&x.profile||[GK,LK].includes(key)&&x.mirrors||key===EK&&x.events)throw new f.w.DOMException('storage','QuotaExceededError');return f._nativeSetItem.call(this,key,value);};}f._failure=flags;}
 
@@ -140,6 +161,49 @@ function writeFailure(f,flags){if(!f._nativeSetItem){f._nativeSetItem=f.w.Storag
   op({op:'enter',stage:2},enter),op({op:'reset',confirmed:false},f=>{f.click('#game-settings');f.click('#settings-reset');f.click('#reset-cancel');}),
   op({op:'reset',confirmed:true},f=>{f.click('#settings-reset');f.click('#reset-confirm');})
  ]);
+ // Both assistance commands go through the real mobile UI, preview, atomic
+ // profile transaction and command-aware save reader, never a JS session clone.
+ const inventorySave=rewardedSave(8),inventoryMeta=inventorySave.attempts[8],inventoryLevel=R.HexAttempts.createCatalog(R.HEX_LEVELS,R.HEX_VARIANTS,R.HexMatch).resolveLevel(7,inventoryMeta.variantId,inventoryMeta.levelDataVersion),simulation=new R.HexAssistedGame(inventoryLevel,{attemptId:inventoryMeta.attemptId,limits:{greenBrush:1,colorKey:1,rescue:1}},inventorySave.boards[8]);
+ const brushIndex=simulation.layers.findIndex(layer=>layer===1),brushId=assistanceId(inventorySave,'greenBrush');assert(brushIndex>=0);assert(simulation.apply({id:brushId,type:'green_brush',index:brushIndex}).ok);
+ let keyChoice;for(let index=0;index<simulation.total;index++)for(const value of inventoryLevel.palette)if(value!==simulation.values[index]){
+  const preview=simulation.preview({id:`assist:${inventoryMeta.attemptId}:${simulation.commands.length+1}:colorKey`,type:'color_key',index,value});
+  if(preview.result.ok&&preview.status==='playing'&&preview.result.frames.length&&(!keyChoice||preview.result.scoreGain>keyChoice.gain))keyChoice={index,value,gain:preview.result.scoreGain};
+ }assert(keyChoice,'a deterministic real key match remains playable');
+ const keyId=`assist:${inventoryMeta.attemptId}:${simulation.commands.length+1}:colorKey`;simulation.apply({id:keyId,type:'color_key',index:keyChoice.index,value:keyChoice.value});const assistedSwap=plain(simulation.legalMoves()[0]);
+ await flow('real brush/key preview, inventory purchase, assisted swap/hint and reopen',{saved:inventorySave,life:lifePool(5)},[
+  op({op:'enter',stage:8},enter),
+  op({op:'previewBooster',itemId:'greenBrush',index:brushIndex,operationId:brushId},f=>chooseBooster(f,'greenBrush',brushIndex)),
+  op({op:'useBooster',quoteFromPreview:true,itemId:'greenBrush',index:brushIndex,operationId:brushId},confirmBooster),
+  op({op:'previewBooster',itemId:'colorKey',index:keyChoice.index,value:keyChoice.value,operationId:keyId},f=>chooseBooster(f,'colorKey',keyChoice.index,keyChoice.value)),
+  op({op:'useBooster',quoteFromPreview:true,itemId:'colorKey',index:keyChoice.index,value:keyChoice.value,operationId:keyId},confirmBooster),
+  op({op:'purchaseInventory',itemId:'greenBrush',operationId:'purchase:greenBrush:11'},f=>{f.click('#open-inventory');f.click('#buy-green-brush');f.click('#inventory-dialog [data-close]');}),
+  op({op:'swap',pair:assistedSwap},f=>move(f,assistedSwap)),
+  op({op:'hint',maxDepth:1},async f=>{f.click('#hint');await until(()=>f.events().events.some(event=>event.name==='hint_used'),'assisted real hint');}),
+  op({op:'close'},f=>f.w.dispatchEvent(new f.w.Event('pagehide'))),op({op:'boot'},()=>{})
+ ]);
+ await flow('brush canonical write failure rolls back stock, board and event together',{saved:inventorySave,life:lifePool(5)},[
+  op({op:'enter',stage:8},enter),op({op:'previewBooster',itemId:'greenBrush',index:brushIndex,operationId:brushId},f=>chooseBooster(f,'greenBrush',brushIndex)),
+  op({op:'fail',profile:true},f=>writeFailure(f,{profile:true})),op({op:'useBooster',quoteFromPreview:true,itemId:'greenBrush',index:brushIndex,operationId:brushId},confirmBooster),
+  op({op:'fail'},f=>writeFailure(f,{})),op({op:'refresh'},f=>f.return())
+ ]);
+ nativeCase('inventory duplicate, invalid target, cap and stale preview are atomic',{storage:{[GK]:inventorySave,[LK]:lifePool(5)},commands:[{op:'boot'},{op:'enter',stage:8},{op:'previewBooster',itemId:'greenBrush',index:brushIndex,operationId:brushId},{op:'useBooster',quoteFromPreview:true,itemId:'greenBrush',index:brushIndex,operationId:brushId},{op:'useBooster',quoteFromPreview:true,itemId:'greenBrush',index:brushIndex,operationId:brushId},{op:'useBooster',quoteFromPreview:true,itemId:'greenBrush',index:brushIndex,operationId:brushId+'-again'},{op:'useBooster',quoteFromPreview:true,itemId:'colorKey',index:keyChoice.index,value:keyChoice.value,operationId:keyId,envelope:{revision:2}},{op:'boot'}]},a=>{
+  assert.deepEqual(a[2].state.game,a[1].state.game);assert.equal(a[3].state.game.economy.inventory.greenBrush,2);assert.equal(a[4].result.reason,'duplicate_transaction');assert.deepEqual(a[4].profile,a[3].profile);assert.equal(a[5].result.reason,'ground_empty');assert.equal(a[6].result.reason,'stale_revision');assert.deepEqual(a[6].profile,a[3].profile);assert.deepEqual(a[7].state.game,a[3].state.game);assert.equal(a[7].state.rewards,null);
+ });
+ const firstKeyId=`assist:${inventoryMeta.attemptId}:${inventorySave.boards[8].history.length+1}:colorKey`;
+ nativeCase('booster confirmation requires the exact current preview quote',{storage:{[GK]:inventorySave,[LK]:lifePool(5)},commands:[{op:'boot'},{op:'enter',stage:8},{op:'previewBooster',itemId:'greenBrush',index:brushIndex,operationId:brushId},{op:'useBooster',itemId:'greenBrush',index:brushIndex,operationId:brushId},{op:'useBooster',quoteFromPreview:true,itemId:'colorKey',index:keyChoice.index,value:keyChoice.value,operationId:firstKeyId},{op:'useBooster',quoteFromPreview:true,itemId:'greenBrush',index:brushIndex,operationId:brushId},{op:'useBooster',quoteFromPreview:true,itemId:'colorKey',index:keyChoice.index,value:keyChoice.value,operationId:keyId,envelope:{turn:0}},{op:'previewBooster',itemId:'colorKey',index:keyChoice.index,value:keyChoice.value,operationId:keyId},{op:'refresh'},{op:'useBooster',quoteFromPreview:true,itemId:'colorKey',index:keyChoice.index,value:keyChoice.value,operationId:keyId}]},a=>{
+  assert.equal(a[3].result.reason,'preview_required');assert.equal(a[4].result.reason,'stale_preview');assert.deepEqual(a[4].profile,a[2].profile);assert.equal(a[5].result.ok,true);assert.equal(a[5].state.game.boards[8].turn,0);assert.equal(a[6].result.reason,'preview_required');assert.deepEqual(a[6].profile,a[5].profile);assert.deepEqual(a[8].state.game.boards,a[7].state.game.boards);assert.equal(a[9].result.reason,'stale_preview');assert.deepEqual(a[9].profile,a[8].profile);
+ });
+ const em=R.HexEconomy.createManager(R.HEX_ECONOMY_CONFIG),initialEconomy=plain(em.migrate(null,{done:inventorySave.done,verifiedLevelIds:[1,2,3,4,5,6],sourceKey:GK}).state),oneBrush=new R.HexAssistedGame(inventoryLevel,{attemptId:inventoryMeta.attemptId,limits:{greenBrush:1,colorKey:1,rescue:1}},inventorySave.boards[8]);oneBrush.apply({id:brushId,type:'green_brush',index:brushIndex});
+ const paidBrush=plain(em.consume(initialEconomy,{operationId:brushId,itemId:'greenBrush',attemptId:inventoryMeta.attemptId,levelId:7}).state),assistedValid={...plain(inventorySave),economy:paidBrush,boards:{...plain(inventorySave.boards),8:plain(oneBrush.snapshot())}};
+ for(const [label,mutate] of [
+  ['mechanical command without debit',s=>{s.economy=plain(initialEconomy);}],
+  ['paid debit omitted from classic checkpoint',s=>{s.boards[8]=plain(inventorySave.boards[8]);}],
+  ['expanded snapshot limits',s=>{s.boards[8].limits.greenBrush=100;}],
+  ['string numeric metadata',s=>{s.attempts[8].levelId='7';}],
+  ['all-swap assisted envelope',s=>{s.economy=plain(initialEconomy);s.boards[8]=plain(new R.HexAssistedGame(inventoryLevel,{attemptId:inventoryMeta.attemptId,limits:{greenBrush:1,colorKey:1,rescue:1}},inventorySave.boards[8]).snapshot());}],
+  ['legacy identity hides paid command',s=>{s.boards[8]=plain(new R.HexMatch(R.HEX_LEVELS[6]).snapshot());delete s.attempts[8];s.economy=plain(em.consume(initialEconomy,{operationId:'assist:legacy-7:1:greenBrush',itemId:'greenBrush',attemptId:'legacy-7',levelId:7}).state);}]
+ ]){const saved=plain(assistedValid);mutate(saved);nativeCase('assistance authorization fails closed: '+label,{storage:{[GK]:saved,[LK]:lifePool(5)},commands:[{op:'boot'}]},a=>{assert(a[0].result.error,label);assert.equal(a[0].profile,null,'invalid board/economy pairing never overwrites the save');});}
+ nativeCase('valid assisted checkpoint resumes at zero life',{storage:{[GK]:assistedValid,[LK]:lifePool(0)},commands:[{op:'boot'},{op:'enter',stage:8},{op:'close'},{op:'boot'}]},a=>{assert.equal(a[1].result.reason,'resumed');assert.deepEqual(a[1].state.game.boards[8],assistedValid.boards[8]);assert.equal(a[1].state.energy.life.lives,0);assert.equal(a[3].state.rewards,null);});
  // Native compile and compare occurs only after actual JS goldens exist.
  const result=run(sdk,[path.join(build,'ApplicationParityHarness.dll')],{input:cases.map(c=>JSON.stringify(c.input)).join('\n')+'\n'}).trim().split('\n').map(JSON.parse);
  assert.equal(result.length,cases.length);
