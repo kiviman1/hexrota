@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#193e32">
+  <title>Hexrota · Denge Laboratuvarı</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="balance-lab.css">
+  <script defer src="engine.js"></script>
+  <script defer src="levels.js"></script>
+  <script defer src="variants-data.js"></script>
+  <script defer src="balance-lab-data.js"></script>
+  <script defer src="balance-lab-catalog.js"></script>
+  <script defer src="balance-lab.js"></script>
+</head>
+<body>
+  <main class="lab-shell">
+    <header class="lab-header">
+      <div><span class="lab-eyebrow">HEXROTA · GELİŞTİRİCİ</span><h1>Denge laboratuvarı<span>.</span></h1></div>
+      <span class="lab-badge">9.4 · DENEME</span>
+    </header>
+    <p class="lab-isolation"><span aria-hidden="true">◇</span> Bu sayfadaki oyun yalnızca bellekte çalışır. İlerlemen, canların ve Altının etkilenmez.</p>
+    <div class="lab-layout">
+      <section class="lab-settings" aria-labelledby="lab-settings-title">
+        <h2 id="lab-settings-title">Bir tahta seç</h2>
+        <form id="lab-form" autocomplete="off">
+          <div class="lab-select-row">
+            <label for="lab-level">Bölüm<select id="lab-level" name="level" disabled></select></label>
+            <label for="lab-variant">Varyant<select id="lab-variant" name="variant" disabled></select></label>
+          </div>
+          <label for="lab-experiment">Karşılaştırma<select id="lab-experiment" name="experiment" disabled></select></label>
+          <button id="lab-start" class="lab-button lab-primary" type="submit" disabled>Tahtayı aç <span aria-hidden="true">→</span></button>
+        </form>
+        <p class="lab-setting-note">Her deney aynı başlangıç ve tohumla açılır. Seçimini değiştirdikten sonra “Tahtayı aç”a dokun.</p>
+        <details id="lab-details" class="lab-details"><summary>Deney ayrıntısı</summary><p id="lab-definition">Veriler yükleniyor.</p><code id="lab-scenario"></code></details>
+      </section>
+      <section class="lab-play" aria-labelledby="lab-active-title">
+        <div class="lab-play-heading"><div><span class="lab-eyebrow" id="lab-active-kind">İZOLE DENEME</span><h2 id="lab-active-title">Tahta yükleniyor</h2></div><span id="lab-active-variant" class="lab-variant-badge"></span></div>
+        <div class="lab-hud" aria-label="Bölüm hedefleri">
+          <div><span>Puan</span><strong><span id="lab-score">0</span><small> / <span id="lab-target">—</span></small></strong></div>
+          <div><span>Yeşil</span><strong><span id="lab-green">0</span><small> / <span id="lab-total">—</span></small></strong></div>
+          <div class="lab-move-metric"><span>Hamle</span><strong id="lab-moves">—</strong></div>
+        </div>
+        <div id="lab-board-wrap" class="lab-board-wrap">
+          <svg id="lab-board" role="group" aria-label="İki komşu sayı taşını kaydır veya sırayla seç" aria-busy="false"></svg>
+          <div id="lab-board-empty" class="lab-board-empty">Veriler yükleniyor…</div>
+        </div>
+        <div class="lab-play-toolbar"><button id="lab-restart" class="lab-button lab-secondary" type="button" disabled><span aria-hidden="true">↺</span> Aynı tahtayı yeniden başlat</button><span id="lab-turns" class="lab-turns">0 hamle kullanıldı</span></div>
+        <p id="lab-status" class="lab-status" role="status" aria-live="polite"></p>
+        <section id="lab-result" class="lab-result" aria-labelledby="lab-result-title" hidden>
+          <span class="lab-eyebrow">DENEME SONUCU</span><h3 id="lab-result-title"></h3><p id="lab-result-summary"></p>
+          <dl><div><dt>Eksik puan</dt><dd id="lab-missing-score">0</dd></div><div><dt>Eksik yeşil hücre</dt><dd id="lab-missing-green">0</dd></div><div><dt>Kalan zemin katı</dt><dd id="lab-remaining-layers">0</dd></div></dl>
+        </section>
+        <p id="lab-error" class="lab-error" role="alert" hidden></p>
+      </section>
+    </div>
+    <footer class="lab-footer">Deney adayları yayımlanmış bölüm ayarları değildir. Sonuçlar bu sekme kapandığında silinir.</footer>
+  </main>
+</body>
+</html>
