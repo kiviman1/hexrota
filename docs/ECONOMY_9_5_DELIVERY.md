@@ -24,10 +24,43 @@ Bağımlılık B/PR #13. TEST reklam UTC2/gün veya 140 oyun Altınıyla aynı d
 
 A'nın yıldız DTO'sunu kullanır; uygulama dalı B/C'yi de içerir, bağımlılık açıkça taşınır. `dist/garden.js` yalnız görünüm üretir; ayrı bir C# kural kopyası yoktur, C# Economy.View zaten aynı eşikleri verir. 0 yıldızda toprak; 2 çiçek, 5 bitki, 8 ağaç, 10 tam bahçe. İnceleme bekleyen eski kapanmış bölüm, doğrulanmış yıldız yoksa sahte tamamlanmış bahçe üretmez. Önceki bölümler oynanabilir olmaz.
 
-Saf 11 yıldız durumu / 55 render / 44 eşik / 17 bozuk veri; gerçek UI 15 grup, Chromium 9 ve WebKit 9 grup geçti. Tam npm test geçti. Küçük/dikey/yatay ekran, sabit menü üstünde gerçek erişilebilirlik ve canlı oyun/profil izolasyonu doğrulandı. PWA shell28 bahçe modülünü önbelleğe alır. Ayrıntı [BOTANICAL_PROGRESS_9_5.md](BOTANICAL_PROGRESS_9_5.md).
+Saf 11 yıldız durumu / 55 render / 44 eşik / 17 bozuk veri; gerçek UI 15 grup, Chromium 9 ve WebKit 9 grup geçti. Tam npm test geçti. Küçük/dikey/yatay ekran, sabit menü üstünde gerçek erişilebilirlik ve canlı oyun/profil izolasyonu doğrulandı. GitHub run43730180915 14/14 iş başarılı; PR #15 açık, birleştirilmedi. PWA shell28 bahçe modülünü önbelleğe alır. Ayrıntı [BOTANICAL_PROGRESS_9_5.md](BOTANICAL_PROGRESS_9_5.md).
 
 ## Integration
 
-Hiçbir PR onaysız birleştirilmeyecektir. Integration dalı bütün modülleri tekrar test edecektir.
+`integration/hexrota-economy-9-5` güncel main670a83e üzerinden oluşturuldu. A52b8419/PR12, B9d6136c/PR13, C8f3ac5c/PR14, D1d56e54/PR15 değişiklikleri yerel Integration merge commit'leriyle toplandı; GitHub PR'ları veya main birleştirilmedi. Runtime/data/unity ağacı D ile birebir aynı, Integration'ın ek farkı izolasyon testi/CI ve bu doğrulama kaydıdır.
+
+CI mevcut14 işi korur, ayrı `Balance Lab economy isolation` işi ekler. Bu iş PR11'in sabit85bc092 commit'ini yalnız fixture olarak ikinci checkout'a alır; gerçek Chromium ve WebKit'te yeni ekonomi profilini korur. Test kaynağı yoksa atlama/başarı taklidi yapmaz. Birleşik runtime üzerinde yerel tam npm test ve aşağıdaki bütün gerçek C# komutları tekrar geçti. Pinned Lab son tekrarı 6 Chromium + 6 WebKit grup, 81 değişmez dosya / 10 profil anahtarı geçti. Güncel CI ve Preview durumunun kaynağı Integration PR Checks ekranıdır.
+
+Hiçbir PR onaysız birleştirilmez; Production değiştirilmez.
 
 PR #11 Balance Lab ayrı ve onaysızdır. Integration uyumluluğu ayrı geçici birleşimde sınanacak; laboratuvarın bellekteki oyunu normal profil, Attempt sayacı, Altın, yıldız, stok veya can üretmeyecektir. Yayımlanmış 40 varyant/80 rota ve classic-v4 çekirdeği korunur. Yeni ekonomi işlevleri, 9.4'ün önceki kaynak hash korumalarında meşru değişiklikler gerektirirse sadece bu onaylı kapsam yeni referansa alınır; donmuş oyun verileri ve izolasyon kontrolleri kaldırılmaz.
+
+## Açık ürün/teknik sınırlar
+
+- Kanıtsız eski tamamlamalar kapalı ve incelemede kalır; otomatik destek/hesap servisi yoktur. Kanıtlı geçiş yalnız bir kez ödüllenir.
+- Toplam ilk 10 bölüm kaynağı 200 Altın; 140 Altınlık kurtarma normalilk gelirle en erken 7 bitiş sonrası mümkündür, diğer harcamalar daha da geciktirir. Fiyatlar pilot değeridir; ekonomi kaynağı artırılmadı.
+- Renk Anahtarı gerçek sonuç ön izlemesi ücretsiz/iptal edilebilirdir; farklı hedefleri araştırmanın denge etkisi insan testinde ölçülmelidir.
+- Yardımlı denemede klasik Director v1 yoğunluğu yerine temel gerçek dalga sunumu kullanılır. Eski Playtest export'u bütün yardım komutlarını içermez; tam sınıflama canonical ledger gerektirir.
+- Yerel kayıt manuel veri silme/değiştirme veya zorla eski uygulama çalıştırmaya karşı hesap otoritesi değildir. Gerçek makbuz, hesap taşıma ve platformun atomik dosya adaptörü ayrı çalışmadır.
+- Gelecekte fiyat/limit değişiminden önce yayımlanmış ekonomi fiyat/politika arşivi gerekir; bilinmeyen fiyat sürümü şu an güvenle reddedilir.
+- Fiziksel iOS/Android, Unity sahnesi/Mono/IL2CPP ve canlı reklam/ödeme SDK'ları denenmedi.
+
+## Birleşik sürümde gerçek karşılaştırmalar
+
+| Komut | Doğrulanan sonuç |
+| --- | --- |
+| `npm test` | Tam JS/konfigürasyon/80 sertifika/40 varyant, mevcut UI+PWA+can/kayıt, yeni ekonomi/envanter/ikinci şans/bahçe geçti |
+| `test:unity-gameplay` | 71 ortak mekanik + 80 tam sertifika + 120 rota dışı koşu; 1.913 geçerli takas/ara sonuç |
+| `test:unity-catalog` | 2.107 tam JSON karşılaştırması |
+| `test:unity-hints` | 1.000 deterministik karşılaştırma; gerçek garantiler tekrar oynatıldı |
+| `test:unity-rewards` | 104 ortak vektör ve state factory |
+| `test:unity-reward-adapter` | 175 rota/1.456 tur/2.928 dalga; tam girdi/plan/durum/restore |
+| `test:unity-lives` | 344 derlenmiş istek; 460 geçiş, 152 eski v1 geçişi, 172 ek probe |
+| `test:unity-economy` | 90 akış / 371 tam sonuç+durum |
+| `test:unity-commands` | 2.928 tam JSON / 16.001 işlem / 3.259 dalga |
+| `test:unity-rescue` | 293 tam JSON / 600 derlenmiş stres settlement'ı |
+| `test:unity-session` | 1.190 tam JSON / 34 gerçek app.js akışı + 44 ayrı native guard; olay 580/462 |
+| `test:balance-lab-economy` | 6 Chromium + 6 WebKit, sabit PR11 ile 81 korunan dosya/10 kayıt anahtarı |
+
+Bütün C# testleri gerçek .NET 8.0.428 / C# 7.3 derlemesidir; SDK eksikliğinde JS yedeği yoktur. Sayılar üst üste binen kapsamlar içerir, tek insan kazanma oranı veya bağımsız toplam test sayısı gibi toplanmaz. İlk paralel ağır testlerde iki mevcut yerel UI süre sınırı doldu; sakin tam tekrarlar ve temiz A–D CI geçti, sınırlar gevşetilmedi. Son birleşik yerel koşuda açık başarısız test yoktur. Fiziksel cihaz/Unity testleri bu tablodan çıkarılamaz.

@@ -40,7 +40,8 @@
     "test:unity-rescue": "node check-rescue-parity.cjs",
     "test:second-chance-ui": "node check-second-chance-ui.cjs",
     "test:garden": "node check-garden.cjs && node check-garden-ui.cjs",
-    "test:garden-browser": "node check-garden-browser.cjs"
+    "test:garden-browser": "node check-garden-browser.cjs",
+    "test:balance-lab-economy": "node check-balance-lab-economy-isolation.cjs"
   },
   "devDependencies": {
     "jsdom": "31.0.1",
