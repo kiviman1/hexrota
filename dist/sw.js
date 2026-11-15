@@ -1,11 +1,11 @@
 /* A scoped offline shell. Authentication pages and arbitrary requests are never cached. */
 'use strict';
-const CACHE='hexrota-shell-v25';
+const CACHE='hexrota-shell-v26';
 const BASE=new URL('./',self.location.href);
-const ASSETS=['style.css','engine.js','levels.js','tutorials.js','variants.json','variants-data.js','difficulty-rules.json','attempts.js','events.js','lives-config.json','lives-config.js','lives.js','life-providers.js','playtest.js','reward-rules.json','reward-rules.js','rewards.js','reward-adapter.js','audio.js','session-store.js','economy-config.js','economy.js','app.js','hint-worker.js','pwa.js','manifest.webmanifest','favicon.svg','icons/icon-192.png','icons/icon-512.png','icons/icon-maskable-512.png','icons/apple-touch-icon.png'];
+const ASSETS=['style.css','engine.js','levels.js','tutorials.js','variants.json','variants-data.js','difficulty-rules.json','attempts.js','events.js','lives-config.json','lives-config.js','lives.js','life-providers.js','playtest.js','reward-rules.json','reward-rules.js','rewards.js','reward-adapter.js','audio.js','session-store.js','economy-config.js','economy.js','commands.js','app.js','hint-worker.js','pwa.js','manifest.webmanifest','favicon.svg','icons/icon-192.png','icons/icon-512.png','icons/icon-maskable-512.png','icons/apple-touch-icon.png'];
 const ALLOWED=new Set(ASSETS.map(path=>new URL(path,BASE).pathname));
 const HOME=new URL('./',BASE).href;
-const PRELOAD=ASSETS.map(path=>new URL(/\.(?:js|css)$/.test(path)?path+'?v=25':path,BASE).href);
+const PRELOAD=ASSETS.map(path=>new URL(/\.(?:js|css)$/.test(path)?path+'?v=26':path,BASE).href);
 function assetType(url,response){
   if(!response||response.status!==200||response.redirected||response.type==='opaqueredirect')return false;
   const type=(response.headers.get('content-type')||'').split(';')[0].trim().toLowerCase(),path=url.pathname;
@@ -61,7 +61,7 @@ self.addEventListener('fetch',event=>{
     })());return;
   }
   if(!ALLOWED.has(url.pathname))return;
-  if(url.search&&url.search!=='?v=25')return;
+  if(url.search&&url.search!=='?v=26')return;
   event.respondWith((async()=>{
     try{return await storeAsset(request,await fetch(request));}
     catch(_){const saved=await stored(request);if(saved&&assetType(url,saved))return saved;throw _;}
