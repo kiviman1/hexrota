@@ -119,12 +119,26 @@ jobs:
         env:
           HEXROTA_BROWSER: ${{ matrix.browser }}
           HEXROTA_SWAP_SCREENSHOT_DIR: test-results/swap-${{ matrix.browser }}
+      - name: Test isolated Balance Lab controls, input and profile safety
+        run: npm run test:balance-lab-browser
+        env:
+          HEXROTA_BROWSER: ${{ matrix.browser }}
+          HEXROTA_LAB_SCREENSHOT_DIR: test-results/lab-${{ matrix.browser }}
       - name: Keep swap screenshots and pixel report
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: swap-visual-${{ matrix.browser }}
           path: test-results/swap-${{ matrix.browser }}
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Keep isolated Balance Lab screenshots and browser report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: balance-lab-${{ matrix.browser }}
+          path: test-results/lab-${{ matrix.browser }}
           if-no-files-found: warn
           retention-days: 7
 
@@ -218,3 +232,24 @@ jobs:
         run: npm ci
       - name: Compile C# 7.3 and compare real app sessions, atomic saves and local events
         run: npm run test:unity-session
+
+  balance-lab-audit:
+    name: Balance Lab deterministic comparison
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.2'
+          cache: npm
+      - name: Install test dependencies
+        run: npm ci
+      - name: Check isolated experiments, certificates, hidden-information boundaries and storage safety
+        run: npm run test:balance-lab
+      - name: Reproduce all original and experimental standard and recovery games
+        run: npm run balance:lab -- --check --quiet
+        env:
+          HEXROTA_LAB_WORKERS: '4'
