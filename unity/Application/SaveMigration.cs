@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Hexrota.Catalog;
+using Hexrota.Economy;
 using Hexrota.Gameplay;
 using Hexrota.Lives;
 using W = Hexrota.Contracts.Wire;
@@ -37,6 +38,7 @@ namespace Hexrota.Application
                 raw = W.Obj("current", W.IsInteger(W.Get(previous, "current")) ? W.Integer(previous["current"]) + tutorialCount : tutorialCount, "done", done, "boards", boards, "sound", W.Get(previous, "sound"));
             }
             var map = W.Map(raw);
+            if (W.Has(map, "economy")) saved["economy"] = W.Clone(map["economy"]);
             if (W.IsMap(W.Get(map, "boards"))) foreach (var item in W.Map(map["boards"])) { int index; if (!int.TryParse(item.Key, out index) || index < 0 || index >= size || item.Key != index.ToString(System.Globalization.CultureInfo.InvariantCulture) || !W.IsMap(item.Value) && !W.IsList(item.Value)) throw new ProfileStorageException("invalid_game_save"); }
             var completed = W.Arr();
             if (W.IsList(W.Get(map, "done"))) foreach (object index in W.List(map["done"])) if (Index(index, size) && !completed.Any(x => W.Equal(x, index))) completed.Add(W.Integer(index));
@@ -86,11 +88,12 @@ namespace Hexrota.Application
     }
     public sealed class SaveValidator
     {
-        private readonly AttemptRepository attempts; private readonly LifeManager lives;
-        public SaveValidator(AttemptRepository attempts, LifeManager lives) { this.attempts = attempts; this.lives = lives; }
+        private readonly AttemptRepository attempts; private readonly LifeManager lives; private readonly EconomyManager economy;
+        public SaveValidator(AttemptRepository attempts, LifeManager lives, EconomyManager economy = null) { this.attempts = attempts; this.lives = lives; this.economy = economy; }
         public bool ValidateProfile(object value, bool replayEveryAttempt = true)
         {
             GameProfile.ValidateEnvelope(value); DevelopmentLifeProvider.ValidateEnergy(W.Get(value, "energy"), lives);
+            if (W.Has(W.Get(value, "game"), "economy")) (economy ?? new EconomyManager(null)).Restore(W.Get(W.Get(value, "game"), "economy"));
             if (replayEveryAttempt) attempts.ValidateAll(W.Map(W.Get(value, "game"))); return true;
         }
     }

@@ -238,7 +238,9 @@ test('full progress reset explains played-attempt costs, supports cancellation a
   f.click('#game-settings');f.click('#settings-reset');assert(/1 can/.test(f.node('#reset-description').textContent));f.click('#reset-cancel');assert.deepEqual(f.save(),before);assert.deepEqual(f.life(),life);
   f.click('#settings-reset');f.click('#reset-confirm');assert.equal(f.life().life.lives,4);assert.deepEqual(f.save().boards,{});
  }finally{f.close();}
- const first=existing(2),second=existing(3),saved=plain(second.saved);saved.boards[2]=first.saved.boards[2];saved.attempts[2]=first.saved.attempts[2];saved.attemptStats[2]=first.saved.attemptStats[2];
+ const first=existing(2),second=existing(3),saved=plain(second.saved);saved.done=[0,1];saved.boards[2]=first.saved.boards[2];saved.attempts[2]=first.saved.attempts[2];saved.attemptStats[2]=first.saved.attemptStats[2];
+ // Older versions could retain several unfinished boards. Neither board is a permanent completion;
+ // a done flag on stage 2 would now correctly preserve that closed level as historical evidence.
  const many=mount({saved,life:lifePool(1)});try{
   many.click('#settings');many.click('#settings-reset');assert(/1 can/.test(many.node('#reset-description').textContent));many.click('#reset-confirm');assert.equal(many.life().life.lives,0);assert.deepEqual(many.save().boards,{});
   for(const meta of [first.metadata,second.metadata])assert.equal(many.life().life.settledAttempts[meta.attemptId].discarded,true,'each deleted played attempt is durably closed');

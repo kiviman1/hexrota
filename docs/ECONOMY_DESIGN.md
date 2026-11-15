@@ -1,151 +1,55 @@
-# Hexrota — oyun ekonomisi tasarımı
+# Altın, yıldız ve envanter — 9.5
 
-## Durum ve kapsam
+Bağlayıcı ürün kararı [ONE_TIME_PROGRESSION_ECONOMY_9_5.md](ONE_TIME_PROGRESSION_ECONOMY_9_5.md) içindedir. Bu belge önceki başlangıç Altını, öğretici ödülü ve tekrar oynama ödülü önerilerinin yerini alır. Ana kampanya doğrusal ve tek tamamlamalıdır. Bütün mevcut bölümlerin ücretsiz kazanma yolları korunur; yardım satın almak ilerleme şartı değildir.
 
-Bu belge genel ekonomi önerilerini ve 9.1'de uygulanmış **can/test alt kümesini** ayırır. Gerçek ödeme veya canlı reklam SDK'sı yoktur. 9.1 prototipinde can ürünleri, açıkça etiketlenmiş 300 TEST Altın cüzdanı ve sahte reklam/satın alma sağlayıcısı vardır; normal Altın kazanımı, genel mağaza, kozmetik ve oyun içi güçlendiriciler henüz uygulanmadı. `data/economy-design.json` genel tasarım verisidir ve çalışma zamanında yüklenmez; canın kanonik çalışma ayarları `dist/lives-config.json` içindedir. Fiyatlar ölçülmüş ticari sonuç değil, değiştirilebilir test değerleridir.
+## Uygulama aşamaları
 
-Çalışan oyunda puan ve yeşil alan birlikte kazanma koşuludur; normal bir takas bütün zinciriyle bir hamle harcar. Mevcut `classic-v4` motoru ve `snapshot.version = 4` yalnızca takas geçmişini tekrar oynatır. Bu ekonomi tasarımı mevcut kayıt biçimine satın alma veya güçlendirici komutları eklemez.
+A: kalıcı tamamlama, doğrulanmış ilk kazanma ödülü, migration, bakiye/envanter ve JS/C# oturum sınırları uygulanır. B: iki yardım komutu ve envanter harcaması; C: ikinci şans; D: botanik görünüm. B/C için saf ekonomi işlemlerinin A'da bulunması bu ürünlerin A arayüzünde kullanılabildiği anlamına gelmez. Her aşamanın gerçek doğrulaması ve PR bağımlılığı [ECONOMY_9_5_DELIVERY.md](ECONOMY_9_5_DELIVERY.md) içinde tutulur.
 
-Öncelik ücretsiz oynanışın anlaşılması, doğrulanmış açılışların dengesi ve tekrar denemenin iyi hissettirmesidir. Ücretli özellikler bu doğrulamanın yerine geçmez.
+## Kalıcı kazanımlar
 
-## Değişmeyecek ilkeler
-
-- Tek oyun içi para birimi **Altın** olur. Puan, Altın değildir ve para harcamak puanı çarpmaz.
-- Bütün ana bölümler ve temel varyantlar güçlendiricisiz tamamlanabilir olmalıdır. Yeni verinin kabulü ücretsiz kazanma yollarına dayanır.
-- 9.0'daki can/enerji kapısı olmaması önerisi 9.1 kararıyla değişmiştir. Yeni ana deneme için can gerekir; kayıp ve geçerli hamle sonrası onaylı yeniden başlatma deneme başına en fazla 1 can harcar. Yeniden deneme ayrıca Altın harcamaz. Kayıttan devam, öğreticiler ve ipucu can tüketmez; ayrıntı [LIVES_DESIGN.md](LIVES_DESIGN.md) içindedir.
-- Varyant seçimi, ilk taşlar, taş üretimi ve ipucu kalitesi cüzdan, mağaza gezintisi, reklam veya satın alma geçmişini okuyamaz.
-- Aynı güçlendirici komutu, Altın ücretsiz kazanılmış olsa da satın alınmış olsa da aynı sonucu üretir.
-- Oyuncuyu bilerek kaybettirme, son hamlede gizli kural değiştirme, kazanma vaadi veya yanıltıcı indirim sayacı kullanılmaz.
-- Mağaza kaybettikten sonra kendiliğinden açılmaz; reklam kullanıcı isteği olmadan başlamaz. Can varsa kayıptan yeni varyantla tekrar denemeye doğrudan geçilir. Can yoksa bekleme, isteğe bağlı test ödülleri ve ücretsiz öğretici açıkça sunulur.
-- Oyun alanındaki puan, yeşil alan ve hamle göstergeleri korunur. Altın ve mağaza girişleri ileride ana menü, sonuç ve mağaza ekranlarında gösterilir; T1/T2'ye ekonomi anlatımı eklenmez.
-
-## 9.1 can ürünleri — yalnızca geliştirme/test
-
-Can 5 ile başlar, en çok 5 olur ve eksikken her 30 dakikada bir yenilenir. Bu ücretsiz yenilenme çevrimdışıyken devam eder. Sınırsız hak normal yenilenmeyi durdurmaz. Tek can ödülü sürmekte olan sayacı sıfırlamaz; can 5'e ulaşırsa sayaç durur.
-
-| Ürün | Test değeri | Sınır / davranış |
+| Kaynak | İlk kazanım | Tekillik anahtarı |
 | --- | ---: | --- |
-| Gönüllü sahte reklam | +1 can | UTC günü başına 3; başarılı talepler arasında 30 dakika. Reklam yoksa ödül yok; bekleme ve Altın alternatifleri görünür. |
-| Tek can | 30 TEST Altın | +1, üst sınır 5. |
-| Canları doldur | 100 TEST Altın | Normal bakiyeyi 5 yapar. |
-| 30 dakika sınırsız | 180 TEST Altın | Etkin hak varsa bitişten 30 dakika daha uzar. Normal yenilenme ayrı sürer. |
+| Bir ana bölümün doğrulanmış ilk kazanımı | 20 Altın + 1 yıldız | `clear:main:<sayısal Level ID>` |
+| 3. bölümün ilk kazanımı | 3 Yeşil Fırça | `gift:main:3:greenBrush` |
+| 6. bölümün ilk kazanımı | 3 Renk Anahtarı | `gift:main:6:colorKey` |
+| Öğreticiler, kayıp, ipucu, yeniden deneme, reset | Ödül yok | Yeni hak oluşmaz |
 
-Test cüzdanındaki 300 Altın, aşağıdaki gelecek tasarımındaki 100 Altın hediyesinden farklıdır. Normal bölüm/öğretici bitirişleri şu anda Altın dağıtmaz. Açık geliştirici yüklemesi de sahte ve tekil işlem olarak kaydedilir; ilerlemeyi sıfırlamak 300 Altını yeniden vermez.
+Yeni oyun Altını sıfırdır. On bölümün toplam ilk kazanım kaynağı 200 Altın ve 10 yıldızdır. Varyant, deneme veya veri sürümü değişince yeniden hak doğmaz. Yıldız harcanamaz/satılamaz; 2/5/8/10 yıldız çiçek/bitki/ağaç/tam bahçe görünümünü açar. İlk üç ve altıncı bölüm hediyeleri yalnız bir kez verilir. Öğreticiler ücretsiz ve ödülsüz yeniden oynanır; tamamlanmış ana bölüm tekrar oynanamaz. Menü yalnız sıradaki açık ana bölümü sunar. Kampanya sonunda “Bahçeni gör / Yeni bölümler yakında” gösterilir.
 
-Ödül ancak sağlayıcı kaydıyla doğrulanan benzersiz işlemden bir kez gelir. Can uygulaması, TEST Altın düşümü ve sağlayıcı/cüzdan günlüğü aynı yerel JSON yazımında kesinleşir. İptal, uygun olmama veya yazma hatası ücret/ödül oluşturmaz. Aynı callback tekrar geldiğinde can, süre veya Altın tekrar değişmez. Bu yerel test doğrulaması mali güvenlik veya gerçek reklam gösterimi kanıtı değildir.
+## Ayrı TEST cüzdanı
 
-## Altın kaynakları: gelecekteki ilk aday değerler
+Mevcut can prototipinin 300 TEST Altını `energy.testWallet` içinde kalır; oyun Altınına dönüştürülmez ve güçlendirici/kurtarma satın alamaz. Bu test can ürünleri mevcut kurallarıyla korunur: +1 can 30 TEST Altın, 5'e tamamlama 100 TEST Altın, 30 dakika sınırsız can 180 TEST Altın. Can reklamı ayrı UTC 3/gün, arada 30 dakika; kurtarma kotasıyla paylaşılmaz. Bunlar gerçek para veya canlı reklam değildir.
 
-| Kaynak | Altın | Sınır ve ücretsiz elde edilme kuralı |
-| --- | ---: | --- |
-| Ekonomi ilk açıldığında başlangıç hediyesi | 100 | Cüzdan başına bir kez; ilerlemeyi sıfırlamak tekrar vermez. |
-| Öğreticiyi ilk bitirme | 25 | T1 ve T2 için ayrı ayrı bir kez; tekrar oynama ödülü üretmez. |
-| Ana bölümü ilk bitirme | 50 | Sabit kampanya ve Level ID için bir kez; varyant veya deneme başına tekrar verilmez. |
-| Tamamlanmış ana bölümü yeniden bitirme | 10 | En fazla 5 ödüllü bitiriş/gün; ödül sınırından sonra oynamak yine ücretsizdir. |
+## Pilot harcama parametreleri
 
-Bu gelecekteki kazanım tasarımında başlangıç, iki öğretici ve ilk on ana bölüm için önerilen bir defalık toplam **650 Altın** olur. Bu kazançlar ve 100 Altın başlangıç hediyesi 9.1'de uygulanmış değildir. Önceki 25 Altınlık reklam ödülü önerisinin yerini mevcut can testinde **+1 can** almıştır. Bu bir oyuncu kazanma veya süre tahmini değildir: yalnızca tablodaki öneri tutarlarının toplamıdır. Örneğin 90 Altınlık ürün yaklaşık iki ilk bölüm ödülüne, 400 Altınlık tema sekiz ilk bölüm ödülüne karşılık gelir; başlangıç hediyesi ve tekrar oynama bu hesabın dışındadır.
+Kanonik kaynak `data/economy-config-9-5.json`; üretilen JS/C# kopyaları `sync-economy-config.cjs --check` ile doğrulanır. Fiyatlar ticari olarak kalibre edilmemiş test değerleridir.
 
-Ödül kazanma kaydı idempotent olmalıdır. İlk bitirme talebi `kampanya + Level ID` ile tanımlanır; Variant ID, Attempt ID veya ekonomi fiyat sürümü değiştiğinde yeniden doğmaz. Kaybetmek Altın kazandırmaz. Kalan hamle veya kullanılan güçlendirici, önerilen sabit ilk bitirme tutarını büyütmez.
+| Ürün | Altın | Açılma / sınır | Etki |
+| --- | ---: | --- | --- |
+| Yeşil Fırça stoğu +1 | 70 | L3 tamamlandıktan sonra; denemede 1 kullanım | Seçili zeminden bir kat, sıfır hamle/puan; sayı ve RNG sabit |
+| Renk Anahtarı stoğu +1 | 90 | L6 tamamlandıktan sonra; denemede 1 kullanım | Oyuncunun seçtiği başka izinli sayı; gerçek eşleşme/düşüş/üretim |
+| İkinci şans +5 hamle | 140 | Ana bölümün gerçek son takas kaybı; denemede 1 | Aynı Attempt ID ve tahta, tam 5 hamle |
+| Gönüllü TEST kurtarma reklamı | 0 | Ayrı UTC günde 2; aynı denemede 1 başarılı kurtarma | Yalnız doğrulanmış tamamlanmada +5 hamle |
 
-Günlük sınırlar ilerleme kilidi değildir. Çevrimdışı cihaz saati güvenilir bir finansal otorite değildir; gelecekte gün bazlı taleplerin doğrulanması ayrıca tasarlanmalıdır. Saat hatası nedeniyle mevcut bölüm, kazanılmış ilerleme veya doğrulanmış satın alma silinmez.
+Ekonomide günlük Altın farmı, mağaza zorlaması, gerçek ödeme, canlı reklam, yeni başlangıç güçlendiricisi veya +3 hamle ürünü yoktur. Gelecekte kozmetik ve doğrulanmış gerçek ödeme ancak ayrı ürün/güven sözleşmesiyle eklenebilir. Mevcut 200 Altın toplam kaynağıyla 140 Altınlık kurtarma pahalıdır; hediye stokları dışındaki yardım sıklığı pilotta ölçülmelidir. Bu sınırlılık gizli taş manipülasyonu veya zorunlu ödeme ile çözülmez.
 
-## Ürün adayları
+## Eski kayıtların tanınması
 
-Aşağıdaki yardım ve kozmetik ürünler **planlanmıştır; prototipte uygulanmamıştır**. Yukarıdaki 9.1 can/test ürünleriyle karıştırılmamalıdır. Kullanım sınırı kayıt yüklenince korunacak komut geçmişinden hesaplanır. Normal oynanıştan kazanılan Altın ile tüm adaylar alınabilir.
+Geçerli eski `done` Level ID'leri kalıcı tamamlanmış kabul edilir. Geçerli katalog ve gerçek hamle geçmişi yeniden oynatıldığında kazanmış olan arşivler, `done` bayrağı eksik olsa da tanınır. Yalnız bu kanıt için ilk ödül/hediye geriye dönük bir kez verilir. Tek başına yüksek skor bir kazanma kanıtı değildir.
 
-| Ürün | Aday maliyet | Kullanım sınırı | Fayda ve ücretsiz edinme | Uyum / öneri |
-| --- | ---: | --- | --- | --- |
-| +3 ek hamle | 90 Altın | Bir denemede +3 veya +5 seçeneklerinden yalnızca biri, bir kez | Kaldığı tahtada 3 takas daha; normal oynanış Altınıyla alınır. | En anlaşılır yardım adayı. Ücretsiz denge ve gerçek oyuncu testlerinden sonra değerlendir. |
-| +5 ek hamle | 140 Altın | +3 ile ortak tek kullanım sınırı | Aynı tahtada 5 takas daha; normal oynanış Altınıyla alınır. | +3 ile birlikte uygulanacaksa seçenekler ve toplam ücret açık olmalı. Tekrar tekrar teklif etme. |
-| Tek taş temizleme | 60 Altın | Deneme başına bir kez | Seçilen taşı kaldırır ve altındaki bir katı azaltır; ücretsiz Altınla alınır. | Son eksik alan için anlamlıdır; yeni komut ve ödül sözleşmesi doğrulanmadan eklenmemeli. |
-| Seçilen taşın sayısını yenileme | 50 Altın | Deneme başına bir kez | Seçilen taş başka bir palet değerine dönüşür; ücretsiz Altınla alınır. | İlk mağazaya önerilmez: planı bozabilir, iyi hamle garantisi yoktur. Ön izleme ve RNG davranışı ayrıca doğrulanmalı. |
-| Başlangıç fırçası | 80 Altın | İlk takastan önce bir kez; yalnızca iki katlı yeri olan ana bölüm | İki noktalı bir yeri bir noktaya indirir; ücretsiz Altınla alınır. | Başlangıç güçlendiricisi adayıdır. Sayıları veya tohumu değiştirmez; ilk mağazaya önerilmez, öğreticilerde kullanılamaz. |
-| Tahta teması | 400 Altın | Tema başına bir kez, kalıcı | Görünümü kişiselleştirir; normal Altın biriktirilir. | İlk mağaza için en düşük denge riski. Rakamların okunurluğu ve dokunma alanları değişmez. |
-| Görsel/ses stili | 200 Altın | Stil başına bir kez, kalıcı | Aynı başarıya farklı görünüm veya ses; normal Altın biriktirilir. | İlk mağaza adayı. Başarı seviyesini, puanı, süreyi veya titreşim sınırlarını satın alınabilir hale getirmez. |
+Kanıtı bulunmayan eski tamamlamalar yeniden açılmaz; `pendingReviewLevelIds` olarak açıkça bildirilir. Bu durumda yıldız sayısı kapalı bölüm sayısından az olabilir. Sonradan geçerli tarihsel kanıt gelirse yalnız bekleyen ilk hak teslim edilir. Tarihsel migration yeni kazanma pop-up'ı üretmez. Bozuk veya bilinmeyen ekonomi zarfı yeni oyuncu gibi sıfırlanmaz; mevcut profil korunarak yükleme reddedilir. Bu yerel inceleme durumunun hesap/cihazlar arası destek politikası henüz kararlaştırılmamıştır.
 
-Temalar ve stiller başlangıç mağazasının ilk adaylarıdır. Sayı yenileme ve başlangıç yardımı mevcut basit oyuna yeni açıklama yükü getirir; sırf ürün çeşitliliği için eklenmemelidir. +3/+5 ve temizleme ayrı, küçük gerçek oyuncu testleriyle denenmelidir. Gerçek para karşılığı Altın paketlerinin miktarları, yerel fiyatları ve satış düzeni bu aşamada kararlaştırılmadı; gerçek ödeme ürünü veya SDK eklenmedi.
+## İşlem ve kayıt sınırı
 
-## Güçlendiricili durum nasıl hesaplanmalı?
+Ekonomi `profile.game.economy` içinde sürüm 1 ledger'dır; dış profil `hexrota-profile-v2`, oyun aynası `hexrota-match-v5`, eski snapshot 4, attempt metadata 1 ve LifeState 2 değişmez. İşlem sırası ve tamamlamalar üzerinden bakiye, yıldız ve stok yeniden doğrulanır. `complete(verified:true)` yalnız hostun doğrulanmış motor sonucundan ürettiği bağlamdır; UI tarafından gönderilen bir kazanma iddiası kabulü değildir.
 
-Bu bölüm önerilen gelecek sözleşmedir. Mevcut v4 kaydı `movesLeft = level.moves - turn` eşitliğini doğrular; sonradan hamle eklemeyi veya hücre temizlemeyi bu kayda gizlice yazmak doğrulamayı bozar. Yeni yardım kuralları ayrı oyun-kuralı ve kayıt sürümüyle gelmelidir. Eski v4 kayıtları aynı motorla açılmaya devam eder.
+Önce gerçek oyun sonucu ve uygunluk doğrulanır; oyun/can/Altın/yıldız/stok/tamamlama aynı revision kontrollü profil commit'ine girer. Yalnız başarılı commit ardından sonuç ve görsel geri bildirim gösterilir. Yazma hatasında önceki geçerli profil geri yüklenir; ikinci callback aynı hak veya işlemi yeniden üretmez. İki yazıcı stale revision ile birbirini ezemez. Normal reset kalıcı ledger'ı, tamamlamaları, ödülleri, stokları ve kazanma kanıtı arşivlerini korur.
 
-Önerilen komut günlüğü sıralı `Swap`, `GrantMoves`, `ClearCell`, `RerollCell` ve `ReduceGroundLayer` komutlarını taşır. Her komut kimlik, sıra, parametreler ve ilgili cüzdan işlem kimliğini içerir. Level ID, Variant ID, temel veri sürümü ve temel RNG tohumu aynı denemeye bağlı kalır.
+Yardımlar eski v4 geçmişine gizlenmez: sürümlü `assisted-v1` komut zarfı, klasik takas geçmişini ve yeni yardım komutlarını ayrı doğrular. Eski v4 motor kuralları değişmez. İpucu yardımdan sonra eski sertifikayı garanti diye sunamaz. Mevcut Reward Director v1, klasik hareketlerde aynen korunur; yardım akışına sahte takas veya puan girdisi üretilmez.
 
-- `movesUsed` geçerli normal takas sayısıdır. Güçlendirici normal bir hamle harcamaz. Gelecekte `movesRemaining = baseMoveBudget + grantedMoves - movesUsed` olur.
-- Komut sırası, normal hamle sayısı ve ödül çözüm sırası birbirine karıştırılmaz. Sayı yenileme/temizleme sonrası doğrulanmış ücretsiz çözüm yolunun hâlâ geçerli olduğu iddia edilmez.
-- Temel bölüm geometrisi, paleti, puan hedefi ve katman tanımı değişmez. Yardımın etkisi yalnızca o denemenin durumuna ve açık komut geçmişine yazılır.
-- Her çözümleme sonunda kazanmak için yine `score >= target` ve bütün yerlerde `layers = 0` gerekir. Son hamlede iki koşul sağlandıysa kazanma, sıfır hamlede kaybetmeden önce değerlendirilir.
-- Deneme `assisted`, kullanılan ürünler ve eklenen hamleler ile işaretlenir. Ücretsiz ve yardımlı sonuçlar denge analizinde ayrı raporlanır; mevcut ücretsiz kişisel kayıtlar yardımlı skorlarla sessizce değiştirilmez.
+## Adalet, ölçüm ve açık kararlar
 
-### +3 / +5
+Ödeme geçmişi, reklam seçimi ve Altın bakiyesi üretim RNG'si veya bölüm varyantını değiştiremez. Yardımlı ve yardımsız denemeler analizde ayrılmalıdır. Ledger ekonomik kanıttır; yerel analitik başarısızlığı oyunu geri alamaz. Hiçbir olay kişisel veri veya otomatik sunucu gönderimi içermez.
 
-Öneri: yalnızca bütün taşlar durduğunda, hamle sıfır olduğu için kaybedilmiş ve henüz kazanılmamış ana bölümde sunulsun. Tek doğrulanmış `GrantMoves` komutu 3 veya 5 hamle ekler. Taşlar, puan, katmanlar, geçmiş takaslar ve RNG değişmez; yeni varyant seçilmez. Oyun tekrar oynanabilir duruma gelir. Bu bir kazanma garantisi değildir; faydasız olduğu bilinen teklif sunulmaz. Reddedilirse mevcut can uygunluğuyla yeni deneme seçeneklerine geçilir. İlk kayıpta sonuçlandırılan can aynı Attempt ID ile +3/+5 sonrası tekrar kesilmez; sonradan kazanma önceki kesintiyi otomatik iade etmez.
-
-### Tek taş temizleme
-
-Öneri: yalnızca oynanan ve hareketsiz ana tahtada kullanılabilsin. Oyuncu hücreyi seçip işlemi ve ücretini onaylar. Seçilen taş kaldırılır; o hücrenin kalan katmanı varsa bir azalır. İki katlı yer tek kullanımla tamamen yeşile dönüşmez. **Taşın üzerindeki sayı doğrudan puan olarak eklenmez.**
-
-Ardından normal sütun düşüşü, kontrollü üretim ve gerçek eşleşme zincirleri deterministik sırada çözülür. Yalnızca gerçekten eşleşen taşlar normal puanı verir. Hamle sayısı değişmez; RNG yalnızca gerçekleşen üretim/karıştırma işlemleri kadar ilerler. Puan zaten yeterliyse son alanı temizlemek bölümü bitirebilir. Bütün sonuç, ücret kesinleşmeden önce aynı komut girdileriyle hesaplanıp doğrulanır.
-
-### Sayı yenileme ve başlangıç yardımı
-
-Sayı yenileme önerisinde hedef hücre açıkça seçilir. Paletten mevcut değerden farklı bir değer deterministik olarak seçilir; en az iki farklı değer yoksa işlem reddedilir ve ücret alınmaz. Yeni eşleşmeler varsa normal çözümleme uygulanır; doğrudan puan yoktur. RNG seçiminin sırası, ön izleme ve iptal davranışı henüz ürün kararıdır. Bu belirsizlik çözülmeden satışa konmamalıdır.
-
-Başlangıç fırçası önerisinde başlangıçta iki kalan katmanı olan tek yer 2'den 1'e iner. Taş, puan ve RNG değişmez. İki katlı yer olmayan bölümde ve öğreticilerde sunulmaz. Bu da gelecekteki komut günlüğünde yer almalı; temel bölüm verisini değiştirmemelidir.
-
-### Ödül yöneticisiyle sınır
-
-Mevcut Reward Director v1 en az üç taş eşleşen dalgalar ve sıralı takaslar bekler. Tek taş temizlemeyi sahte bir üçlü gibi göndermek veya puan uydurmak doğru değildir. Takas dışı eylem için sürümlü bir adaptör/girdi sözleşmesi ve gerektiğinde ayrı yardım geri bildirimi kararlaştırılmalıdır. Gerçek zincirlerin değerlendirilmesi mevcut başarı ilkelerini korur; tema, ses veya satın alma kaynağı ödül yoğunluğunu oyun kuralı olarak değiştirmez. Bu sözleşme kararı ve testleri henüz uygulanmadı.
-
-## Cüzdan, işlem güvenliği ve kayıt
-
-Altın tamsayıdır; negatif bakiye ve taşma reddedilir. Önerilen ayrı cüzdan günlüğünde `transactionId`, sıra, kaynak, ürün, tutar, önceki/sonraki bakiye ve ilgili deneme bulunur. Kazanç, harcama, iade ve kalıcı hak işlemleri idempotent kimlik taşır. Bu genel üretim cüzdanı henüz yoktur. 9.1'in ayrı TEST cüzdanı yalnızca can ürünleri ve açık geliştirici yüklemesi için yerel, tekil işlem günlüğü tutar.
-
-Gelecekte kullanım sırası: uygunluk ve bakiye kontrolü → saf oyun sonucu hesaplama → cüzdan/komut/deneme kaydını tek mantıksal işlemde yazma → animasyon ve yerel olay. İptal, geçersiz hedef, yetersiz bakiye veya kayıt hatası Altın düşürmez ve tahtayı değiştirmez. Yeniden yükleme geçmiş komutları tekrar oynatır; tekrar ücret veya ilk bitirme ödülü üretmez. Normal oyun, analitik kayıt başarısız olduğu için durdurulmaz; gerçek para işlemi ise doğrulanmış mali kayıt olmadan tamamlanmış sayılmaz.
-
-Yerel oyun geçmişinin yeniden oynatılması, satın alma makbuzunun veya cüzdanın güvenilir olduğunu ispatlamaz. Gerçek ödemede makbuz doğrulama, tekrar işlemden korunma, iade ve kalıcı hak geri yükleme ayrı bir güvenilir otorite gerektirir. Prototipte böyle bir servis yoktur; yalnızca cihazda saklanan bakiyeye güvenli ödeme sistemi denmez.
-
-9.1'de ilerlemeyi sıfırlama, oynanmış açık ana denemelerin gerçek toplam can maliyetini onaydan önce gösterir; bütün can sonuçları tek can zarfına yazıldıktan sonra oyun ilerlemesini temizler. Can, TEST cüzdanı ve işlem/koruma kayıtları korunur. Gelecekte de bu işlem gerçek cüzdanı, kalıcı hakları ve ilk-ödül talep günlüğünü korumalıdır. Misafir kayıtları, cihaz değişimi, eski oyunculara ilk Altın aktarımı ve hesap silme politikası ödeme entegrasyonundan önce ayrıca kararlaştırılır. Bozuk veya bilinmeyen yardımlı kayıt ücretsiz eski kayıt gibi yorumlanmaz; mali kayıt ayrı tutulur ve mevcut ücretsiz ilerleme silinmez.
-
-## Ölçüm: uygulanan ve planlanan
-
-Ayrıntılı mevcut sözleşme [ANALYTICS.md](ANALYTICS.md) içindedir; aşağıdaki ekonomi metrikleri onun üzerine kurulacak tasarımdır.
-
-**Uygulanan:** `dist/events.js` saf, yerel bir olay şemasıdır. Uygulama olaylarını `hexrota-events-v1` altında en fazla 500 kayıt tutar; dış servise veya kişisel veriye gönderim yoktur. İzin verilen adlar `level_started`, `level_completed`, `level_failed`, `level_retried`, `hint_used`, `booster_used`, `level_abandoned` olur. `booster_used` yalnızca ileriye dönük şemadır; mevcut oyunda güçlendirici kullanımı üretilmez.
-
-Olayların düz alanları sürüm, olay kimliği/sırası/zamanı, Level ID, Variant ID, veri sürümü, Attempt ID/sayısı, kullanılan/kalan hamle, puan/hedef, yeşil yer sayısı/toplamı, kalan katmanlar, ilk eşleşmeden sonraki ek dalga sayısı, ipucu sayısı ve sonuç durumunu içerir. İsteğe bağlı düz ayrıntılar `reason`, `previousAttemptId`, `nextAttemptId`, `hintKind`, `hintGuarantee`, `boosterId` olur. Bu alanlar iç içe `details` nesnesi değildir; bilinmeyen alan/adlar doğrulamada reddedilir.
-
-| Ölçüm | Hesap ve sınır |
-| --- | --- |
-| Deneme tamamlama | Başlangıcı ve takip penceresi gözlemlenen tekil tamamlanan Attempt ID / tekil başlayan Attempt ID; Level ID, Variant ID ve veri sürümüne göre ayır. Hâlâ açık denemeleri ayrıca göster. |
-| Sonucu belli denemede kazanma | Kazanılan / (kazanılan + kaybedilen + açıkça terk edilen). Bu oran bütün başlayanları kapsayan oranla aynı değildir. |
-| Tekrar deneme | `level_retried` ile önceki ve sonraki Attempt ID'leri bağla; bitişe kadar kaç tekrar gerektiğini say. |
-| İpucu ihtiyacı | İpucu kullanılan denemeler / başlayan denemeler; ipucu başına ilerleme ve tamamlama ile birlikte incele. Nedensellik iddia etme. |
-| Yardım etkisi — gelecekte | Yardımlı/yardımsız sonuçları ayrı göster; kullanılan ürün ve temel varyantı koru. Bot başarısı insan kazanma oranı değildir. |
-| İlerleme kaybı | Bir bölümü bitirip gözlem penceresinde sonraki bölümü başlatmayan yerel profiller. Gerçek kullanıcı kaybı olduğu sonucuna varma. |
-| Mağaza dönüşümü — gelecekte | En az bir doğrulanmış alım yapan uygun profil / mağazayı açan uygun profil; Gold kazanma/harcama dengesi ve iade ile birlikte ölç. |
-| Reklam seçimi — gelecekte | İsteğe bağlı teklifi seçen / teklifi gören; doğrulanmış tamamlanma / başlayan reklam; oyun devamına etkisini ayrıca ölç. |
-
-Genel mağaza dönüşümü, gerçek ödeme ve gerçek reklam olayları mevcut yedi olaylık şemada uygulanmadı. 9.1'in sahte can işlemleri yerel sağlayıcı/cüzdan günlüğündedir; bunlar gerçek reklam veya satış dönüşümü değildir. Bunlar için sürümlü şema ve mali günlük gerekir. Mevcut `booster_used` alanlarına keyfî ücret veya makbuz verisi eklenmez. Analitik olay, ücret alındığının kanıtı değildir.
-
-Menü, duraklatma, arka plan ve sayfa yenileme oyunu terk etmek sayılmaz; kayıt devam eder. Gerçek terk etme yalnızca bitmemiş denemeyi açıkça silmek/yeniden başlatmaktır. 500 kayıtlık tamponun eski veriyi düşürmesi kohortları eksiltebilir; rapor gözlem kapsamını ve açık/eksik denemeleri göstermelidir. Yerel veriden cihazlar arası kullanıcı sayısı, kalıcı kullanıcı kaybı veya küresel mağaza dönüşümü çıkarılamaz.
-
-## Parametre yönetimi ve açılış sırası
-
-`data/economy-design.json` bütün öneri miktarlarını, sınırları ve ürün tavsiyelerini tek yerde tutar. `loadedByPrototype: false` ve `status: design_only` bu genel tasarım dosyası için bilinçlidir. 9.1'de uygulanan can kuralları ve test fiyatları ayrı `dist/lives-config.json` kaynağından alınır; genel taslak fiyatlar oyun motoruna gizlice uygulanmaz. Gelecekte saf Economy Rules, sürümlü veriyi alır ve uygunluk/fiyat/işlem sonucu döndürür; ödeme, reklam ve depolama adaptörleri bu saf modülün dışında kalır.
-
-Önerilen sıra: ücretsiz bölümleri ve 9.1 can akışını gerçek oyuncularla doğrula → gerçek sağlayıcı/cüzdan güvenini ve kurtarma kurallarını tasarla → kozmetik ön izleme → sınırlı yardım deneyleri → gerekçelendirilirse canlı reklam ve gerçek ödeme. Deneyler taş üretimi veya varyant seçiminde ödeme profiline göre değişiklik yapamaz.
-
-Bir özelliğin açılma koşulu; kod, kayıt tekrar oynatma, iptal/yeniden yükleme, iki hedef, RNG, çift alan, ücretin yalnızca bir kez alınması ve ücretsiz tamamlama testlerinin geçmesidir. Ödül animasyonunu atlamak mali veya oyun sonucunu değiştiremez.
-
-## Birlikte kararlaştırılacaklar
-
-1. İlk mağazada yalnızca kozmetik mi, +3/+5 yardımı da olacak mı?
-2. Önerilen Gold kaynakları ve fiyatlar gerçek oyuncuların kazanma/harcama hızında nasıl değişmeli?
-3. Tek temizleme gerçekten bir katı mı azaltmalı; doğrudan puan vermemesi ve normal hamle harcamaması onaylanıyor mu?
-4. Sayı yenileme ve başlangıç yardımı gerekli mi, yoksa ürün listesinden çıkarılmalı mı?
-5. Takas dışı komutlar ve ödül girdisi için yeni sürüm sözleşmesi nasıl dondurulmalı?
-6. Eski oyuncuların Altın aktarımı, çevrimdışı mali güven, satın alma/hak geri yükleme ve ilerlemeyi sıfırlama politikası ne olacak?
-7. Sahte can reklamı testinin ardından canlı reklamın kullanılabilirlik, rıza ve güvenilir ödül doğrulama koşulları ne olacak?
-
-Can sistemi ve sahte test sağlayıcıları 9.1'de uygulanır; fiyatlar henüz kalibre edilmiş değildir. Oyun içi güçlendiriciler uygulanmamıştır ve yerel TEST günlüğü güvenli gerçek ödeme entegrasyonu olarak sunulmaz.
+Yerel JavaScript/C# ledger doğrulaması gerçek ödeme otoritesi değildir. Cihaz saati, değiştirilmiş uygulama veya tüm tarayıcı verisini elle silme karşısında sunucusuz kalıcı hesap hakkı garanti edilemez. Normal uygulama reseti ve eski UI/API yolları kapalıdır; hesap/cihaz taşıma ve tam veri silme ayrı ürün kararlarıdır. Pilot testte yardım fiyatları, tek kullanım sınırları ve gönüllü reklam sıklığı değerlendirilecek; canlı SDK, makbuz güveni ve uygulama mağazası ürünleri bu aşamada yoktur.

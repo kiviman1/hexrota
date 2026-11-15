@@ -2,6 +2,12 @@
 
 Durum: Saf C# 7.3 uygulandı ve gerçek .NET 8 harness ile JavaScript kaynaklarına karşı sınandı. Web uygulaması bu katmanı çağırmaz. Unity sahnesi, platform dosya adaptörü, cihaz SDK'sı ve ağ servisi bu çalışma kapsamında oluşturulmadı.
 
+## 9.5 A: kalıcı tek tamamlama
+
+`GameSessionController`, `Hexrota.Economy.EconomyManager` kullanır. `Game.economy` ledger'ı aynı `hexrota-profile-v2` commit'inde saklanır; TEST cüzdanı ayrıdır. `CanOpen`, `Preview`, `Enter`, `Retry`, `Restart`, `Swap` ve `Hint` tamamlanmış veya sıradaki olmayan kampanya bölümünü reddeder. Öğreticiler ücretsiz yeniden oynanır. Kazanma, gerçek motor durumundan doğrulandıktan sonra 20 Altın/1 yıldız ve L3/L6 stok hediyesi atomik kaydedilir.
+
+Geçerli eski `done` kapalı kalır; replay ile doğrulanmış kazanma arşivi varsa geriye dönük tek ödül verilir. Kanıt yoksa hak incelemede kalır, bölüm yeniden açılmaz. Normal reset kalıcı ledger ve kazanma arşivlerini korur. Ayrıntı: [ECONOMY_CORE_9_5.md](ECONOMY_CORE_9_5.md). A doğrulamasında 915 tam oturum karşılaştırması/28 app.js akışı ve 16 native senaryo (önceki 11 + 5 yeni ilerleme/legacy/final/bozuk ledger sınırı) geçti. Aşama B/C yeni yardım/ikinci şans API'leri bu aşamaya henüz bağlanmamıştır.
+
 ## Bağımlılıklar ve kapsam
 
 Bu çalışma güncel `main` tabanlıdır; katalog, can ve ipucu/ödül adaptörü için henüz onaylanmamış bağımsız PR #6, #7 ve #8'in kaynak dallarını yerel olarak içerir. Bu bağımlılıkların birleştirilmesi GitHub PR'larının onaylanması veya `main`e birleştirilmesi anlamına gelmez. Integration PR bütün modülleri ayrıca sınar.

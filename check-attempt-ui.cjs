@@ -166,14 +166,14 @@ test('missing or corrupt variant packs fail closed while valid original saves ca
  const legacy=mount(state,{pack:undefined});try{await enter(legacy);exact(legacy,game,'an original checkpoint does not require a new catalogue');validEvents(legacy);}finally{legacy.close();}
 });
 
-test('animation skipping and cross-level navigation preserve authoritative variant outcomes',async()=>{
- const state=fresh();state.done=[0,1,2];state.preferences.motion='full';const f=mount(state,{motion:true});try{
+test('presentation cancellation and free tutorial navigation preserve the only active campaign attempt',async()=>{
+ const state=fresh();state.preferences.motion='full';const f=mount(state,{motion:true});try{
   f.click('[data-nav="journey"]');f.click('[data-stage="2"]');f.click('#pregame-start');const game=f.game(),meta=identity(f),pair=game.level.solution[0];game.swap(...pair);
   for(const index of pair)f.click(`#board [data-index="${index}"]`);assert.equal(f.node('#board').getAttribute('aria-busy'),'true');
   assert.deepEqual(snapshot(f),plain(game.snapshot()),'the engine commits once before reward/animation work');f.click('#skip-animation');await until(()=>f.node('#board').getAttribute('aria-busy')==='false','skipping releases the variant board');exact(f,game,'skipping cannot alter the variant result');
-  const old=plain(f.save().boards[2]),oldMeta=identity(f);f.click('#game-home');f.click('[data-nav="journey"]');f.click('[data-stage="3"]');
-  const preview=plain(f.save());assert.deepEqual(preview.boards[2],old);assert.deepEqual(preview.attempts[2],oldMeta);f.click('#pregame-start');assert.equal(f.save().current,3);assert.equal(identity(f).levelId,2);
-  assert.deepEqual(f.save().boards[2],old,'starting another level preserves the previous checkpoint');const selection=plain(f.save().variantSelection);
+  const old=plain(f.save().boards[2]),oldMeta=identity(f);f.click('#game-home');f.click('[data-nav="journey"]');assert.equal(f.d.querySelector('[data-stage="3"]'),null,'future main levels are not playable out of order');f.click('[data-stage="0"]');
+  const preview=plain(f.save());assert.deepEqual(preview.boards[2],old);assert.deepEqual(preview.attempts[2],oldMeta);f.click('#pregame-start');assert.equal(f.save().current,0,'free tutorials remain replayable during the campaign');
+  assert.deepEqual(f.save().boards[2],old,'starting a free tutorial preserves the campaign checkpoint');const selection=plain(f.save().variantSelection);
   f.click('#game-home');f.click('[data-nav="journey"]');f.click('[data-stage="2"]');f.click('#pregame-start');exact(f,game,'returning to the previous level continues its exact variant');assert.deepEqual(identity(f),meta);assert.deepEqual(f.save().variantSelection,selection);
   assert.equal(f.events('level_started').filter(event=>event.attemptId===meta.attemptId).length,1);assert.equal(f.events('level_abandoned').filter(event=>event.attemptId===meta.attemptId).length,0,'navigation alone does not declare permanent abandonment');validEvents(f);
  }finally{f.close();}

@@ -5,6 +5,8 @@ const key='hexrota-match-v5',lifeKey='hexrota-lives-v1',catalogs=new WeakMap();
 // Regression/balance fixtures explicitly opt out of energy waits. Production defaults stay on.
 function prepareLifeBypass(window,read){
  window.HexSessionTestMode={isolated:true};if(!window.HexSessionStore)window.eval(read('session-store.js'));
+ // App integration fixtures use the same production economy modules as index.html; the life TEST wallet stays separate.
+ for(const [file,globalName]of [['economy-config.js','HEX_ECONOMY_CONFIG'],['economy.js','HexEconomy']])if(!window[globalName])window.eval(read(file));
  const dependencies=[['lives-config.js','HEX_LIVES_CONFIG'],['lives.js','HexLives'],['life-providers.js','HexLifePrototype']];
  for(const [file,globalName]of dependencies)if(!window[globalName])window.eval(read(file));
  assert(window.HexLives&&window.HEX_LIVES_CONFIG&&window.HexLifePrototype,'production life modules are loaded');

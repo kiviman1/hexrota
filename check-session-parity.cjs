@@ -7,8 +7,8 @@ const {spawnSync}=require('node:child_process');
 const {mount,fresh,existing,lifePool,plain,enter,move,wait,until,NOW,MINUTE}=require('./check-lives-ui.cjs');
 const root=__dirname,PK='hexrota-profile-v2',GK='hexrota-match-v5',LK='hexrota-lives-v1',EK='hexrota-events-v1';
 const context={window:{},performance};vm.createContext(context);
-for(const file of ['engine.js','levels.js','tutorials.js','variants-data.js','attempts.js','lives-config.js','lives.js','life-providers.js','session-store.js','reward-rules.js','rewards.js','reward-adapter.js'])vm.runInContext(fs.readFileSync(path.join(root,'dist',file),'utf8'),context,{filename:file});
-const R=context.window,config={levels:plain(R.HEX_LEVELS),tutorials:plain(R.HEX_TUTORIALS),variants:plain(R.HEX_VARIANTS),lifeConfig:plain(R.HEX_LIVES_CONFIG),now:NOW,selectionSeed:0x41abca,providerNamespace:'ui-test',rewardRules:plain(R.HEX_REWARD_RULES)};
+for(const file of ['engine.js','levels.js','tutorials.js','variants-data.js','attempts.js','lives-config.js','lives.js','life-providers.js','session-store.js','reward-rules.js','rewards.js','reward-adapter.js','economy-config.js','economy.js'])vm.runInContext(fs.readFileSync(path.join(root,'dist',file),'utf8'),context,{filename:file});
+const R=context.window,config={levels:plain(R.HEX_LEVELS),tutorials:plain(R.HEX_TUTORIALS),variants:plain(R.HEX_VARIANTS),lifeConfig:plain(R.HEX_LIVES_CONFIG),economyConfig:plain(R.HEX_ECONOMY_CONFIG),now:NOW,selectionSeed:0x41abca,providerNamespace:'ui-test',rewardRules:plain(R.HEX_REWARD_RULES)};
 function dotnet(){for(const cmd of [...new Set([process.env.DOTNET_PATH,'dotnet','/workspace/scratch/dotnet/dotnet',path.join(os.homedir(),'.dotnet','dotnet')].filter(Boolean))]){const p=spawnSync(cmd,['--version'],{encoding:'utf8'});if(p.status===0&&/^8\./.test(p.stdout.trim()))return cmd;}throw Error('Session parity requires a real .NET 8 SDK. No JavaScript fallback is permitted.');}
 const sdk=dotnet(),build=fs.mkdtempSync(path.join(os.tmpdir(),'hexrota-session-'));
 function run(cmd,args,options={}){const p=spawnSync(cmd,args,{cwd:root,encoding:'utf8',maxBuffer:256*1024*1024,timeout:240000,...options});if(p.error||p.status!==0)throw Error(String(p.error||'')+'\n'+p.stdout+'\n'+p.stderr);return p.stdout;}
@@ -116,6 +116,21 @@ function writeFailure(f,flags){if(!f._nativeSetItem){f._nativeSetItem=f.w.Storag
 
  const boundaryLife=lifePool(0);boundaryLife.life.unlimitedUntilUtc=NOW+MINUTE;
  nativeCase('unlimited expiry between CanStart and Register aborts atomically',{storage:{[GK]:fresh(),[LK]:boundaryLife},commands:[{op:'boot'},{op:'enter',stage:2,fresh:true,clockTimes:[NOW+MINUTE-1,NOW+MINUTE-1,NOW+MINUTE+1]}]},a=>{assert.equal(a[1].result.reason,'no_lives');assert.deepEqual(a[1].profile,a[0].profile);assert.deepEqual(a[1].state.game.boards,{});assert.equal(a[1].state.game.variantSelection.serial,0);});
+ // The command boundary enforces the same one-time campaign rule as the UI.
+ // Stale dialogs and direct repeated calls must not reopen or re-award a win.
+ nativeCase('one-time win rejects stale commands and survives reset/reopen',{storage:{[GK]:nearWin.saved,[LK]:lifePool(5)},commands:[{op:'boot'},{op:'enter',stage:2},{op:'swap',pair:last},{op:'swap',pair:last},{op:'hint'},{op:'retry'},{op:'restart',confirmed:true},{op:'preview',stage:2},{op:'enter',stage:2,fresh:true,confirmed:true},{op:'reset',confirmed:true},{op:'boot'},{op:'enter',stage:2,fresh:true,confirmed:true}]},a=>{
+  assert.equal(a[2].result.reason,'won');const won=a[2].state.game.economy;assert.equal(won.gold,20);assert.equal(won.stars,1);
+  for(const i of [3,4,5,6,7,8]){assert.equal(a[i].result.reason,'level_completed');assert.deepEqual(a[i].profile,a[2].profile);}
+  for(const i of [9,10,11]){assert.deepEqual(a[i].state.game.economy,won);assert(a[i].state.game.done.includes(2));assert(a[i].state.game.boards[2]);}
+  assert.equal(a[10].state.view.stage,3);assert.equal(a[10].state.view.pending,true);assert.equal(a[11].result.reason,'level_completed');
+ });
+ nativeCase('unproven legacy completions close permanently without invented awards',{storage:{[GK]:fresh(5),[LK]:lifePool(5)},commands:[{op:'boot'},{op:'enter',stage:2},{op:'reset',confirmed:true},{op:'boot'}]},a=>{
+  assert.equal(a[0].state.game.economy.gold,0);assert.equal(a[0].state.game.economy.stars,0);assert.equal(a[1].result.reason,'level_completed');
+  for(const i of [0,2,3]){assert.deepEqual(a[i].state.game.done,[2,3,4].concat(i===0?[0,1]:[]).sort((x,y)=>x-y));assert.equal(a[i].state.view.stage,5);}
+ });
+ for(const economy of [null,{schemaVersion:99}])nativeCase('present invalid economy is preserved '+JSON.stringify(economy),{storage:{[GK]:{...fresh(),economy},[LK]:lifePool(5)},commands:[{op:'boot'}]},a=>{assert(a[0].result.error);assert.equal(a[0].profile,null);});
+ const finalBase=existing(11,{turns:0}),finalLevel=R.HexAttempts.createCatalog(R.HEX_LEVELS,R.HEX_VARIANTS,R.HexMatch).resolveLevel(10,finalBase.metadata.variantId,finalBase.metadata.levelDataVersion),finalNear=existing(11,{turns:finalLevel.solution.length-1});
+ nativeCase('final campaign win never loops into a replay',{storage:{[GK]:finalNear.saved,[LK]:lifePool(5)},commands:[{op:'boot'},{op:'enter',stage:11},{op:'swap',pair:plain(finalLevel.solution.at(-1))},{op:'retry'},{op:'boot'},{op:'enter',stage:11}]},a=>{assert.equal(a[2].result.reason,'won');assert.equal(a[3].result.reason,'level_completed');assert.equal(a[4].state.view.stage,0);assert.equal(a[5].result.reason,'level_completed');assert.equal(a[4].state.game.economy.clearedLevelIds.length,10);assert.equal(a[4].state.game.economy.gold,20);assert.equal(a[4].state.game.economy.stars,1);});
  const loss=existing(4,{lost:true}),lossStart=plain(loss.saved);lossStart.boards[4]=plain(new R.HexMatch(loss.game.level).snapshot());lossStart.attemptStats[4]={...lossStart.attemptStats[4],terminalEvent:null,cascades:0,started:false};
  await flow('genuine active failure settles life exactly once then retries',{saved:lossStart,life:lifePool(5)},[
   op({op:'enter',stage:4,reason:'replay'},enter),...plain(loss.game.history).map(pair=>op({op:'swap',pair},f=>move(f,pair))),

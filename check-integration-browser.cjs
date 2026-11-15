@@ -5,6 +5,11 @@ const {chromium}=require('playwright');
 const {fresh,existing,lifePool,plain,NOW}=require('./check-lives-ui.cjs');
 const {createTracker}=require('./dist/playtest.js');
 const PROFILE='hexrota-profile-v2',OBS='hexrota-playtest-v1',dist=path.join(__dirname,'dist');
+const shellVersion=fs.readFileSync(path.join(dist,'sw.js'),'utf8').match(/const CACHE='hexrota-shell-v(\d+)'/)?.[1];assert(shellVersion,'the integrated shell is explicitly versioned');
+const shellCache='hexrota-shell-v'+shellVersion;
+const markup=fs.readFileSync(path.join(dist,'index.html'),'utf8');
+const offlineAssets=['',...new Set([...markup.matchAll(/(?:src|href)=["']\.\/([^"']+\.(?:js|css)\?v=\d+)["']/g)].map(match=>match[1]).concat(['hint-worker.js','engine.js','variants-data.js'].map(file=>file+'?v='+shellVersion)))];
+assert(offlineAssets.includes('economy-config.js?v='+shellVersion)&&offlineAssets.includes('economy.js?v='+shellVersion),'offline progression dependencies are loaded by the real shell');
 const Engine=existing().game.constructor,results=[],errors=[],external=[];
 const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.webmanifest':'application/manifest+json'};
 const server=http.createServer((request,response)=>{
@@ -79,7 +84,7 @@ async function main(){
   await check('actual PWA shell restores opt-in canonical game offline and serves its hint worker dependencies',async()=>{
    const {page,context,cdp}=await open({recording:true,workers:true});await page.evaluate(()=>navigator.serviceWorker.ready);await page.waitForFunction(()=>!!navigator.serviceWorker.controller);
    await page.evaluate(()=>navigator.serviceWorker.controller.postMessage({type:'CACHE_APP'}));
-   await page.waitForFunction(async()=>{const cache=await caches.open('hexrota-shell-v24');return (await Promise.all(['','app.js?v=24','session-store.js?v=24','playtest.js?v=24','hint-worker.js?v=24','engine.js?v=24','variants-data.js?v=24'].map(name=>cache.match(new URL(name,location.href).href)))).every(Boolean);});
+   await page.waitForFunction(async({cacheName,assets})=>{const cache=await caches.open(cacheName);return(await Promise.all(assets.map(name=>cache.match(new URL(name,location.href).href)))).every(Boolean);},{cacheName:shellCache,assets:offlineAssets});
    await enter(page);const initial=await read(page),stage=initial.game.current,level=await levelFor(page),model=new Engine(level,initial.game.boards[stage]);model.swap(...level.solution[0]);await swipe(page,cdp,plain(level.solution[0]));assert.deepEqual((await read(page)).game.boards[stage],plain(model.snapshot()));
    await context.setOffline(true);await page.reload();await ready(page);await enter(page);assert.deepEqual((await read(page)).game.boards[stage],plain(model.snapshot()));assert.equal(await page.locator('#setting-playtest').isChecked(),true);
    const beforeHint=(await read(page)).game.boards[stage];await page.locator('#hint').click();await page.waitForFunction(()=>JSON.parse(localStorage.getItem('hexrota-playtest-v1')).events.some(e=>e.name==='hint_used'));assert.deepEqual((await read(page)).game.boards[stage],beforeHint,'offline hint cannot change score, RNG or spent moves');

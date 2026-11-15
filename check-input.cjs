@@ -16,6 +16,7 @@ function mount({motion='none',current=2,done=[0,1],boards={},transform=null}={})
   const vc=new VirtualConsole();
   vc.on('jsdomError',error=>{errors.push(error.message);domErrors.push(error.message);});
   const dom=new JSDOM(fs.readFileSync(root+'index.html','utf8'),{url:'https://hexrota-input.example',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});
+  try{
   const w=dom.window,d=w.document;
   w.matchMedia=()=>({matches:motion==='none',addEventListener(){},removeEventListener(){}});
   w.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};
@@ -86,6 +87,7 @@ function mount({motion='none',current=2,done=[0,1],boards={},transform=null}={})
   async function idle(timeout=3600){const start=Date.now();while(isBusy()&&Date.now()-start<timeout)await pause(10);await pause(5);assert(!isBusy(),'presentation releases board before timeout');}
   function assertUnlocked(){assert.equal(board.getAttribute('aria-busy'),'false');assert.equal(d.getElementById('reset').disabled,false);}
   return {dom,w,d,board,index:current,attempts,center,at,get level(){return savedLevel(w);},errors,captureCalls,activeCaptures,animations,send,tap,click,setHit,readSave,assertState,isBusy,idle,assertUnlocked,close:()=>dom.window.close()};
+  }catch(error){dom.window.close();throw error;}
 }
 
 const cases=[];
@@ -260,19 +262,19 @@ test('backgrounding fast-forwards once and late awaits do not redraw old frames'
 });
 
 test('reset and level preview navigation cancel presentation without stale persistence',async()=>{
-  const f=mount({motion:'normal',done:[0,1,2]});try{
+  const f=mount({motion:'normal'});try{
     const level=f.level,pair=level.solution[0];
     f.tap(pair[0]);f.tap(pair[1]);assert(f.isBusy());
     assert.equal(f.d.getElementById('reset').disabled,false,'restart remains available while effects run');
     f.click('reset');await f.idle(150);assert.equal(+f.d.getElementById('sum').textContent,0);assert.equal(+f.d.getElementById('moves-left').textContent,level.moves);
     await pause(250);assert.equal(f.readSave().boards[f.index].turn,0,'cancelled animation cannot resave the old turn');
     const nextPair=f.level.solution[0];f.tap(nextPair[0]);f.tap(nextPair[1]);assert(f.isBusy());
-    const next=f.d.querySelector('[data-level="3"]');assert(next&&!next.disabled,'unlocked navigation remains available');next.click();
+    const next=f.d.querySelector('[data-level="0"]');assert(next&&!next.disabled,'free tutorial navigation remains available during a campaign attempt');next.click();
     await f.idle(150);assert(f.d.getElementById('pregame-dialog').open,'navigation shows objective preview');
     assert.equal(f.readSave().current,f.index,'preview does not choose a new active board');
     f.click('pregame-start');const game=savedGame(f.w);
     f.assertState(game,'new level');await pause(250);f.assertState(game,'after stale await');
-    assert.equal(f.readSave().current,3,'old animation cannot switch or persist the previous active level');
+    assert.equal(f.readSave().current,0,'old animation cannot switch or persist the previous active level');
   }finally{f.close();}
 });
 
