@@ -169,3 +169,7 @@ Ayarlar → **Geliştirme testi → Can sınırını kapat** bölüm dengelemesi
 ## Kod bakımı ve mimari
 
 Yeni özellik eklemeden önce [modül sahipliği rehberini](docs/ARCHITECTURE.md) ve [9.5 bakım raporunu](docs/CODEBASE_AUDIT_9_5.md) okuyun. `npm run test:maintenance` kayıt sınırları, sabit sunum sözleşmesi, CSS kaynak üretimi ve bağımlılık kontrollerini çalıştırır. CSS için `src/styles/manifest.json` kaynak sırasını koruyun; `npm run styles:sync` ile tek teslim dosyasını yenileyin.
+
+## Comic Adventure görsel dili
+
+[Tasarım sistemi](docs/UI_VISUAL_LANGUAGE.md), [uygulama raporu](docs/UI_RESTYLE_9_6_REPORT.md) ve `/ui-kit.html` çalışan bileşen örnekleridir. Kit oyun kaydı veya ödül üretmez. `npm run test:comic-ui` ve `npm run test:comic-ui-browser` tasarım sınırlarını denetler.

@@ -57,7 +57,7 @@ Görsel olaylar oyun kuralı değildir. Hamlenin kanonik sonucu önce kesinleşi
 
 ## CSS ve çevrimdışı paket
 
-`src/styles/manifest.json` beş kaynak bölümünün sırasını belirler. `npm run styles:sync`, bunları **aynı sırada tek `dist/style.css`** dosyasına birleştirir. Tarayıcıda `@import` zinciri veya ek CSS isteği yoktur. Eski cascade sırası ve iletilen CSS bu bakımda byte-for-byte korunmuştur. Stili kaynak bölümde değiştir; üretilmiş çıktıdaki değişikliği de commit et.
+`src/styles/manifest.json` kaynak bölümlerinin sırasını belirler. `npm run styles:sync`, bunları **aynı sırada tek `dist/style.css`** dosyasına birleştirir. Tarayıcıda `@import` zinciri veya ek CSS isteği yoktur. Eski cascade sırası ve iletilen CSS bu bakımda byte-for-byte korunmuştur. Stili kaynak bölümde değiştir; üretilmiş çıktıdaki değişikliği de commit et.
 
 `dist/index.html` bağımlılıkları `defer` sırasıyla yükler. Yeni runtime betiği eklenince `dist/sw.js` allowlist/önbellek listesi, HTML, Worker query ve `qa-fixtures.cjs` birlikte güncellenir. Bakım paketi PWA v29 kullanır; bu kayıt formatının veya oyun kurallarının sürümünü değiştirmez.
 
@@ -77,3 +77,7 @@ Görsel olaylar oyun kuralı değildir. Hamlenin kanonik sonucu önce kesinleşi
 - `ECONOMY_9_5_DELIVERY.md`: 9.5 ürün davranışı ve platform sınırları.
 - `UNITY_MIGRATION_PLAN.md`: JS/C# veri ve platform sınırları.
 - `reports/maintenance-source-inventory.json`: runtime, C# ve test kaynak envanteri.
+
+## Comic Adventure
+
+Yeni görsel kaynak: `UI_VISUAL_LANGUAGE.md`. Tema mevcut CSS hattında son bölümdür. Hikâye kitinin demo olması, sabit tahta boyutu ve saf oyun kurallarının korunması zorunludur. `test:comic-ui` bu sınırları denetler.

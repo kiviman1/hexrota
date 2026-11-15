@@ -129,6 +129,19 @@ jobs:
         env:
           HEXROTA_BROWSER: ${{ matrix.browser }}
           HEXROTA_GARDEN_SCREENSHOT_DIR: test-results/garden-${{ matrix.browser }}
+      - name: Verify Comic Adventure theme and responsive components
+        run: npm run test:comic-ui-browser
+        env:
+          HEXROTA_BROWSER: ${{ matrix.browser }}
+          HEXROTA_COMIC_SCREENSHOT_DIR: test-results/comic-${{ matrix.browser }}
+      - name: Keep Comic Adventure screenshots and browser results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: comic-ui-${{ matrix.browser }}
+          path: test-results/comic-${{ matrix.browser }}
+          if-no-files-found: warn
+          retention-days: 7
       - name: Keep garden screenshots and browser results
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
