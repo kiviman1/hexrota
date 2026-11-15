@@ -14,10 +14,14 @@ Yerel gerçek doğrulama: ekonomi 14 invariant grubu / 90 akış / 371 işlem; g
 
 ## B — Güçlendirici komutları ve envanter
 
-Bağımlılık A/PR #12; bu dal onun commit'ini içerir, main ile birleşmez. İki yardım, gerçek sonuç ön izlemesi, stok/purchase ve JS/C# oturum doğrulaması bağlanır. `test:commands`, `test:unity-commands`, `test:inventory-ui` eklenir; CI'da ayrı gerçek C# yardım komutu işi vardır. Klasik çekirdek byte'ları korunur. Komut karşılaştırması 2.928 tam JSON / 16.001 işlem / 3.259 dalga; C# oturum 1.005 tam karşılaştırma / 30 gerçek app.js akışı / 25 native guard geçti. Tam npm test geçti; envanter UI 11 grup, Chromium ve WebKit 15'er grup geçti. 320px envanter taşması gerçek tarayıcıda bulunup düzeltildi; sabit tahta boyutu doğrulandı. PWA shell26 `commands.js` dahil güncellenir. Ayrıntı: [INVENTORY_9_5.md](INVENTORY_9_5.md).
+Bağımlılık A/PR #12; bu dal onun commit'ini içerir, main ile birleşmez. İki yardım, gerçek sonuç ön izlemesi, stok/purchase ve JS/C# oturum doğrulaması bağlanır. `test:commands`, `test:unity-commands`, `test:inventory-ui` eklenir; CI'da ayrı gerçek C# yardım komutu işi vardır. Klasik çekirdek byte'ları korunur. Komut karşılaştırması 2.928 tam JSON / 16.001 işlem / 3.259 dalga; C# oturum 1.005 tam karşılaştırma / 30 gerçek app.js akışı / 25 native guard geçti. Tam npm test geçti; envanter UI 11 grup, Chromium ve WebKit 15'er grup geçti. 320px envanter taşması gerçek tarayıcıda bulunup düzeltildi; sabit tahta boyutu doğrulandı. PWA shell26 `commands.js` dahil güncellenir. GitHub run43726136321 13/13 iş başarılı; PR #13 birleştirilmeden onaya açıktır. Ayrıntı: [INVENTORY_9_5.md](INVENTORY_9_5.md).
 
-## C/D ve Integration
+## C — Aynı denemede ikinci şans
 
-C B'nin sürümlü yardım komutuna, D A'nın kalıcı yıldızlarına dayanır. C/D bu B aşamasına henüz bağlanmamıştır. Her biri bağımlılığını açıklayan ayrı PR'da geliştirilecek; hiçbir PR onaysız birleştirilmeyecektir. Integration dalı bütün modülleri tekrar test edecektir.
+Bağımlılık B/PR #13. TEST reklam UTC2/gün veya 140 oyun Altınıyla aynı denemeye tek grant_moves:5; tahta/RNG korunur, ikinci can kesilmez. Saf RescueManager 293 gerçek JS/C# karşılaştırması ve 600 settlement stres kontrolü geçti. C# oturum 1.190 tam JSON / 34 gerçek app.js akışı / 44 native senaryo geçti. Tam npm test geçti; ikinci şans UI son tam çalıştırması 15 grup / 169 gerçek UI takası / 22 kayıp / 4 reload geçti. Chromium/WebKit 21'er grup geçti. Sıfır can, kanıt yeniden teslimi ve meşru discarded arşivleri doğrulanır. Yeni test:rescue/test:unity-rescue/test:second-chance-ui ve ayrı gerçek C# CI işi, PWA shell27. Henüz D botanik görseli bağlanmadı.
+
+## D ve Integration
+
+D A'nın kalıcı yıldızlarına dayanır; ayrı PR'da eklenecektir. Hiçbir PR onaysız birleştirilmeyecektir. Integration dalı bütün modülleri tekrar test edecektir.
 
 PR #11 Balance Lab ayrı ve onaysızdır. Integration uyumluluğu ayrı geçici birleşimde sınanacak; laboratuvarın bellekteki oyunu normal profil, Attempt sayacı, Altın, yıldız, stok veya can üretmeyecektir. Yayımlanmış 40 varyant/80 rota ve classic-v4 çekirdeği korunur. Yeni ekonomi işlevleri, 9.4'ün önceki kaynak hash korumalarında meşru değişiklikler gerektirirse sadece bu onaylı kapsam yeni referansa alınır; donmuş oyun verileri ve izolasyon kontrolleri kaldırılmaz.

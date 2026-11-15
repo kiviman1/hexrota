@@ -1,0 +1,407 @@
+{
+  "schemaVersion": 1,
+  "rulesVersion": "rescue-v1",
+  "initialUtc": 1794700800000,
+  "config": {
+    "moves": 5,
+    "goldCost": 140,
+    "dailyAdLimit": 2,
+    "maxPerAttempt": 1
+  },
+  "context": {
+    "attemptId": "attempt-10-1",
+    "levelId": 10,
+    "tutorial": false,
+    "cleared": false,
+    "status": "lost",
+    "movesLeft": 0,
+    "turn": 20,
+    "lastCommand": "swap",
+    "rescuesUsed": 0
+  },
+  "availabilityCases": [
+    {
+      "id": "valid-loss",
+      "context": {},
+      "gold": 140,
+      "reason": null,
+      "adReason": null,
+      "goldReason": null
+    },
+    {
+      "id": "gold-too-low",
+      "context": {},
+      "gold": 139,
+      "reason": null,
+      "adReason": null,
+      "goldReason": "insufficient_gold"
+    },
+    {
+      "id": "tutorial-free-no-rescue",
+      "context": {
+        "levelId": "learn-1",
+        "tutorial": true
+      },
+      "gold": 1000,
+      "reason": "tutorial",
+      "adReason": "tutorial",
+      "goldReason": "tutorial"
+    },
+    {
+      "id": "cleared-level",
+      "context": {
+        "cleared": true
+      },
+      "gold": 140,
+      "reason": "level_cleared",
+      "adReason": "level_cleared",
+      "goldReason": "level_cleared"
+    },
+    {
+      "id": "playing",
+      "context": {
+        "status": "playing",
+        "movesLeft": 3
+      },
+      "gold": 140,
+      "reason": "not_lost_after_swap",
+      "adReason": "not_lost_after_swap",
+      "goldReason": "not_lost_after_swap"
+    },
+    {
+      "id": "won",
+      "context": {
+        "status": "won"
+      },
+      "gold": 140,
+      "reason": "not_lost_after_swap",
+      "adReason": "not_lost_after_swap",
+      "goldReason": "not_lost_after_swap"
+    },
+    {
+      "id": "loss-with-moves",
+      "context": {
+        "movesLeft": 1
+      },
+      "gold": 140,
+      "reason": "not_lost_after_swap",
+      "adReason": "not_lost_after_swap",
+      "goldReason": "not_lost_after_swap"
+    },
+    {
+      "id": "no-swap-history",
+      "context": {
+        "turn": 0
+      },
+      "gold": 140,
+      "reason": "not_lost_after_swap",
+      "adReason": "not_lost_after_swap",
+      "goldReason": "not_lost_after_swap"
+    },
+    {
+      "id": "last-brush",
+      "context": {
+        "lastCommand": "green_brush"
+      },
+      "gold": 140,
+      "reason": "not_lost_after_swap",
+      "adReason": "not_lost_after_swap",
+      "goldReason": "not_lost_after_swap"
+    },
+    {
+      "id": "last-color-key",
+      "context": {
+        "lastCommand": "color_key"
+      },
+      "gold": 140,
+      "reason": "not_lost_after_swap",
+      "adReason": "not_lost_after_swap",
+      "goldReason": "not_lost_after_swap"
+    },
+    {
+      "id": "rescue-command-already-present",
+      "context": {
+        "rescuesUsed": 1
+      },
+      "gold": 140,
+      "reason": "already_rescued",
+      "adReason": "already_rescued",
+      "goldReason": "already_rescued"
+    },
+    {
+      "id": "last-command-null",
+      "context": {
+        "lastCommand": null
+      },
+      "gold": 140,
+      "reason": "not_lost_after_swap",
+      "adReason": "not_lost_after_swap",
+      "goldReason": "not_lost_after_swap"
+    }
+  ],
+  "golden": {
+    "initial": {
+      "schemaVersion": 1,
+      "rulesVersion": "rescue-v1",
+      "lastSeenUtc": 1794700800000,
+      "adUsage": {
+        "day": 20772,
+        "count": 0
+      },
+      "settledAttempts": {},
+      "settledArchive": {},
+      "processedTransactions": {},
+      "transactionArchive": {},
+      "provider": {
+        "schemaVersion": 1,
+        "namespace": "hexrota-rescue-test",
+        "nextSerial": 1,
+        "adAvailable": true,
+        "transactions": {},
+        "finalizedRanges": []
+      }
+    },
+    "gold": {
+      "state": {
+        "schemaVersion": 1,
+        "rulesVersion": "rescue-v1",
+        "lastSeenUtc": 1794700800000,
+        "adUsage": {
+          "day": 20772,
+          "count": 0
+        },
+        "settledAttempts": {
+          "attempt-10-1": {
+            "levelId": 10,
+            "source": "gold",
+            "transactionId": "gold-rescue-1",
+            "atUtc": 1794700800000
+          }
+        },
+        "settledArchive": {},
+        "processedTransactions": {
+          "gold-rescue-1": {
+            "attemptId": "attempt-10-1",
+            "levelId": 10,
+            "source": "gold",
+            "atUtc": 1794700800000,
+            "moves": 5,
+            "costGold": 140
+          }
+        },
+        "transactionArchive": {},
+        "provider": {
+          "schemaVersion": 1,
+          "namespace": "hexrota-rescue-test",
+          "nextSerial": 1,
+          "adAvailable": true,
+          "transactions": {},
+          "finalizedRanges": []
+        }
+      },
+      "applied": true,
+      "reason": "rescued",
+      "grant": {
+        "commandId": "gold-rescue-1",
+        "attemptId": "attempt-10-1",
+        "source": "gold",
+        "moves": 5
+      },
+      "costGold": 140,
+      "transactionId": "gold-rescue-1"
+    },
+    "begun": {
+      "state": {
+        "schemaVersion": 1,
+        "rulesVersion": "rescue-v1",
+        "lastSeenUtc": 1794700800000,
+        "adUsage": {
+          "day": 20772,
+          "count": 0
+        },
+        "settledAttempts": {},
+        "settledArchive": {},
+        "processedTransactions": {},
+        "transactionArchive": {},
+        "provider": {
+          "schemaVersion": 1,
+          "namespace": "hexrota-rescue-test",
+          "nextSerial": 2,
+          "adAvailable": true,
+          "transactions": {
+            "hexrota-rescue-test-1": {
+              "transactionId": "hexrota-rescue-test-1",
+              "attemptId": "attempt-10-1",
+              "levelId": 10,
+              "createdAtUtc": 1794700800000,
+              "status": "pending"
+            }
+          },
+          "finalizedRanges": []
+        }
+      },
+      "applied": false,
+      "reason": "pending",
+      "grant": null,
+      "costGold": 0,
+      "transactionId": "hexrota-rescue-test-1"
+    },
+    "completed": {
+      "state": {
+        "schemaVersion": 1,
+        "rulesVersion": "rescue-v1",
+        "lastSeenUtc": 1794700800000,
+        "adUsage": {
+          "day": 20772,
+          "count": 0
+        },
+        "settledAttempts": {},
+        "settledArchive": {},
+        "processedTransactions": {},
+        "transactionArchive": {},
+        "provider": {
+          "schemaVersion": 1,
+          "namespace": "hexrota-rescue-test",
+          "nextSerial": 2,
+          "adAvailable": true,
+          "transactions": {
+            "hexrota-rescue-test-1": {
+              "transactionId": "hexrota-rescue-test-1",
+              "attemptId": "attempt-10-1",
+              "levelId": 10,
+              "createdAtUtc": 1794700800000,
+              "status": "completed",
+              "receipt": {
+                "schemaVersion": 1,
+                "provider": "development_rescue",
+                "productId": "rescue_moves_5",
+                "status": "completed",
+                "transactionId": "hexrota-rescue-test-1",
+                "attemptId": "attempt-10-1",
+                "levelId": 10,
+                "verifiedAtUtc": 1794700800000,
+                "streamId": "hexrota-rescue-test",
+                "sequence": 1
+              }
+            }
+          },
+          "finalizedRanges": []
+        }
+      },
+      "applied": false,
+      "reason": "completed",
+      "grant": null,
+      "costGold": 0,
+      "transactionId": "hexrota-rescue-test-1",
+      "receipt": {
+        "schemaVersion": 1,
+        "provider": "development_rescue",
+        "productId": "rescue_moves_5",
+        "status": "completed",
+        "transactionId": "hexrota-rescue-test-1",
+        "attemptId": "attempt-10-1",
+        "levelId": 10,
+        "verifiedAtUtc": 1794700800000,
+        "streamId": "hexrota-rescue-test",
+        "sequence": 1
+      },
+      "completedProvider": {
+        "schemaVersion": 1,
+        "namespace": "hexrota-rescue-test",
+        "nextSerial": 2,
+        "adAvailable": true,
+        "transactions": {
+          "hexrota-rescue-test-1": {
+            "transactionId": "hexrota-rescue-test-1",
+            "attemptId": "attempt-10-1",
+            "levelId": 10,
+            "createdAtUtc": 1794700800000,
+            "status": "completed",
+            "receipt": {
+              "schemaVersion": 1,
+              "provider": "development_rescue",
+              "productId": "rescue_moves_5",
+              "status": "completed",
+              "transactionId": "hexrota-rescue-test-1",
+              "attemptId": "attempt-10-1",
+              "levelId": 10,
+              "verifiedAtUtc": 1794700800000,
+              "streamId": "hexrota-rescue-test",
+              "sequence": 1
+            }
+          }
+        },
+        "finalizedRanges": []
+      }
+    },
+    "awarded": {
+      "state": {
+        "schemaVersion": 1,
+        "rulesVersion": "rescue-v1",
+        "lastSeenUtc": 1794700800000,
+        "adUsage": {
+          "day": 20772,
+          "count": 1
+        },
+        "settledAttempts": {
+          "attempt-10-1": {
+            "levelId": 10,
+            "source": "ad",
+            "transactionId": "hexrota-rescue-test-1",
+            "atUtc": 1794700800000
+          }
+        },
+        "settledArchive": {},
+        "processedTransactions": {
+          "hexrota-rescue-test-1": {
+            "attemptId": "attempt-10-1",
+            "levelId": 10,
+            "source": "ad",
+            "atUtc": 1794700800000,
+            "moves": 5,
+            "costGold": 0
+          }
+        },
+        "transactionArchive": {},
+        "provider": {
+          "schemaVersion": 1,
+          "namespace": "hexrota-rescue-test",
+          "nextSerial": 2,
+          "adAvailable": true,
+          "transactions": {
+            "hexrota-rescue-test-1": {
+              "transactionId": "hexrota-rescue-test-1",
+              "attemptId": "attempt-10-1",
+              "levelId": 10,
+              "createdAtUtc": 1794700800000,
+              "status": "completed",
+              "receipt": {
+                "schemaVersion": 1,
+                "provider": "development_rescue",
+                "productId": "rescue_moves_5",
+                "status": "completed",
+                "transactionId": "hexrota-rescue-test-1",
+                "attemptId": "attempt-10-1",
+                "levelId": 10,
+                "verifiedAtUtc": 1794700800000,
+                "streamId": "hexrota-rescue-test",
+                "sequence": 1
+              }
+            }
+          },
+          "finalizedRanges": []
+        }
+      },
+      "applied": true,
+      "reason": "rescued",
+      "grant": {
+        "commandId": "hexrota-rescue-test-1",
+        "attemptId": "attempt-10-1",
+        "source": "ad",
+        "moves": 5
+      },
+      "costGold": 0,
+      "transactionId": "hexrota-rescue-test-1"
+    }
+  }
+}

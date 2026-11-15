@@ -494,3 +494,6 @@ body[data-screen="game"] .tool-actions:has(#open-inventory:not([hidden])){grid-t
 @media(orientation:landscape) and (max-height:600px){body[data-screen="game"] .tool-actions:has(#open-inventory:not([hidden])) .dock-button>.icon{width:34px;height:34px;min-width:34px;padding:7px}.inventory-items{grid-template-columns:1fr 1fr}}
 
 .assisted-label{padding:8px 12px;border:1px solid #dce4c9;border-radius:10px;background:#f0f4e7;color:#577247;font-size:11px}.assisted-record-label{display:block;margin:4px 0;font-size:10px;font-weight:400;color:#677b51}.assistance-target-prompt{pointer-events:none}.assistance-target-prompt button{pointer-events:auto}
+
+.second-chance-panel{padding:16px;margin:17px 0 20px;border:1px solid #d3dfbc;border-radius:15px;background:#eff4e1;text-align:left}.second-chance-panel h3{font-size:19px;color:#385a35;margin:0 0 9px}.second-chance-panel>p{font-size:12px;line-height:1.65;color:#596e49}.second-chance-panel .primary-button,.second-chance-panel .secondary-button{width:100%;min-height:46px;margin-top:9px;font-size:12px}.second-chance-status{font-weight:600}.rescue-provider-actions{display:grid;gap:11px;margin-top:24px}.rescue-provider-actions>button{width:100%;min-height:46px;margin:0;font-size:12px}
+@media(max-width:360px){.second-chance-panel{padding:13px}.second-chance-panel h3{font-size:17px}.second-chance-panel>p{font-size:11px}}

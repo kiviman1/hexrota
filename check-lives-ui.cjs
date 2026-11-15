@@ -31,7 +31,7 @@ function existing(stage=2,{turns=1,lost=false,legacy=false}={}){
  if(entry){saved.attempts={[stage]:plain(entry.metadata)};saved.attemptStats={[stage]:{attemptId:entry.metadata.attemptId,attemptNumber:1,started:true,terminalEvent:lost?'level_failed':null,hintsUsed:0,cascades}};saved.variantSelection.serial=7;saved.variantSelection.counts[base.id]=1;saved.variantSelection.recent[base.id]=[entry.metadata.variantId];}
  return {saved,game,metadata:entry?.metadata};
 }
-function mount({saved=fresh(),life,now=NOW,oldV4,profile,writeFailure=false}={}){
+function mount({saved=fresh(),life,now=NOW,oldV4,profile,events,writeFailure=false}={}){
  const vc=new VirtualConsole();vc.on('jsdomError',error=>errors.push(error.message));
  const dom=new JSDOM(read('index.html'),{url:'https://hexrota-lives.example/',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});
  try{
@@ -46,6 +46,7 @@ function mount({saved=fresh(),life,now=NOW,oldV4,profile,writeFailure=false}={})
  if(oldV4)w.localStorage.setItem('hexrota-match-v4',JSON.stringify(oldV4));else w.localStorage.setItem(gameKey,JSON.stringify(saved));
  if(life!==undefined)w.localStorage.setItem(lifeKey,JSON.stringify(life));
  if(profile)w.localStorage.setItem(profileKey,JSON.stringify(profile));
+ if(events!==undefined)w.localStorage.setItem(eventKey,JSON.stringify(events));
  if(writeFailure){const native=w.Storage.prototype.setItem;w.Storage.prototype.setItem=function(key,value){if(key===profileKey)throw new w.DOMException('Life storage unavailable','QuotaExceededError');return native.call(this,key,value);};}
  for(const script of d.querySelectorAll('script[src]')){const file=script.getAttribute('src').split('/').at(-1).split('?')[0];if(!['audio.js','pwa.js'].includes(file))w.eval(read(file));}
  const f={dom,w,d,network,get now(){return utc;},set now(value){utc=value;},save:()=>JSON.parse(w.localStorage.getItem(gameKey)),life:()=>JSON.parse(w.localStorage.getItem(lifeKey)),events:()=>JSON.parse(w.localStorage.getItem(eventKey)||'null'),close(){dom.window.close();}};

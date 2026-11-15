@@ -6,6 +6,7 @@ using Hexrota.Commands;
 using Hexrota.Economy;
 using Hexrota.Gameplay;
 using Hexrota.Lives;
+using Hexrota.Rescue;
 using W = Hexrota.Contracts.Wire;
 
 namespace Hexrota.Application
@@ -37,10 +38,13 @@ namespace Hexrota.Application
                 if (W.IsList(W.Get(previous, "done"))) foreach (object index in W.List(previous["done"])) if (Index(index, size - tutorialCount)) done.Add(W.Integer(index) + tutorialCount);
                 var boards = W.Obj(); if (sourceKey == "hexrota-match-v4") for (int index = 0; index < size - tutorialCount; index++) { object board = Indexed(W.Get(previous, "boards"), index.ToString()); if (W.Truthy(board)) boards[(index + tutorialCount).ToString()] = W.Clone(board); }
                 var shifted = W.Obj("current", W.IsInteger(W.Get(previous, "current")) ? W.Integer(previous["current"]) + tutorialCount : tutorialCount, "done", done, "boards", boards, "sound", W.Get(previous, "sound"));
-                if (W.Has(previous, "economy")) shifted["economy"] = W.Clone(previous["economy"]); raw = shifted;
+                if (W.Has(previous, "economy")) shifted["economy"] = W.Clone(previous["economy"]);
+                if (W.Has(previous, "rescue")) shifted["rescue"] = W.Clone(previous["rescue"]);
+                raw = shifted;
             }
             var map = W.Map(raw);
             if (W.Has(map, "economy")) saved["economy"] = W.Clone(map["economy"]);
+            if (W.Has(map, "rescue")) saved["rescue"] = W.Clone(map["rescue"]);
             if (W.IsMap(W.Get(map, "boards"))) foreach (var item in W.Map(map["boards"])) { int index; if (!int.TryParse(item.Key, out index) || index < 0 || index >= size || item.Key != index.ToString(System.Globalization.CultureInfo.InvariantCulture) || !W.IsMap(item.Value) && !W.IsList(item.Value)) throw new ProfileStorageException("invalid_game_save"); }
             var completed = W.Arr();
             if (W.IsList(W.Get(map, "done"))) foreach (object index in W.List(map["done"])) if (Index(index, size) && !completed.Any(x => W.Equal(x, index))) completed.Add(W.Integer(index));
@@ -79,8 +83,8 @@ namespace Hexrota.Application
     }
     public sealed class AttemptRepository
     {
-        private readonly LevelCatalog catalog; private readonly IList<Dictionary<string, object>> levels; private readonly int tutorialCount; private readonly EconomyManager economy;
-        public AttemptRepository(LevelCatalog catalog, IList<Dictionary<string, object>> levels, int tutorialCount, Dictionary<string, object> economyConfig = null) { this.catalog = catalog; this.levels = levels; this.tutorialCount = tutorialCount; economy = new EconomyManager(economyConfig); }
+        private readonly LevelCatalog catalog; private readonly IList<Dictionary<string, object>> levels; private readonly int tutorialCount; private readonly EconomyManager economy; private readonly RescueManager rescue;
+        public AttemptRepository(LevelCatalog catalog, IList<Dictionary<string, object>> levels, int tutorialCount, Dictionary<string, object> economyConfig = null, RescueManager rescue = null) { this.catalog = catalog; this.levels = levels; this.tutorialCount = tutorialCount; economy = new EconomyManager(economyConfig); this.rescue = rescue ?? new RescueManager(W.Map(economy.Config()["rescue"]), () => 0L); }
         public object AssistanceLimits { get { var config = economy.Config(); return W.Obj("greenBrush", W.Get(W.Get(config["inventory"], "greenBrush"), "maxPerAttempt"), "colorKey", W.Get(W.Get(config["inventory"], "colorKey"), "maxPerAttempt"), "rescue", W.Get(config["rescue"], "maxPerAttempt")); } }
         public AttemptCheckpoint Restore(Dictionary<string, object> game, int index)
         {
@@ -114,20 +118,56 @@ namespace Hexrota.Application
         {
             var transactions = W.Obj(); if (W.Has(game, "economy")) transactions = W.Map(economy.Restore(game["economy"])["transactions"]);
             var paid = new HashSet<string>(StringComparer.Ordinal); var commands = entry.Assistance == null ? W.Arr() : W.List(entry.Assistance.Commands);
+            var rescued = new HashSet<string>(StringComparer.Ordinal);
             foreach (object command in commands)
             {
                 string type = W.Get(command, "type") as string; if (type == "swap") continue;
-                // Rescue authorization is added with its separate settlement
-                // manager in Stage C. It is deliberately unavailable in B.
-                if (type == "grant_moves") throw new ProfileStorageException("rescue_not_supported");
+                if (type == "grant_moves")
+                {
+                    string grantId = W.Get(command, "id") as string;
+                    if (!W.Has(game, "rescue")) throw new ProfileStorageException("rescue_ledger_mismatch"); rescue.Validate(game["rescue"]);
+                    var claim = rescue.SettlementFor(game["rescue"], entry.Metadata.attemptId); var transaction = rescue.TransactionFor(game["rescue"], grantId);
+                    if (claim == null || transaction == null || !W.Equal(claim["transactionId"], grantId) || !W.Equal(claim["levelId"], entry.LevelWire["id"]) || !W.Equal(transaction["attemptId"], entry.Metadata.attemptId) || !W.Equal(transaction["levelId"], entry.LevelWire["id"]) || !W.Equal(transaction["moves"], 5L)) throw new ProfileStorageException("rescue_ledger_mismatch");
+                    object payment = W.Get(transactions, grantId);
+                    if (W.Equal(transaction["source"], "gold"))
+                    {
+                        if (!W.Equal(W.Get(payment, "kind"), "rescue") || !W.Equal(W.Get(payment, "attemptId"), entry.Metadata.attemptId) || !W.Equal(W.Get(payment, "levelId"), entry.LevelWire["id"]) || !W.Equal(W.Get(payment, "costGold"), transaction["costGold"])) throw new ProfileStorageException("rescue_ledger_mismatch"); paid.Add(grantId);
+                    }
+                    else if (payment != null || !RecordedAdProof(game["rescue"], grantId, entry.Metadata.attemptId, entry.LevelWire["id"])) throw new ProfileStorageException("rescue_ledger_mismatch");
+                    rescued.Add(grantId); continue;
+                }
                 string item = type == "green_brush" ? "greenBrush" : type == "color_key" ? "colorKey" : null; string id = W.Get(command, "id") as string; object row = id == null ? null : W.Get(transactions, id);
                 if (item == null || !W.Equal(W.Get(row, "kind"), "use") || !W.Equal(W.Get(row, "itemId"), item) || !W.Equal(W.Get(row, "attemptId"), entry.Metadata.attemptId) || !W.Equal(W.Get(row, "levelId"), entry.LevelWire["id"])) throw new ProfileStorageException("assistance_ledger_mismatch");
                 paid.Add(id);
             }
             foreach (var row in transactions)
                 if (W.Equal(W.Get(row.Value, "attemptId"), entry.Metadata.attemptId) && (W.Equal(W.Get(row.Value, "kind"), "use") || W.Equal(W.Get(row.Value, "kind"), "rescue")) && (!paid.Contains(row.Key) || !W.Equal(W.Get(row.Value, "levelId"), entry.LevelWire["id"]))) throw new ProfileStorageException("assistance_ledger_mismatch");
+            if (W.Has(game, "rescue"))
+            {
+                rescue.Validate(game["rescue"]); var claim = rescue.SettlementFor(game["rescue"], entry.Metadata.attemptId);
+                if (claim != null && (!rescued.Contains((string)claim["transactionId"]) || !W.Equal(claim["levelId"], entry.LevelWire["id"]))) throw new ProfileStorageException("rescue_ledger_mismatch");
+            }
         }
-        public void ValidateAll(Dictionary<string, object> game) { foreach (string key in W.Map(game["boards"]).Keys) { int index; if (!int.TryParse(key, out index) || index < 0 || index >= levels.Count || key != index.ToString(System.Globalization.CultureInfo.InvariantCulture) || !W.IsMap(W.Get(game["boards"], key))) throw new ProfileStorageException("invalid_game_save"); RestoreSession(game, index); } }
+        private static bool RecordedAdProof(object state, string id, string attemptId, object levelId)
+        {
+            object provider = W.Get(state, "provider"), issued = W.Get(W.Get(provider, "transactions"), id);
+            if (issued != null) return W.Equal(W.Get(issued, "attemptId"), attemptId) && W.Equal(W.Get(issued, "levelId"), levelId) && DevelopmentRescueProvider.Verify(provider, W.Get(issued, "receipt"));
+            string prefix = W.Get(provider, "namespace") as string; if (prefix == null || id == null || !id.StartsWith(prefix + "-", StringComparison.Ordinal)) return false;
+            long sequence; string suffix = id.Substring(prefix.Length + 1); if (!long.TryParse(suffix, out sequence) || sequence < 1 || suffix != sequence.ToString(System.Globalization.CultureInfo.InvariantCulture)) return false;
+            return W.List(W.Get(provider, "finalizedRanges")).Any(raw => { var range = W.List(raw); return sequence >= W.Integer(range[0]) && sequence <= W.Integer(range[1]); });
+        }
+        public void ValidateRescuedLives(Dictionary<string, object> game, object energy, LifeManager lives)
+        {
+            foreach (string key in W.Map(game["boards"]).Keys)
+            {
+                object snapshot = W.Get(game["boards"], key); if (!W.Equal(W.Get(snapshot, "rulesVersion"), AssistedGame.RulesVersion) || W.Integer(W.Get(W.Get(snapshot, "usage"), "rescue")) == 0) continue;
+                var entry = RestoreSession(game, int.Parse(key)); var settlement = lives.SettlementFor(new LifeState(W.Map(W.Get(energy, "life"))), entry.Metadata.attemptId); object row = settlement == null ? null : settlement.ToWire();
+                bool discardedArchive = W.Equal(W.Get(row, "discarded"), true) && W.Equal(W.Get(row, "outcome"), "restart") && entry.Game.Status != "won";
+                if (row == null || !W.Equal(W.Get(row, "levelId"), entry.LevelWire["id"]) || !W.Equal(W.Get(row, "tutorial"), false) || W.Integer(W.Get(row, "movesUsed")) < entry.Game.level.moves || !(discardedArchive || !W.Equal(W.Get(row, "discarded"), true) && W.Equal(W.Get(row, "outcome"), entry.Game.Status == "won" ? "won" : "failed"))) throw new ProfileStorageException("rescue_life_mismatch");
+            }
+        }
+        public void ValidateRescueState(Dictionary<string, object> game) { if (W.Has(game, "rescue")) rescue.Validate(game["rescue"]); }
+        public void ValidateAll(Dictionary<string, object> game) { ValidateRescueState(game); foreach (string key in W.Map(game["boards"]).Keys) { int index; if (!int.TryParse(key, out index) || index < 0 || index >= levels.Count || key != index.ToString(System.Globalization.CultureInfo.InvariantCulture) || !W.IsMap(W.Get(game["boards"], key))) throw new ProfileStorageException("invalid_game_save"); RestoreSession(game, index); } }
     }
     public sealed class ApplicationAttemptCheckpoint
     {
@@ -145,7 +185,8 @@ namespace Hexrota.Application
         {
             GameProfile.ValidateEnvelope(value); DevelopmentLifeProvider.ValidateEnergy(W.Get(value, "energy"), lives);
             if (W.Has(W.Get(value, "game"), "economy")) (economy ?? new EconomyManager(null)).Restore(W.Get(W.Get(value, "game"), "economy"));
-            if (replayEveryAttempt) attempts.ValidateAll(W.Map(W.Get(value, "game"))); return true;
+            attempts.ValidateRescueState(W.Map(W.Get(value, "game")));
+            if (replayEveryAttempt) { attempts.ValidateAll(W.Map(W.Get(value, "game"))); attempts.ValidateRescuedLives(W.Map(W.Get(value, "game")), W.Get(value, "energy"), lives); } return true;
         }
     }
 }
