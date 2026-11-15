@@ -28,18 +28,18 @@ Saf 11 yıldız durumu / 55 render / 44 eşik / 17 bozuk veri; gerçek UI 15 gru
 
 ## Integration
 
-`integration/hexrota-economy-9-5` güncel main670a83e üzerinden oluşturuldu. A52b8419/PR12, B9d6136c/PR13, C8f3ac5c/PR14, D1d56e54/PR15 değişiklikleri yerel Integration merge commit'leriyle toplandı; GitHub PR'ları veya main birleştirilmedi. Runtime/data/unity ağacı D ile birebir aynı, Integration'ın ek farkı izolasyon testi/CI ve bu doğrulama kaydıdır.
+`integration/hexrota-economy-9-5` güncel main 670a83e üzerinden oluşturuldu. A 52b8419 / PR #12, B 9d6136c / PR #13, C 8f3ac5c / PR #14, D 1d56e54 / PR #15 değişiklikleri yerel Integration merge commit'leriyle toplandı; GitHub PR'ları veya main birleştirilmedi. Runtime/data/unity ağacı D ile birebir aynı, Integration'ın ek farkı izolasyon testi/CI ve bu doğrulama kaydıdır.
 
-CI mevcut14 işi korur, ayrı `Balance Lab economy isolation` işi ekler. Bu iş PR11'in sabit85bc092 commit'ini yalnız fixture olarak ikinci checkout'a alır; gerçek Chromium ve WebKit'te yeni ekonomi profilini korur. Test kaynağı yoksa atlama/başarı taklidi yapmaz. Birleşik runtime üzerinde yerel tam npm test ve aşağıdaki bütün gerçek C# komutları tekrar geçti. Pinned Lab son tekrarı 6 Chromium + 6 WebKit grup, 81 değişmez dosya / 10 profil anahtarı geçti. Güncel CI ve Preview durumunun kaynağı Integration PR Checks ekranıdır.
+CI mevcut 14 işi korur, ayrı `Balance Lab economy isolation` işi ekler. Bu iş PR #11'in sabit 85bc092 commit'ini yalnız fixture olarak ikinci checkout'a alır; gerçek Chromium ve WebKit'te yeni ekonomi profilini korur. Test kaynağı yoksa atlama/başarı taklidi yapmaz. Birleşik runtime üzerinde yerel tam npm test ve aşağıdaki bütün gerçek C# komutları tekrar geçti. Pinned Lab son tekrarı 6 Chromium + 6 WebKit grup, 81 değişmez dosya / 10 profil anahtarı geçti. Güncel CI ve Preview durumunun kaynağı Integration PR Checks ekranıdır.
 
 Hiçbir PR onaysız birleştirilmez; Production değiştirilmez.
 
-PR #11 Balance Lab ayrı ve onaysızdır. Integration uyumluluğu ayrı geçici birleşimde sınanacak; laboratuvarın bellekteki oyunu normal profil, Attempt sayacı, Altın, yıldız, stok veya can üretmeyecektir. Yayımlanmış 40 varyant/80 rota ve classic-v4 çekirdeği korunur. Yeni ekonomi işlevleri, 9.4'ün önceki kaynak hash korumalarında meşru değişiklikler gerektirirse sadece bu onaylı kapsam yeni referansa alınır; donmuş oyun verileri ve izolasyon kontrolleri kaldırılmaz.
+PR #11 Balance Lab ayrı ve onaysızdır. Uyumluluk, gerçek sabit Lab dosyalarını mevcut motorla bellekte birleştiren overlay sunucuda sınandı; normal profil, Attempt sayacı, Altın, yıldız, stok veya can üretmedi. PR #11 dosyaları ve roadmap değiştirilmedi. 81 donmuş motor/veri/C# dosyası birebir korundu; 8 onaylı host/UI farkı ve worker query değişikliği ayrıca raporlandı. Yayımlanmış 40 varyant / 80 rota ve classic-v4 çekirdeği korunur; tam eski 37 bin üzeri Lab analizi yeniden koşulmuş gibi gösterilmez.
 
 ## Açık ürün/teknik sınırlar
 
 - Kanıtsız eski tamamlamalar kapalı ve incelemede kalır; otomatik destek/hesap servisi yoktur. Kanıtlı geçiş yalnız bir kez ödüllenir.
-- Toplam ilk 10 bölüm kaynağı 200 Altın; 140 Altınlık kurtarma normalilk gelirle en erken 7 bitiş sonrası mümkündür, diğer harcamalar daha da geciktirir. Fiyatlar pilot değeridir; ekonomi kaynağı artırılmadı.
+- Toplam ilk 10 bölüm kaynağı 200 Altın; 140 Altınlık kurtarma normal ilk gelirle en erken 7 bitiş sonrası mümkündür, diğer harcamalar daha da geciktirir. Fiyatlar pilot değeridir; ekonomi kaynağı artırılmadı.
 - Renk Anahtarı gerçek sonuç ön izlemesi ücretsiz/iptal edilebilirdir; farklı hedefleri araştırmanın denge etkisi insan testinde ölçülmelidir.
 - Yardımlı denemede klasik Director v1 yoğunluğu yerine temel gerçek dalga sunumu kullanılır. Eski Playtest export'u bütün yardım komutlarını içermez; tam sınıflama canonical ledger gerektirir.
 - Yerel kayıt manuel veri silme/değiştirme veya zorla eski uygulama çalıştırmaya karşı hesap otoritesi değildir. Gerçek makbuz, hesap taşıma ve platformun atomik dosya adaptörü ayrı çalışmadır.

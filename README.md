@@ -6,16 +6,24 @@ Telefon ve masaüstü için Türkçe altıgen sayı bulmacası. Sınırlı hamle
 
 ## Menü ve ekran akışı
 
-Oyun ana menüyle açılır. Yeni oyuncu **Birlikte başlayalım** ile ilk örneği görür; sonraki bölümlerde **Oyna** hedefleri gösterir. Geçerli, yarım kalmış bir kayıt varsa **Devam et** aynı tahtayı ve hamle sayısını doğrudan açar. Bütün bölümler tamamlandığında ana eylem yeniden oynamak için bölüm patikasına götürür.
+Oyun ana menüyle açılır. Yeni oyuncu **Birlikte başlayalım** ile ilk örneği görür; sonraki bölümlerde **Oyna** hedefleri gösterir. Geçerli, yarım kalmış bir kayıt varsa **Devam et** aynı tahtayı ve hamle sayısını doğrudan açar. Bütün ana bölümler tamamlandığında ana eylem “Bahçeni gör” olur; “Yeni bölümler yakında” akışı açılır.
 
 - Ana menü: Oyna/Devam Et, öğrenme, bölüm seçimi, ayarlar ve kişisel kayıtlar.
-- Bölümler: T1/T2 ve 01–10 etiketli özgün patika; açık, tamamlanmış ve kilitli duraklar.
+- Bölümler: ödülsüz tekrarlanabilen T1/T2 ve yalnız sıradaki tamamlanmamış ana bölüm. Tamamlanan kampanya bölümleri oynanabilir listelerde üretilmez.
 - Bölüm öncesi: T1'de `2 + 2 + 2 → +6 puan` örneği; sonraki duraklarda puan, yeşertilecek alan ve hamle bütçesi. Bir durağa bakıp vazgeçmek aktif tahtayı değiştirmez; Başla veya Devam Et değişikliği uygular.
 - Oyun/duraklatma: devam, yeniden başlatma, ayarlar ve ana menü. Arka plana geçiş oyunu duraklatır. Geç kalan efekt ve ipucu sonuçları menülerin üzerine geri gelmez.
-- Sonuçlar: sonraki bölüm, tekrar deneme, patika veya ana menü.
+- Sonuçlar: ilk doğrulanmış kazanımda 20 Altın + 1 yıldız ve sonraki tamamlanmamış bölüm/bahçe; kayıpta isteğe bağlı açık TEST reklamı veya 140 Altınla tek +5 hamle, normal tekrar veya menü.
 - Kayıtlar: gerçekten doğrulanmış kazanmalardan en iyi bölüm puanı ve kalan hamle; bilinmeyen eski sonuçlar “—” olarak gösterilir.
 
-Ayarlar; gerçek ses efektleri, yerel üretilen arka plan müziği, ortak ses düzeyi, cihaza göre/azaltılmış/standart hareket ve destekleyen cihazlarda titreşim içerir. Ses ilk kullanıcı etkileşiminden önce başlamaz. İlerlemeyi sıfırlama ayrı onay ister; ses ve hareket tercihleri korunur. Başka uygulamaların localStorage verisine veya eski sürüm anahtarlarına dokunulmaz.
+Ayarlar; gerçek ses efektleri, yerel üretilen arka plan müziği, ortak ses düzeyi, cihaza göre/azaltılmış/standart hareket ve destekleyen cihazlarda titreşim içerir. Ses ilk kullanıcı etkileşiminden önce başlamaz. Bitmemiş oyunları sıfırlama ayrı onay ister; kalıcı tamamlamalar, oyun Altını, yıldızlar, envanter, kanıt arşivleri ve ses/hareket tercihleri korunur. Başka uygulamaların localStorage verisine veya eski sürüm anahtarlarına dokunulmaz.
+
+## 9.5 ilerleme ve ekonomi
+
+Her ana kampanya bölümü yalnız bir kez tamamlanır; varyant/deneme/reset yeni ödül hakkı oluşturmaz. L3 ilk kazanımı 3 Yeşil Fırça, L6 ilk kazanımı 3 Renk Anahtarı verir. İki yardım açık hedef/sonuç/maliyet ön izlemesiyle sıfır hamle kullanır; stok alımı 70/90 oyun Altınıdır. Kurtarma aynı Attempt ID, tahta ve RNG ile bir kez +5 hamle verir; ilk kaybın canı tekrar kesilmez. Reklamlar kullanıcı talebiyle açılan geliştirme TEST sağlayıcısıdır; gerçek SDK/ödeme yoktur.
+
+Yıldızlar harcanmaz; 2/5/8/10 yıldız çiçek/bitki/ağaç/tam bahçeyi açar. 300 TEST Altın yalnız eski can prototipinin ayrı cüzdanıdır, yeni oyun Altınına dönüşmez. Eski kanıtlı kazanımlar bir kez ödüllenir; kanıtı eksik eski tamamlamalar yeniden açılmadan incelemede tutulur. Dağıtım onayına kadar yeni özellikler Preview'dadır; üretim ancak main PR onayıyla güncellenir.
+
+Kurallar, komutlar ve gerçek test sayıları: [9.5 teslim kaydı](docs/ECONOMY_9_5_DELIVERY.md), [ürün şartnamesi](docs/ONE_TIME_PROGRESSION_ECONOMY_9_5.md), [ekonomi](docs/ECONOMY_DESIGN.md), [Unity sözleşmesi](docs/UNITY_MIGRATION_PLAN.md). `npm test` bütün yeni JS kontrollerini de çalıştırır; gerçek C# kontrolleri `test:unity-economy`, `test:unity-commands`, `test:unity-rescue`, `test:unity-session` komutlarıdır. Fiziksel cihaz ve Unity/IL2CPP doğrulaması ayrı aşamadır.
 
 ## 2 öğretici + 10 bölüm
 
