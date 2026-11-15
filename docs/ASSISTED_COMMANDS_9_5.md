@@ -25,6 +25,22 @@ Fırça ve anahtar yalnız `playing` durumda kullanılabilir. Boyanmış hedef f
 
 `preview/Preview(command)` bağımsız kopyada gerçek komutu çalıştırır; `{result,snapshot,status,covered,remainingLayers}` verir. Asıl oyun ve RNG değişmez. UI ön izlemeyi **Attempt ID + gözlenen profil revision + komut sayısı** ile bağlar; yalnız takas sayacı yeterli değildir, çünkü yardım komutları `turn` artırmaz. Onay sırasında değişen deneme/durum yeniden ön izleme gerektirir.
 
+Uygulanmış C# host sözleşmesi `GameSessionController.PreviewBooster(itemId, index, value?, operationId)` ile oluşturulan geçici onay nesnesidir. Metodun döndürdüğü ön izleme sonucunun `quote` alanı şu biçimdedir:
+
+```json
+{
+  "schemaVersion": 1,
+  "profileRevision": 42,
+  "attemptId": "a-7-1-12345678",
+  "snapshot": {},
+  "command": {"id":"assist:example","type":"green_brush","index":0}
+}
+```
+
+Buradaki `snapshot`, ön izlemenin alındığı güncel kanonik oyun checkpoint'inin tamamıdır; örnekte alanı göstermek için boş bırakılmıştır. `UseBooster(..., SessionCommand command = null, object quote = null)` geçerli, **tam olarak güncel** ön izleme nesnesini zorunlu tutar. Aynı revision, Attempt ID, snapshot ve seçilmiş komut birlikte eşleşmelidir. Hedef, sayı, işlem kimliği, profil revision'ı veya sıfır takas tüketen başka bir yardım komutu değişirse eski onay geçersizdir. Onay nesnesi kalıcı kayda yazılmaz; kullanımdan veya geri yüklemeden sonra silinir. Uygulamayı yeniden açmak eski bir ön izlemeyi yeniden kullanılabilir yapmaz.
+
+Oturum yükleyicisi mekanik fırça/anahtar komutları ile ekonomi stok harcama kayıtlarını **iki yönde** eşleştirir: kaynak harcaması olmayan yardım komutu ve gerçek yardım komutu olmayan stok harcaması geçerli kayıt sayılmaz. Geçerli yeni komut, kaynak harcaması ve varsa kazanma/ilerleme aynı profil işleminde kaydedilir. Kurtarma komutu ayrıca kendi deneme, tekil işlem/makbuz ve can sonuçlandırma kurallarıyla doğrulanır; sırf mekanik motorun `grant_moves` kabul etmesi host yetkisi sağlamaz.
+
 Geçerli işlem kopya üzerinde bütünüyle çözülmeden canlı oyun benimsenmez. Aynı komut kimliği ve aynı içerik tekrar gelirse orijinal mekanik sonucu `duplicate:true` ile döner; yeni komut, stok harcaması veya RNG geçişi olmaz. Aynı kimlik farklı içerikle kullanılırsa `command_id_conflict` olur. Tekrar önleme tablosu diskten okunmaz; doğrulanmış günlüğün yeniden oynatılmasından kurulur. Güncel durum için sonuçtaki tarihsel `usage` yerine `snapshot()` esas alınır.
 
 ## Kanonik yeni kayıt

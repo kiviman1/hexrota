@@ -174,9 +174,21 @@ window.HexSessionStore.boot(function startApp(session) {
     const pending=view.pendingReviewLevelIds||[];
     $('progression-notice').hidden=!pending.length;
     $('progression-notice').textContent=pending.length?'Eski tamamlamaların korundu. Bazı eski sonuçların kanıtı bulunamadığı için ödülleri inceleme bekliyor. Bu bölümler yeniden açılmaz.':'';
-    $('garden-progress-title').textContent=view.campaignComplete?'On başarı, kalıcı bir bahçe.':`${view.stars} yıldızlık bir yolculuk.`;
-    $('garden-progress-copy').textContent=view.campaignComplete?'Bütün ana bölümleri tamamladın. Kazandığın yıldızlar ve ödüller burada korunuyor.':'Her ana bölümü ilk kez tamamladığında 1 yıldız kazanırsın. Tamamlanan bölümler tekrar açılmaz.';
+    renderGarden(view);
   }
+  function renderGarden(view){
+    if(!window.HexGarden)return;
+    const garden=window.HexGarden.describe(view);
+    $('garden-visual').innerHTML=window.HexGarden.markup(view);
+    $('garden-stars').textContent=String(garden.stars);
+    $('garden-progress-title').textContent=garden.title;$('garden-progress-copy').textContent=garden.summary;
+    $('garden-milestones').innerHTML=garden.milestones.map(milestone=>`<li data-garden-milestone="${milestone.id}" data-unlocked="${milestone.unlocked}"><span class="garden-milestone-mark" aria-hidden="true">${milestone.unlocked?'✓':'○'}</span><div><strong>${milestone.label}</strong><span>${milestone.stars} yıldız · ${milestone.unlocked?'Açıldı':'Sırada'}</span><p>${milestone.description}</p></div></li>`).join('');
+    $('garden-next-milestone').hidden=!garden.next;$('garden-next-milestone').textContent=garden.next?`${garden.next.label} için ${garden.next.remaining} yıldız daha.`:'';
+    $('garden-coming-soon').hidden=!view.campaignComplete;
+    const pending=view.pendingReviewLevelIds||[];$('garden-pending-notice').hidden=!pending.length;
+    $('garden-pending-notice').textContent=pending.length?'Eski tamamlamaların korundu. Kanıtı bulunamayan bazı eski sonuçların yıldız ödülü inceleme bekliyor. Bahçen yalnız kaydedilmiş yıldızlarınla büyür; tamamlanan bölümler yeniden açılmaz.':'';
+  }
+
   function rescueClock(){return Math.max(lifeClock(),rescueTimeFloor,lifeFeature?.life?.lastSeenUtc||0);}
   function initializeRescue(){
     if(gameLoadIssue||!window.HexRescue)throw new Error('invalid_rescue_module_or_save');
@@ -1517,7 +1529,7 @@ window.HexSessionStore.boot(function startApp(session) {
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=27');
+            job.worker=new Worker('./hint-worker.js?v=28');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:activeLevel,snapshot:engine.snapshot()});
