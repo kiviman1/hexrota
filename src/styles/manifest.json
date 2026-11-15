@@ -1,0 +1,10 @@
+{
+  "output": "dist/style.css",
+  "order": [
+    "src/styles/01-foundation-and-menus.css",
+    "src/styles/02-game-shell.css",
+    "src/styles/03-presentation-and-learning.css",
+    "src/styles/04-lives-and-mobile.css",
+    "src/styles/05-economy-and-garden.css"
+  ]
+}
