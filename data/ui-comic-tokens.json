@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "comic-adventure-v1",
+  "status": "presentation-only",
+  "colors": {"world":"#211535","panel":"#392251","purple":"#643c87","gold":"#ffd469","goldEdge":"#a55e25","paper":"#fff2ce","ink":"#4b2c54","muted":"#75566d","action":"#3e961f","ribbon":"#dc4265","blue":"#287cb7"},
+  "fontStack": ["Arial Rounded MT Bold", "Trebuchet MS", "Arial", "sans-serif"],
+  "assets": ["adventure-book.svg", "adventure-backdrop.svg", "hex-star-badge.svg"],
+  "behavior": {"payments":false,"storyUnlock":false,"characterApproved":false,"geometryChanged":false}
+}

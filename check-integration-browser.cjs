@@ -8,10 +8,10 @@ const PROFILE='hexrota-profile-v2',OBS='hexrota-playtest-v1',dist=path.join(__di
 const shellVersion=fs.readFileSync(path.join(dist,'sw.js'),'utf8').match(/const CACHE='hexrota-shell-v(\d+)'/)?.[1];assert(shellVersion,'the integrated shell is explicitly versioned');
 const shellCache='hexrota-shell-v'+shellVersion;
 const markup=fs.readFileSync(path.join(dist,'index.html'),'utf8');
-const offlineAssets=['',...new Set([...markup.matchAll(/(?:src|href)=["']\.\/([^"']+\.(?:js|css)\?v=\d+)["']/g)].map(match=>match[1]).concat(['hint-worker.js','engine.js','variants-data.js'].map(file=>file+'?v='+shellVersion)))];
+const offlineAssets=['','assets/characters/tavik/front.webp',...new Set([...markup.matchAll(/(?:src|href)=["']\.\/([^"']+\.(?:js|css)\?v=\d+)["']/g)].map(match=>match[1]).concat(['hint-worker.js','engine.js','variants-data.js'].map(file=>file+'?v='+shellVersion)))];
 assert(offlineAssets.includes('economy-config.js?v='+shellVersion)&&offlineAssets.includes('economy.js?v='+shellVersion),'offline progression dependencies are loaded by the real shell');
 const Engine=existing().game.constructor,results=[],errors=[],external=[];
-const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.webmanifest':'application/manifest+json'};
+const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.webmanifest':'application/manifest+json'};
 const server=http.createServer((request,response)=>{
  let relative;try{relative=decodeURIComponent(new URL(request.url,'http://test').pathname);}catch(_){response.writeHead(400).end();return;}
  const filename=path.resolve(dist,'.'+(relative==='/'?'/index.html':relative));
@@ -86,7 +86,7 @@ async function main(){
    await page.evaluate(()=>navigator.serviceWorker.controller.postMessage({type:'CACHE_APP'}));
    await page.waitForFunction(async({cacheName,assets})=>{const cache=await caches.open(cacheName);return(await Promise.all(assets.map(name=>cache.match(new URL(name,location.href).href)))).every(Boolean);},{cacheName:shellCache,assets:offlineAssets});
    await enter(page);const initial=await read(page),stage=initial.game.current,level=await levelFor(page),model=new Engine(level,initial.game.boards[stage]);model.swap(...level.solution[0]);await swipe(page,cdp,plain(level.solution[0]));assert.deepEqual((await read(page)).game.boards[stage],plain(model.snapshot()));
-   await context.setOffline(true);await page.reload();await ready(page);await enter(page);assert.deepEqual((await read(page)).game.boards[stage],plain(model.snapshot()));assert.equal(await page.locator('#setting-playtest').isChecked(),true);
+   await context.setOffline(true);await page.reload();await ready(page);await page.locator('.tavik-portrait img').evaluate(n=>n.decode());assert.equal(await page.locator('.tavik-portrait img').evaluate(n=>n.naturalWidth),147,'approved Tavik remains available offline');await enter(page);assert.deepEqual((await read(page)).game.boards[stage],plain(model.snapshot()));assert.equal(await page.locator('#setting-playtest').isChecked(),true);
    const beforeHint=(await read(page)).game.boards[stage];await page.locator('#hint').click();await page.waitForFunction(()=>JSON.parse(localStorage.getItem('hexrota-playtest-v1')).events.some(e=>e.name==='hint_used'));assert.deepEqual((await read(page)).game.boards[stage],beforeHint,'offline hint cannot change score, RNG or spent moves');
    const next=plain(level.solution[1]);model.swap(...next);await swipe(page,cdp,next);const after=await read(page);assert.deepEqual(after.game.boards[stage],plain(model.snapshot()));assert.equal(after.energy.life.lives,5);assert.equal((await observations(page)).events.filter(e=>e.name==='move').length,2);
    await context.setOffline(false);

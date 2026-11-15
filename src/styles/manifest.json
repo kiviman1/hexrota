@@ -5,6 +5,7 @@
     "src/styles/02-game-shell.css",
     "src/styles/03-presentation-and-learning.css",
     "src/styles/04-lives-and-mobile.css",
-    "src/styles/05-economy-and-garden.css"
+    "src/styles/05-economy-and-garden.css",
+    "src/styles/06-comic-adventure.css"
   ]
 }
