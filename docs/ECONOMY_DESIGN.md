@@ -4,7 +4,7 @@ Bağlayıcı ürün kararı [ONE_TIME_PROGRESSION_ECONOMY_9_5.md](ONE_TIME_PROGR
 
 ## Uygulama aşamaları
 
-A: kalıcı tamamlama, doğrulanmış ilk kazanma ödülü, migration, bakiye/envanter ve JS/C# oturum sınırları uygulanır. B: iki yardım komutu ve envanter harcaması; C: ikinci şans; D: botanik görünüm. B/C için saf ekonomi işlemlerinin A'da bulunması bu ürünlerin A arayüzünde kullanılabildiği anlamına gelmez. Her aşamanın gerçek doğrulaması ve PR bağımlılığı [ECONOMY_9_5_DELIVERY.md](ECONOMY_9_5_DELIVERY.md) içinde tutulur.
+A: kalıcı tamamlama, doğrulanmış ilk kazanma ödülü, migration, bakiye/envanter ve JS/C# oturum sınırları; B: iki yardım komutu ve envanter harcaması; C: ikinci şans; D: botanik görünüm uygulanmıştır. Her aşama ayrı PR'da doğrulanır. B/C için saf ekonomi işlemlerinin A'da bulunması o ara A sürümünde tüketimin kullanılabildiği anlamına gelmez. Her aşamanın gerçek doğrulaması ve PR bağımlılığı [ECONOMY_9_5_DELIVERY.md](ECONOMY_9_5_DELIVERY.md) içinde tutulur.
 
 ## Kalıcı kazanımlar
 
