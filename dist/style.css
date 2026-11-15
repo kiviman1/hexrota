@@ -657,3 +657,15 @@ body[data-ui-theme="comic"] footer{color:#c4add3;border-color:#bb90c133}
 @media(max-width:600px){body[data-ui-theme="comic"] .home-copy h1{font-size:clamp(31px,8.5vw,40px);line-height:1.05}body[data-ui-theme="comic"] .home-play strong{font-size:23px}body[data-ui-theme="comic"] .modal{padding:26px 18px 22px}body[data-ui-theme="comic"] .modal>h2{font-size:24px;padding:9px 11px}body[data-ui-theme="comic"] .campaign-wallet{border-width:1px}body[data-ui-theme="comic"] .home-description{font-size:13px;line-height:1.5}}
 @media(max-width:360px),(max-height:520px){body[data-ui-theme="comic"] .modal{padding:22px 15px 18px;border-width:3px}body[data-ui-theme="comic"] .modal>h2{font-size:21px}body[data-ui-theme="comic"] .primary-button{font-size:14px}}
 @media(prefers-reduced-motion:reduce){body[data-ui-theme="comic"] :is(.primary-button,.secondary-button,.home-play){transition:none}}
+
+/* Approved Tavik: direct art crop, not a regenerated mascot. */
+body[data-ui-theme="comic"] .tavik-intro{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:10px 0 16px;min-width:0}
+body[data-ui-theme="comic"] .tavik-intro h1{flex:1;min-width:0;margin:0}
+body[data-ui-theme="comic"] .tavik-portrait{flex:0 0 98px;width:98px;margin:0;overflow:hidden;background:#f9e7d8;border:3px solid #e5b65d;border-radius:22px;box-shadow:0 4px 0 #241637,0 7px 20px #120b2444}
+body[data-ui-theme="comic"] .tavik-portrait img{display:block;width:100%;height:auto;object-fit:contain}
+body[data-ui-theme="comic"] .tavik-portrait figcaption{margin:0;padding:5px 2px 6px;text-align:center;font-size:15px;line-height:1.1;font-weight:900;color:#fff1d2;background:#654085}
+body[data-ui-theme="comic"] .tavik-story-art{position:relative;width:min(100%,350px);height:230px;margin:-76px auto 0}
+body[data-ui-theme="comic"] .kit-story .tavik-story-book{display:block;width:100%;height:100%;object-fit:contain;margin:0}
+body[data-ui-theme="comic"] .kit-story .tavik-story-guest{position:absolute;left:21%;top:30%;width:64px;height:104px;object-fit:contain;margin:0;border:2px solid #c68b43;border-radius:8px;background:#f9e7d8;transform:rotate(-9deg);box-shadow:0 3px 8px #4b204766}
+@media(max-width:360px){body[data-ui-theme="comic"] .tavik-intro{gap:10px}body[data-ui-theme="comic"] .tavik-portrait{flex-basis:80px;width:80px}body[data-ui-theme="comic"] .tavik-intro h1{font-size:29px}}
+@media(max-height:520px) and (min-width:601px){body[data-ui-theme="comic"] .tavik-portrait{flex-basis:80px;width:80px}}

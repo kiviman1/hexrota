@@ -25,3 +25,8 @@ Oyun motoru, koordinatlar, C# kaynakları, ekonomi, stok, can, yıldızlar, kurt
 ## Devam
 
 Tasarım kaynakları `UI_VISUAL_LANGUAGE.md` içindedir. Kitteki hikâyeyi gerçek yıldız ilerlemesine bağlamak ayrı ürün/migration işi; bu PR'da bahçe kurallarını gizlice kaldırma. Ön izleme ve nihai CI bağlantıları PR açıklamasına eklenir. Üretim kullanıcının onayını bekler.
+
+
+## Onaylı Tavik — 15 Kasım 2026
+
+Karakter seçimi artık onaylı: mor tüylü, krem gövdeli, gözlüklü Tavik. Önceki “karakter henüz onaylanmadı” notu bu onayla geçersizdir. Kaynak kimliği ve doğrudan kırpma kaydı `data/tavik-approved.json`; rehber `docs/TAVIK_APPROVED.md`. Ana menü portresi ve örnek hikâye kartı bağlandı. Yeni karakter tasarımı, oyun kuralı veya hikâye ilerlemesi eklenmedi. PWA v31 bu yerel WebP görselini açık MIME denetimiyle önbelleğe alır. Nihai CI sonucu PR #18 üzerinde aynı commit ile doğrulanmalıdır.

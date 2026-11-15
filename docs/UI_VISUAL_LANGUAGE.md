@@ -33,3 +33,8 @@ Tavuk tasarımı onaylanmadığı için ürüne karakter eklenmedi. Önceki gör
 5. Asset eklenirse PWA ve test sözleşmesini güncelle; dış font/izleyici ekleme.
 6. `npm test`, iki tarayıcıda `npm run test:comic-ui-browser`, mevcut mobil/piksel/ekonomi kontrollerini çalıştır. Fiziksel iPhone testini ayrı raporla.
 7. Hikâye sistemi sonraki ayrı PR'dır: kazanılmış yıldızları koru, okunmuş ve açılmış bölümleri ayır, tekrar okuma ödül vermesin. Kit görselini gerçek çalışan ilerleme gibi sunma.
+
+
+## Onaylı Tavik — 15 Kasım 2026
+
+Karakter seçimi artık onaylı: mor tüylü, krem gövdeli, gözlüklü Tavik. Önceki “karakter henüz onaylanmadı” notu bu onayla geçersizdir. Kaynak kimliği ve doğrudan kırpma kaydı `data/tavik-approved.json`; rehber `docs/TAVIK_APPROVED.md`. Ana menü portresi ve örnek hikâye kartı bağlandı. Yeni karakter tasarımı, oyun kuralı veya hikâye ilerlemesi eklenmedi. PWA v31 bu yerel WebP görselini açık MIME denetimiyle önbelleğe alır. Nihai CI sonucu PR #18 üzerinde aynı commit ile doğrulanmalıdır.
