@@ -28,12 +28,13 @@ window.HexSessionStore.boot(function startApp(session) {
         sourceSaveKey=previousKey;
         const boards={};
         if(previousKey==='hexrota-match-v4'&&previous.boards)for(let i=0;i<campaignCount;i++)if(previous.boards[i])boards[i+tutorialCount]=previous.boards[i];
-        raw={current:Number.isInteger(previous.current)?previous.current+tutorialCount:tutorialCount,done:[...tutorials.map((_,i)=>i),...(Array.isArray(previous.done)?previous.done.filter(i=>Number.isInteger(i)&&i>=0&&i<campaignCount).map(i=>i+tutorialCount):[])],boards,sound:previous.sound,...(Object.prototype.hasOwnProperty.call(previous,'economy')?{economy:previous.economy}:{})};
+        raw={current:Number.isInteger(previous.current)?previous.current+tutorialCount:tutorialCount,done:[...tutorials.map((_,i)=>i),...(Array.isArray(previous.done)?previous.done.filter(i=>Number.isInteger(i)&&i>=0&&i<campaignCount).map(i=>i+tutorialCount):[])],boards,sound:previous.sound,...(Object.prototype.hasOwnProperty.call(previous,'economy')?{economy:previous.economy}:{}),...(Object.prototype.hasOwnProperty.call(previous,'rescue')?{rescue:previous.rescue}:{})};
         migrated=true;
       }
     }
     if(raw&&typeof raw==='object'){
       if(Object.prototype.hasOwnProperty.call(raw,'economy'))saved.economy=raw.economy;
+      if(Object.prototype.hasOwnProperty.call(raw,'rescue'))saved.rescue=raw.rescue;
       saved.done=Array.isArray(raw.done)?[...new Set(raw.done.filter(i=>Number.isInteger(i)&&i>=0&&i<levels.length))]:[];
       saved.current=Number.isInteger(raw.current)&&raw.current>=0&&raw.current<levels.length?raw.current:0;
       saved.sound=raw.sound===true;
@@ -65,6 +66,7 @@ window.HexSessionStore.boot(function startApp(session) {
   const geometryCache=new Map();
   let screen='home',paused=false,pendingStage=null,pendingRestart=null,invalidPresentation=null;
   let assistanceMode=null,pendingAssistance=null;
+  let rescueManager=null,pendingRescueProvider=null,pendingRescueReceipt=null,rescueTimeFloor=0;
   const modalStack=[];
   const audio=window.HexAudio?new window.HexAudio({sfx:saved.sound,music:saved.preferences.music,volume:saved.preferences.volume}):null;
   const difficultyLabels={very_easy:'Çok kolay',easy:'Kolay',medium:'Orta',medium_hard:'Orta-zor',challenge:'Meydan okuma',relief:'Rahatlama',hard:'Zor',final:'Final'};
@@ -175,6 +177,170 @@ window.HexSessionStore.boot(function startApp(session) {
     $('garden-progress-title').textContent=view.campaignComplete?'On başarı, kalıcı bir bahçe.':`${view.stars} yıldızlık bir yolculuk.`;
     $('garden-progress-copy').textContent=view.campaignComplete?'Bütün ana bölümleri tamamladın. Kazandığın yıldızlar ve ödüller burada korunuyor.':'Her ana bölümü ilk kez tamamladığında 1 yıldız kazanırsın. Tamamlanan bölümler tekrar açılmaz.';
   }
+  function rescueClock(){return Math.max(lifeClock(),rescueTimeFloor,lifeFeature?.life?.lastSeenUtc||0);}
+  function initializeRescue(){
+    if(gameLoadIssue||!window.HexRescue)throw new Error('invalid_rescue_module_or_save');
+    const prior=readSave(livesKey),stamp=prior?.life?.lastSeenUtc;
+    rescueTimeFloor=Number.isSafeInteger(stamp)&&stamp>=0?stamp:0;
+    rescueManager=window.HexRescue.createManager(window.HEX_ECONOMY_CONFIG.rescue,{clock:rescueClock,verifyReceipt:(receipt,provider)=>window.HexRescue.TestProvider.verify(provider,receipt)});
+    if(Object.prototype.hasOwnProperty.call(saved,'rescue'))saved.rescue=rescueManager.restore(saved.rescue);
+    else{
+      const previous=prior?.provider?.namespace,namespace=typeof previous==='string'&&/^[A-Za-z0-9_.:-]+$/.test(previous)?previous.slice(0,130)+'-rescue':`hexrota-rescue-${selectionSeed().toString(16)}`;
+      saved.rescue=rescueManager.createState({namespace});
+    }
+  }
+  function rescueContext(entry={metadata:activeAttempt,level:activeLevel,game:engine},index=active){
+    if(!entry?.metadata||!entry.game)return null;
+    return {attemptId:entry.metadata.attemptId,levelId:entry.level.id,tutorial:index<tutorialCount,cleared:campaignCleared(index),status:entry.game.status,movesLeft:entry.game.movesLeft,turn:entry.game.turn,lastCommand:entry.game.commands?.at(-1)?.type||(entry.game.history.length?'swap':'none'),rescuesUsed:validCounter(entry.game.usage?.rescue)};
+  }
+  function rescueOffer(index=active){
+    if(!rescueManager||!saved.rescue||index<tutorialCount||!canOpen(index)||lifeDiscarded(index))return null;
+    try{
+      const entry=index===active&&!attemptPending&&!saveBlocked?{metadata:activeAttempt,level:activeLevel,game:engine}:restoredStage(index),context=rescueContext(entry,index);
+      if(!context)return null;
+      const offer=rescueManager.availability(saved.rescue,context,{gold:economyView().gold});
+      if(offer.eligible&&!entry.game.legalMoves().length)return {...offer,eligible:false,reason:'no_legal_swaps',ad:{...offer.ad,allowed:false,reason:'no_legal_swaps'},gold:{...offer.gold,allowed:false,reason:'no_legal_swaps'}};
+      return offer;
+    }catch(_){return null;}
+  }
+  function recoverableLoss(index){return rescueOffer(index)?.eligible===true;}
+  function resumeSecondChance(index){
+    if(!campaignEntryAllowed(index)||!recoverableLoss(index))return false;
+    if(!loadLevel(index,false,{activate:false}))return false;
+    showScreen('game');showLoss();return true;
+  }
+  function validateRescueLife(game,metadata){
+    const manager=lifeManager||window.HexLives.createManager(window.HEX_LIVES_CONFIG,{clock:rescueClock,verifyReceipt:()=>false});
+    const feature=lifeFeature||window.HexLifePrototype.validate(readSave(livesKey),manager),settled=manager.settlementFor(feature.life,metadata.attemptId);
+    const discardedHistory=settled?.discarded===true&&settled.outcome==='restart'&&game.status!=='won';
+    if(!settled||settled.levelId!==metadata.levelId||settled.tutorial||(!discardedHistory&&(settled.discarded||settled.outcome!==(game.status==='won'?'won':'failed')))||settled.movesUsed<game.level.moves)throw new Error('Rescue has no matching first loss life settlement');
+  }
+  function validateRescueCommand(command,game,metadata,economyState){
+    if(!rescueManager||!saved.rescue)throw new Error('Missing rescue ledger');
+    const settled=rescueManager.settlementFor(saved.rescue,metadata.attemptId),transaction=rescueManager.transactionFor(saved.rescue,command.id),payment=economyState.transactions[command.id];
+    if(!settled||!transaction||settled.transactionId!==command.id||settled.levelId!==metadata.levelId||transaction.attemptId!==metadata.attemptId||transaction.levelId!==metadata.levelId||transaction.moves!==5||settled.source!==transaction.source)throw new Error('Rescue command has no matching settlement');
+    if(transaction.source==='gold'){
+      if(!payment||payment.kind!=='rescue'||payment.itemId!=='rescue5'||payment.attemptId!==metadata.attemptId||payment.levelId!==metadata.levelId||payment.costGold!==transaction.costGold)throw new Error('Rescue payment mismatch');
+    }else{
+      if(payment)throw new Error('An ad rescue cannot debit Gold');
+      const provider=saved.rescue.provider,record=provider.transactions[command.id],prefix=provider.namespace+'-',serial=command.id.startsWith(prefix)?Number(command.id.slice(prefix.length)):NaN;
+      const archived=Number.isSafeInteger(serial)&&serial>0&&command.id===prefix+serial&&provider.finalizedRanges.some(pair=>serial>=pair[0]&&serial<=pair[1]);
+      if(!archived&&(!record||record.status!=='completed'||record.attemptId!==metadata.attemptId||record.levelId!==metadata.levelId||!window.HexRescue.TestProvider.verify(provider,record.receipt)))throw new Error('Rescue advertisement has no verified completion');
+    }
+    validateRescueLife(game,metadata);
+  }
+  function renderRescue(){
+    if(!rescueManager||!saved.rescue)return;
+    const offer=rescueOffer(),lost=active>=tutorialCount&&!attemptPending&&!saveBlocked&&engine?.status==='lost';
+    $('second-chance-panel').hidden=!lost;
+    $('second-chance-ad').disabled=!offer?.eligible||!(offer.ad.allowed||offer.ad.pendingTransactionId);
+    $('second-chance-gold').disabled=!offer?.gold.allowed||lifeWriteFailed||!!pendingRescueReceipt;
+    $('second-chance-gold').textContent=`${window.HEX_ECONOMY_CONFIG.rescue.goldCost} Altın · +5 hamle`;
+    $('second-chance-ad').textContent=pendingRescueReceipt?'Kazandığın +5 hamleyi kaydet':offer?.ad.pendingTransactionId?'Yarım kalan TEST reklamını aç':'TEST reklamı · +5 hamle';
+    $('setting-rescue-ad').checked=saved.rescue.provider.adAvailable;
+    const reason=offer?.reason||offer?.ad.reason;
+    let message;
+    if(reason==='no_legal_swaps')message='Bu tahtada eşleşme yapacak hamle kalmadı. Yeni bir deneme başlatabilirsin.';
+    else if(!offer?.eligible)message=reason==='already_rescued'?'Bu denemede ikinci şansını kullandın. Yeni bir deneme başlatabilir veya menüye dönebilirsin.':'Bu deneme kapanmış. Yeni bir deneme başlatabilir veya menüye dönebilirsin.';
+    else if(reason==='ad_unavailable')message='Şu an TEST reklamı yok. Yeniden deneyebilir veya menüye dönebilirsin.';
+    else if(reason==='daily_limit')message='Bugünkü 2 ikinci şans reklamı hakkın doldu.';
+    else if(reason==='daily_reserved')message='Bugünkü reklam hakların yarım kalan TEST işlemleri için ayrılmış.';
+    else if(offer.ad.pendingTransactionId)message='Başlattığın TEST işlemini sürdürebilirsin. Yeni bir reklam hakkı ayrılmaz.';
+    else message=`İkinci şans reklamı: bugün ${offer.ad.remainingToday} hak kaldı. Can reklamlarından ayrıdır.`;
+    if(offer?.eligible&&!offer.gold.allowed)message+=' Altın seçeneği için bakiyen yetersiz.';
+    else if(offer?.gold.allowed&&['ad_unavailable','daily_limit','daily_reserved'].includes(reason))message+=' Altınla devam edebilirsin.';
+    if(pendingRescueReceipt)message='Ödülü zaten kazandın. Altın harcamadan kaydetmeyi tekrar dene; yeni reklam gerekmez.';
+    $('second-chance-status').textContent=message;
+  }
+  function showRescueProvider(id){
+    pendingRescueProvider=id;const proof=pendingRescueReceipt?.receipt.transactionId===id;
+    $('rescue-provider-title').textContent=proof?'Ödülün kaydedilmeyi bekliyor':'TEST reklamı: +5 hamle';
+    $('rescue-provider-description').textContent=proof?'Tamamlanan TEST işleminin doğrulanmış ödülü henüz kaydedilemedi. Aynı ödülü kaydetmeyi tekrar dene; yeni reklam başlatılmaz.':'Bu yerel test gerçek reklam göstermez. Yalnız tamamladığında aynı tahtana 5 hamle eklenir.';
+    $('rescue-provider-confirm').hidden=!!proof;$('rescue-receipt-retry').hidden=!proof;
+    openModal('rescue-provider-dialog');
+  }
+  function beginRescueAd(){
+    if(pendingRescueReceipt){showRescueProvider(pendingRescueReceipt.receipt.transactionId);return {applied:false,reason:'pending_rescue_delivery'};}
+    if(screen!=='game'||!$('lose-dialog').open||busy||paused||lifeWriteFailed)return {applied:false,reason:'unavailable'};
+    const offer=rescueOffer();if(!offer?.eligible)return {applied:false,reason:'unavailable'};
+    if(offer.ad.pendingTransactionId){showRescueProvider(offer.ad.pendingTransactionId);return {applied:false,reason:'ad_pending'};}
+    if(!offer.ad.allowed){renderRescue();return {applied:false,reason:offer.ad.reason};}
+    const result=rescueManager.beginAd(saved.rescue,rescueContext());if(!result.transactionId)return result;
+    saved.rescue=result.state;persist();if(!commitSession())return {applied:false,reason:'storage'};
+    showRescueProvider(result.transactionId);return result;
+  }
+  function cancelRescueProvider(){
+    if(sessionRestoring)return;
+    const id=pendingRescueProvider;pendingRescueProvider=null;
+    if(!id||pendingRescueReceipt?.receipt.transactionId===id||saved.rescue?.provider.transactions[id]?.status!=='pending')return;
+    const result=rescueManager.completeAd(saved.rescue,id,{outcome:'cancelled'});saved.rescue=result.state;persist();commitSession();renderRescue();
+  }
+  function cancelPendingRescue(entry){
+    if(!entry?.metadata||!saved.rescue)return;
+    for(const [id,row]of Object.entries(saved.rescue.provider.transactions))if(row.attemptId===entry.metadata.attemptId&&row.status==='pending'){
+      if(pendingRescueReceipt?.receipt.transactionId===id)continue;
+      saved.rescue=rescueManager.completeAd(saved.rescue,id,{outcome:'cancelled'}).state;
+    }
+  }
+  function applyRescueGrant(result,economyState){
+    const model=commandGame(),applied=model.apply({id:result.grant.commandId,type:'grant_moves',moves:5});
+    if(!applied.ok||applied.duplicate)return {applied:false,reason:'invalid_command'};
+    cancelPresentation();cancelHint();cancelAssistance();clearScoreReceipt();stopPointer();epoch++;
+    engine=model;saved.economy=economyState;saved.rescue=result.state;const stats=activeStats();if(stats)stats.terminalEvent=null;
+    rewardState=null;completionReward=null;completionRewardPlayed=false;
+    persist();emitEvent('booster_used',{boosterId:'rescue5'});
+    if(!commitSession()){
+      if(pendingRescueReceipt)showRescueProvider(pendingRescueReceipt.receipt.transactionId);
+      return {applied:false,reason:'storage'};
+    }
+    pendingRescueProvider=null;pendingRescueReceipt=null;closeAllDialogs();paused=false;render();renderLevels();updateMenus();renderLives();renderRescue();
+    toast('Aynı tahtana 5 hamle eklendi.');return {applied:true,reason:'rescued'};
+  }
+  function applyRescueReceipt(receipt,completedProvider){
+    if(!rescueManager||!activeAttempt||attemptPending||saveBlocked||active<tutorialCount||!canOpen(active)||lifeDiscarded(active)||receipt?.attemptId!==activeAttempt.attemptId||receipt?.levelId!==activeLevel.id)return {applied:false,reason:'attempt_changed'};
+    try{
+      if(engine.status==='lost'&&!engine.legalMoves().length)return {applied:false,reason:'no_legal_swaps'};
+      const result=rescueManager.applyAd(saved.rescue,rescueContext(),receipt,completedProvider);
+      if(!result.applied)return {applied:false,reason:result.reason};
+      pendingRescueReceipt={receipt:lifeClone(receipt),completedProvider:lifeClone(completedProvider||saved.rescue.provider)};
+      return applyRescueGrant(result,saved.economy);
+    }catch(_){return {applied:false,reason:'invalid'};}
+  }
+  function finishRescueProvider(){
+    if(pendingRescueReceipt)return applyRescueReceipt(pendingRescueReceipt.receipt,pendingRescueReceipt.completedProvider);
+    const id=pendingRescueProvider;
+    if(!id||!$('rescue-provider-dialog').open)return {applied:false,reason:'unavailable'};
+    const result=rescueManager.completeAd(saved.rescue,id,{outcome:'completed'});
+    if(!result.receipt)return {applied:false,reason:'unverified_receipt'};
+    return applyRescueReceipt(result.receipt,result.completedProvider);
+  }
+  function rescueWithGold(){
+    if(pendingRescueReceipt){showRescueProvider(pendingRescueReceipt.receipt.transactionId);return {applied:false,reason:'pending_rescue_delivery'};}
+    if(screen!=='game'||!$('lose-dialog').open||busy||paused||lifeWriteFailed)return {applied:false,reason:'unavailable'};
+    const offer=rescueOffer();if(!offer?.gold.allowed)return {applied:false,reason:offer?.gold.reason||'unavailable'};
+    const operationId=`rescue:${activeAttempt.attemptId}`,result=rescueManager.applyGold(saved.rescue,rescueContext(),operationId,{gold:economyView().gold});
+    if(!result.applied)return {applied:false,reason:result.reason};
+    const debit=economyManager.spendRescue(saved.economy,{operationId,attemptId:activeAttempt.attemptId,levelId:activeLevel.id});
+    if(!debit.applied)return {applied:false,reason:debit.reason};
+    return applyRescueGrant(result,debit.state);
+  }
+  function rescueRefresh({write=false}={}){
+    if(!rescueManager||!saved.rescue||sessionRestoring)return;
+    const before=saved.rescue,next=rescueManager.reconcile(before);saved.rescue=next;
+    if(write||next.adUsage.day!==before.adUsage.day||next.adUsage.count!==before.adUsage.count)persist();
+    renderRescue();
+  }
+  function bindRescueUI(){
+    on($('second-chance-ad'),'click',beginRescueAd);on($('second-chance-gold'),'click',rescueWithGold);
+    on($('rescue-provider-confirm'),'click',finishRescueProvider);on($('rescue-receipt-retry'),'click',finishRescueProvider);
+    on($('rescue-provider-dialog'),'close',cancelRescueProvider);
+    on($('setting-rescue-ad'),'change',event=>{saved.rescue=rescueManager.setAdAvailable(saved.rescue,event.target.checked);persist();if(commitSession())renderRescue();});
+    on(window,'focus',()=>rescueRefresh({write:true}));on(document,'visibilitychange',()=>{if(!document.hidden)rescueRefresh({write:true});});
+    window.setInterval(()=>sessionAction(()=>{if(Math.floor(rescueClock()/86400000)!==saved.rescue.adUsage.day)rescueRefresh({write:true});}),1000);
+    on(window,'pagehide',()=>rescueRefresh({write:true}));
+    window.HexRescueTestAdapter=Object.freeze({applyReceipt:(receipt,provider)=>sessionAction(()=>applyRescueReceipt(receipt,provider))});
+  }
+
   function assistanceLimits(){
     return {greenBrush:window.HEX_ECONOMY_CONFIG.inventory.greenBrush.maxPerAttempt,colorKey:window.HEX_ECONOMY_CONFIG.inventory.colorKey.maxPerAttempt,rescue:window.HEX_ECONOMY_CONFIG.rescue.maxPerAttempt};
   }
@@ -184,12 +350,14 @@ window.HexSessionStore.boot(function startApp(session) {
     const state=economyManager.restore(saved.economy),bound=new Set();
     for(const command of assistance){
       const itemId=command.type==='green_brush'?'greenBrush':command.type==='color_key'?'colorKey':null;
+      if(command.type==='grant_moves'){validateRescueCommand(command,game,metadata,state);bound.add(command.id);continue;}
       if(!itemId)throw new Error('Unsupported assisted command');
       const row=state.transactions[command.id];
       if(!row||row.kind!=='use'||row.itemId!==itemId||row.attemptId!==metadata.attemptId||row.levelId!==metadata.levelId)throw new Error('Assisted command has no matching inventory debit');
       bound.add(command.id);
     }
     for(const [id,row]of Object.entries(state.transactions))if(row.attemptId===metadata.attemptId&&['use','rescue'].includes(row.kind)&&!bound.has(id))throw new Error('Present checkpoint omits a paid command');
+    const rescued=rescueManager?.settlementFor(saved.rescue,metadata.attemptId);if(rescued&&!bound.has(rescued.transactionId))throw new Error('Present checkpoint omits a rescued command');
   }
   function validateAssistedCheckpoints(){
     const transactions=saved.economy.transactions;
@@ -197,7 +365,8 @@ window.HexSessionStore.boot(function startApp(session) {
       const snapshot=saved.boards[index];if(!snapshot)continue;
       const attemptIds=[saved.attempts[index]?.attemptId,`legacy-${levels[index].id}`];
       const charged=Object.values(transactions).some(row=>attemptIds.includes(row.attemptId)&&['use','rescue'].includes(row.kind));
-      if(snapshot.rulesVersion==='assisted-v1'||charged)restoredStage(index);
+      const rescued=rescueManager&&attemptIds.some(id=>typeof id==='string'&&rescueManager.settlementFor(saved.rescue,id));
+      if(snapshot.rulesVersion==='assisted-v1'||charged||rescued)restoredStage(index);
     }
   }
   function inventoryUsage(itemId){return validCounter(engine?.usage?.[itemId]);}
@@ -389,10 +558,11 @@ window.HexSessionStore.boot(function startApp(session) {
   function restoreDurable(){
     const durable=session?.current();if(!durable)return;
     saved=lifeClone(durable.revision===0?sessionGameBaseline:durable.game);lastEconomyReward=null;
+    if(rescueManager){try{if(Object.prototype.hasOwnProperty.call(saved,'rescue'))saved.rescue=rescueManager.restore(saved.rescue);else initializeRescue();}catch(_){economyIssue='invalid';}}
     if(economyManager)try{if(Object.prototype.hasOwnProperty.call(saved,'economy'))saved.economy=economyManager.restore(saved.economy);else initializeEconomy();syncCompletedCampaign();}catch(_){economyIssue='invalid';}lifeFeature=window.HexLifePrototype.validate(durable.energy,lifeManager);active=saved.current;
     try{if(!canOpen(active)){active=nextCampaignIndex()??0;saved.current=active;}
       const entry=restoredStage(active);if(entry){engine=entry.game;activeLevel=entry.level;activeAttempt=entry.metadata;attemptPending=false;saveBlocked=false;}else{activeLevel=levels[active];engine=new window.HexMatch(activeLevel);activeAttempt=null;attemptPending=true;saveBlocked=false;loadIssue=null;}}catch(_){saveBlocked=true;}
-    sessionRestoring=true;try{cancelAssistance();cancelPresentation();cancelHint();selected=null;pendingStage=null;pendingRestart=null;pendingResetLifeCost=null;if(pendingLifeProvider&&!lifeFeature.provider.transactions[pendingLifeProvider]&&!pendingLifeReceipt){pendingLifeProvider=null;if($('life-provider-dialog')?.open)closeModal($('life-provider-dialog'));}if(attemptPending)showScreen('home',{replace:true});restoreRewards();renderLevels();render();renderLives();}catch(_){}finally{sessionRestoring=false;}
+    sessionRestoring=true;try{cancelAssistance();cancelPresentation();cancelHint();selected=null;pendingStage=null;pendingRestart=null;pendingResetLifeCost=null;if(pendingLifeProvider&&!lifeFeature.provider.transactions[pendingLifeProvider]&&!pendingLifeReceipt){pendingLifeProvider=null;if($('life-provider-dialog')?.open)closeModal($('life-provider-dialog'));}if(attemptPending)showScreen('home',{replace:true});restoreRewards();renderLevels();render();renderLives();renderRescue();}catch(_){}finally{sessionRestoring=false;}
   }
   function commitSession(){
     sessionDirty=false;if(sessionRestoring||!lifeFeature)return true;
@@ -604,7 +774,9 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   function terminalEvent(){
     const stats=activeStats();if(!stats||!stats.started||stats.terminalEvent||engine.status==='playing')return;
-    const name=engine.status==='won'?'level_completed':'level_failed';stats.terminalEvent=name;persist();emitEvent(name);
+    const name=engine.status==='won'?'level_completed':'level_failed';stats.terminalEvent=name;persist();
+    if(name==='level_failed'&&engine.usage?.rescue>0&&rescueManager?.settlementFor(saved.rescue,activeAttempt.attemptId)){observePlaytest(name,eventContext(),{reason:'post_rescue_failure'});return;}
+    emitEvent(name);
   }
   function stageEntry(index){
     if(index===active&&!attemptPending&&!saveBlocked)return {metadata:activeAttempt,level:activeLevel,game:engine,stats:activeStats()};
@@ -613,6 +785,7 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   function discardStage(index,reason,entry=stageEntry(index)){
     if(!entry?.metadata)return null;
+    cancelPendingRescue(entry);
     if(entry.game.status==='playing'&&entry.stats?.started&&!entry.stats.terminalEvent){entry.stats.terminalEvent='level_abandoned';emitEvent('level_abandoned',{reason},entry);}
     return entry.metadata;
   }
@@ -701,18 +874,19 @@ window.HexSessionStore.boot(function startApp(session) {
   function nextStage(){
     const campaignIndex=nextCampaignIndex();
     if(campaignIndex===null||campaignIndex<0)return null;
+    if(recoverableLoss(saved.current))return {index:saved.current,resume:false,rescue:true};
     const activeCheckpoint=validCheckpoint(saved.current);
     if(canOpen(saved.current)&&activeCheckpoint?.status==='playing'&&(activeCheckpoint.turn>0||activeCheckpoint.assisted)&&!lifeDiscarded(saved.current))return {index:saved.current,resume:true};
     const tutorialIndex=tutorials.findIndex((_,index)=>!saved.done.includes(index));
     const index=tutorialIndex>=0?tutorialIndex:campaignIndex,current=validCheckpoint(index);
-    return {index,resume:current?.status==='playing'&&(current.turn>0||current.assisted)&&!lifeDiscarded(index)};
+    return {index,resume:current?.status==='playing'&&(current.turn>0||current.assisted)&&!lifeDiscarded(index),rescue:recoverableLoss(index)};
   }
   function updateMenus(){
     if(!$('home-play'))return;
     const next=nextStage(),completed=economyView()?.cleared.length||0;
     renderEconomy();
-    $('home-play-label').textContent=next?(next.resume?'Devam et':next.index===0?'Birlikte başlayalım':'Oyna'):'Bahçeni gör';
-    $('home-play-detail').textContent=next?next.resume?`${stageLabel(next.index)} · ${validCheckpoint(next.index).movesLeft} hamle kaldı`:next.index===0?'Aynı sayıları eşleştir, puan kazan.':`${stageLabel(next.index)} · ${levels[next.index].name}`:'Yeni bölümler yakında';
+    $('home-play-label').textContent=next?(next.rescue?'Tahtanı aç':next.resume?'Devam et':next.index===0?'Birlikte başlayalım':'Oyna'):'Bahçeni gör';
+    $('home-play-detail').textContent=next?next.rescue?`${stageLabel(next.index)} · İkinci şans seçeneklerini gör`:next.resume?`${stageLabel(next.index)} · ${validCheckpoint(next.index).movesLeft} hamle kaldı`:next.index===0?'Aynı sayıları eşleştir, puan kazan.':`${stageLabel(next.index)} · ${levels[next.index].name}`:'Yeni bölümler yakında';
     $('home-stage-name').textContent=next?levels[next.index].name:'Bahçen ve bütün başarıların burada.';
     $('home-progress-text').textContent=`${completed} / ${campaignCount} bölüm tamamlandı`;
     $('home-progress-fill').style.width=`${completed/campaignCount*100}%`;
@@ -749,6 +923,8 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   function enterGame(index,{fresh=false,reason='stage_entry',lifeCostQuote}={}){
     if(!campaignEntryAllowed(index))return false;
+    if(pendingRescueReceipt&&(fresh||pendingRescueReceipt.receipt.attemptId!==saved.attempts[index]?.attemptId)){showRescueProvider(pendingRescueReceipt.receipt.transactionId);toast('Önce tamamlanan ödülü kaydet. Yeni reklam izlemen gerekmez.');return false;}
+    if(!fresh&&recoverableLoss(index))return resumeSecondChance(index);
     lifeRefresh({persist:true});
     if(index>=tutorialCount&&lifeDiscarded(index))fresh=true;
     const savedGame=validCheckpoint(index),newAttempt=fresh||!savedGame||savedGame.status!=='playing';
@@ -769,6 +945,7 @@ window.HexSessionStore.boot(function startApp(session) {
         discardStage(index,reason,previousEntry);persist();showScreen('home');openLives({index,reason});return false;
       }
     }
+    if(newAttempt&&savedGame)cancelPendingRescue(previousEntry||stageEntry(index));
     closeAllDialogs();paused=false;
     if(!loadLevel(index,fresh,{activate:true})){showScreen('home');toast(loadIssue==='data'?'Yeni tahtalar yüklenemedi. Sayfayı yenileyip tekrar dene.':'Kaydın açılamadı ve korundu. İstersen yeni bir deneme başlatabilirsin.');return false;}
     const previous=previousEntry?discardStage(index,reason,previousEntry):null;
@@ -779,17 +956,18 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   function requestStage(index){
     if(!Number.isInteger(index)||index<0||index>=levels.length||!canOpen(index))return;
+    const recovering=recoverableLoss(index);
     const level=levels[index],checkpoint=validCheckpoint(index),resume=checkpoint?.status==='playing'&&(checkpoint.turn>0||checkpoint.assisted)&&!lifeDiscarded(index),blocked=!!saved.boards[index]&&!checkpoint;
     pendingStage=index;
     $('pregame-dialog').dataset.learning=index===0?'first':index<tutorialCount?'goals':'';
     if($('pregame-lesson'))$('pregame-lesson').hidden=index!==0;
     $('pregame-dialog').querySelector('.pregame-goals').hidden=index===0;
     $('pregame-tag').textContent=stageLabel(index);$('pregame-title').textContent=level.name;
-    $('pregame-description').textContent=blocked?'Bu kayıt açılamadı ve korundu. Yeni deneme başlatırsan bu bölümdeki ilerlemen sıfırlanır.':resume?'Kaldığın yerden devam et.':index===0?'Parlayan 2 ile 1’in yerini değiştir.':`${level.target} puana ulaş ve her yeri yeşile boya. ${level.moves} hamlen var.`;
+    $('pregame-description').textContent=recovering?'Taşların, yeşil alanların ve puanın korunuyor. İkinci şans seçeneklerini görebilir veya yeni bir deneme başlatabilirsin.':blocked?'Bu kayıt açılamadı ve korundu. Yeni deneme başlatırsan bu bölümdeki ilerlemen sıfırlanır.':resume?'Kaldığın yerden devam et.':index===0?'Parlayan 2 ile 1’in yerini değiştir.':`${level.target} puana ulaş ve her yeri yeşile boya. ${level.moves} hamlen var.`;
     if($('pregame-note'))$('pregame-note').textContent=index===0?'Kaydırmak yerine iki taşa sırayla da dokunabilirsin.':'Bölümü bitirmek için puanın yeterli olmalı ve her yer yeşil olmalı.';
     $('pregame-target').textContent=level.target;$('pregame-ground').textContent=resume?`${checkpoint.covered} / ${level.cells.length}`:level.cells.length;
     $('pregame-moves').textContent=resume?checkpoint.movesLeft:level.moves;
-    $('pregame-start').textContent=blocked?'Yeni deneme başlat':resume?'Devam et':'Başla';$('pregame-restart').hidden=!resume;
+    $('pregame-start').textContent=recovering?'İkinci şans seçenekleri':blocked?'Yeni deneme başlat':resume?'Devam et':'Başla';$('pregame-restart').hidden=!resume&&!recovering;
     openModal('pregame-dialog');
   }
   function pauseGame(){
@@ -804,7 +982,7 @@ window.HexSessionStore.boot(function startApp(session) {
     $('setting-motion').value=saved.preferences.motion;$('setting-volume').value=Math.round(saved.preferences.volume*100);$('volume-value').textContent=`%${Math.round(saved.preferences.volume*100)}`;
     const hapticsAvailable=typeof navigator.vibrate==='function';$('setting-haptics').checked=saved.preferences.haptics;$('setting-haptics').disabled=!hapticsAvailable;
     $('haptics-note').textContent=hapticsAvailable?'Eşleşmelerde kısa dokunma geri bildirimi.':'Bu tarayıcı titreşimi desteklemiyor.';
-    openModal('settings-dialog');
+    renderRescue();openModal('settings-dialog');
   }
   function renderLevels() {
     $('levels').innerHTML=levels.map((l,i)=>{
@@ -906,7 +1084,7 @@ window.HexSessionStore.boot(function startApp(session) {
     renderScore(presentation?.scoreDisplay??display.score);
     $('moves-left').textContent=display.movesLeft;
     $('moves-left').closest('.moves-badge')?.classList.toggle('low',display.movesLeft<=3);
-    $('move-counter').textContent=`${activeLevel.moves-display.movesLeft} / ${activeLevel.moves} HAMLE`;
+    $('move-counter').textContent=`${engine.turn} / ${activeLevel.moves+(engine.bonusMoves||0)} HAMLE`;
     $('coverage').textContent=`${covered} / ${total}`;
     $('coverage-ring').style.strokeDashoffset=String(87.965*(1-covered/total));
     $('hint').disabled=busy||!!hintJob||!!guideFeedback()||engine.status!=='playing';
@@ -1306,7 +1484,7 @@ window.HexSessionStore.boot(function startApp(session) {
     $('lose-title').textContent='Bir plan daha?';
     $('lose-description').textContent='Hamlelerin bitti. Altı yeşil olmayan taşları eşleştirmeyi dene.';
     $('lose-score').textContent=`${engine.score} / ${activeLevel.target}`;
-    $('lose-coverage').textContent=`${engine.covered} / ${activeLevel.cells.length}`;
+    $('lose-coverage').textContent=`${engine.covered} / ${activeLevel.cells.length}`;renderRescue();
     openModal('lose-dialog');
   }
   function showResult() {if(engine.status==='won')showVictory();else if(engine.status==='lost')showLoss();}
@@ -1339,7 +1517,7 @@ window.HexSessionStore.boot(function startApp(session) {
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=26');
+            job.worker=new Worker('./hint-worker.js?v=27');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:activeLevel,snapshot:engine.snapshot()});
@@ -1483,12 +1661,12 @@ window.HexSessionStore.boot(function startApp(session) {
     if(event.target.closest('[data-settings]')){event.preventDefault();openSettings();return;}
     const stage=event.target.closest('[data-stage]');if(stage&&!stage.disabled)requestStage(+stage.dataset.stage);
   });
-  on($('home-play'),'click',()=>{unlockAudio();const next=nextStage();if(!next)showScreen('garden');else if(next.resume)enterGame(next.index);else requestStage(next.index);});
+  on($('home-play'),'click',()=>{unlockAudio();const next=nextStage();if(!next)showScreen('garden');else if(next.rescue)resumeSecondChance(next.index);else if(next.resume)enterGame(next.index);else requestStage(next.index);});
   on($('home-teach'),'click',()=>enterGame(0,{fresh:true}));
   on($('help-teach'),'click',()=>enterGame(0,{fresh:true}));
   on($('settings'),'click',event=>{event.stopPropagation();openSettings();});
   on($('pause'),'click',pauseGame);
-  on($('pregame-start'),'click',()=>{const index=pendingStage;if(index===null)return;const checkpoint=validCheckpoint(index);if(saved.boards[index]&&!checkpoint&&variantCatalog){restart(index);return;}enterGame(index,{fresh:checkpoint?.status!=='playing'||lifeDiscarded(index),reason:checkpoint?'replay':'stage_entry'});});
+  on($('pregame-start'),'click',()=>{const index=pendingStage;if(index===null)return;const checkpoint=validCheckpoint(index);if(recoverableLoss(index)){resumeSecondChance(index);return;}if(saved.boards[index]&&!checkpoint&&variantCatalog){restart(index);return;}enterGame(index,{fresh:checkpoint?.status!=='playing'||lifeDiscarded(index),reason:checkpoint?'replay':'stage_entry'});});
   on($('pregame-restart'),'click',()=>{const index=pendingStage;if(index!==null)restart(index);});
   on($('restart-confirm'),'click',()=>{
     const request=pendingRestart;if(!request||!campaignEntryAllowed(request.index))return;lifeRefresh({persist:true});
@@ -1515,11 +1693,13 @@ window.HexSessionStore.boot(function startApp(session) {
   on($('setting-volume'),'input',event=>{saved.preferences.volume=Math.max(0,Math.min(1,Number(event.target.value)/100));$('volume-value').textContent=`%${Math.round(saved.preferences.volume*100)}`;savePreferences();});
   on($('setting-haptics'),'change',event=>{saved.preferences.haptics=event.target.checked;savePreferences();if(saved.preferences.haptics&&typeof navigator.vibrate==='function')try{navigator.vibrate(12);}catch(_){} });
   on($('settings-reset'),'click',()=>{
+    if(pendingRescueReceipt){showRescueProvider(pendingRescueReceipt.receipt.transactionId);return;}
     lifeRefresh({persist:true});const entries=levels.map((_,index)=>campaignCleared(index)?null:stageEntry(index)),cost=discardCost(entries);pendingResetLifeCost=cost;
     if($('reset-description'))$('reset-description').textContent=`Açık denemelerin silinecek. Tamamlanan bölümler, Altın, yıldızlar ve envanter korunur.${cost?` Oynanmış açık denemeleri silmek ${cost} can harcar.`:''} Canların yeniden doldurulmaz. Test Altının ve işlem kayıtların korunur.`;
     openModal('reset-dialog');
   });
   on($('reset-confirm'),'click',()=>{
+    if(pendingRescueReceipt){showRescueProvider(pendingRescueReceipt.receipt.transactionId);return;}
     lifeRefresh({persist:true});
     if(!lifeReady()){toast('Can verisi açılamadı. İlerlemen korundu.');return;}
     const currentResetCost=discardCost(levels.map((_,index)=>campaignCleared(index)?null:stageEntry(index)));
@@ -1564,6 +1744,6 @@ window.HexSessionStore.boot(function startApp(session) {
     document.addEventListener('visibilitychange',()=>{syncPlaytestActivity();persistPlaytest();});
     window.addEventListener('pagehide',()=>{playtest.setActivity({playing:false,attemptId:activeAttempt?.attemptId||null});persistPlaytest();});
   }
-  sessionAction(()=>{try{initializeEconomy();}catch(error){economyIssue='invalid';throw error;}initializeLives();bindLivesUI();hydrateRecords();renderSound();loadLevel(active);showScreen('home',{replace:true});bindPlaytest();});
+  sessionAction(()=>{try{initializeRescue();initializeEconomy();}catch(error){economyIssue='invalid';throw error;}initializeLives();bindLivesUI();bindRescueUI();hydrateRecords();renderSound();loadLevel(active);showScreen('home',{replace:true});bindPlaytest();});
   if(migrated)toast('İlerlemen korundu. Öğreticileri yolculuk menüsünden yeniden oynayabilirsin.');
 });

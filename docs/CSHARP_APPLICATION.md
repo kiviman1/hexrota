@@ -16,6 +16,14 @@ Geçerli eski `done` kapalı kalır; replay ile doğrulanmış kazanma arşivi v
 
 B doğrulaması: 1.005 tam JSON karşılaştırması, 30 gerçek app.js akışı, 25 native guard senaryosu; olay karşılaştırması 580/462 aynen korunur. Eksik/eski teklif, sıfır-turn değişim, yalnız revision ilerlemesi, kayıt hatası, bozuk ekonomik eşleme ve sıfır canla mevcut yardım kaydından devam dahildir. İkinci şans host'u C aşamasına aittir; B'de yetkisiz grant_moves yüklenmez.
 
+## 9.5 C: doğrulanmış ikinci şans
+
+`RescueOffer`, `ResumeForSecondChance`, `BeginRescueAd`, `CompleteRescueAd`, `ApplyRescueReceipt` ve `RescueWithGold` aynı Attempt ID'de +5 hamle yönetir. Saf RescueManager saati/verifier'ı dışarıdan alır; TEST provider gerçek reklam değildir. `game.rescue` mevcutsa sürümü ve biçimi ilk commit'ten önce doğrulanır. Yardım komutu, rescue claim, varsa aynı kimlikli 140 Altın debiti ve gerçek Life settlement birlikte eşlenir. Geçerli muafiyetler ve sonradan kazanılmış/discarded arşivler korunur; ikinci can kesilmez.
+
+Kanonik yazım başarısız olduğunda bilinen doğrulanmış tamamlanma özel bellekte pending delivery olarak korunur. Menü/aynı kayıp görünümü ve `RetryPendingRescueDelivery` açıktır; yeni deneme, reset, başka ücret veya yeniden reklamla hakkı kaybetme engellenir. Başarılı teslim bir kez temizler. Yeni process sonrasında host/sağlayıcı aynı doğrulanmış kanıtı yeniden teslim etmelidir; çekirdek dosya/SDK veya sahte kalıcı makbuz otoritesi oluşturmaz. Henüz izlenmemiş pending istek açık terk sırasında iptal edilir.
+
+C gerçek karşılaştırma: **1.190 tam JSON**, **34 app.js akışı**, **44 native senaryo**; olay **580 / 462** korunur. Gold/TEST ayrımı, başarısız save ve receipt redelivery, yanlış Life/ekonomi/komut bağları, null/bilinmeyen rescue, UTC gün değişimi, sıfır canla devam, normal takas sonrası archived restart, bilinen kaydedilmemiş kanıt, stale CAS ve tek slot olay tamponu dahildir. Kullanılamaz hamle teklifi için ayrı sentetik geometride gerçek replay testi vardır; yayımlanmış 40 tahta değiştirilmez.
+
 ## Bağımlılıklar ve kapsam
 
 Bu çalışma güncel `main` tabanlıdır; katalog, can ve ipucu/ödül adaptörü için henüz onaylanmamış bağımsız PR #6, #7 ve #8'in kaynak dallarını yerel olarak içerir. Bu bağımlılıkların birleştirilmesi GitHub PR'larının onaylanması veya `main`e birleştirilmesi anlamına gelmez. Integration PR bütün modülleri ayrıca sınar.
