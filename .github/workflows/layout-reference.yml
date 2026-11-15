@@ -1,24 +1,33 @@
-name: UI layout reference
+name: Prepare reviewed layout corrections
 on:
   push:
     branches: [feat/comic-adventure-ui-9-6]
-    paths: ['.github/workflows/layout-reference.yml']
+    paths: ['.layout-review/apply.py']
 permissions:
-  contents: read
+  contents: write
 jobs:
-  reference:
+  apply:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: b2c59b968e871e973ffa701c464b095da37f098c
-          persist-credentials: false
-      - name: Archive exact reviewed source
-        run: git archive --format=tar.gz HEAD > /tmp/hexrota-layout-source.tar.gz
-      - uses: actions/upload-artifact@v4
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
         with:
-          name: layout-reference
-          path: /tmp/hexrota-layout-source.tar.gz
-          retention-days: 1
-          if-no-files-found: error
+          node-version: '22.22.2'
+      - run: python .layout-review/apply.py
+      - run: npm ci
+      - run: npm run test:maintenance && npm run test:comic-ui
+      - name: Publish only reviewed UI branch
+        env:
+          BRANCH: feat/comic-adventure-ui-9-6
+        run: |
+          test "$(git ls-remote origin refs/heads/$BRANCH | cut -f1)" = "$GITHUB_SHA"
+          git rm -r .layout-review
+          git add src/styles/06-comic-adventure.css dist/style.css check-comic-ui-browser.cjs dist/index.html dist/app.js dist/hint-worker.js dist/sw.js dist/ui-kit.html
+          git diff --cached --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix(ui): anchor dialogs and correct responsive alignment with layout regressions'
+          git push origin "HEAD:refs/heads/$BRANCH"
