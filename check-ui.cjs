@@ -85,8 +85,8 @@ const campaignState=()=>({current:2,done:[0,1],boards:{},sound:false});
 (async()=>{
  const dom=mount(null,{done:[0,1,2,3,4,5,6,7,8,9],current:9},{legacyCampaign:true}),w=dom.window,d=w.document;
  assert.equal(w.HEX_TUTORIALS.length,2);assert.equal(w.HEX_LEVELS.length,10);
- assert.equal(d.querySelectorAll('.level-button').length,12,'two tutorials precede ten original stages');
- assert.equal(d.querySelectorAll('.level-button:disabled').length,11,'new player begins with tutorial one');
+ assert.equal(d.querySelectorAll('.level-button').length,3,'two free tutorials and only the next campaign level are selectable');
+ assert.equal(d.querySelectorAll('.level-button:disabled').length,0,'tutorials remain free and the next campaign level is available');
  assert.equal(d.querySelector('[data-level="0"] .level-number').textContent,'T1');
  assert.equal(d.querySelector('[data-level="1"] .level-number').textContent,'T2');
  assert.equal(d.querySelector('[data-level="2"] .level-number').textContent,'01','campaign numbering starts after tutorials');
@@ -126,12 +126,15 @@ const campaignState=()=>({current:2,done:[0,1],boards:{},sound:false});
  assert.equal(rd.getElementById('completed').textContent,'10 / 10');
  assert.equal(rd.querySelector('[data-level="0"] .level-number').textContent,'T1','completed tutorials remain identifiable on mobile');
  assert.equal(rd.querySelector('[data-level="1"] .level-number').textContent,'T2');
- assert.equal(rd.querySelector('[data-level="2"] .level-number').textContent,'01','completed chapters keep their numbers');
- assert.equal(rd.querySelectorAll('.level-button:disabled').length,0);
+ assert.equal(rd.querySelector('[data-level="2"]'),null,'completed campaign levels are removed from playable controls');
+ assert.equal(rd.querySelector('[data-stage="11"]'),null,'the final completed level cannot be selected again');
  assert.equal(rd.getElementById('home-screen').hidden,false,'completed journey returns to home on reload');
- enterStage(rw,11);assert.equal(+rd.getElementById('moves-left').textContent,rw.HEX_LEVELS[9].moves,'starting a completed stage explicitly replays it');
+ assert.match(rd.getElementById('home-play-label').textContent,/Bahçeni gör/i,'completed campaign opens permanent garden progress');
+ // A separate unfinished final-level fixture exercises genuine loss/retry; a completed campaign is never replayed for this test.
+ const finalStage={current:11,done:Array.from({length:11},(_,i)=>i),boards:{11:new w.HexMatch(w.HEX_LEVELS[9]).snapshot()},sound:false};
+ const loss=mount(finalStage,null,{originalStage:11}),lw=loss.window,ld=lw.document;
  // A legal but unplanned sequence can exhaust the finite campaign budget.
- const level=savedLevel(rw);let losing;
+ const level=savedLevel(lw);let losing;
  for(let policy=0;policy<20&&!losing;policy++){
   const game=new w.HexMatch(level),route=[];
   while(game.status==='playing'){
@@ -141,12 +144,12 @@ const campaignState=()=>({current:2,done:[0,1],boards:{},sound:false});
   if(game.status==='lost')losing=route;
  }
  assert(losing,'last campaign variant has a failing blind strategy');
- for(const next of losing)await swap(rw,next);
- await until(()=>rd.getElementById('lose-dialog').open,'loss dialog appears after last turn');
- assert.equal(+rd.getElementById('moves-left').textContent,0);
- click(rw,'#retry');assert(!rd.getElementById('lose-dialog').open);assertBoard(rw,savedGame(rw),'loss retry');assert.equal(readSave(rw).boards[11].turn,0,'retry starts an untouched certified board');
+ for(const next of losing)await swap(lw,next);
+ await until(()=>ld.getElementById('lose-dialog').open,'loss dialog appears after last turn');
+ assert.equal(+ld.getElementById('moves-left').textContent,0);
+ click(lw,'#retry');assert(!ld.getElementById('lose-dialog').open);assertBoard(lw,savedGame(lw),'loss retry');assert.equal(readSave(lw).boards[11].turn,0,'retry starts an untouched certified board');
  // Exact checkpoint restore survives adding the tutorials; malformed state restarts.
- const state=readSave(rw),original=w.HEX_LEVELS[9],game=new w.HexMatch(original);game.swap(...original.solution[0]);state.boards[11]=game.snapshot();if(state.attempts)delete state.attempts[11];
+ const state=readSave(lw),original=w.HEX_LEVELS[9],game=new w.HexMatch(original);game.swap(...original.solution[0]);state.boards[11]=game.snapshot();if(state.attempts)delete state.attempts[11];
  const middle=mount(state);assertBoard(middle.window,game,'mid-turn restore');
  state.boards[11].score+=1;const corrupt=mount(state);assert.equal(+corrupt.window.document.getElementById('sum').textContent,0);
  // Explicit tutorial skip opens campaign one. Replay never clears campaign progress.
@@ -157,7 +160,7 @@ const campaignState=()=>({current:2,done:[0,1],boards:{},sound:false});
  const first=savedLevel(sw);await swap(sw,first.solution[0]);const campaignBefore=readSave(sw).boards[2];
  click(sw,'#tutorial-replay');startPending(sw);await settle();assert.equal(readSave(sw).current,0);
  assert.deepEqual(readSave(sw).boards[2],campaignBefore,'replaying tutorial preserves an in-progress campaign board');
- const replayed=mount(saved),pw=replayed.window;click(pw,'#tutorial-replay');startPending(pw);await settle();
+ const replayed=mount(saved,null,{launch:false}),pw=replayed.window;click(pw,'#tutorial-replay');startPending(pw);await settle();
  assert.equal(readSave(pw).current,0);assert.equal(pw.document.getElementById('completed').textContent,'10 / 10');
  assert.deepEqual(readSave(pw).done.filter(i=>i>=2),saved.done.filter(i=>i>=2),'tutorial replay preserves completed campaign stages');
  // Previous classic checkpoints shift by two and remain valid, without resetting progress.

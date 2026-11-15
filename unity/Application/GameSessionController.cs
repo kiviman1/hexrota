@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Hexrota.Catalog;
+using Hexrota.Economy;
 using Hexrota.Gameplay;
 using Hexrota.Hints;
 using Hexrota.Lives;
@@ -28,6 +29,7 @@ namespace Hexrota.Application
         private readonly AttemptRepository attempts;
         private readonly IUtcClock clock;
         private readonly LifeManager lives;
+        private readonly EconomyManager economy;
         private readonly uint initialSelectionSeed;
         private readonly RewardRules rewardRules;
         private readonly IReceiptVerifier recoveryReceiptVerifier;
@@ -47,11 +49,12 @@ namespace Hexrota.Application
         {
             internal int index; internal Dictionary<string, object> level, metadata, stats; internal HexMatch engine;
         }
-        public GameSessionController(LevelCatalog catalog, IList<Dictionary<string, object>> orderedLevels, int tutorialCount, ProfileRepository repository, Dictionary<string, object> lifeConfig, IUtcClock clock, uint initialSelectionSeed, string providerNamespace = "hexrota-test", RewardRules rewardRules = null, IReceiptVerifier recoveryReceiptVerifier = null)
+        public GameSessionController(LevelCatalog catalog, IList<Dictionary<string, object>> orderedLevels, int tutorialCount, ProfileRepository repository, Dictionary<string, object> lifeConfig, IUtcClock clock, uint initialSelectionSeed, string providerNamespace = "hexrota-test", RewardRules rewardRules = null, IReceiptVerifier recoveryReceiptVerifier = null, Dictionary<string, object> economyConfig = null)
         {
             if (catalog == null || orderedLevels == null || repository == null || clock == null || tutorialCount < 0 || tutorialCount > orderedLevels.Count || initialSelectionSeed == 0) throw new ArgumentException("Invalid application dependencies");
             this.catalog = catalog; this.levels = orderedLevels.Select(W.Copy).ToList(); this.tutorialCount = tutorialCount; this.repository = repository; this.clock = clock; this.initialSelectionSeed = initialSelectionSeed; this.rewardRules = rewardRules; this.recoveryReceiptVerifier = recoveryReceiptVerifier;
             lives = new LifeManager(lifeConfig, clock, new Verifier { owner = this }); attempts = new AttemptRepository(catalog, levels, tutorialCount);
+            economy = new EconomyManager(economyConfig);
             object raw = repository.Read(ProfileRepository.GameKey); string source = ProfileRepository.GameKey;
             if (raw == null) foreach (string previous in new[] { "hexrota-match-v4", "hexrota-match-v3", "hexrota-match-v2" }) { raw = repository.Read(previous); if (raw != null) { source = previous; break; } }
             game = SaveMigration.NormalizeGame(raw, levels, tutorialCount, source); if (raw == null) game["sound"] = W.Equal(W.Get(repository.Read("hexrota-v1"), "sound"), true); if (Count(Selection["seed"]) == 0) Selection["seed"] = (long)initialSelectionSeed;
@@ -61,19 +64,27 @@ namespace Hexrota.Application
             // Validation precedes all writes. Malformed snapshots are retained by
             // the storage adapter and never replaced with a different board.
             attempts.ValidateAll(game);
+            var verified = W.Arr();
             for (int i = 0; i < levels.Count; i++)
             {
                 var entry = RestoreEntry(i, false); if (entry == null) continue;
                 if (entry.engine.Status != "playing") Settle(entry, entry.engine.Status == "won" ? "won" : "failed", !hadEnergy);
                 RecordWin(i, entry.engine, false);
+                if (i >= tutorialCount && entry.engine.Status == "won") verified.Add(levels[i]["id"]);
             }
+            // Only replay-validated winning boards corroborate legacy rewards.
+            // A legacy completion without proof still permanently blocks replay.
+            if (W.Has(game, "economy")) economy.Restore(game["economy"]);
+            game["economy"] = economy.Migrate(W.Get(game, "economy"), W.Obj("done", game["done"], "verifiedLevelIds", verified, "sourceKey", source))["state"];
+            SyncCompletedCampaign();
             foreach (object tx in W.Map(energy["provider"] is Dictionary<string, object> ? W.Get(energy["provider"], "transactions") : W.Obj()).Values) if (W.Equal(W.Get(tx, "status"), "pending")) W.Map(tx)["status"] = "cancelled";
-            active = (int)W.Integer(game["current"]); if (!CanOpen(active)) active = 0; game["current"] = (long)active;
+            active = (int)W.Integer(game["current"]); if (!CanOpen(active)) active = NextCampaignIndex(); game["current"] = (long)active;
             LoadExisting(active, true); Capture(); CompactProvider(); repository.Commit(game, energy); repository.SaveEvents(events);
         }
         public long Revision { get { return repository.Revision; } }
         public Dictionary<string, object> GameSave { get { return W.Copy(game); } }
         public Dictionary<string, object> EnergySave { get { return W.Copy(energy); } }
+        public Dictionary<string, object> EconomyView { get { return economy.View(W.Map(game["economy"])); } }
         public RewardState CurrentRewards { get { return rewardState == null ? null : new RewardState { version = rewardState.version, attemptId = rewardState.attemptId, lastTurn = rewardState.lastTurn, lastScore = rewardState.lastScore, lastGreen = rewardState.lastGreen, lastAccentTurn = rewardState.lastAccentTurn, scoreMask = rewardState.scoreMask, groundMask = rewardState.groundMask }; } }
         // A feedback plan is presentation output and is never fed into game rules.
         public RewardPlan LastRewardPlan { get { return lastRewardPlan; } }
@@ -84,13 +95,27 @@ namespace Hexrota.Application
         }
         public Dictionary<string, object> Preview(int index)
         {
-            NeedIndex(index); if (!CanOpen(index)) return Result(false, "locked");
+            NeedIndex(index); if (!CanOpen(index)) return Result(false, ClosedReason(index));
             var entry = RestoreEntry(index, false);
             return W.Obj("ok", true, "stage", (long)index, "levelId", levels[index]["id"], "resume", entry != null && entry.engine.Status == "playing" && entry.engine.turn > 0 && !Discarded(entry), "snapshot", entry == null ? null : LevelCatalog.SnapshotWire(entry.engine.Snapshot()), "metadata", entry == null ? null : W.Copy(entry.metadata));
         }
         private static Dictionary<string, object> Result(bool ok, string reason) { return W.Obj("ok", ok, "reason", reason); }
         private void NeedIndex(int index) { if (index < 0 || index >= levels.Count) throw new ArgumentOutOfRangeException("index"); }
-        public bool CanOpen(int index) { return index >= 0 && index < levels.Count && (index == 0 || W.List(game["done"]).Any(x => W.Equal(x, (long)index - 1) || W.Equal(x, (long)index))); }
+        public bool CanOpen(int index) { return index >= 0 && index < levels.Count && (index < tutorialCount || economy.CanEnter(W.Map(game["economy"]), levels[index]["id"])); }
+        private bool Completed(int index) { return index >= tutorialCount && index < levels.Count && W.List(economy.View(W.Map(game["economy"]))["cleared"]).Any(x => W.Equal(x, levels[index]["id"])); }
+        private void SyncCompletedCampaign()
+        {
+            var done = W.List(game["done"]).Where(x => W.Integer(x) < tutorialCount).ToList();
+            for (int i = tutorialCount; i < levels.Count; i++) if (Completed(i)) done.Add((long)i);
+            done.Sort((a, b) => W.Integer(a).CompareTo(W.Integer(b))); game["done"] = done;
+        }
+        private string ClosedReason(int index) { return Completed(index) ? "level_completed" : "locked"; }
+        private int NextCampaignIndex()
+        {
+            object next = economy.NextLevel(W.Map(game["economy"]));
+            for (int i = tutorialCount; i < levels.Count; i++) if (W.Equal(levels[i]["id"], next)) return i;
+            return 0;
+        }
         private static long Count(object value) { return W.IsSafeInteger(value) && W.Integer(value) >= 0 ? W.Integer(value) : 0; }
         private Dictionary<string, object> Selection { get { return W.Map(game["variantSelection"]); } }
         private Entry CurrentEntry() { return engine == null ? null : new Entry { index = active, level = activeLevel, metadata = metadata, engine = engine, stats = W.Map(W.Get(game["attemptStats"], active.ToString())) }; }
@@ -149,6 +174,12 @@ namespace Hexrota.Application
         private void MarkCompleted(bool played)
         {
             if (engine == null) return; RecordWin(active, engine, played); var done = W.List(game["done"]); if (engine.Status == "won" && !done.Any(x => W.Equal(x, (long)active))) { done.Add((long)active); done.Sort((a, b) => W.Integer(a).CompareTo(W.Integer(b))); }
+            if (engine.Status == "won" && active >= tutorialCount)
+            {
+                var completion = economy.Complete(W.Map(game["economy"]), W.Obj("levelId", activeLevel["id"], "attemptId", metadata["attemptId"], "status", "won", "verified", true, "assisted", false, "tutorial", false));
+                game["economy"] = completion["state"];
+                SyncCompletedCampaign();
+            }
         }
         private Dictionary<string, object> Context(Entry entry)
         {
@@ -195,7 +226,7 @@ namespace Hexrota.Application
         }
         public Dictionary<string, object> Enter(int index, bool fresh = false, string reason = "stage_entry", bool confirmed = false, int? maximumCharge = null, SessionCommand command = null)
         {
-            NeedIndex(index); if (!CanOpen(index)) return Result(false, "locked");
+            NeedIndex(index); if (!CanOpen(index)) return Result(false, ClosedReason(index));
             var existing = RestoreEntry(index, false); if (existing != null && existing.engine.Status == "playing" && fresh && !confirmed) return Result(false, "confirmation_required");
             return Execute(() =>
             {
@@ -230,7 +261,7 @@ namespace Hexrota.Application
         }
         public Dictionary<string, object> Swap(int a, int b, SessionCommand command = null)
         {
-            var guard = Guard(command); if (guard != null) return guard; if (engine == null) return Result(false, "no_attempt"); if (Discarded(CurrentEntry())) return Result(false, "attempt_discarded");
+            var guard = Guard(command); if (guard != null) return guard; if (engine == null) return Result(false, "no_attempt"); if (Completed(active)) return Result(false, "level_completed"); if (Discarded(CurrentEntry())) return Result(false, "attempt_discarded");
             // Swap validation is performed on a clone before opening a transaction.
             var check = engine.Clone().Swap(a, b); if (!check.ok) return Result(false, check.reason);
             if (active < tutorialCount)
@@ -249,7 +280,7 @@ namespace Hexrota.Application
         private static int[][][] Routes(object value) { return value == null ? null : W.List(value).Select(Route).ToArray(); }
         public Dictionary<string, object> Hint(HintOptions options = null, IHintClock hintClock = null, SessionCommand command = null)
         {
-            var denied = Guard(command); if (denied != null) return denied; if (engine == null || engine.Status != "playing") return Result(false, "no_hint"); if (Discarded(CurrentEntry())) return Result(false, "attempt_discarded");
+            var denied = Guard(command); if (denied != null) return denied; if (Completed(active)) return Result(false, "level_completed"); if (engine == null || engine.Status != "playing") return Result(false, "no_hint"); if (Discarded(CurrentEntry())) return Result(false, "attempt_discarded");
             HintResult hint; if (active < tutorialCount)
             {
                 var step = W.List(W.Get(activeLevel, "steps", W.Arr())).ElementAtOrDefault(engine.turn); var pair = W.Get(step, "pair"); if (pair == null) return Result(false, "no_hint"); hint = new HintResult { pair = W.List(pair).Select(W.Int32).ToArray(), source = "guided", guaranteed = false };
@@ -258,10 +289,11 @@ namespace Hexrota.Application
             if (hint == null) return Result(false, "no_hint");
             return Execute(() => { var entry = CurrentEntry(); entry.stats["hintsUsed"] = Count(entry.stats["hintsUsed"]) + 1; string guarantee = hint.source == "proven_route" ? "certified_route" : hint.source == "search_win" ? "bounded_search" : hint.source == "guided" ? "guided" : "none"; Emit("hint_used", entry, W.Obj("hintKind", hint.source, "hintGuarantee", guarantee)); return W.Obj("ok", true, "reason", "hint", "pair", hint.pair.Select(x => (object)(long)x).ToList(), "source", hint.source, "guaranteed", hint.guaranteed); }, command);
         }
-        public Dictionary<string, object> Retry(string reason = "retry", SessionCommand command = null) { if (engine == null) return Result(false, "no_attempt"); if (engine.Status == "playing") return Result(false, "confirmation_required"); return Enter(active, true, reason, true, null, command); }
+        public Dictionary<string, object> Retry(string reason = "retry", SessionCommand command = null) { if (Completed(active)) return Result(false, "level_completed"); if (engine == null) return Result(false, "no_attempt"); if (engine.Status == "playing") return Result(false, "confirmation_required"); return Enter(active, true, reason, true, null, command); }
         public Dictionary<string, object> Restart(bool confirmed, int? maximumCharge = null, SessionCommand command = null)
         {
             if (!confirmed) return Result(false, "cancelled");
+            if (Completed(active)) return Result(false, "level_completed");
             if (active >= tutorialCount && engine != null && engine.Status == "playing" && engine.turn > 0 && !lives.CanStart(new LifeState(W.Map(energy["life"]))))
                 return Execute(() => { Refresh(); var entry = CurrentEntry(); var previous = W.Copy(energy["life"]); var settlement = Settle(entry, "restart"); if (maximumCharge == 0 && settlement.Charged == true) { energy["life"] = previous; return Result(false, "confirmation_changed"); } Abandon(entry, "restart"); return Result(false, "lives_empty"); }, command);
             return Enter(active, true, "restart", true, maximumCharge, command);
@@ -282,10 +314,13 @@ namespace Hexrota.Application
             return Execute(() =>
             {
                 Refresh(); int charged = 0; var previousLife = W.Copy(energy["life"]); var open = new List<Entry>();
-                for (int i = 0; i < levels.Count; i++) { var entry = RestoreEntry(i, true); if (entry != null && entry.engine.Status == "playing") { open.Add(entry); if (Settle(entry, "restart").Charged == true) charged++; } }
+                for (int i = 0; i < levels.Count; i++) { if (Completed(i)) continue; var entry = RestoreEntry(i, true); if (entry != null && entry.engine.Status == "playing") { open.Add(entry); if (Settle(entry, "restart").Charged == true) charged++; } }
                 if (maximumCharge.HasValue && charged > maximumCharge.Value) { energy["life"] = previousLife; return Result(false, "confirmation_changed"); }
                 foreach (var entry in open) Abandon(entry, "progress_reset");
-                foreach (string key in new[] { "boards", "attempts", "attemptStats", "records" }) game[key] = W.Obj(); game["done"] = W.Arr(); game["guideAcks"] = W.Arr(); Selection["counts"] = W.Obj(); Selection["recent"] = W.Obj(); LoadExisting(0, false); return Result(true, "progress_reset");
+                // Keep permanent campaign proof and the one-time ledger. Reset
+                // may discard unfinished games, never reopen a cleared level.
+                foreach (string key in new[] { "boards", "attempts", "attemptStats", "records" }) game[key] = W.Map(game[key]).Where(pair => { int index; return int.TryParse(pair.Key, out index) && Completed(index); }).ToDictionary(pair => pair.Key, pair => W.Clone(pair.Value));
+                game["done"] = W.List(game["done"]).Where(x => W.Integer(x) >= tutorialCount).ToList(); game["guideAcks"] = W.Arr(); LoadExisting(NextCampaignIndex(), false); return Result(true, "progress_reset");
             }, command);
         }
         private void CompactProvider()

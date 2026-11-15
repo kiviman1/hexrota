@@ -1,0 +1,5 @@
+/* Generated from data/economy-config-9-5.json; run node sync-economy-config.cjs. */
+(function(root){
+ const value={"schemaVersion":1,"rulesVersion":"economy-v1","pricesVersion":"economy-9-5-v1","campaignId":"main","levelIds":[1,2,3,4,5,6,7,8,9,10],"tutorialIds":["learn-1","learn-2"],"tutorialCount":2,"reward":{"gold":20,"stars":1},"inventory":{"greenBrush":{"unlockAfterLevelId":3,"gift":3,"costGold":70,"maxPerAttempt":1},"colorKey":{"unlockAfterLevelId":6,"gift":3,"costGold":90,"maxPerAttempt":1}},"rescue":{"moves":5,"goldCost":140,"dailyAdLimit":2,"maxPerAttempt":1},"botanical":[{"stars":2,"id":"flowers"},{"stars":5,"id":"plants"},{"stars":8,"id":"trees"},{"stars":10,"id":"complete"}]};
+ root.HEX_ECONOMY_CONFIG=value;if(typeof module==='object'&&module.exports)module.exports=value;
+})(typeof window!=='undefined'?window:globalThis);

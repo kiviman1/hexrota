@@ -41,7 +41,7 @@ function mount(state,options={}){
 function node(f,selector){const n=f.d.querySelector(selector);assert(n,selector+' exists');return n;}
 function click(f,selector){node(f,selector).click();}
 function change(f,id,value){const n=node(f,'#'+id);if(n.type==='checkbox')n.checked=value;else n.value=String(value);n.dispatchEvent(new f.w.Event('input',{bubbles:true}));n.dispatchEvent(new f.w.Event('change',{bubbles:true}));}
-function screen(f,name){for(const s of ['home','journey','game','records'])assert.equal(node(f,'#'+s+'-screen').hidden,s!==name,'only '+name+' screen is shown');}
+function screen(f,name){for(const s of ['home','journey','game','records','garden']){const target=f.d.getElementById(s+'-screen');if(target)assert.equal(target.hidden,s!==name,'only '+name+' screen is shown');}}
 function keypress(f,key){f.w.dispatchEvent(new f.w.KeyboardEvent('keydown',{key,bubbles:true,cancelable:true}));}
 function stage(f,index){return node(f,`[data-stage="${index}"]`);}
 function closeDialog(f,id){const dialog=node(f,'#'+id);const close=dialog.querySelector('[data-close]');assert(close,id+' has a close action');close.click();}
@@ -64,8 +64,8 @@ test('landing, stage preview and first play form a real menu flow',async()=>{
   assert.equal(+node(f,'#moves-left').textContent,first.moves);
   click(f,'[data-nav="home"]');screen(f,'home');
   click(f,'[data-nav="journey"]');screen(f,'journey');
-  assert.equal(f.d.querySelectorAll('[data-stage]').length,12);
-  assert.equal(stage(f,0).disabled,false);assert.equal(stage(f,1).disabled,true,'later lessons are locked for a fresh player');
+  assert.equal(stage(f,0).disabled,false);
+  assert.equal(f.d.querySelectorAll('[data-stage]:not(:disabled)').length<=3,true,'there are at most two lessons and one next campaign level to play');
  }finally{f.close();}
 });
 
@@ -75,7 +75,7 @@ test('continue resumes an existing turn and map preview cancellation is nonmutat
   const before=boardFingerprint(f);await enter(f);
   assert(!node(f,'#pregame-dialog').open,'continue is direct');assert.equal(boardFingerprint(f),before,'continuing keeps exact board');
   click(f,'[data-nav="journey"]');screen(f,'journey');
-  const current=f.save().current,boards=boardFingerprint(f);stage(f,2).click();
+  const current=f.save().current,boards=boardFingerprint(f);stage(f,0).click();
   assert(node(f,'#pregame-dialog').open);assert.equal(f.save().current,current);assert.equal(boardFingerprint(f),boards,'map preview cannot overwrite current progress');
   closeDialog(f,'pregame-dialog');assert.equal(f.save().current,current);
   stage(f,3).click();assert(!node(f,'#pregame-restart').hidden,'partial stage offers explicit restart');
@@ -83,30 +83,35 @@ test('continue resumes an existing turn and map preview cancellation is nonmutat
  }finally{f.close();}
 });
 
-test('completed and fully cleared journeys have usable replay paths',async()=>{
+test('completed levels disappear and fully cleared journeys lead to the garden',async()=>{
  const {Engine,levels}=definitions(),won=new Engine(levels[2]);for(const pair of levels[2].solution)won.swap(...pair);assert.equal(won.status,'won');
  const f=mount({current:2,done:[0,1,2],boards:{2:copy(won.snapshot())},sound:false});try{
   screen(f,'home');click(f,'#home-play');assert(node(f,'#pregame-dialog').open);assert(node(f,'#pregame-tag').textContent.includes('02'),'completed current advances to the next unfinished campaign stage');closeDialog(f,'pregame-dialog');
-  click(f,'[data-nav="journey"]');stage(f,2).click();click(f,'#pregame-start');await settle();screen(f,'game');
-  assert.equal(f.save().boards[2].turn,0,'replaying a completed stage starts fresh');assert.equal(+node(f,'#sum').textContent,0);
+  const before=copy(f.save());click(f,'[data-nav="journey"]');assert.equal(f.d.querySelector('[data-stage="2"]'),null,'completed campaign level has no playable card');
+  assert.equal(f.d.querySelector('[data-level="2"]'),null,'completed campaign level has no game selector');
+  assert.deepEqual(f.save(),before,'opening the journey cannot reset the completed board');
  }finally{f.close();}
  const complete=mount({current:11,done:levels.map((_,i)=>i),boards:{},sound:false});try{
-  click(complete,'#home-play');screen(complete,'journey');assert(!node(complete,'#pregame-dialog').open,'all complete opens the replay map');assert.equal(complete.d.querySelectorAll('[data-stage]:disabled').length,0);
+  assert.match(node(complete,'#home-play-label').textContent,/Bahçeni gör/i);
+  click(complete,'#home-play');screen(complete,'garden');assert(!node(complete,'#pregame-dialog').open,'all complete does not offer campaign replay');
+  assert.equal(complete.d.querySelectorAll('[data-stage]').length,2,'only free lessons remain selectable');
  }finally{complete.close();}
 });
 
 test('settings really persist, reset requires consent and keeps preferences',async()=>{
- const oldV4={current:7,done:[0,1,2,3,4,5,6],boards:{},sound:true},f=mount(stateFor(2,1),{oldV4});try{
+ const oldV4={current:7,done:[0,1,2,3,4,5,6],boards:{},sound:true},initial=stateFor(3,1),won=fixture(2,100);initial.boards[2]=won.snapshot;
+ const f=mount(initial,{oldV4});try{
   click(f,'#settings');assert(node(f,'#settings-dialog').open);
   change(f,'setting-sfx',true);change(f,'setting-music',true);change(f,'setting-haptics',true);change(f,'setting-motion','reduce');change(f,'setting-volume',35);
   const set=f.save();assert.equal(set.sound,true);assert.equal(set.preferences.music,true);assert.equal(set.preferences.haptics,true);assert.equal(set.preferences.motion,'reduce');assert.equal(set.preferences.volume,.35);
   const before=copy(set);click(f,'#settings-reset');assert(node(f,'#reset-dialog').open);
   click(f,'#reset-cancel');assert.equal(JSON.stringify(f.save()),JSON.stringify(before),'cancel leaves progress and preferences alone');
   click(f,'#settings-reset');click(f,'#reset-confirm');await settle();
-  const reset=f.save();assert.deepEqual(reset.done,[]);assert.equal(reset.current,0);assert.deepEqual(reset.records,{});assert(!reset.boards[2],'old campaign checkpoint removed');
+  const reset=f.save();assert.deepEqual(reset.done.filter(index=>index>=2),[2],'ordinary reset preserves permanent campaign completion');assert.equal(reset.current,3,'only the next incomplete campaign level is playable');assert(!reset.boards[3],'unfinished campaign checkpoint removed');
+  assert.deepEqual(reset.economy,before.economy,'ordinary reset preserves Gold, stars, claims, inventory and permanent ledger');
   assert.equal(reset.sound,true);assert.deepEqual(reset.preferences,before.preferences,'progress reset does not reset preferences');
   assert.equal(f.w.localStorage.getItem('hexrota-match-v4'),JSON.stringify(oldV4),'older version data untouched');
-  const reopened=mount(reset,{oldV4});try{assert.deepEqual(reopened.save().done,[],'cleared progress does not resurrect from an old migration key');assert.equal(reopened.save().preferences.volume,.35);screen(reopened,'home');}finally{reopened.close();}
+  const reopened=mount(reset,{oldV4});try{assert.deepEqual(reopened.save().done.filter(index=>index>=2),[2],'reset does not resurrect older migration progress or reopen completed levels');assert.deepEqual(reopened.save().economy,reset.economy);assert.equal(reopened.save().preferences.volume,.35);screen(reopened,'home');}finally{reopened.close();}
  }finally{f.close();}
 });
 

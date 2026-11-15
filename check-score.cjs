@@ -22,6 +22,7 @@ const simple=fixture(1),chain=fixture(2);
 function mount({motion='full',which=simple}={}){
  const vc=new VirtualConsole();vc.on('jsdomError',error=>browserErrors.push(error.message));
  const dom=new JSDOM(source('index.html'),{url:'https://hexrota-score.example/',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});
+ try{
  const w=dom.window,d=w.document,animations=[],packets=[],digits=[],phases=[],mergeSamples=[],samples=[];
  w.matchMedia=()=>({matches:motion==='reduce',addEventListener(){},removeEventListener(){}});
  w.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};
@@ -50,7 +51,7 @@ function mount({motion='full',which=simple}={}){
  w.Element.prototype.getAnimations=function(){return animations.filter(a=>a.target===this&&!a.cancelled);};
  class AudioStub{configure(){}unlock(){return Promise.resolve();}setActive(){}move(){}victory(){}click(){}stop(){}dispose(){}}
  w.HexAudio=AudioStub;
- w.localStorage.setItem(key,JSON.stringify({current:2,done:[0,1,2],boards:{2:which.checkpoint},sound:false,preferences:{motion:motion==='reduce'?'reduce':'full'}}));
+ w.localStorage.setItem(key,JSON.stringify({current:2,done:[0,1],boards:{2:which.checkpoint},sound:false,preferences:{motion:motion==='reduce'?'reduce':'full'}}));
  const observed=new WeakSet();
  const observer=new w.MutationObserver(records=>{
   for(const record of records){
@@ -81,6 +82,7 @@ function mount({motion='full',which=simple}={}){
  const clean=(receipt)=>{assert.equal(d.querySelectorAll('.score-packet,.score-digit,.score-burst-ring,.score-burst-spark').length,0,'no merge digits, totals or bursts remain');assert.equal(d.querySelectorAll('.score-arrival').length,0,'no stale HUD pulse');if(receipt!==undefined&&d.getElementById('score-receipt'))assert.equal(node('score-receipt').textContent,receipt,'gain label belongs to the current move');};
  function exact(){assert.equal(score(),which.expected.score,'HUD equals the engine result');assert.deepEqual(save().boards[2],which.expected,'saved checkpoint stays the exact engine result');assert.equal(+node('moves-left').textContent,which.expected.movesLeft,'all flights spend only the original move');}
  return {w,d,node,click,move,save,score,busy,idle,clean,exact,animations,packets,digits,phases,mergeSamples,samples,which,close(){observer.disconnect();dom.window.close();}};
+ }catch(error){dom.window.close();throw error;}
 }
 
 test('matched digits merge into a popped total before the total flies to the HUD',async()=>{
@@ -149,7 +151,7 @@ for(const action of ['skip','reset','navigate','background','resize'])test(`${ac
   if(action==='skip')f.click('skip-animation');
   if(action==='reset'){f.click('reset');expected=0;}
   if(action==='navigate'){
-   f.click('game-home');f.d.querySelector('[data-nav="journey"]').click();f.d.querySelector('[data-stage="3"]').click();f.click('pregame-start');expected=0;
+   f.click('game-home');f.d.querySelector('[data-nav="journey"]').click();f.d.querySelector('[data-stage="0"]').click();f.click('pregame-start');expected=0;
   }
   if(action==='background'){Object.defineProperty(f.d,'hidden',{configurable:true,value:true});f.d.dispatchEvent(new f.w.Event('visibilitychange'));}
   if(action==='resize')f.w.dispatchEvent(new f.w.Event('resize'));
@@ -158,6 +160,7 @@ for(const action of ['skip','reset','navigate','background','resize'])test(`${ac
   assert.equal(f.node('board').getAttribute('aria-busy'),'false');
   if(action==='reset')assert.equal(f.save().boards[2].turn,0);
   else if(action!=='navigate')assert.equal(f.save().boards[2].turn,simple.expected.turn,'interruption cannot spend a second move');
+  else assert.deepEqual(f.save().boards[2],simple.expected,'free tutorial navigation preserves the unfinished campaign result');
  }finally{f.close();}
 });
 
