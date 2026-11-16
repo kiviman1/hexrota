@@ -903,37 +903,35 @@ body.reduce-motion .hx-scene-actor-anchor .hx-tavik__sprite{animation:none!impor
 body[data-scene-paused="true"] .hx-scene-actor-anchor .hx-tavik__sprite{animation-play-state:paused!important}
 body[data-scene-paused="true"] .hx-scene-transition{transition:none}
 @media(prefers-reduced-motion:reduce){.hx-scene-transition{transition:none}.hx-scene-actor-anchor .hx-tavik__sprite{animation:none!important;transform:none!important;will-change:auto}}
-/* Tavik's guided speech portrait. Existing tutorial card keeps its dimensions. */
-body[data-screen="game"] .tutorial-coach[data-tavik-dialogue="true"]{position:relative;isolation:isolate;overflow:visible}
-body[data-screen="game"] .tutorial-coach[data-tavik-dialogue="true"] .coach-copy{position:relative;z-index:1;min-width:0;padding-left:79px}
-body[data-screen="game"] .tutorial-coach[data-tavik-dialogue="true"] .coach-heading h3{font-size:16px;line-height:1.18}
-body[data-screen="game"] .tutorial-coach[data-tavik-dialogue="true"] .coach-copy p{font-size:12.5px;line-height:1.23}
-body[data-screen="game"] .tutorial-coach[data-tavik-dialogue="true"] .coach-skip,
-body[data-screen="game"] .tutorial-coach[data-tavik-dialogue="true"] .coach-next{position:relative;z-index:3}
+/* One coach card, three reserved columns. The portrait's full painted envelope
+ * stays in its own slot; no text or control uses padding to make room for it. */
+body[data-screen="game"] .tutorial-coach[data-tavik-dialogue="true"]{--dialogue-head:70px;--dialogue-portrait-slot:96px;--dialogue-action-slot:70px;position:relative;isolation:isolate;overflow:visible;display:grid;grid-template-columns:var(--dialogue-portrait-slot) minmax(0,1fr) var(--dialogue-action-slot);grid-template-rows:minmax(0,1fr);column-gap:8px;row-gap:0;padding:7px 12px}
+body[data-screen="game"] .tutorial-coach[data-tavik-dialogue="true"]>.coach-copy{position:relative;z-index:2;grid-column:2;grid-row:1;min-width:0;align-self:center;padding:0}
+body[data-screen="game"] .tutorial-coach[data-tavik-dialogue="true"] .coach-heading{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px 6px;margin:0 0 4px}
+body[data-screen="game"] .tutorial-coach[data-tavik-dialogue="true"] #coach-step{grid-column:1;grid-row:1;min-width:0;font-size:8px;line-height:1.1;letter-spacing:.35px;white-space:normal}
+body[data-screen="game"] .tutorial-coach[data-tavik-dialogue="true"] .tutorial-build-counter{position:static;grid-column:2;grid-row:1;max-width:none;padding:2px 5px;margin:0;font-size:11.5px;line-height:1.1;white-space:nowrap}
+body[data-screen="game"] .tutorial-coach[data-tavik-dialogue="true"] .coach-heading h3{grid-column:1 / -1;grid-row:2;min-width:0;margin:0;font-size:16px;line-height:1.16}
+body[data-screen="game"] .tutorial-coach[data-tavik-dialogue="true"] .coach-copy p{margin:0;font-size:12.5px;line-height:1.23}
+body[data-screen="game"] .tutorial-coach[data-tavik-dialogue="true"] :is(.coach-skip,.coach-next){position:relative;z-index:3;grid-column:3;grid-row:1;align-self:center;justify-self:stretch;width:100%;min-width:0;max-width:100%;margin:0;padding:7px 3px}
+body[data-screen="game"] .tutorial-coach[data-tavik-dialogue="true"] .coach-skip{min-height:44px;font-size:10px}
+body[data-screen="game"] .tutorial-coach[data-tavik-dialogue="true"] .coach-next{min-height:58px;padding:7px 2px;font-size:11.5px;gap:4px;flex-wrap:wrap;white-space:nowrap}
 .hx-tavik-dialogue[hidden]{display:none!important}
-.hx-tavik-dialogue{position:absolute;left:8px;bottom:9px;width:79px;height:79px;z-index:2;pointer-events:none;user-select:none;-webkit-user-select:none;transform-origin:50% 100%}
+body[data-screen="game"] .tutorial-coach[data-tavik-dialogue="true"]>.hx-tavik-dialogue{position:relative;grid-column:1;grid-row:1;align-self:center;justify-self:start;left:auto;bottom:auto;width:var(--dialogue-head);height:var(--dialogue-head);margin:0 18px 0 4px;z-index:1;pointer-events:none;user-select:none;-webkit-user-select:none;transform-origin:50% 100%}
 .hx-tavik-dialogue__ring{display:block;position:absolute;inset:0;border:3px solid #ffebac;border-radius:50%;background:radial-gradient(circle at 55% 28%,#fff8dc,#dec0f3 64%,#9665ab);box-shadow:0 4px 0 #60315e,0 0 0 2px #b77950,inset 0 2px #ffffffac;overflow:hidden}
-.hx-tavik-dialogue__face{position:absolute;max-width:none;width:176px;height:176px;left:-51px;top:-8px;display:block;object-fit:contain;transform-origin:50% 54%}
-.hx-tavik-dialogue::after{content:"";position:absolute;right:-13px;top:33px;width:13px;height:13px;background:#ffefcd;border-right:2px solid #ce9855;border-top:2px solid #ce9855;transform:rotate(45deg);z-index:-1}
+.hx-tavik-dialogue__face{position:absolute;max-width:none;width:223%;height:223%;left:-64.5%;top:-10%;display:block;object-fit:contain;transform-origin:50% 54%}
+.hx-tavik-dialogue::after{content:none}
 .hx-tavik-dialogue--enter{animation:hx-tavik-head-pop .43s cubic-bezier(.2,1.4,.45,1) both}
 .hx-tavik-dialogue[data-reduced-motion="false"]:not([data-speaking="true"]) .hx-tavik-dialogue__ring{animation:hx-tavik-head-bob 3.4s ease-in-out infinite}
 .hx-tavik-dialogue[data-speaking="true"] .hx-tavik-dialogue__face{animation:hx-tavik-face-talk .22s ease-in-out infinite alternate}
-.hx-tavik-dialogue[data-mood="happy"] .hx-tavik-dialogue__ring{box-shadow:0 4px 0 #60315e,0 0 0 2px #dca94d,0 0 13px #ffde75}
-@keyframes hx-tavik-head-pop{0%{opacity:0;transform:translateY(17px) scale(.63)}66%{opacity:1;transform:translateY(-3px) scale(1.08)}100%{opacity:1;transform:translateY(0) scale(1)}}
+.hx-tavik-dialogue[data-mood="happy"] .hx-tavik-dialogue__ring{box-shadow:0 4px 0 #60315e,0 0 0 2px #dca94d,0 0 8px #ffde75}
+@keyframes hx-tavik-head-pop{0%{opacity:0;transform:translateY(7px) scale(.72)}66%{opacity:1;transform:translateY(-2px) scale(1.04)}100%{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes hx-tavik-head-bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-2px) rotate(2deg)}}
 @keyframes hx-tavik-face-talk{from{transform:translateY(0) scale(1)}to{transform:translateY(-2px) scale(1.015)}}
 @media(max-width:360px){
- body[data-screen="game"] .tutorial-coach[data-tavik-dialogue="true"] .coach-copy{padding-left:63px}
- body[data-screen="game"] .tutorial-coach[data-tavik-dialogue="true"] .coach-heading h3{font-size:13.5px;line-height:1.13}
- body[data-screen="game"] .tutorial-coach[data-tavik-dialogue="true"] .coach-copy p{font-size:11.25px;line-height:1.18}
- .hx-tavik-dialogue{left:5px;bottom:9px;width:62px;height:62px}
- .hx-tavik-dialogue__face{width:140px;height:140px;left:-40px;top:-6px}
- .hx-tavik-dialogue::after{top:27px}
-}
-@media(orientation:landscape) and (max-height:600px){
- body[data-screen="game"] .tutorial-coach[data-tavik-dialogue="true"] .coach-copy{padding-left:63px}
- .hx-tavik-dialogue{left:5px;bottom:8px;width:61px;height:61px}
- .hx-tavik-dialogue__face{width:136px;height:136px;left:-39px;top:-5px}
+ body[data-screen="game"] .tutorial-coach[data-tavik-dialogue="true"]{--dialogue-head:50px;--dialogue-portrait-slot:74px;--dialogue-action-slot:56px;column-gap:6px}
+ body[data-screen="game"] .tutorial-coach[data-tavik-dialogue="true"] .coach-heading h3{font-size:13.5px;line-height:1.15}
+ body[data-screen="game"] .tutorial-coach[data-tavik-dialogue="true"] .coach-copy p{font-size:11.25px;line-height:1.2}
+ body[data-screen="game"] .tutorial-coach[data-tavik-dialogue="true"] .coach-next{font-size:10.75px}
 }
 body.reduce-motion .hx-tavik-dialogue,body.reduce-motion .hx-tavik-dialogue *,
 body[data-scene-paused="true"] .hx-tavik-dialogue,body[data-scene-paused="true"] .hx-tavik-dialogue *{animation:none!important;transition:none!important}

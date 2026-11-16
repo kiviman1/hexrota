@@ -41,7 +41,7 @@ window.HexSessionStore.boot(function startApp(session) {
   const tutorialBuildCounter=document.createElement('span');
   tutorialBuildCounter.className='tutorial-build-counter';tutorialBuildCounter.hidden=true;
   tutorialBuildCounter.setAttribute('role','status');tutorialBuildCounter.setAttribute('aria-live','polite');tutorialBuildCounter.setAttribute('aria-atomic','true');
-  $('tutorial-coach').insertBefore(tutorialBuildCounter,$('coach-skip'));
+  $('coach-step').after(tutorialBuildCounter);
   function committedTutorialProgress(){
     const game=committedSceneGame,done=game?.done||[],indices=[game?.current,...done,...Object.keys(game?.boards||{}).map(Number),...Object.keys(game?.attempts||{}).map(Number)];
     // Older saves may lack tutorial flags after reaching a later screen. Infer
@@ -1444,7 +1444,7 @@ window.HexSessionStore.boot(function startApp(session) {
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=38');
+            job.worker=new Worker('./hint-worker.js?v=39');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:activeLevel,snapshot:engine.snapshot()});
