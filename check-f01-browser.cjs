@@ -320,9 +320,11 @@ async function replay(page){
    await touch(f.page,pair);await f.page.waitForFunction(()=>document.querySelector('#board').getAttribute('aria-busy')==='true');
    const committed=await profile(f.page),committedEvents=await events(f.page);assert.deepEqual(board(committed),expectedCommand.snapshot);
    await f.page.evaluate(()=>{
-    const board=document.getElementById('board'),native=Object.getOwnPropertyDescriptor(Element.prototype,'innerHTML');window.__f01RenderThrows=0;
-    window.__f01RestoreRender=()=>delete board.innerHTML;
-    Object.defineProperty(board,'innerHTML',{configurable:true,get(){return native.get.call(this);},set(value){window.__f01RenderThrows++;throw new Error('F01 optional final DOM render fault');}});
+    // Reconciliation now assigns the detached SVG projection's real DOM setter.
+    // Keep the same browser-thrown error, command, finisher and strict assertions.
+    const create=document.createElementNS,native=Object.getOwnPropertyDescriptor(Element.prototype,'innerHTML');window.__f01RenderThrows=0;
+    window.__f01RestoreRender=()=>{document.createElementNS=create;};
+    document.createElementNS=function(...args){const element=create.apply(this,args);if(element.localName==='svg'&&!element.isConnected)Object.defineProperty(element,'innerHTML',{configurable:true,get(){return native.get.call(this);},set(value){window.__f01RenderThrows++;throw new Error('F01 optional final DOM render fault');}});return element;};
    });
    // Completed campaign boards intentionally refuse further board input. The
    // visible Pause control still reveals their already committed result and

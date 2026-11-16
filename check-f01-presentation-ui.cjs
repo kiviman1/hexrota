@@ -215,10 +215,17 @@ for(const selector of ['#levels','#board'])test('G optional finisher render fail
   await enter(f);const before=profile(f),stage=before.game.current,first=nonterminalMove(f);record=recordWrites(f,{failAt:2});f.begin(first.pair);
   assert.equal(f.observed.store.snapshot().operations.presentation.status,'pending');
   const node=f.node(selector),descriptor=Object.getOwnPropertyDescriptor(f.w.Element.prototype,'innerHTML');let injected=0;
-  Object.defineProperty(node,'innerHTML',{configurable:true,get(){return descriptor.get.call(this);},set(value){
+  const fault={configurable:true,get(){return descriptor.get.call(this);},set(value){
    const operation=f.observed.store.snapshot().operations.presentation;
    if(!injected&&(!operation||!['requested','pending'].includes(operation.status))){injected++;throw Error('F-01 optional finish rendering failure');}return descriptor.set.call(this,value);
-  }});restoreDOM=()=>{delete node.innerHTML;};
+  }};
+  if(selector==='#board'){
+   // The real reconciler parses a detached SVG projection rather than assigning
+   // board.innerHTML. Fault its actual DOM setter; never mock the view/finisher.
+   const create=f.d.createElementNS;
+   f.d.createElementNS=function(...args){const element=create.apply(this,args);if(element.localName==='svg'&&!element.isConnected)Object.defineProperty(element,'innerHTML',fault);return element;};
+   restoreDOM=()=>{f.d.createElementNS=create;};
+  }else{Object.defineProperty(node,'innerHTML',fault);restoreDOM=()=>{delete node.innerHTML;};}
   f.click('#skip-animation');await f.idle();await wait(5);clean(f);assert.equal(injected,1,'the optional final render actually throws');
   assert.deepEqual(profile(f).game.boards[stage],plain(first.expected.snapshot()));assert.deepEqual(profile(f).energy,before.energy);
   const firstCounts={attempts:record.attempts,rejections:record.rejections};restoreDOM();restoreDOM=null;record.failAt=0;

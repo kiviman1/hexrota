@@ -446,6 +446,19 @@ jobs:
           path: test-results/state-${{ matrix.browser }}
           if-no-files-found: warn
           retention-days: 7
+      - name: Verify every resolved animation wave and interruption boundary
+        run: npm run test:animation-browser
+        env:
+          HEXROTA_BROWSER: ${{ matrix.browser }}
+          HEXROTA_PIPELINE_SCREENSHOT_DIR: test-results/animation-pipeline-${{ matrix.browser }}
+      - name: Keep animation phase, identity and mobile screenshot evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: animation-pipeline-${{ matrix.browser }}
+          path: test-results/animation-pipeline-${{ matrix.browser }}
+          if-no-files-found: warn
+          retention-days: 7
       - name: Keep F-01 native input, write-count and rendering evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

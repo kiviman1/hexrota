@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "baseline": "ecba596cc0a31d65ddacac1a724e5286b99de735",
+  "sha256": {
+    "dist/board-view.js": "a5ea9a09eca0bfbc0cecdffe8008b3310e6a1b90fb34aa4a3621851a2d462344",
+    "dist/score-presentation.js": "c83248d2f23d2de42ba2df8fb6928311e95b4eab789d87983ac283f5e44a9acf"
+  }
+}

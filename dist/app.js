@@ -30,6 +30,7 @@ window.HexSessionStore.boot(function startApp(session) {
   const recurringTimers=[];
   let active=saved.current,activeLevel=levels[saved.current],activeAttempt=null,attemptPending=true,saveBlocked=false,loadIssue=null,engine, selected=null, hinted=null, focusIndex=0;
   let pointer=null, toastTimer, terminalTimer, epoch=0, comboText='',presentation=null,hintJob=null;
+  let boardRenderIdentity=null; // Disposable SVG scope; never an attempt or save authority.
   const geometryCache=new Map();
   let pendingStage=null,pendingRestart=null,invalidPresentation=null;
   const appState=window.HexAppState.create();
@@ -97,7 +98,7 @@ window.HexSessionStore.boot(function startApp(session) {
   function sceneCommitted(profile){committedSceneGame=profile?.game||null;syncScene();}
   function reactScene(job){
     if(!job.committed||!scenePresentation||fullResetPending)return;
-    try{scenePresentation.react({key:`${activeAttempt?.attemptId}:${engine.turn}`,kind:engine.status==='won'?'celebrate':engine.status==='lost'?'worried':'hop'});}catch(_){}
+    try{const reaction=scenePresentation.react({key:`${activeAttempt?.attemptId}:${engine.turn}`,kind:engine.status==='won'?'celebrate':engine.status==='lost'?'worried':'hop'});if(reaction&&typeof reaction.then==='function')Promise.resolve(reaction).catch(()=>{});}catch(_){}
   }
   function refreshLessonDemo(){
     lessonDemo.stop();
@@ -144,14 +145,12 @@ window.HexSessionStore.boot(function startApp(session) {
     }catch(_){rewardState=null;completionReward=null;return null;}
   }
   function rewardForWave(job,wave){
-    const cues=job.rewardPlan?.waves?.filter(cue=>cue.wave===wave||(wave===2&&cue.wave>2))||[];
+    const cues=job.rewardPlan?.waves?.filter(cue=>cue.wave===wave)||[];
     return cues.reduce((best,cue)=>!best||cue.tier>best.tier||(cue.tier===best.tier&&cue.rawTier>best.rawTier)?cue:best,null);
   }
   function rewardHeadline(job,wave){
     const cue=job.rewardPlan?.headline;
-    if(!cue||cue.completion||job.rewardHeadlineUsed||Math.min(2,cue.wave)!==wave)return null;
-    // A floor/score goal from compressed later waves is named after the final board is visible.
-    if(cue.wave>2&&(cue.reason==='score_goal'||cue.reason==='ground_goal'))return null;
+    if(!cue||cue.completion||job.rewardHeadlineUsed||cue.wave!==wave)return null;
     job.rewardHeadlineUsed=true;return cue;
   }
   function rewardFeedback(job,cue){
@@ -163,7 +162,7 @@ window.HexSessionStore.boot(function startApp(session) {
   function rewardMilestones(job,wave,kind){
     if(!canAnimate()||job.controller.signal.aborted||presentation!==job)return;
     for(const milestone of job.rewardPlan?.milestones||[]){
-      if(milestone.kind!==kind||Math.min(2,milestone.wave)!==wave||job.rewardMilestoneIds.has(milestone.id))continue;
+      if(milestone.kind!==kind||milestone.wave!==wave||job.rewardMilestoneIds.has(milestone.id))continue;
       job.rewardMilestoneIds.add(milestone.id);
       const node=kind==='score'?$('sum').closest('.hud-score'):document.querySelector('.coverage');if(!node)continue;
       node.classList.add('reward-goal-hit');job.rewardNodes.add(node);
@@ -483,7 +482,7 @@ window.HexSessionStore.boot(function startApp(session) {
       if(!commitSession())return;
       job.committed=true;renderLevels();updateMenus();
       if(!activatePresentation(job))return;
-      job.watchdog=setTimeout(()=>finishPresentation(job,'failed'),motion.budget);await presentSwap(job,null,null,before);
+      await presentSwap(job,null,null,before);
     }catch(_){job.presentationFailed=job.committed===true;if(!job.committed){sessionDirty=false;restoreDurable();toast('Güçlendirici kaydedilemedi. Tahtan ve çantan korundu.');}}
     finally{finishPresentation(job,job.presentationFailed?'failed':'succeeded');}
   }
@@ -1133,7 +1132,9 @@ window.HexSessionStore.boot(function startApp(session) {
     lessonDemo.stop();clearInvalidSwap();
     const display=state||{values:engine.values,layers:engine.layers,score:engine.score,movesLeft:engine.movesLeft};
     const focused=document.activeElement?.closest?.('[data-index]')?.dataset.index;
-    $('board').innerHTML=boardMarkup(display,options.matching||[],options.falling||[]);
+    const visualIdentity=activeAttempt?.attemptId||`preview:${active}`;
+    window.HexBoardView.reconcile($('board'),boardMarkup(display,options.matching||[],options.falling||[]),{...options.transition,reset:boardRenderIdentity!==visualIdentity});
+    boardRenderIdentity=visualIdentity;
     if(focused!==undefined)$('board').querySelector(`[data-index="${focused}"]`)?.focus?.({preventScroll:true});
     const covered=display.layers.filter(n=>n===0).length,total=activeLevel.cells.length;
     renderScore(presentation?.scoreDisplay??display.score);
@@ -1204,7 +1205,7 @@ window.HexSessionStore.boot(function startApp(session) {
   function flyScore(job,frame,options){return scorePresentation.flyScore(job,frame,options);}
   const canAnimate=()=>!document.hidden&&!reduceMotion()&&typeof window.Element.prototype.animate==='function';
   function startPresentation(job){
-    presentation=job;
+    presentation=job;job.attemptId=activeAttempt?.attemptId||null;
     // This token coordinates visual lifetime only. Failure to allocate it must
     // never reject an already valid domain command or its atomic profile write.
     try{job.uiOperation=appState.beginOperation('presentation',activeAttempt?.attemptId||null);}catch(_){job.uiOperation=null;}
@@ -1218,10 +1219,11 @@ window.HexSessionStore.boot(function startApp(session) {
     const job=presentation;
     if(job?.uiOperation)appState.settleOperation(job.uiOperation,outcome);
     presentation=null;
+    delete $('board').dataset.presentationPhase;delete $('board').dataset.presentationWave;
     if(job){clearTimeout(job.watchdog);job.controller.abort();job.swapVisual?.cleanup();for(const a of job.animations)try{a.cancel?.();}catch(_){}for(const node of job.rewardNodes||[])node.classList.remove('reward-goal-hit');clearScoreReceipt();}
   }
   function finishPresentation(job,outcome='succeeded') {
-    if(!job||presentation!==job||job.token!==epoch)return;
+    if(!job||presentation!==job||job.token!==epoch||job.attemptId!==activeAttempt?.attemptId)return;
     cancelPresentation(outcome);
     const result=job.result;
     comboText=job.assistanceItem==='greenBrush'?'Zeminden bir kat azaldı.':job.assistanceItem&&result.scoreGain===0?'Taşın sayısı değişti.':`+${result.scoreGain} puan${result.frames.length>1?` · ${result.frames.length} zincir`:''}`;
@@ -1250,7 +1252,16 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   function animateElement(job,node,frames,options){
     if(!node)return null;
-    const animation=node.animate(frames,options);job.animations.push(animation);return animation;
+    const animation=node.animate(frames,options);job.animations.push(animation);
+    // Observe native rejection immediately. Abort cleanup also rejects finished;
+    // only a still-current visual owner may fall back to its committed board.
+    const finished=animation.finished;
+    if(finished&&typeof finished.then==='function')Promise.resolve(finished).catch(()=>{
+      if(job.controller.signal.aborted)return;
+      if(presentation===job){job.presentationFailed=true;finishPresentation(job,'failed');}
+      else if(invalidPresentation===job)clearInvalidSwap();
+    });
+    return animation;
   }
   function svgNode(name,attributes){const node=document.createElementNS('http://www.w3.org/2000/svg',name);for(const [key,value]of Object.entries(attributes))node.setAttribute(key,String(value));return node;}
   // Only temporary gems live above the board. Floors and match effects retain
@@ -1295,33 +1306,34 @@ window.HexSessionStore.boot(function startApp(session) {
     clearTimeout(job.timer);job.controller.abort();job.swapVisual?.cleanup();
     for(const animation of job.animations)try{animation.cancel?.();}catch(_){}
   }
-  function matchEffects(job,frame){
+  function matchEffects(job,frame,timing=motion){
     const layer=$('board').querySelector('.fx-layer'),positions=geometry().positions;
     if(!layer)return;
     let particles=0;
     const inks=['#b5a4da','#e9c37f','#dfaa95','#8bb8d5','#cfabc6'];
     for(const [order,index]of frame.matched.entries()){
       const p=positions[index],gem=$('board').querySelector(`[data-index="${index}"] .gem`);
-      animateElement(job,gem,[{transform:'scale(1)',opacity:1},{transform:'scale(1.12)',opacity:1,offset:.25},{transform:'scale(.45)',opacity:0}],{duration:motion.burst,easing:'cubic-bezier(.3,.1,.4,1)',fill:'forwards'});
-      if(order<12){const ring=svgNode('circle',{class:'fx-ring',cx:p.x,cy:p.y,r:15});layer.appendChild(ring);animateElement(job,ring,[{r:'15px',opacity:.8},{r:'49px',opacity:0}],{duration:motion.ring,easing:'ease-out',fill:'forwards'});}
+      animateElement(job,gem,[{transform:'scale(1)',opacity:1},{transform:'scale(1.12)',opacity:1,offset:.25},{transform:'scale(.45)',opacity:0}],{duration:timing.burst,easing:'cubic-bezier(.3,.1,.4,1)',fill:'forwards'});
+      if(order<12){const ring=svgNode('circle',{class:'fx-ring',cx:p.x,cy:p.y,r:15});layer.appendChild(ring);animateElement(job,ring,[{r:'15px',opacity:.8},{r:'49px',opacity:0}],{duration:timing.ring,easing:'ease-out',fill:'forwards'});}
       for(let k=0;k<5&&particles<48;k++,particles++){
         const angle=(k*72+order*31)*Math.PI/180,distance=27+(k%3)*10;
         const dot=svgNode(k%2?'circle':'rect',k%2?{class:'fx-particle',cx:p.x,cy:p.y,r:2.5}:{class:'fx-particle',x:p.x-2,y:p.y-2,width:4,height:4,rx:1});
         dot.style.fill=inks[(frame.before[index]-1)%inks.length];layer.appendChild(dot);
-        animateElement(job,dot,[{transform:'translate(0px,0px) scale(1)',opacity:1},{transform:`translate(${Math.cos(angle)*distance}px,${Math.sin(angle)*distance-8}px) scale(.35)`,opacity:0}],{duration:motion.particle,easing:'ease-out',fill:'forwards'});
+        animateElement(job,dot,[{transform:'translate(0px,0px) scale(1)',opacity:1},{transform:`translate(${Math.cos(angle)*distance}px,${Math.sin(angle)*distance-8}px) scale(.35)`,opacity:0}],{duration:timing.particle,easing:'ease-out',fill:'forwards'});
       }
     }
     const centroid=frame.matched.reduce((p,i)=>({x:p.x+positions[i].x/frame.matched.length,y:p.y+positions[i].y/frame.matched.length}),{x:0,y:0});
     const label=svgNode('text',{class:'fx-score',x:centroid.x,y:centroid.y-15,'text-anchor':'middle'});label.textContent=scoreEquation(frame);label.style.display='none';layer.appendChild(label);
   }
-  function fallingGems(job,frame){
+  function fallingGems(job,frame,{spawn=null,timing=motion}={}){
     const positions=geometry().positions,cells=activeLevel.cells,minQ=Math.min(...cells.map(c=>c.q));let longest=0;
     for(const fall of frame.falls||[]){
+      if(spawn!==null&&fall.spawn!==spawn)continue;
       const destination=positions[fall.to],cell=cells[fall.to];
       let origin;
       if(fall.spawn){const column=cells.map((c,i)=>({c,i})).filter(x=>x.c.q===cell.q).sort((a,b)=>a.c.r-b.c.r);origin={x:destination.x,y:positions[column[0].i].y-Math.sqrt(3)*44*(fall.spawnCount-fall.spawnOrder)};}
       else origin=positions[fall.from];
-      const dx=origin.x-destination.x,dy=origin.y-destination.y,delay=Math.min(motion.fallStagger,(cell.q-minQ)*motion.columnDelay),duration=motion.fall;
+      const dx=origin.x-destination.x,dy=origin.y-destination.y,delay=Math.min(timing.fallStagger,(cell.q-minQ)*timing.columnDelay),duration=timing.fall;
       const node=$('board').querySelector(`[data-index="${fall.to}"] .gem`);
       animateElement(job,node,[{transform:`translate(${dx}px,${dy}px)`,opacity:fall.spawn?0:1},{transform:'translate(0px,2.5px)',opacity:1,offset:.82},{transform:'translate(0px,-1px)',opacity:1,offset:.94},{transform:'translate(0px,0px)',opacity:1}],{duration,delay,easing:'cubic-bezier(.22,.72,.28,1)',fill:'both'});
       longest=Math.max(longest,duration+delay);
@@ -1329,36 +1341,51 @@ window.HexSessionStore.boot(function startApp(session) {
     return longest;
   }
   async function presentSwap(job,a,b,before){
-    if(!canAnimate())return;
-    if(job.assistanceItem){
-      render({...before,values:job.result.frames[0]?.before||engine.values},{message:'Güçlendiricin uygulanıyor.'});
-      const stone=$('board').querySelector(`[data-index="${job.assistanceIndex}"] ${job.assistanceItem==='greenBrush'?'.floor-shape':'.gem'}`);
-      animateElement(job,stone,[{opacity:.7},{opacity:1}],{duration:180,easing:'ease-out'});await pause(180,job);
-    }else{
-    render(before,{message:'Taşlar yer değiştiriyor…'});
-    const visual=swapVisual(job,a,b),paths=swapPaths(a,b);
-    try{
-      visual.stones.forEach((node,index)=>animateElement(job,node,paths[index],{duration:motion.swap,easing:'cubic-bezier(.2,.7,.3,1)',fill:'forwards'}));
-      await pause(motion.swap+5,job);
-    }finally{visual.cleanup();}
-    }
-    const frames=job.result.frames;
-    // Resolve every wave in the engine; animate the first two so long chains
-    // never delay input indefinitely. The final authoritative state follows.
-    for(let i=0;i<Math.min(2,frames.length);i++){
-      if(job.controller.signal.aborted||presentation!==job||!canAnimate())return;
-      const f=frames[i],prior=i?frames[i-1]:null,score=before.score+frames.slice(0,i).reduce((n,frame)=>n+frame.scoreGain,0);
-      const extra=i===1?frames.slice(2).reduce((sum,frame)=>sum+frame.scoreGain,0):0,gain=f.scoreGain+extra;
-      comboText=`${i?`${i+1}. zincir · `:''}${scoreEquation(f)} puan${extra?` · Devamı +${extra}`:''}`;
-      render({values:f.before,layers:prior?prior.layers:before.layers,score,movesLeft:engine.movesLeft},{message:i?'Yeni taşlar da eşleşti!':'Taşlar eşleşti. Puanlar toplanıyor.'});
-      const task=flyScore(job,f,{wave:i+1,gain,destination:score+gain,extra,totalWaves:frames.length}).catch(()=>{});job.scoreTasks.push(task);
-      matchEffects(job,f);if(!job.rewardPlan||typeof audio?.reward!=='function')tone(Math.min(5,i+1));await pause(motion.matchPause,job);
-      if(job.controller.signal.aborted||presentation!==job)return;
-      render({values:f.after,layers:f.layers,score:score+f.scoreGain,movesLeft:engine.movesLeft},{falling:f.falls.map(x=>x.to),message:'Yeni taşlar geliyor. Yeşil alanlar yerinde kalıyor.'});
-      rewardMilestones(job,i+1,'ground');
-      const duration=fallingGems(job,f);await Promise.all([pause(duration+10,job),task]);
-    }
-    await Promise.all(job.scoreTasks);
+    // Keep the existing immediate reveal path when visuals are unavailable.
+    // No coordinator awaits may delay reduced-motion tutorial acknowledgements.
+    if(!canAnimate()){job.phase='SETTLE';return;}
+    // Read-only projections of an already committed command. The coordinator
+    // receives no engine, profile, economy, receipt or persistence authority.
+    const final={values:engine.values.slice(),layers:engine.layers.slice(),score:engine.score,movesLeft:engine.movesLeft};
+    const plan=window.HexMovePresentation.plan({before,final,frames:job.result.frames,swap:job.assistanceItem?null:[a,b],assistance:job.assistanceItem?{itemId:job.assistanceItem,index:job.assistanceIndex}:null,motion});
+    job.plan=plan;job.watchdog=setTimeout(()=>finishPresentation(job,'failed'),plan.budget);
+    const current=(attemptId,token)=>presentation===job&&job.token===epoch&&activeAttempt?.attemptId===attemptId&&job.uiOperation===token&&appState.isCurrentOperation(token);
+    const outcome=await window.HexMovePresentation.play({
+      plan,attemptId:job.attemptId,token:job.uiOperation,signal:job.controller.signal,isCurrent:current,canAnimate,
+      onPhase(event){if(!current(event.attemptId,event.token))return;job.phase=event.phase;$('board').dataset.presentationPhase=event.phase;$('board').dataset.presentationWave=String(event.wave||0);},
+      adapters:{
+        async swap(){
+          if(plan.assistance){
+            render({...plan.before,values:plan.waves[0]?.frame.before||plan.final.values},{message:'Güçlendiricin uygulanıyor.'});
+            const stone=$('board').querySelector(`[data-index="${plan.assistance.index}"] ${plan.assistance.itemId==='greenBrush'?'.floor-shape':'.gem'}`);
+            animateElement(job,stone,[{opacity:.7},{opacity:1}],{duration:180,easing:'ease-out'});await pause(180,job);return;
+          }
+          render(plan.before,{message:'Taşlar yer değiştiriyor…'});
+          const visual=swapVisual(job,...plan.swap),paths=swapPaths(...plan.swap);
+          try{visual.stones.forEach((node,index)=>animateElement(job,node,paths[index],{duration:motion.swap,easing:'cubic-bezier(.2,.7,.3,1)',fill:'forwards'}));await pause(motion.swap+5,job);}
+          finally{visual.cleanup();}
+        },
+        match(wave){
+          comboText=`${wave.wave>1?`${wave.wave}. zincir · `:''}${scoreEquation(wave.frame)} puan`;
+          render(wave.before,{matching:wave.frame.matched,transition:wave.firstMoves.length?{moves:wave.firstMoves.map(([from,to])=>({from,to}))}:undefined,message:wave.wave>1?'Yeni taşlar da eşleşti!':'Taşlar eşleşti. Puanlar toplanıyor.'});
+        },
+        clear(wave){
+          const task=flyScore(job,wave.frame,{wave:wave.wave,gain:wave.frame.scoreGain,destination:wave.after.score,totalWaves:plan.waves.length,timing:wave.motion});task.catch(()=>{});job.scoreTasks.push(task);
+          matchEffects(job,wave.frame,wave.motion);if(!job.rewardPlan||typeof audio?.reward!=='function')tone(Math.min(5,wave.wave));return task;
+        },
+        fall(wave){
+          render(wave.after,{falling:wave.frame.falls.map(fall=>fall.to),transition:{matched:wave.frame.matched,falls:wave.frame.falls},message:'Yeni taşlar geliyor. Yeşil alanlar yerinde kalıyor.'});
+          rewardMilestones(job,wave.wave,'ground');return fallingGems(job,wave.frame,{spawn:false,timing:wave.motion});
+        },
+        refill(wave){return fallingGems(job,wave.frame,{spawn:true,timing:wave.motion});},
+        // The existing host redraws final state after settling the operation.
+        // Keep reduced motion synchronous-looking and avoid a duplicate redraw.
+        settle(){},
+        pause(ms){return pause(ms,job);}
+      }
+    });
+    if(outcome.status==='failed')job.presentationFailed=true;
+    return outcome;
   }
   function invalidSwap(a,b){
     clearInvalidSwap();
@@ -1409,7 +1436,6 @@ window.HexSessionStore.boot(function startApp(session) {
       if(rewardPlan&&!canAnimate()&&!rewardPlan.headline?.completion){
         const cue=rewardPlan.headline||rewardPlan.waves.reduce((best,next)=>!best||next.tier>best.tier?next:best,null);rewardFeedback(job,cue);
       }
-      job.watchdog=setTimeout(()=>finishPresentation(job,'failed'),motion.budget);
       await presentSwap(job,a,b,before);
     }catch(_){job.presentationFailed=job.committed===true;if(!job.committed){sessionDirty=false;restoreDurable();toast('Hamle kaydedilemedi. Son güvenli tahtan korundu.');}}
     finally{finishPresentation(job,job.presentationFailed?'failed':'succeeded');}
@@ -1501,7 +1527,7 @@ window.HexSessionStore.boot(function startApp(session) {
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=41');
+            job.worker=new Worker('./hint-worker.js?v=42');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:activeLevel,snapshot:engine.snapshot()});
