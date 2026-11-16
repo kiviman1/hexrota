@@ -5,7 +5,7 @@ const root=__dirname,plain=value=>JSON.parse(JSON.stringify(value));let clockRea
 const context={window:{},performance:{now(){return clockReads++*clockStep;}}};vm.createContext(context);
 for(const file of ['engine.js','levels.js','tutorials.js','variants-data.js','attempts.js'])vm.runInContext(fs.readFileSync(path.join(root,'dist',file),'utf8'),context,{filename:file});
 const W=context.window,Engine=W.HexMatch,catalog=W.HexAttempts.createCatalog(W.HEX_LEVELS,W.HEX_VARIANTS,Engine),requests=[],expected=[];
-const counts={publishedRouteStates:0,certifiedRoutes:0,searchStates:0,clockPolicyCases:0,continuedGames:0,rejectedSnapshots:0,rejectedUntrustedRoutes:0,returnedOutputMutation:0,inputRouteMutation:0};
+const counts={publishedRouteStates:0,certifiedRoutes:0,searchStates:0,clockPolicyCases:0,continuedGames:0,rejectedSnapshots:0,rejectedUntrustedRoutes:0,returnedOutputMutation:0,inputRouteMutation:0,auditBudgetTransitionCases:0};
 const sources={proven_route:0,search_win:0,heuristic:0,null:0};
 function normalizeLevel(level,routes){const copy=plain(level);for(const key of ['solutions','solution','alternativeSolutions'])delete copy[key];if(routes)Object.assign(copy,plain(routes));return copy;}
 function authored(level){return plain({solutions:level.solutions||[],solution:level.solution||null,alternativeSolutions:level.alternativeSolutions||[]});}
@@ -52,6 +52,13 @@ const sample=plain(catalog.resolveLevel(1,W.HEX_VARIANTS.levels[0].variants[0].i
 for(const options of [{maxMs:1,maxDepth:3},{maxMs:20,maxDepth:3},{maxMs:150,maxDepth:3},{maxNodes:0,maxMs:1},{maxNodes:2.5,maxMs:1},{maxNodes:'2',maxMs:1},{maxNodes:-1,maxDepth:'2',beamWidth:'3',maxMs:1},{maxNodes:null,maxDepth:[2],beamWidth:[],maxMs:0},null,false,[]]){
  add('injected-clock-'+JSON.stringify(options),{level:sample,snapshot,options,clockStep:10});counts.clockPolicyCases++;
 }
+// Audit9.9: one actual remaining move, one winning choice among seven legal
+// swaps. A tiny bound must remain uncertain; more work can prove the real win.
+const auditLastMove=require('./check-solvability-hints.cjs').budgetCase();
+for(const options of [{maxNodes:1,maxDepth:1,beamWidth:1},{maxNodes:8,maxDepth:1,beamWidth:1}]){
+ add('audit99-last-move-budget-'+options.maxNodes,{level:auditLastMove.level,snapshot:auditLastMove.snapshot,options,assertNoClockRead:true,clockStep:1e6,playSuggested:true});counts.auditBudgetTransitionCases++;
+}
+add('audit99-depth-limited-uncertainty',{level:auditLastMove.level,snapshot:plain(new Engine(auditLastMove.level).snapshot()),options:{maxNodes:1000,maxDepth:1,beamWidth:1},assertNoClockRead:true,clockStep:1e6});counts.auditBudgetTransitionCases++;
 for(const field of Object.keys(snapshot)){const bad=plain(snapshot);delete bad[field];assert.throws(()=>new Engine(sample,bad));reject('missing-snapshot-'+field,{level:sample,snapshot:bad,options:{maxNodes:1}},'rejectedSnapshots');}
 for(const [field,value]of [['score',1],['rngState',1],['values',snapshot.values.map(()=>1)],['history',[[0,0]]]]){const bad={...plain(snapshot),[field]:value};assert.throws(()=>new Engine(sample,bad));reject('forged-snapshot-'+field,{level:sample,snapshot:bad,options:{maxNodes:1}},'rejectedSnapshots');}
 // JS.hint assumes authored route trust. These are separate C# binding rejections,
