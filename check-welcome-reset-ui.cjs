@@ -110,6 +110,18 @@ test('full reset failure keeps the original profile, currency, life and live ses
  }finally{f.close();}
 });
 
+test('a committed full reset survives an optional audio cleanup failure',async()=>{
+ let f=mount({saved:tutorialBeforeWin(),life:lifePool(1,{gold:90,bypass:true})});try{
+  await finishTutorial(f);f.click('#game-home');openFullReset(f);const before=plain(profile(f)),errors=[];
+  f.w.addEventListener('error',event=>errors.push(event.message));f.w.HexAudio.prototype.stop=function(){throw new Error('injected optional audio disposal failure');};
+  f.click('#full-reset-confirm');const reset=plain(profile(f));assert(reset.revision>before.revision,'successful canonical reset is not rolled back by a presentation failure');
+  assert.equal(reset.game.current,0);assert.deepEqual(reset.game.done,[]);assert.deepEqual(reset.game.boards,{});assert.deepEqual(reset.game.attempts,{});assert.equal(reset.energy.life.lives,5);assert.equal(reset.energy.testWallet.gold,300);
+  assert(!/Sıfırlama kaydedilemedi|sıfırlanamadı/i.test(f.node('#toast').textContent),'a committed reset is not reported as a failed write');
+  f.w.dispatchEvent(new f.w.Event('pagehide'));assert.deepEqual(profile(f),reset);assert.deepEqual(errors,[],'optional audio disposal is handled without an uncaught page error');
+  f.close();f=mount({profile:reset});assert.equal(f.d.body.dataset.firstOpening,'true');assert.equal(view(f).gold,0);assert.equal(f.node('#home-play-label').textContent,'Başlayalım');
+ }finally{f.close();}
+});
+
 test('confirmed full reset is a fresh profile and stale lifecycle callbacks cannot restore the old game',async()=>{
  let f=mount({saved:tutorialBeforeWin(),life:lifePool(1,{gold:90,bypass:true})});try{
   const lifecycleErrors=[];f.w.addEventListener('error',event=>lifecycleErrors.push(event.message));

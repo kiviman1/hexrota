@@ -23,7 +23,7 @@ Yalnız bilinen Hexrota legacy/olay/test anahtarları temizlenir. `localStorage.
 
 ## Doğrulama ve taşınabilirlik
 
-- `npm run test:welcome-reset`: 10 storage hata/yarış vakası ve 8 gerçek uygulama akışı.
+- `npm run test:welcome-reset`: 10 storage hata/yarış vakası ve 9 gerçek uygulama akışı.
 - `npm run test:welcome-reset-browser`: Chromium/WebKit'te 320/390 portre, 844 yatay ve 1280 masaüstü; görünür sandık/piksel değişimi, gerçek bakiye, vazgeçme, kayıt hatası, gerçek sayfa yenileme ve ilk açılışın yeniden oynanması.
 - Ekonomi ve uygulama karşılaştırmaları C# 7.3 / .NET 8 ile gerçekten derlenir. Welcome JS/C# iş kuralıdır. Web tam sıfırlama/reload UI'si platform adaptörüdür; Unity veri-silme ekranı ve cihaz saklama adaptörü henüz yapılmadı. Unity host aynı taze DTO'ları atomik repository yazımından geçirip eski session'ı kapatmalıdır.
 - Classic-v4, Snapshot4, 40 varyant, 80 kazanma rotası, can kuralları, kaydırma ve sabit tahta boyutu değişmez. PWA shell v34 yalnız bu web paketini sürümler.
