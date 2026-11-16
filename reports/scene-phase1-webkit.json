@@ -218,7 +218,16 @@
   "errors": [],
   "physicalDeviceTested": false,
   "filteredRun": null,
+  "repetitions": 1,
   "hiddenStateTest": "visibilitychange event with overridden document.hidden",
   "serverOfflineTest": true,
-  "bfcacheTest": "synthetic persisted PageTransitionEvent lifecycle with actual lock-reacquisition reload and resume; native BFCache eviction policy is not asserted"
+  "offlinePreconditions": {
+    "cache": "hexrota-shell-v36",
+    "typedBodyCount": 50,
+    "explicitBrowserOffline": false,
+    "serverListenerStopped": true
+  },
+  "bfcacheTest": "synthetic persisted PageTransitionEvent lifecycle with actual lock-reacquisition reload and resume; native BFCache eviction policy is not asserted",
+  "diagnosticEventCount": 4625,
+  "diagnosticsStoredIn": "CI artifact and local test-results; omitted from this compact report"
 }
