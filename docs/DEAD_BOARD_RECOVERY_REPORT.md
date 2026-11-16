@@ -59,7 +59,7 @@ Neden: normal takas sonunda `_ensurePlayable()` yalnız `playing` durumda çalı
 
 ### Yeniden üretim
 
-Fixture: `known-issue-rescue-preserves-terminal-dead-board`, yayımlanmamış 7 hücreli radius-1 tahta. Hücre sırası q sonra r artan, `max(abs(q),abs(r),abs(q+r))≤1`. Her zeminde 1 kat; palet `[1,2,3]`; başlangıç `[1,2,3,1,3,2,2]`; seed `3100882058`; hamle 3; puan hedefi 1.
+Fixture: `known-issue-rescue-preserves-terminal-dead-board`, yayımlanmamış 7 hücreli radius-1 tahta. Hücre sırası q sonra r artan, `max(abs(q),abs(r),abs(q+r))≤1`. Her zeminde 1 kat; palet `[1,2,3]`; başlangıç `[1,2,3,1,3,2,2]`; seed `3100882058`; hamle 3; puan hedefi 1. Başlangıçta yalnız bir yasal takası vardır; kazanılabilir olsa da mevcut iki bağımsız kazanma başlangıcı yayın şartını karşılamaz. “Geçerli” burada çekirdek komut/restore sözleşmesini ifade eder, 40 varyantın yayın kabulünü değil.
 
 1. Aynı başlangıçtan `[[3,6],[0,2],[0,1]]` gerçekten kazanır; başlangıç imkânsız değildir.
 2. Alternatif yasal `[[3,6],[1,4],[3,5]]` rotası kaybeder.
@@ -87,7 +87,7 @@ Bu audit bu seçeneklerden hiçbirini uygulamaz.
 
 Yedi hücreli radius-1 tahtaya palet `[1]`, tüm başlangıç değerleri `1`, seed `1` verilip `_ensurePlayable()` çalıştırıldığında 64 yapım sonrası deterministik desen, iki palet girdisi varmış gibi davranır. `dist/engine.js:125–130` / `unity/Gameplay/HexMatch.cs:182–190` içindeki bu desen JS'te `undefined`, C#'ta `null` hücre bırakabilir. JS sonucu `true`, geçersiz indeksler `[0,2,4,5]`, geometrik yasal takas 2, RNG `762117529` olur.
 
-Bu başlangıç otomatik eşleşmelidir ve geçerli yayımlanmış başlangıç değildir. Mevcut yayın sertifikası/başlangıç denetimleri bunu kabul etmez; snapshot doğrulaması da boş hücreli sonucu geçerli kayıt saymaz. Bu nedenle mevcut oyuncu kaydında doğrulanmış bozulma diye raporlanmaz. Buna karşın çekirdek constructor'ın yalnız boş olmayan paleti kabul etmesi, yardımcı metodun genel “başarılı sonuçta bütün taşlar geçerli” koşulunu sağlamaz.
+Bu başlangıç otomatik eşleşmelidir ve geçerli yayımlanmış başlangıç değildir. Mevcut yayın sertifikası/başlangıç denetimleri bunu kabul etmez; snapshot doğrulaması da boş hücreli sonucu geçerli kayıt saymaz. Bu nedenle mevcut oyuncu kaydında doğrulanmış bozulma diye raporlanmaz. C# `Reset` yalnız boş olmayan palet şartını denetler; JS constructor/reset bu boşluk kontrolünü de yapmaz ve güvenilir yazarlık verisine dayanır. Bu giriş sınırları yardımcı metodun genel “başarılı sonuçta bütün taşlar geçerli” koşulunu sağlamaz.
 
 Öneri: Studio/import girişinde topoloji, palet ve yerleşmiş/hamleli başlangıç doğrulaması; yedek başarıdan önce bütün hücrelerin izinli ve dolu olması; desteklenmeyen girdide sınırlı açık ret. Gelecekte düzeltilecekse JS/C# hata sözleşmesi ve eski snapshot/replay uyumluluğu birlikte ele alınmalı.
 
