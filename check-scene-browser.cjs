@@ -10,17 +10,24 @@ assert(['chromium','webkit'].includes(browserName),'supported browser');
 const output=process.env.HEXROTA_SCENE_SCREENSHOT_DIR||path.join(__dirname,'test-results','scene-'+browserName);
 fs.mkdirSync(output,{recursive:true});
 const PROFILE='hexrota-profile-v2',GAME='hexrota-match-v5',ENERGY='hexrota-lives-v1';
+const workerSource=fs.readFileSync(path.join(root,'sw.js'),'utf8'),shellVersion=workerSource.match(/const CACHE='hexrota-shell-v(\d+)'/)?.[1];
+assert(shellVersion,'the real worker declares its offline shell version');
+const declaredAssets=workerSource.match(/const ASSETS=\[([^\]]*)\];/)?.[1];assert(declaredAssets,'the real worker declares its core asset list');
+const offlinePaths=['',...[...declaredAssets.matchAll(/'([^']+)'/g)].map(([,file])=>/\.(?:js|css)$/.test(file)?file+'?v='+shellVersion:file),'assets/scenes/coop-v1/backgrounds/clearing-mobile.webp','assets/scenes/coop-v1/tavik/idle.webp'];
+assert(offlinePaths.includes('app.js?v='+shellVersion)&&offlinePaths.includes('scene-presentation.js?v='+shellVersion),'offline readiness includes real gameplay and scene scripts');
 const plain=value=>JSON.parse(JSON.stringify(value));
 const mime={'.html':'text/html','.js':'application/javascript','.css':'text/css','.svg':'image/svg+xml','.json':'application/json','.webmanifest':'application/manifest+json','.webp':'image/webp','.png':'image/png'};
+const diagnostics=[];const trace=event=>{if(process.env.HEXROTA_SCENE_TRACE)diagnostics.push({utc:Date.now(),...event});};
 let networkOffline=false;
 const server=http.createServer((req,res)=>{
+ trace({kind:'http',url:req.url,offline:networkOffline});
  if(networkOffline){res.destroy();return;}
  let file;try{const url=new URL(req.url,'http://local');file=path.resolve(root,'.'+(url.pathname==='/'?'/index.html':decodeURIComponent(url.pathname)));}catch{res.writeHead(400).end();return;}
  if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}
  fs.readFile(file,(error,body)=>{if(error){res.writeHead(404).end();return;}res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream','Cache-Control':'no-store'}).end(body);});
 });
-let browser,url,failure=null;const errors=[],results=[],measurements=[];
-async function check(name,run){if(process.env.HEXROTA_SCENE_ONLY&&!name.includes(process.env.HEXROTA_SCENE_ONLY))return;await run();results.push(name);console.log('PASS '+browserName+' '+name);}
+let browser,url,failure=null;const errors=[],results=[],measurements=[];const repetitions=Number(process.env.HEXROTA_SCENE_REPEAT||1);assert(Number.isInteger(repetitions)&&repetitions>=1&&repetitions<=24,'bounded independent diagnostic repetitions');
+async function check(name,run){if(process.env.HEXROTA_SCENE_ONLY&&!name.includes(process.env.HEXROTA_SCENE_ONLY))return;for(let repetition=1;repetition<=repetitions;repetition++){await run();const label=repetitions>1?name+' ['+repetition+'/'+repetitions+']':name;results.push(label);console.log('PASS '+browserName+' '+label);}}
 async function profile(page){return page.evaluate(key=>JSON.parse(localStorage.getItem(key)),PROFILE);}
 function stableRect(before,after,message){for(const key of ['x','y','width','height'])assert(Math.abs(before[key]-after[key])<=1,message+' '+key+' before='+before[key]+' after='+after[key]);}
 function overlap(a,b,margin=0){return a.left<b.right-margin&&a.right>b.left+margin&&a.top<b.bottom-margin&&a.bottom>b.top+margin;}
@@ -67,8 +74,34 @@ async function open(size,{saved,energy=lifePool(5),motion='reduce',serviceWorker
  await context.addInitScript(({saved,energy,now,motion})=>{if(location.protocol!=='http:')return;Date.now=()=>now;if(!localStorage.getItem('hexrota-profile-v2')){if(saved){saved.preferences={...saved.preferences,motion};localStorage.setItem('hexrota-match-v5',JSON.stringify(saved));}localStorage.setItem('hexrota-lives-v1',JSON.stringify(energy));}},{saved,energy,now:NOW,motion});
  if(disableScene)await context.route('**/scene-presentation.js*',route=>route.abort());
  if(routes)await routes(context);
- const page=await context.newPage(),requests=[];page.on('pageerror',e=>{errors.push(e.message);console.error('Unhandled scene browser exception: '+e.stack);});page.on('request',r=>requests.push(new URL(r.url()).pathname));await page.goto(url,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.body.dataset.screen==='home');return{context,page,requests};
+ const page=await context.newPage(),requests=[];if(process.env.HEXROTA_SCENE_TRACE){for(const name of ['domcontentloaded','load','close'])page.on(name,()=>trace({kind:name}));page.on('framenavigated',frame=>{if(frame===page.mainFrame())trace({kind:'framenavigated',url:frame.url()});});page.on('requestfailed',request=>trace({kind:'requestfailed',url:request.url(),navigation:request.isNavigationRequest(),type:request.resourceType(),error:request.failure()}));page.on('response',response=>trace({kind:'response',url:response.url(),status:response.status(),worker:response.fromServiceWorker()}));page.on('requestfinished',request=>trace({kind:'requestfinished',url:request.url(),navigation:request.isNavigationRequest(),type:request.resourceType()}));}page.on('pageerror',e=>{errors.push(e.message);console.error('Unhandled scene browser exception: '+e.stack);});page.on('request',r=>requests.push(new URL(r.url()).pathname));await page.goto(url,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.body.dataset.screen==='home');return{context,page,requests};
 }
+// Activated/controlling does not mean CACHE_APP has finished writing HOME.
+// Require the actual typed core bodies before simulating a disconnected device.
+async function offlineReady(page){
+ await page.evaluate(async()=>{await navigator.serviceWorker.ready;if(!navigator.serviceWorker.controller)await new Promise(resolve=>navigator.serviceWorker.addEventListener('controllerchange',resolve,{once:true}));navigator.serviceWorker.controller.postMessage({type:'CACHE_APP'});});
+ await page.waitForFunction(async({cacheName,paths,version})=>{
+  if(navigator.serviceWorker.controller?.state!=='activated')return false;
+  const cache=await caches.open(cacheName);
+  const types={'.js':['application/javascript','text/javascript','application/x-javascript'],'.css':['text/css'],'.json':['application/json'],'.webmanifest':['application/manifest+json','application/json'],'.svg':['image/svg+xml'],'.png':['image/png'],'.webp':['image/webp']};
+  for(const name of paths){const response=await cache.match(new URL(name,location.href).href);if(!response||response.status!==200||response.redirected)return false;const type=(response.headers.get('content-type')||'').split(';')[0].trim().toLowerCase();if(name===''){if(type!=='text/html')return false;const text=await response.clone().text();if(!text.includes('id="home-screen"')||!text.includes('application-name')||!text.includes('app.js?v='+version))return false;}else{const ext=new URL(name,location.href).pathname.match(/\.[^.\/]+$/)?.[0];if(!types[ext]?.includes(type)||(await response.clone().arrayBuffer()).byteLength===0)return false;}}
+  return true;
+ },{cacheName:'hexrota-shell-v'+shellVersion,paths:offlinePaths,version:shellVersion});
+ trace({kind:'offline-ready',coreBodies:offlinePaths.length,cache:'hexrota-shell-v'+shellVersion});
+}
+async function disconnect(f){
+ await offlineReady(f.page);networkOffline=true;
+ // Resetting every HTTP connection makes the pinned WebKit runner fail core
+ // loads internally. Stop the actual origin instead: every new connection is
+ // refused and the worker must serve its previously verified cached bodies.
+ await new Promise((resolve,reject)=>{server.close(error=>error?reject(error):resolve());server.closeAllConnections();});
+ assert.equal(server.listening,false,'the HTTP origin is genuinely unavailable');
+ // WebKit's automation offline switch rejects before worker dispatch; Chromium
+ // additionally exercises the browser's native disconnected-device emulation.
+ const browserOffline=browserName==='chromium';if(browserOffline)await f.context.setOffline(true);trace({kind:'network-cut',browserOffline,originListening:false});
+}
+async function restoreOrigin(){networkOffline=false;if(!server.listening)await new Promise(resolve=>server.listen(Number(new URL(url).port),'127.0.0.1',resolve));}
+async function offlineReload(page){const response=await page.reload({waitUntil:'domcontentloaded'});assert(response&&response.status()===200&&response.fromServiceWorker(),'offline navigation must return the real cached200 shell from its service worker');}
 async function enter(page){await page.locator('#home-play').tap();if(await page.locator('#pregame-dialog').evaluate(n=>n.open))await page.locator('#pregame-start').tap();await page.waitForFunction(()=>document.body.dataset.screen==='game');}
 async function touchPair(page,pair){for(const i of pair){const n=page.locator(`#board [data-index="${i}"]`),r=await n.boundingBox();assert(r);await page.touchscreen.tap(r.x+r.width/2,r.y+r.height/2);}await page.waitForFunction(()=>document.querySelector('#board').getAttribute('aria-busy')==='false');}
 async function acknowledge(page){if(await page.locator('#coach-next').isVisible())await page.locator('#coach-next').tap();}
@@ -141,16 +174,16 @@ async function homeFromGame(page){await page.locator('#game-home').tap();await p
   finally{release();await f.context.close();}
  });
  await check('real offline cached scene and board reload without uncached pose downloads becoming gameplay failures',async()=>{
-  const f=await open({width:390,height:844},{serviceWorkers:'allow'});try{await sceneReady(f.page);await actorReady(f.page);await f.page.evaluate(async()=>{await navigator.serviceWorker.ready;await new Promise(resolve=>{if(navigator.serviceWorker.controller)return resolve();navigator.serviceWorker.addEventListener('controllerchange',resolve,{once:true});});});await enter(f.page);await touchPair(f.page,[4,3]);const before=await gameSnapshot(f.page);await homeFromGame(f.page);networkOffline=true;await f.page.reload({waitUntil:'domcontentloaded'});await f.page.waitForFunction(()=>document.body.dataset.screen==='home');await enter(f.page);assert.deepEqual(await gameSnapshot(f.page),before);await sceneReady(f.page);await screenshot(f.page,'offline-cached-scene-resume');}
-  finally{networkOffline=false;await f.context.close();}
+  const f=await open({width:390,height:844},{serviceWorkers:'allow'});try{await sceneReady(f.page);await actorReady(f.page);await f.page.evaluate(async()=>{await navigator.serviceWorker.ready;await new Promise(resolve=>{if(navigator.serviceWorker.controller)return resolve();navigator.serviceWorker.addEventListener('controllerchange',resolve,{once:true});});});await enter(f.page);await touchPair(f.page,[4,3]);const before=await gameSnapshot(f.page);await homeFromGame(f.page);await disconnect(f);await offlineReload(f.page);await f.page.waitForFunction(()=>document.body.dataset.screen==='home');await enter(f.page);assert.deepEqual(await gameSnapshot(f.page),before);await sceneReady(f.page);await screenshot(f.page,'offline-cached-scene-resume');}
+  finally{try{await f.context.close();}finally{await restoreOrigin();}}
  });
  await check('offline cached advanced scene and uncached advanced background fallback preserve canonical stars and board',async()=>{
   const f=await open({width:390,height:844},{saved:legacyClears(2),serviceWorkers:'allow'});try{
    await sceneReady(f.page,'frame');await f.page.evaluate(async()=>{await navigator.serviceWorker.ready;await new Promise(resolve=>{if(navigator.serviceWorker.controller)return resolve();navigator.serviceWorker.addEventListener('controllerchange',resolve,{once:true});});const response=await fetch('./assets/scenes/coop-v1/backgrounds/frame-mobile.webp',{cache:'reload'});await response.arrayBuffer();});await f.page.waitForFunction(async()=>{const paths=['frame-mobile.webp','clearing-mobile.webp'];for(const suffix of paths){let found=false;for(const name of await caches.keys()){const cache=await caches.open(name);for(const req of await cache.keys())if(req.url.endsWith('/'+suffix)){const response=await cache.match(req);found=!!response&&response.status===200&&/^image\/webp/.test(response.headers.get('content-type')||'');}}if(!found)return false;}return true;});
-   const before=await profile(f.page);networkOffline=true;await f.page.reload({waitUntil:'domcontentloaded'});await sceneReady(f.page,'frame');assert.deepEqual((await profile(f.page)).game,before.game,'offline frame painting does not alter canonical progress');await screenshot(f.page,'offline-earned-frame');
+   const before=await profile(f.page);await disconnect(f);await offlineReload(f.page);await sceneReady(f.page,'frame');assert.deepEqual((await profile(f.page)).game,before.game,'offline frame painting does not alter canonical progress');await screenshot(f.page,'offline-earned-frame');
    const deleted=await f.page.evaluate(async()=>{let count=0;for(const name of await caches.keys()){const cache=await caches.open(name);for(const req of await cache.keys())if(/\/frame-mobile\.webp$/.test(req.url)){if(await cache.delete(req))count++;}}return count;});assert(deleted>0,'the test removes an actually cached advanced scene');
-   await f.page.reload({waitUntil:'domcontentloaded'});await f.page.waitForFunction(()=>{const n=document.querySelector('.hx-scene-background');return document.body.dataset.sceneStage==='frame'&&n?.complete&&n.naturalWidth>0&&n.src.endsWith('/clearing-mobile.webp');});assert.equal(await f.page.locator('.hx-scene-world').getAttribute('data-fallback'),'true');assert.deepEqual((await profile(f.page)).game,before.game,'fallback art cannot downgrade earned stars or replace the real game');await enter(f.page);await fits(f.page,'#board');await screenshot(f.page,'offline-uncached-frame-falls-back-to-clearing');
-  }finally{networkOffline=false;await f.context.close();}
+   await offlineReload(f.page);await f.page.waitForFunction(()=>{const n=document.querySelector('.hx-scene-background');return document.body.dataset.sceneStage==='frame'&&n?.complete&&n.naturalWidth>0&&n.src.endsWith('/clearing-mobile.webp');});assert.equal(await f.page.locator('.hx-scene-world').getAttribute('data-fallback'),'true');assert.deepEqual((await profile(f.page)).game,before.game,'fallback art cannot downgrade earned stars or replace the real game');await enter(f.page);await fits(f.page,'#board');await screenshot(f.page,'offline-uncached-frame-falls-back-to-clearing');
+  }finally{try{await f.context.close();}finally{await restoreOrigin();}}
  });
  assert.deepEqual(errors,[],'there are no unhandled browser exceptions');console.log('Scene integration passed: '+results.length+' actual '+browserName+' groups.');
-})().catch(error=>{failure=error.stack||String(error);console.error(error);if(errors.length)console.error({browserErrors:errors});process.exitCode=1;}).finally(async()=>{fs.writeFileSync(path.join(output,'results.json'),JSON.stringify({browser:browserName,success:!failure,expectedGroups:process.env.HEXROTA_SCENE_ONLY?null:20,passed:results.length,failure,results,measurements,errors,physicalDeviceTested:false,filteredRun:process.env.HEXROTA_SCENE_ONLY||null,hiddenStateTest:'visibilitychange event with overridden document.hidden',serverOfflineTest:true,bfcacheTest:'synthetic persisted PageTransitionEvent lifecycle with actual lock-reacquisition reload and resume; native BFCache eviction policy is not asserted'},null,2)+'\n');networkOffline=false;if(browser)await browser.close();server.close();});
+})().catch(error=>{failure=error.stack||String(error);console.error(error);if(errors.length)console.error({browserErrors:errors});process.exitCode=1;}).finally(async()=>{fs.writeFileSync(path.join(output,'results.json'),JSON.stringify({browser:browserName,success:!failure,expectedGroups:process.env.HEXROTA_SCENE_ONLY?null:20,passed:results.length,failure,results,measurements,errors,diagnostics,physicalDeviceTested:false,filteredRun:process.env.HEXROTA_SCENE_ONLY||null,repetitions,hiddenStateTest:'visibilitychange event with overridden document.hidden',serverOfflineTest:true,offlinePreconditions:{cache:'hexrota-shell-v'+shellVersion,typedBodyCount:offlinePaths.length,explicitBrowserOffline:browserName==='chromium',serverListenerStopped:true},bfcacheTest:'synthetic persisted PageTransitionEvent lifecycle with actual lock-reacquisition reload and resume; native BFCache eviction policy is not asserted'},null,2)+'\n');networkOffline=false;if(browser)await browser.close();server.close();});
