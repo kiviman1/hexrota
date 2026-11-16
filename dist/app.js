@@ -1227,8 +1227,10 @@ window.HexSessionStore.boot(function startApp(session) {
     comboText=job.assistanceItem==='greenBrush'?'Zeminden bir kat azaldı.':job.assistanceItem&&result.scoreGain===0?'Taşın sayısı değişti.':`+${result.scoreGain} puan${result.frames.length>1?` · ${result.frames.length} zincir`:''}`;
     const deferred=job.rewardPlan?.headline;if(deferred&&!deferred.completion&&!job.rewardHeadlineUsed){comboText=rewardLabel(deferred)+' · '+comboText;job.rewardHeadlineUsed=true;}
     if(result.reshuffled)comboText+=' · Karıştırıldı';
-    try{renderLevels();render();persist();}
-    catch(_){persist();}
+    // Commands already committed gameplay, rewards and lives before presentation.
+    // Redraw failures must not write or roll back that durable transaction.
+    try{renderLevels();render();}
+    catch(_){/* Keep committed results eligible even if the redraw fails. */}
     finally{
       $('board').setAttribute('aria-busy','false');$('board-stage').classList.remove('busy');$('reset').disabled=false;$('skip-animation').hidden=true;
     }
@@ -1499,7 +1501,7 @@ window.HexSessionStore.boot(function startApp(session) {
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=40');
+            job.worker=new Worker('./hint-worker.js?v=41');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:activeLevel,snapshot:engine.snapshot()});
