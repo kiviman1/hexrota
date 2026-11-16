@@ -35,6 +35,23 @@ window.HexSessionStore.boot(function startApp(session) {
   let rescueManager=null,pendingRescueProvider=null,pendingRescueReceipt=null,rescueTimeFloor=0;
   const modalStack=[];
   const lessonDemo=window.HexFirstPlay.createDemo({board:$('board'),reducedMotion:reduceMotion});
+  let scenePresentation=null;
+  let committedSceneStars=session.current()?.game?.economy?.stars||0;
+  // Optional scene art owns no game state. Its failures must not block the board.
+  function mountScene(){
+    if(scenePresentation||fullResetPending)return;
+    try{scenePresentation=window.HexScenePresentation?.create({document,window,config:window.HEX_SCENE_CONFIG,board:$('board'),homeHost:document.querySelector('.tavik-intro'),gameHost:document.querySelector('.game-card'),onError:()=>{}})||null;}catch(_){}
+  }
+  mountScene();
+  function syncScene(){
+    if(!scenePresentation||fullResetPending)return;
+    try{scenePresentation.update({screen,firstOpening,committedStars:committedSceneStars,levelId:activeLevel?.id,attemptId:activeAttempt?.attemptId||null,turn:engine?.turn||0,status:engine?.status||'playing',busy,feedback:!!guideFeedback(),lessonPair:guidedStep()?.pair||null,paused,hidden:document.hidden,modalOpen:!!topDialog(),reducedMotion:reduceMotion()});}catch(_){}
+  }
+  function sceneCommitted(profile){committedSceneStars=profile?.game?.economy?.stars||0;syncScene();}
+  function reactScene(job){
+    if(!job.committed||!scenePresentation||fullResetPending)return;
+    try{scenePresentation.react({key:`${activeAttempt?.attemptId}:${engine.turn}`,kind:engine.status==='won'?'celebrate':engine.status==='lost'?'worried':'hop'});}catch(_){}
+  }
   function refreshLessonDemo(){
     lessonDemo.stop();
     const step=guidedStep();
@@ -549,11 +566,12 @@ window.HexSessionStore.boot(function startApp(session) {
     if(economyManager)try{if(Object.prototype.hasOwnProperty.call(saved,'economy'))saved.economy=economyManager.restore(saved.economy);else initializeEconomy();syncCompletedCampaign();}catch(_){economyIssue='invalid';}lifeFeature=window.HexLifePrototype.validate(durable.energy,lifeManager);active=saved.current;
     try{if(!canOpen(active)){active=nextCampaignIndex()??0;saved.current=active;}
       const entry=restoredStage(active);if(entry){engine=entry.game;activeLevel=entry.level;activeAttempt=entry.metadata;attemptPending=false;saveBlocked=false;}else{activeLevel=levels[active];engine=new window.HexMatch(activeLevel);activeAttempt=null;attemptPending=true;saveBlocked=false;loadIssue=null;}}catch(_){saveBlocked=true;}
-    sessionRestoring=true;try{cancelAssistance();cancelPresentation();cancelHint();selected=null;pendingStage=null;pendingRestart=null;pendingResetLifeCost=null;if(pendingLifeProvider&&!lifeFeature.provider.transactions[pendingLifeProvider]&&!pendingLifeReceipt){pendingLifeProvider=null;if($('life-provider-dialog')?.open)closeModal($('life-provider-dialog'));}if(attemptPending)showScreen('home',{replace:true});restoreRewards();renderLevels();render();renderLives();renderRescue();}catch(_){}finally{sessionRestoring=false;}
+    committedSceneStars=durable.game?.economy?.stars||0;
+    sessionRestoring=true;try{cancelAssistance();cancelPresentation();cancelHint();selected=null;pendingStage=null;pendingRestart=null;pendingResetLifeCost=null;if(pendingLifeProvider&&!lifeFeature.provider.transactions[pendingLifeProvider]&&!pendingLifeReceipt){pendingLifeProvider=null;if($('life-provider-dialog')?.open)closeModal($('life-provider-dialog'));}if(attemptPending)showScreen('home',{replace:true});restoreRewards();renderLevels();render();renderLives();renderRescue();}catch(_){}finally{sessionRestoring=false;syncScene();}
   }
   function commitSession(){
     sessionDirty=false;if(fullResetPending)return false;if(sessionRestoring||!lifeFeature)return true;
-    try{captureGame();session.commit(saved,lifeFeature);if(eventState)try{localStorage.setItem(eventKey,JSON.stringify(eventState));}catch(_){}lifeWriteFailed=false;lifeLastPersistUtc=lifeFeature.life.lastSeenUtc;if(pendingLifeReceipt&&lifeFeature.testWallet.processedTransactions[pendingLifeReceipt.receipt.transactionId])pendingLifeReceipt=null;if(sessionPlaytestDirty)persistPlaytest();return true;}
+    try{captureGame();const committed=session.commit(saved,lifeFeature);sceneCommitted(committed);if(eventState)try{localStorage.setItem(eventKey,JSON.stringify(eventState));}catch(_){}lifeWriteFailed=false;lifeLastPersistUtc=lifeFeature.life.lastSeenUtc;if(pendingLifeReceipt&&lifeFeature.testWallet.processedTransactions[pendingLifeReceipt.receipt.transactionId])pendingLifeReceipt=null;if(sessionPlaytestDirty)persistPlaytest();return true;}
     catch(_){eventState=sessionEventBaseline;
       // Observation events describe committed moves only. Never rewind an already
       // saved move when a later presentation-only write fails.
@@ -797,7 +815,7 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   ['resize','orientationchange','pageshow'].forEach(name=>on(window,name,syncAppHeight,{passive:true}));
   on(document,'fullscreenchange',syncAppHeight);
-  const settleViewport=()=>{lessonDemo.stop();stopPointer();clearInvalidSwap();if(presentation)finishPresentation(presentation);refreshLessonDemo();};
+  const settleViewport=()=>{lessonDemo.stop();stopPointer();clearInvalidSwap();if(presentation)finishPresentation(presentation);refreshLessonDemo();syncScene();};
   on(window,'resize',settleViewport,{passive:true});on(window,'orientationchange',settleViewport,{passive:true});
   appViewport?.addEventListener?.('resize',settleViewport,{passive:true});
   appViewport?.addEventListener?.('resize',syncAppHeight,{passive:true});
@@ -811,14 +829,14 @@ window.HexSessionStore.boot(function startApp(session) {
   on(window,'keydown',event=>{if((event.ctrlKey||event.metaKey)&&['+','-','=','0'].includes(event.key))preventZoom(event);});
   function topDialog(){return [...modalStack].reverse().map(id=>$(id)).find(dialog=>dialog.open)||[...document.querySelectorAll('dialog[open]')].at(-1)||null;}
   const gameInputAllowed=()=>!fullResetPending&&canOpen(active)&&!lifeWriteFailed&&!attemptPending&&!saveBlocked&&screen==='game'&&!paused&&!topDialog()&&!lifeDiscarded();
-  function syncAudio(){document.body.classList.toggle('reduce-motion',reduceMotion());audio?.configure({sfx:saved.sound,music:saved.preferences.music,volume:saved.preferences.volume});audio?.setActive(!document.hidden&&!paused);}
+  function syncAudio(){document.body.classList.toggle('reduce-motion',reduceMotion());audio?.configure({sfx:saved.sound,music:saved.preferences.music,volume:saved.preferences.volume});audio?.setActive(!document.hidden&&!paused);syncScene();}
   function unlockAudio(){syncAudio();audio?.unlock().catch(()=>{});}
   function openModal(id){
     lessonDemo.stop();stopPointer();cancelHint();clearInvalidSwap();if(id!=='assistance-dialog')cancelAssistance();
     if(presentation)finishPresentation(presentation);
     clearTimeout(terminalTimer);
     const dialog=$(id);if(!dialog.open){dialog.showModal();modalStack.push(id);}
-    document.body.classList.add('modal-open');syncPlaytestActivity();
+    document.body.classList.add('modal-open');syncPlaytestActivity();syncScene();
   }
   on(document,'hexrota:open-dialog',event=>{
     if(event.detail?.id!=='install-dialog')return;
@@ -833,7 +851,7 @@ window.HexSessionStore.boot(function startApp(session) {
       if(dialog.id==='pregame-dialog')pendingStage=null;
       if(dialog.id==='restart-dialog')pendingRestart=null;
       if(dialog.id==='assistance-dialog')pendingAssistance=null;
-      if(!topDialog())document.body.classList.remove('modal-open');syncPlaytestActivity();refreshLessonDemo();
+      if(!topDialog())document.body.classList.remove('modal-open');syncPlaytestActivity();refreshLessonDemo();syncScene();
     });
     on(dialog,'click',e=>{
       if(e.target!==dialog)return;
@@ -879,8 +897,8 @@ window.HexSessionStore.boot(function startApp(session) {
     $('home-play-label').textContent=next?(next.rescue?'Tahtanı aç':next.resume?'Devam et':next.index===0?'Birlikte başlayalım':'Oyna'):'Bahçeni gör';
     $('home-play-detail').textContent=next?next.rescue?`${stageLabel(next.index)} · İkinci şans seçeneklerini gör`:next.resume?`${stageLabel(next.index)} · ${validCheckpoint(next.index).movesLeft} hamle kaldı`:next.index===0?'Aynı sayıları eşleştir, puan kazan.':`${stageLabel(next.index)} · ${levels[next.index].name}`:'Yeni bölümler yakında';
     if(firstOpening){$('home-play-label').textContent='Başlayalım';$('home-play-detail').textContent='İlk hamleyi birlikte yapalım';}
-    $('home-title').innerHTML=firstOpening?'Birlikte<br><span>yeşertelim.</span>':'Aynı sayıları<br><span>eşleştir.</span>';
-    document.querySelector('.home-description').textContent=firstOpening?'Tavik ile ilk alanı yeşertmeye hazır mısın?':'Yan yana iki taşın yerini değiştir. Aynı sayıdan en az 3 taş bir sıra oluştursun.';
+    $('home-title').innerHTML=firstOpening?(scenePresentation?'Tavik’in<br><span>ilk kümesi.</span>':'Birlikte<br><span>yeşertelim.</span>'):'Aynı sayıları<br><span>eşleştir.</span>';
+    document.querySelector('.home-description').textContent=firstOpening?(scenePresentation?'Eşleştir, ilerle ve kümesi birlikte kur.':'Tavik ile ilk alanı yeşertmeye hazır mısın?'):'Yan yana iki taşın yerini değiştir. Aynı sayıdan en az 3 taş bir sıra oluştursun.';
     $('home-stage-name').textContent=next?levels[next.index].name:'Bahçen ve bütün başarıların burada.';
     $('home-progress-text').textContent=`${completed} / ${campaignCount} bölüm tamamlandı`;
     $('home-progress-fill').style.width=`${completed/campaignCount*100}%`;
@@ -911,7 +929,7 @@ window.HexSessionStore.boot(function startApp(session) {
     for(const name of ['home','journey','game','records','garden']){const node=$(name+'-screen');node.hidden=name!==screen;node.inert=name!==screen;}
     document.body.dataset.screen=screen;
     document.querySelectorAll('[data-nav]').forEach(button=>{const active=button.dataset.nav===screen;button.classList.toggle('is-active',active);if(active)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
-    updateMenus();syncAudio();syncPlaytestActivity();renderLives();refreshLessonDemo();
+    updateMenus();syncAudio();syncPlaytestActivity();renderLives();refreshLessonDemo();syncScene();
     if(historyChange&&(replace||previousScreen!==screen))try{history[replace?'replaceState':'pushState']({screen},'','#'+screen);}catch(_){}
     document.documentElement.scrollTop=0;document.body.scrollTop=0;
   }
@@ -1093,7 +1111,7 @@ window.HexSessionStore.boot(function startApp(session) {
     if($('ground-goal-check')){$('ground-goal-check').hidden=covered<total;$('ground-goal-check').setAttribute('aria-label',covered===total?'Her yer yeşil':'Henüz her yer yeşil değil');}
     if($('ground-label'))$('ground-label').textContent=isTutorial()?'Yeşert':'Yeşil alan';
     if($('game-goal-title'))$('game-goal-title').textContent=active===0?'Her yeri yeşert':isTutorial()?'İki hedefi tamamla':'Puanı topla, alanı boya';
-    renderCoach();syncPlaytestActivity();refreshLessonDemo();
+    renderCoach();syncPlaytestActivity();refreshLessonDemo();syncScene();
   }
   function renderCoach(){
     const coach=$('tutorial-coach'),tutorial=isTutorial(),feedback=guideFeedback();coach.hidden=!tutorial||(engine.status!=='playing'&&!busy);
@@ -1148,6 +1166,7 @@ window.HexSessionStore.boot(function startApp(session) {
       busy=false;$('board').setAttribute('aria-busy','false');$('board-stage').classList.remove('busy');$('reset').disabled=false;$('skip-animation').hidden=true;
     }
     const receipt=$('score-receipt');if(receipt)receipt.textContent=result.scoreGain?`+${result.scoreGain}`:'';
+    syncScene();reactScene(job);
     if(result.reshuffled)toast('Eşleşme kalmadı; sayılar karıştırıldı. Zemin ve hamlelerin korundu.');
     if(screen==='game'&&!paused&&engine.status!=='playing'&&!document.hidden){
       terminalTimer=setTimeout(()=>{if(job.token===epoch&&screen==='game'&&!paused&&!document.hidden&&!topDialog())showResult();},80);
@@ -1405,7 +1424,7 @@ window.HexSessionStore.boot(function startApp(session) {
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=35');
+            job.worker=new Worker('./hint-worker.js?v=36');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:activeLevel,snapshot:engine.snapshot()});
@@ -1493,7 +1512,9 @@ window.HexSessionStore.boot(function startApp(session) {
   on(window,'pointercancel',cancelPointer);
   on(window,'blur',()=>{lessonDemo.stop();cancelAssistance();stopPointer();if(presentation)finishPresentation(presentation);pauseGame();});
   on(document,'visibilitychange',()=>{if(document.hidden){lessonDemo.stop();cancelAssistance();}stopPointer();if(document.hidden){if(presentation)finishPresentation(presentation);pauseGame();}syncAudio();refreshLessonDemo();});
-  on(window,'pagehide',()=>{lessonDemo.stop();cancelAssistance();stopPointer();clearInvalidSwap();if(presentation)finishPresentation(presentation);});
+  on(window,'pagehide',()=>{lessonDemo.stop();cancelAssistance();stopPointer();clearInvalidSwap();if(presentation)finishPresentation(presentation);try{scenePresentation?.destroy();}catch(_){}finally{scenePresentation=null;}});
+  // A BFCache return reuses this host. Recreate only the disposed presentation.
+  on(window,'pageshow',()=>{mountScene();syncScene();});
   on($('board'),'click',e=>{if(e.detail===0){const tile=e.target.closest('[data-index]');if(tile)select(+tile.dataset.index);}});
   on($('board'),'keydown',e=>{
     const tile=e.target.closest('[data-index]');if(!tile||!gameInputAllowed())return;if(guideFeedback()){e.preventDefault();return;}if(busy){e.preventDefault();finishPresentation(presentation);return;}
@@ -1596,6 +1617,7 @@ window.HexSessionStore.boot(function startApp(session) {
     // The new profile is already durable. Freeze every old callback before
     // navigation can fire pagehide, blur, provider or observation handlers.
     fullResetPending=true;sessionDirty=false;sessionPlaytestDirty=false;
+    try{scenePresentation?.destroy();}catch(_){}
     saved=freshGame;lifeFeature=freshEnergy;engine=null;activeAttempt=null;attemptPending=true;
     pendingRescueReceipt=null;pendingLifeReceipt=null;eventState=null;playtest=null;
     try{audio?.stop();}catch(_){} // Optional audio cannot turn a saved reset into a reported failure.

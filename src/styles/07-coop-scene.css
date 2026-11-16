@@ -1,0 +1,48 @@
+/* Prepared Tavik scene presentation. Game, board and HUD dimensions stay owned
+ * by their existing styles; every new visual layer is decorative. */
+.hx-scene-world{position:fixed;inset:0;z-index:0;overflow:hidden;isolation:isolate;pointer-events:none;background:#6d924c}
+.hx-scene-world,.hx-scene-world *,.hx-scene-actor-anchor,.hx-scene-actor-anchor *,.hx-scene-speech{pointer-events:none!important;user-select:none;-webkit-user-select:none}
+.hx-scene-background{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:72% 50%;opacity:1}
+.hx-scene-world::after{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,#20392b30 0%,#20392b18 36%,#251a3ba6 100%)}
+.hx-scene-transition{position:absolute;inset:0;z-index:2;background:#172e25;opacity:0;transition:opacity 120ms linear}
+.hx-scene-transition[data-dark="true"]{opacity:1}
+body[data-scene-active="true"] .site-shell{position:relative;z-index:1}
+body[data-scene-active="true"][data-screen="game"] .game-card{isolation:isolate;background:transparent}
+body[data-scene-active="true"][data-screen="game"] .board-stage{background:transparent}
+body[data-scene-active="true"][data-screen="game"] .board-stage::before{opacity:0}
+body[data-scene-active="true"][data-screen="game"] .board-wrap::before{background:radial-gradient(ellipse,#19392a36 0%,#19392a0d 60%,transparent 76%)}
+body[data-scene-active="true"][data-screen="game"] .hx-scene-world::after{background:linear-gradient(180deg,#1b27355a 0%,#1b27358a 22%,#142c2678 100%)}
+/* Local stacking leaves the supplied actor above the SVG, below every control. */
+.hx-scene-actor-anchor{position:absolute;z-index:1;display:block;width:var(--tavik-size,96px);height:var(--tavik-size,96px);margin:0;contain:layout style;transform:none}
+.hx-scene-actor-anchor[data-layout="hidden"]{visibility:hidden}
+.hx-scene-actor-facing{width:100%;height:100%;transform-origin:50% 50%;transform:scaleX(1)}
+.hx-scene-actor-anchor[data-face="left"] .hx-scene-actor-facing{transform:scaleX(-1)}
+.hx-scene-actor-anchor .hx-tavik{width:100%;height:100%}
+.hx-scene-fallback{display:block;width:100%;height:100%;object-fit:contain}
+body[data-scene-active="true"][data-screen="game"] :is(.game-topbar,.game-toolbar){z-index:3}
+body[data-scene-active="true"][data-screen="game"] .tutorial-coach{z-index:4}
+body[data-scene-active="true"][data-screen="game"] .combo-feedback{z-index:2}
+/* Preserve the approved portrait's geometry until a real scene cutout is ready. */
+body[data-scene-active="true"][data-screen="home"] .tavik-intro{position:relative}
+body[data-scene-active="true"][data-scene-actor-ready="true"][data-screen="home"] .tavik-intro:has(>.hx-scene-actor-anchor[data-layout="home"]:not([hidden])) .tavik-portrait{visibility:hidden}
+body[data-scene-active="true"][data-screen="home"] .home-art{visibility:hidden}
+body[data-scene-active="true"][data-screen="home"] :is(.home-copy h1,.home-description,.home-stage-name){text-shadow:0 2px 2px #163729,0 3px 18px #163729dd}
+body[data-scene-active="true"][data-first-opening="true"][data-screen="home"] .home-copy h1{font-size:40px;line-height:1.08}
+body[data-scene-active="true"][data-first-opening="true"][data-screen="home"] .home-description{color:#fff7dc;font-size:15px;line-height:1.5;max-width:310px}
+.hx-scene-speech{position:absolute;z-index:2;max-width:240px;padding:10px 14px;margin:0;border:2px solid #bf8a47;border-radius:18px;background:linear-gradient(#fff8df,#f7e4b8);box-shadow:0 3px 0 #49352644;color:#513845;font-size:14px;font-weight:800;line-height:1.35;text-align:center;overflow-wrap:anywhere}
+.hx-scene-speech::after{content:"";position:absolute;left:35%;bottom:-8px;width:12px;height:12px;background:#f7e4b8;border-right:2px solid #bf8a47;border-bottom:2px solid #bf8a47;transform:rotate(45deg)}
+@media(orientation:landscape){.hx-scene-background{object-position:50% 50%}}
+@media(max-width:360px){
+ body[data-scene-active="true"][data-first-opening="true"][data-screen="home"] .home-copy h1{font-size:32px}
+ .hx-scene-speech{max-width:215px;padding:8px 12px;font-size:13px}
+}
+@media(max-height:650px){
+ body[data-scene-active="true"][data-first-opening="true"][data-screen="home"] .home-copy h1{font-size:32px}
+ body[data-scene-active="true"][data-first-opening="true"][data-screen="home"] .home-description{font-size:14px}
+ .hx-scene-speech{max-width:220px;padding:8px 12px;font-size:13px}
+}
+body.reduce-motion .hx-scene-transition{transition:none}
+body.reduce-motion .hx-scene-actor-anchor .hx-tavik__sprite{animation:none!important;transform:none!important;will-change:auto}
+body[data-scene-paused="true"] .hx-scene-actor-anchor .hx-tavik__sprite{animation-play-state:paused!important}
+body[data-scene-paused="true"] .hx-scene-transition{transition:none}
+@media(prefers-reduced-motion:reduce){.hx-scene-transition{transition:none}.hx-scene-actor-anchor .hx-tavik__sprite{animation:none!important;transform:none!important;will-change:auto}}

@@ -1,0 +1,5 @@
+/* Generated from data/scene-config-v1.json; run node sync-scene-config.cjs. */
+(function(root){
+ const value={"schemaVersion":1,"id":"coop-scene-phase1","assetBase":"./assets/scenes/coop-v1/","fallbackPortrait":"./assets/characters/tavik/front.webp","stages":[{"id":"clearing","minStars":0,"background":"backgrounds/clearing.webp","mobileBackground":"backgrounds/clearing-mobile.webp"},{"id":"frame","minStars":2,"background":"backgrounds/frame.webp","mobileBackground":"backgrounds/frame-mobile.webp"},{"id":"roof","minStars":5,"background":"backgrounds/roof.webp","mobileBackground":"backgrounds/roof-mobile.webp"},{"id":"finished","minStars":10,"background":"backgrounds/finished.webp","mobileBackground":"backgrounds/finished-mobile.webp"}],"transitionMs":140,"actor":{"homeSize":180,"gameMaxSize":110,"gameMinSize":80,"clearance":8},"copy":{"intro":"Buraya bir kümes kuralım!"},"futureStory":{"enabled":false,"hooks":[]}};
+ root.HEX_SCENE_CONFIG=value;if(typeof module==='object'&&module.exports)module.exports=value;
+})(typeof window!=='undefined'?window:globalThis);

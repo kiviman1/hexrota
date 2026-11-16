@@ -6,6 +6,8 @@
     "src/styles/03-presentation-and-learning.css",
     "src/styles/04-lives-and-mobile.css",
     "src/styles/05-economy-and-garden.css",
-    "src/styles/06-comic-adventure.css"
+    "src/styles/06-comic-adventure.css",
+    "dist/assets/scenes/coop-v1/tavik-motion.css",
+    "src/styles/07-coop-scene.css"
   ]
 }

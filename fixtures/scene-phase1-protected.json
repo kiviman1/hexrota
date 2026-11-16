@@ -1,0 +1,8 @@
+{
+  "base": "e4321b50a8d307b158f886c21f2d2bf9466fde5f",
+  "scope": "Only the reviewed typed/lazy scene cache changes an existing presentation source; all gameplay, economy and C# hashes retain their earlier protection.",
+  "sha256": {
+    "dist/sw.js": "8fde18a3bd21161e427f22e70a939094e1b27e23dcaf7ffa9015fb73db3f986d"
+  },
+  "addedIds": []
+}

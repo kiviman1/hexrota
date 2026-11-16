@@ -1,0 +1,74 @@
+{
+  "scope": "Standalone inline demo using set_content; HTTP navigation blocked by ERR_BLOCKED_BY_ADMINISTRATOR. Not integrated game or PWA regression.",
+  "browser": "Chromium",
+  "physicalDeviceTested": false,
+  "WebKitTested": false,
+  "checks": [
+    {
+      "viewport": [
+        320,
+        568
+      ],
+      "assetDecode": true,
+      "sevenStates": true,
+      "reducedMotion": true,
+      "noHorizontalOverflow": true,
+      "noStorageWrites": true,
+      "invalidStateRejected": true,
+      "doubleDestroySafe": true
+    },
+    {
+      "viewport": [
+        390,
+        844
+      ],
+      "assetDecode": true,
+      "sevenStates": true,
+      "reducedMotion": true,
+      "noHorizontalOverflow": true,
+      "noStorageWrites": true,
+      "invalidStateRejected": true,
+      "doubleDestroySafe": true
+    },
+    {
+      "viewport": [
+        430,
+        932
+      ],
+      "assetDecode": true,
+      "sevenStates": true,
+      "reducedMotion": true,
+      "noHorizontalOverflow": true,
+      "noStorageWrites": true,
+      "invalidStateRejected": true,
+      "doubleDestroySafe": true
+    },
+    {
+      "viewport": [
+        844,
+        390
+      ],
+      "assetDecode": true,
+      "sevenStates": true,
+      "reducedMotion": true,
+      "noHorizontalOverflow": true,
+      "noStorageWrites": true,
+      "invalidStateRejected": true,
+      "doubleDestroySafe": true
+    },
+    {
+      "viewport": [
+        1280,
+        720
+      ],
+      "assetDecode": true,
+      "sevenStates": true,
+      "reducedMotion": true,
+      "noHorizontalOverflow": true,
+      "noStorageWrites": true,
+      "invalidStateRejected": true,
+      "doubleDestroySafe": true
+    }
+  ],
+  "consoleErrors": []
+}

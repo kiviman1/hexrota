@@ -157,7 +157,8 @@ function worker(options={}){
  const context={self,caches:cacheStorage,URL,Request,Response,Headers,Promise,console,fetch:async request=>{requests.push(key(request));return network(request);}};
  vm.createContext(context);vm.runInContext(read('sw.js'),context);
  async function emit(type,data={}){const pending=[];let answer;const event={...data,waitUntil(value){pending.push(Promise.resolve(value));},respondWith(value){answer=Promise.resolve(value);}};listeners.get(type)?.(event);await Promise.all(pending);return answer?{handled:true,response:await answer}:{handled:false};}
- return {stores,requests,messages,cacheStorage,setNetwork(value){network=value;},emit,async fetch(url,opts={}){return emit('fetch',{request:{url:new URL(url,'https://game.test/demo/').href,method:opts.method||'GET',mode:opts.navigate?'navigate':'cors',headers:new Headers()}});},async seed(url,res,name=shellCache){await(await cacheStorage.open(name)).put(url,res);}};
+ const assets=JSON.parse(vm.runInContext('JSON.stringify({core:ASSETS,optional:OPTIONAL_SCENE_ASSETS,warm:WARM_SCENE_ASSETS,preload:PRELOAD})',context));
+ return {stores,requests,messages,cacheStorage,assets,setNetwork(value){network=value;},emit,async fetch(url,opts={}){return emit('fetch',{request:{url:new URL(url,'https://game.test/demo/').href,method:opts.method||'GET',mode:opts.navigate?'navigate':'cors',headers:new Headers()}});},async seed(url,res,name=shellCache){await(await cacheStorage.open(name)).put(url,res);}};
 }
 
 test('offline navigation serves only previously validated game HTML',async()=>{
@@ -210,6 +211,73 @@ test('install preloads only safe scoped assets, activation preserves other apps,
  await sw.seed('old',response('old'),'hexrota-shell-v1');await sw.seed('other',response('other'),'another-app-v1');await sw.emit('activate');assert(!sw.stores.has('hexrota-shell-v1'));assert(sw.stores.has('another-app-v1'));assert(sw.stores.has(shellCache));assert.equal(sw.messages.claim,1);assert.equal(sw.messages.skip,0);
  await sw.emit('message',{data:{type:'SKIP_WAITING'}});assert.equal(sw.messages.skip,1);
  const warm=worker();warm.setNetwork(async()=>response(gameBody));await warm.emit('message',{data:{type:'CACHE_APP'}});warm.setNetwork(async()=>{throw new Error('Offline');});assert.equal(await(await warm.fetch('./',{navigate:true})).response.text(),gameBody,'explicit shell warming validates and stores the real game');
+});
+
+
+const sceneRoot='assets/scenes/coop-v1/',sceneImage=file=>sceneRoot+file;
+const sceneWarm=[sceneImage('backgrounds/clearing-mobile.webp'),sceneImage('tavik/idle.webp')];
+const expectedSceneImages=[
+ ...['clearing','frame','roof','finished'].flatMap(id=>['-mobile',''].map(suffix=>sceneImage('backgrounds/'+id+suffix+'.webp'))),
+ ...['idle','hop','point','inspect','worried','celebrate','walk-pose','run-pose','carry','build','proud','think','call','rest'].map(id=>sceneImage('tavik/'+id+'.webp'))
+];
+function preparedSceneResponse(file){return response(fs.readFileSync(path.join(root,file)),'image/webp');}
+function sceneNetwork(request){
+ const file=new URL(request.url).pathname.slice('/demo/'.length);
+ if(file.endsWith('.webp')&&file.startsWith(sceneRoot))return preparedSceneResponse(file);
+ if(file.endsWith('.js'))return response('/* cached gameplay/presentation bootstrap */','application/javascript');
+ if(file.endsWith('.css'))return response('body{}','text/css');
+ if(file.endsWith('.json'))return response('{}','application/json');
+ return response('missing','text/plain',404);
+}
+test('scene pack is demand-cacheable with only a bounded mobile background and idle warmup',async()=>{
+ const sw=worker();assert.equal(sw.assets.optional.length,22);assert.deepEqual(sw.assets.optional.slice().sort(),expectedSceneImages.slice().sort());
+ assert.deepEqual(sw.assets.warm,sceneWarm,'only the small clearing and idle are warmed');
+ assert.equal(new Set([...sw.assets.core,...sw.assets.optional]).size,sw.assets.core.length+sw.assets.optional.length,'core and optional lists do not duplicate assets');
+ const warmBytes=sw.assets.warm.reduce((sum,file)=>sum+fs.statSync(path.join(root,file)).size,0);
+ assert.equal(warmBytes,133004,'prepared warmup bytes are measured from the real supplied assets');assert(warmBytes<135000,'scene art adds less than135KB to install warmup');
+ for(const file of sw.assets.optional)assert(fs.existsSync(path.join(root,file)),file+' is provided');
+ for(const file of ['scene-config.js','scene-config.json','scene-presentation.js',sceneRoot+'tavik-motion.js'])assert(sw.assets.core.includes(file),file+' is an offline runtime dependency');
+ for(const url of sw.assets.preload){const file=new URL(url).pathname.slice('/demo/'.length);assert(!file.startsWith('art/')&&!file.endsWith('scene-assets-preview.html')&&!file.endsWith('tavik-motion.css')&&!(file.startsWith(sceneRoot)&&file.endsWith('.png')),'source PNGs, duplicate motion stylesheet and independent demo never enter startup');}
+ sw.setNetwork(sceneNetwork);await sw.emit('install');
+ const fetchedArt=sw.requests.map(url=>new URL(url).pathname.slice('/demo/'.length)).filter(file=>file.startsWith(sceneRoot)&&file.endsWith('.webp'));
+ assert.deepEqual(fetchedArt,sceneWarm,'other backgrounds and poses are not fetched on install');
+ sw.setNetwork(async()=>{throw new Error('Offline');});
+ for(const file of sceneWarm){const result=await sw.fetch(file);assert(result.handled);assert.equal(result.response.headers.get('content-type'),'image/webp');assert.deepEqual(Buffer.from(await result.response.arrayBuffer()),fs.readFileSync(path.join(root,file)),file+' is available offline after warmup');}
+ await assert.rejects(sw.fetch(sceneImage('backgrounds/roof.webp')),/Offline/,'an unseen later background is not falsely claimed to be cached');
+});
+
+test('later prepared backgrounds and poses cache lazily with exact typed offline bytes',async()=>{
+ const sw=worker();sw.setNetwork(sceneNetwork);await sw.emit('install');
+ for(const file of expectedSceneImages.filter(file=>!sceneWarm.includes(file))){const result=await sw.fetch(file);assert(result.handled,file+' is explicitly allowed');assert.equal(result.response.headers.get('content-type'),'image/webp');}
+ sw.setNetwork(async()=>{throw new Error('Offline');});
+ for(const file of expectedSceneImages){const result=await sw.fetch(file);assert(result.handled);assert.deepEqual(Buffer.from(await result.response.arrayBuffer()),fs.readFileSync(path.join(root,file)),file+' preserves the actual prepared art bytes offline');}
+ assert.equal((await sw.fetch('scene-assets-preview.html',{navigate:true})).handled,false,'the independent demonstration is not an offline game route');
+ for(const file of ['art/coop-scene-v1/source/idle.png',sceneImage('tavik/idle.png'),sceneImage('tavik/friend.webp'),sceneImage('backgrounds/unlisted.webp'),sceneRoot+'tavik-motion.css',sceneRoot+'manifest.json'])assert.equal((await sw.fetch(file)).handled,false,file+' is outside the reviewed runtime allowlist');
+});
+
+test('optional scene art rejects auth HTML, redirects, poisoned caches and unapproved URL variants',async()=>{
+ const file=sceneImage('tavik/point.webp');
+ for(const invalid of [()=>response('<h1>Log in</h1>','text/html'),()=>response('not decoded image','application/octet-stream'),()=>response('missing','image/webp',404),()=>{const res=preparedSceneResponse(file);Object.defineProperty(res,'redirected',{value:true});return res;}]){
+  const sw=worker();sw.setNetwork(async()=>invalid());await sw.fetch(file);sw.setNetwork(async()=>{throw new Error('Offline');});await assert.rejects(sw.fetch(file),/Offline/,'invalid art must never become an offline image');
+ }
+ const sw=worker();sw.setNetwork(sceneNetwork);await sw.fetch(file);sw.setNetwork(async()=>response('<h1>Authentication</h1>','text/html'));assert.equal(await(await sw.fetch(file)).response.text(),'<h1>Authentication</h1>','online failures remain visible to the image loader/fallback');
+ sw.setNetwork(async()=>{throw new Error('Offline');});assert.deepEqual(Buffer.from(await(await sw.fetch(file)).response.arrayBuffer()),fs.readFileSync(path.join(root,file)),'a failed online auth response does not replace a previously valid cached image');
+ const poisoned=worker();await poisoned.seed(file,response('<h1>Login</h1>','text/html'));await assert.rejects(poisoned.fetch(file),/Offline/,'cached MIME is validated again');
+ const scoped=worker();scoped.setNetwork(async()=>{throw new Error('must not fetch');});
+ for(const [url,options]of [[file+'?token=private',{}],[file+'?v='+shellVersion+'&token=private',{}],[file+'?v=1',{}],['https://other.test/demo/'+file,{}],['https://game.test/other/'+file,{}],[file,{method:'POST'}]])assert.equal((await scoped.fetch(url,options)).handled,false,url+' is not intercepted');
+ assert.equal(scoped.requests.length,0,'excluded optional URLs never cause worker network reads');
+});
+
+test('missing or quota-failed optional scene art cannot fail installation or successful online play',async()=>{
+ for(const kind of ['offline','auth','404']){
+  const sw=worker();sw.setNetwork(async request=>{const file=new URL(request.url).pathname.slice('/demo/'.length);if(sceneWarm.includes(file)){if(kind==='offline')throw new Error('Optional image unavailable');return kind==='auth'?response('<h1>Log in</h1>','text/html'):response('missing','image/webp',404);}return sceneNetwork(request);});
+  await sw.emit('install');assert.equal(sw.messages.skip,0,'optional art failure never auto-replaces a live game');
+  sw.setNetwork(async()=>{throw new Error('Offline');});assert.equal(await(await sw.fetch(versioned('engine.js'))).response.text(),'/* cached gameplay/presentation bootstrap */','the core shell is still installed when optional art fails');
+  for(const file of sceneWarm)await assert.rejects(sw.fetch(file),/Offline/,'missing scene art is left to the module static fallback');
+ }
+ for(const options of [{putFails:true},{openFails:true}]){
+  const sw=worker(options);sw.setNetwork(sceneNetwork);const file=sceneImage('backgrounds/finished-mobile.webp'),result=await sw.fetch(file);assert.equal(result.response.status,200);assert.deepEqual(Buffer.from(await result.response.arrayBuffer()),fs.readFileSync(path.join(root,file)),'unavailable cache cannot discard a successful prepared image');
+ }
 });
 
 (async()=>{

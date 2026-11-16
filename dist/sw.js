@@ -1,11 +1,39 @@
 /* A scoped offline shell. Authentication pages and arbitrary requests are never cached. */
 'use strict';
-const CACHE='hexrota-shell-v35';
+const CACHE='hexrota-shell-v36';
 const BASE=new URL('./',self.location.href);
-const ASSETS=['assets/characters/tavik/front.webp','assets/ui/adventure-book.svg','assets/ui/adventure-backdrop.svg','assets/ui/hex-star-badge.svg','style.css','engine.js','levels.js','tutorials.js','variants.json','variants-data.js','difficulty-rules.json','attempts.js','events.js','lives-config.json','lives-config.js','lives.js','life-providers.js','playtest.js','reward-rules.json','reward-rules.js','rewards.js','reward-adapter.js','audio.js','session-store.js','economy-config.js','economy.js','commands.js','rescue.js','garden.js','game-save.js','board-view.js','board-input.js','score-presentation.js','first-play.js','app.js','hint-worker.js','pwa.js','manifest.webmanifest','favicon.svg','icons/icon-192.png','icons/icon-512.png','icons/icon-maskable-512.png','icons/apple-touch-icon.png'];
-const ALLOWED=new Set(ASSETS.map(path=>new URL(path,BASE).pathname));
+const ASSETS=['assets/characters/tavik/front.webp','assets/ui/adventure-book.svg','assets/ui/adventure-backdrop.svg','assets/ui/hex-star-badge.svg','style.css','engine.js','levels.js','tutorials.js','variants.json','variants-data.js','difficulty-rules.json','attempts.js','events.js','lives-config.json','lives-config.js','lives.js','life-providers.js','playtest.js','reward-rules.json','reward-rules.js','rewards.js','reward-adapter.js','audio.js','session-store.js','economy-config.js','economy.js','commands.js','rescue.js','garden.js','game-save.js','board-view.js','board-input.js','score-presentation.js','first-play.js','scene-config.js','scene-config.json','assets/scenes/coop-v1/tavik-motion.js','scene-presentation.js','app.js','hint-worker.js','pwa.js','manifest.webmanifest','favicon.svg','icons/icon-192.png','icons/icon-512.png','icons/icon-maskable-512.png','icons/apple-touch-icon.png'];
+// Prepared scene art is allowlisted for demand caching, not decoded/downloaded
+// as a complete pack during install. Source PNGs and the standalone demo are
+// deliberately outside this worker's asset scope.
+const OPTIONAL_SCENE_ASSETS=[
+  'assets/scenes/coop-v1/backgrounds/clearing-mobile.webp',
+  'assets/scenes/coop-v1/backgrounds/clearing.webp',
+  'assets/scenes/coop-v1/backgrounds/frame-mobile.webp',
+  'assets/scenes/coop-v1/backgrounds/frame.webp',
+  'assets/scenes/coop-v1/backgrounds/roof-mobile.webp',
+  'assets/scenes/coop-v1/backgrounds/roof.webp',
+  'assets/scenes/coop-v1/backgrounds/finished-mobile.webp',
+  'assets/scenes/coop-v1/backgrounds/finished.webp',
+  'assets/scenes/coop-v1/tavik/idle.webp',
+  'assets/scenes/coop-v1/tavik/hop.webp',
+  'assets/scenes/coop-v1/tavik/point.webp',
+  'assets/scenes/coop-v1/tavik/inspect.webp',
+  'assets/scenes/coop-v1/tavik/worried.webp',
+  'assets/scenes/coop-v1/tavik/celebrate.webp',
+  'assets/scenes/coop-v1/tavik/walk-pose.webp',
+  'assets/scenes/coop-v1/tavik/run-pose.webp',
+  'assets/scenes/coop-v1/tavik/carry.webp',
+  'assets/scenes/coop-v1/tavik/build.webp',
+  'assets/scenes/coop-v1/tavik/proud.webp',
+  'assets/scenes/coop-v1/tavik/think.webp',
+  'assets/scenes/coop-v1/tavik/call.webp',
+  'assets/scenes/coop-v1/tavik/rest.webp'
+];
+const WARM_SCENE_ASSETS=['assets/scenes/coop-v1/backgrounds/clearing-mobile.webp','assets/scenes/coop-v1/tavik/idle.webp'];
+const ALLOWED=new Set([...ASSETS,...OPTIONAL_SCENE_ASSETS].map(path=>new URL(path,BASE).pathname));
 const HOME=new URL('./',BASE).href;
-const PRELOAD=ASSETS.map(path=>new URL(/\.(?:js|css)$/.test(path)?path+'?v=35':path,BASE).href);
+const PRELOAD=[...ASSETS,...WARM_SCENE_ASSETS].map(path=>new URL(/\.(?:js|css)$/.test(path)?path+'?v=36':path,BASE).href);
 function assetType(url,response){
   if(!response||response.status!==200||response.redirected||response.type==='opaqueredirect')return false;
   const type=(response.headers.get('content-type')||'').split(';')[0].trim().toLowerCase(),path=url.pathname;
@@ -62,7 +90,7 @@ self.addEventListener('fetch',event=>{
     })());return;
   }
   if(!ALLOWED.has(url.pathname))return;
-  if(url.search&&url.search!=='?v=35')return;
+  if(url.search&&url.search!=='?v=36')return;
   event.respondWith((async()=>{
     try{return await storeAsset(request,await fetch(request));}
     catch(_){const saved=await stored(request);if(saved&&assetType(url,saved))return saved;throw _;}
