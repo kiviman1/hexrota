@@ -54,7 +54,8 @@
     "test:scene": "node scripts/check-scene-assets.cjs && node scripts/check-tutorial-scene-assets.cjs && node sync-scene-config.cjs --check && node check-scene-presentation.cjs",
     "test:scene-browser": "node check-scene-browser.cjs",
     "test:tutorial-scene-assets": "node scripts/check-tutorial-scene-assets.cjs",
-    "test:state": "node check-app-state.cjs && node check-state-selectors.cjs && node check-state-characterization.cjs"
+    "test:state": "node check-app-state.cjs && node check-state-selectors.cjs && node check-state-effects.cjs && node check-state-characterization.cjs && node check-state-guards.cjs",
+    "test:state-browser": "node check-state-browser.cjs"
   },
   "devDependencies": {
     "jsdom": "31.0.1",

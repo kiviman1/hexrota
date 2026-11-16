@@ -101,4 +101,38 @@ PR #24'ün portresi, üç sütunlu tek coach kartı, 118 px kart ve aynı board/
 
 ## B–F uygulama kaydı
 
-Bu bölüm aşamalar gerçek kod ve testlerle tamamlandıkça güncellenecek. B aşamasında `app-state.js` ve `state-selectors.js` eklendi; henüz uygulamaya bağlanmadı. Core üç küçük koordinasyon alanı taşır: navigasyon, örnek kimlikli modal yığını ve yaşam döngüsü; yalnız presentation/hint için bounded transient operasyon kayıtları vardır. Board/ekonomi/can/kayıt içeriği saklanmaz. `initialState`, `transition`, `create`, `snapshot/preview/dispatch/subscribe/destroy` saf/sınırlı API'lerdir; reentrant dispatch FIFO, eski modal/iş kimlikleri reddedilir. Selector phase ve Tavik/sahne görünümünü salt domain facts'tan türetir. Core ve selector testleri B kapısında gerçekten çalıştırıldı; C–F henüz tamamlandı sayılmaz.
+Bu bölüm aşamalar gerçek kod ve testlerle tamamlandıkça güncellenecek. B aşamasında `app-state.js` ve `state-selectors.js` saf olarak eklendi; C aşamasında navigasyon/modal sahibi gerçek uygulamaya bağlandı. Core üç küçük koordinasyon alanı taşır: navigasyon, örnek kimlikli modal yığını ve yaşam döngüsü; yalnız presentation/hint için bounded transient operasyon kayıtları vardır. Board/ekonomi/can/kayıt içeriği saklanmaz. `initialState`, `transition`, `create`, `snapshot/preview/dispatch/subscribe/destroy` saf/sınırlı API'lerdir; reentrant dispatch FIFO, eski modal/iş kimlikleri reddedilir. Selector phase ve Tavik/sahne görünümünü salt domain facts'tan türetir. B ve C test kapıları geçti. C tam `npm test`, 24/24 Chromium ve 24/24 WebKit, sıfır tahta ölçü farkı; gerçek C# session 1.362 / olay 580 tam karşılaştırma geçti. D–F henüz tamamlandı sayılmaz.
+
+## Saf çekirdeğin gerçek olay sözleşmesi
+
+`HexAppState.initialState()` dondurulmuş başlangıç görünümünü üretir. `transition(state,event,facts)` saf ve deterministiktir; `{accepted,changed,reason,state,effects}` döndürür. Reddedilen olayın `state` referansı değişmez, etkisi yoktur. `create()` özel store oluşturur; uygulamanın store'u global yayınlanmaz. `snapshot()` immutable veri verir; `preview()` değişiklik yapmadan guard'ı değerlendirir. `subscribe()` kaldırılabilir abonelik döndürür; `destroy()` sonraki dispatch'i reddeder. Genel wildcard DOM event bus yoktur.
+
+| Olay | Tam payload | Gerçek anlamı / guard |
+| --- | --- | --- |
+| `NAVIGATE` | `screen` | Yalnız beş katalog ekranı. Game için çağıran mevcut doğrulanmış denemeden `facts.gameAvailable=true` sağlar. Geçişte UI iş nesli emekli olur; oyun açma komutu değildir. |
+| `OPEN_MODAL` | `id` | Sonlu 15 modal, geçerli ekran/ebeveyn/sonuç koşulu. Aynı açık ID idempotent. Başarı yeni opening instance üretir. |
+| `CLOSE_MODAL` | `id, instance` | Yalnız aynı açılış. Eski close yeni pencereyi kapatamaz. Alttan kapatma geride yasak zincir bırakıyorsa reddedilir. |
+| `CLOSE_ALL` | Ek alan yok | Açık modalları stack sırasıyla üstten alta kapatan etkiler. Kalıcı işlem yapmaz. |
+| `APP_VISIBILITY_CHANGED` | `hidden: boolean` | Gerçek platform görünürlüğünün transient gözlemi; kendi başına can/ödül veya motor pause komutu değildir. |
+| `APP_SUSPENDED` | Ek alan yok | Bu belgenin görsel iş neslini iptal eder. Host önce mevcut committed görseli güvenle tamamlar. |
+| `APP_RESUMED` | Ek alan yok | Belge sunumunu tekrar kullanılabilir kılar; eski işi veya eski timer'ı diriltmez. |
+| `INVALIDATE_OPERATIONS` | Ek alan yok | Deneme/yükleme gibi mevcut resource sınırında görsel/hint neslini emekli eder. |
+| `OPERATION_REQUESTED` | `token` | `kind, id, attemptId, generation` kimliği. Görünür Game ve modal yok koşulu; seri sayısı bir sonraki geçerli yerel sayıdır. |
+| `OPERATION_PENDING` | Aynı `token` | İstekten bekleyene; aynı bildirim no-op, eski token reddedilir. |
+| `OPERATION_SETTLED` | Aynı `token`, `status` | `succeeded`, `failed` veya `cancelled`; eski/yinelenen terminal bildirim ikinci etki üretmez. |
+
+Operasyon kimlikleri **Attempt ID veya mali transaction ID değildir**. En fazla son `presentation` ve `hint` kaydı tutulur; sınırsız iş günlüğü büyümez. `beginOperation/markOperationPending/settleOperation/invalidateOperations` store'un dar kolaylık API'leridir. `beginOperation` abonelik bildiriminin içinde yeni kaynak sahipsiz kalmasın diye kuyruğa eklemeden reddedilir; açık `dispatch` ise FIFO reentrancy sağlar.
+
+Olaylarda bilinmeyen/eksik/fazla alanlar ve yanlış türler reddedilir. Veri kopyası yalnız kendi veri descriptor'larını okur; getter, kalıtılmış `toJSON` veya özel dizi metodu çalıştırmaz. Çağıranın nesnesi dondurulmaz veya değiştirilmez. `facts` içinde yalnız bilinen primitive guard alanları okunur; motor/profile nesnesi store'a alınmaz.
+
+`facts.engineStatus` gerçek motorun `playing/won/lost` değeridir; reducer bu sonucu üretmez. `facts.blocked` host'un başarılı full-reset bariyerini aktarır. `facts.recovery` yalnız **istenen provider'a ait** mevcut doğrulanmış teslim bekleyen hak için verilir; herhangi bir pending makbuz bütün modal politikasını serbest bırakmaz.
+
+## Selector ve DOM adaptörü sözleşmesi
+
+`HexStateSelectors` Core'dan yalnız ekran kataloğu ve temel salt yardımcıları alır; döngüsel bağımlılık yoktur. `gameplayPhase` gerçek aktif denemeden READY/PLAYING/RESOLVING/WON/LOST türetir. `canRouteBoardInput`, `canStartMove` ve `canUseInventory` ayrı korumalardır. `committedTutorialProgress` eski geçerli indexed array container'larını da okur; yıldız veya yeni bir malzeme defteri okumaz.
+
+`projectPresentation(state,domainView)` immutable `{screen,phase,actorMode,portraitVisible,motionPaused,progress,scene,portrait}` üretir. `.scene` ve `.portrait` mevcut adaptörlerin payload'larıdır. Tek `PORTRAIT/WORLD/NONE` kararı iki görsele iletilir. `tavikState` yalnız mevcut onaylı klipleri IDLE/TALKING/POINTING/INSPECTING/BUILDING/CELEBRATING/WORRIED gibi kavramlara eşler; yeni varlık/timer veya ikinci aktör kurmaz.
+
+`HexStateEffects.create({document,window,state,getFacts,onClose,runAction,onError})` native modal/history/focus adaptörüdür. `canOpen/open/close/closeAll/topDialog/renderScreen/destroy` dış API'sidir. Profil yazmaz; `onClose` mevcut `sessionAction` üzerinden çalışır. Opening instance'e bağlı kapanış, yeni `pendingStage` veya provider bağlamını eski event ile temizleyemez. Varsayılan kapatma yalnız üst modala izin verir. İzinli internal alttan kapanış bile gerekli ebeveyni yetim bırakamaz. Native API dışarıdan bu kuralı aşarsa aynı örnekleri özgün top-layer sırasıyla onarır; bu onarım onay/iptal/ödül callback'i çalıştırmaz.
+
+Yalnız geçerli, hâlâ bağlı ve görünür opener'a odak döner; nav sırasında gizlenen ekrana odak taşınmaz. Mevcut dış native geometri testleri güvenli bir input barrier olarak görülür, üretim komut guard'ına sınırsız giriş sağlamaz. `destroy()` aboneliği, owned close listener'larını, opener/acknowledgment referanslarını temizler.

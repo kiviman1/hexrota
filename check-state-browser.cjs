@@ -40,6 +40,10 @@ async function geometry(page,label){const state=await page.evaluate(()=>{const r
 async function saveFailure(page,on){await page.evaluate(on=>{if(on){const original=Storage.prototype.setItem;window.__restoreStateTestStorage=()=>Storage.prototype.setItem=original;Storage.prototype.setItem=function(key,value){if(key==='hexrota-profile-v2')throw new DOMException('state-test quota','QuotaExceededError');return original.call(this,key,value);};}else window.__restoreStateTestStorage?.();},on);}
 async function currentRoute(page){return page.evaluate(()=>{const p=JSON.parse(localStorage.getItem('hexrota-profile-v2')),i=p.game.current,m=p.game.attempts[i];return i<2?HEX_TUTORIALS[i].solution:HexAttempts.createCatalog(HEX_LEVELS,HEX_VARIANTS,HexMatch).resolveLevel(m.levelId,m.variantId,m.levelDataVersion).solution;});}
 async function screenshot(page,name){await page.screenshot({path:path.join(output,name+'.png'),animations:'allow'});}
+async function transientCapture(page){return page.evaluate(()=>({screen:document.body.dataset.screen,dialogs:[...document.querySelectorAll('dialog[open]')].map(n=>n.id),canonical:localStorage.getItem('hexrota-profile-v2'),historyLength:history.length,hash:location.hash,boardMarkup:document.getElementById('board').innerHTML}));}
+async function rejectUnchanged(page,before,label){assert.deepEqual(await transientCapture(page),before,label+' rejects before navigation, modal, profile, history or board-render side effects');}
+async function injected(page,name,value){await page.evaluate(({name,value})=>{const b=document.createElement('button');b.setAttribute(name,value);document.body.appendChild(b);try{b.click();}finally{b.remove();}},{name,value});}
+async function settledDialog(page,selector){await page.locator(selector).evaluate(async node=>{await Promise.all(node.getAnimations().filter(a=>a.effect?.target===node&&a.effect.getTiming().iterations!==Infinity).map(a=>a.finished.catch(()=>{})));});}
 
 (async()=>{
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));url='http://127.0.0.1:'+server.address().port+'/';
@@ -83,6 +87,59 @@ async function screenshot(page,name){await page.screenshot({path:path.join(outpu
  });
  await check('reduced motion and rotated open settings preserve authority and reachable controls',async()=>{
   const f=await open();try{await enter(f.page);await paintedPortrait(f.page);for(const selector of ['.hx-tavik-dialogue','.hx-tavik-dialogue__ring','.hx-tavik-dialogue__face'])assert.equal(await f.page.locator(selector).evaluate(n=>getComputedStyle(n).animationName),'none');const before=await profile(f.page);await f.page.locator('#pause').tap();await f.page.locator('#pause-settings').tap();await f.page.setViewportSize({width:844,height:390});await fits(f.page,'#settings-dialog');await f.page.locator('#settings-dialog [data-close]').first().tap();assert.equal(await f.page.locator('#pause-dialog').evaluate(n=>n.open),true);await fits(f.page,'#pause-continue');await f.page.locator('#pause-continue').tap();await settled(f.page);await screen(f.page,'game');unchanged(before,await profile(f.page),'rotation/modal state');await screenshot(f.page,'rotated-settings-return');}finally{await f.close();}
+ });
+ await check('malformed navigation commands leave the active nested screen and profile untouched',async()=>{
+  const f=await open({saved:existing(2,{turns:1}).saved});try{
+   await enter(f.page);await settled(f.page);await f.page.locator('#pause').tap();await f.page.locator('#pause-settings').tap();
+   const before=await transientCapture(f.page);
+   for(const name of ['__unknown_screen__','','GAME','1']){await injected(f.page,'data-nav',name);await rejectUnchanged(f.page,before,'invalid data-nav '+JSON.stringify(name));}
+   assert.equal(await f.page.evaluate(()=>document.activeElement?.closest('dialog')?.id),'settings-dialog','rejected navigation leaves focus in the actual top modal');
+  }finally{await f.close();}
+ });
+ await check('raw game navigation cannot promote a read-only home preview into an attempt',async()=>{
+  const f=await open({saved:fresh()});try{
+   const before=await transientCapture(f.page),initial=await profile(f.page);assert.deepEqual(initial.game.attempts,{});
+   await injected(f.page,'data-nav','game');await rejectUnchanged(f.page,before,'preview-to-game navigation');
+   assert.deepEqual((await profile(f.page)).game.boards,{},'a navigation event cannot manufacture a checkpoint');
+  }finally{await f.close();}
+ });
+ await check('incompatible modal commands cannot leak a pending stage or hidden start',async()=>{
+  const f=await open({saved:existing(2,{turns:1}).saved});try{
+   await enter(f.page);await f.page.locator('#game-settings').tap();await f.page.locator('#settings-dialog[open]').waitFor();
+   const settings=await transientCapture(f.page);
+   await f.page.evaluate(()=>{document.getElementById('open-inventory').click();document.getElementById('help').click();});
+   await injected(f.page,'data-stage','0');await f.page.evaluate(()=>document.getElementById('pregame-start').click());
+   await rejectUnchanged(f.page,settings,'Settings rejects Inventory, Help and level preview/start');
+   await f.page.locator('#settings-dialog [data-close]').first().tap();const closed=await transientCapture(f.page);
+   await f.page.evaluate(()=>document.getElementById('pregame-start').click());await rejectUnchanged(f.page,closed,'a rejected preview leaves no pending stage behind');
+   await f.page.locator('#open-inventory').tap();await f.page.locator('#inventory-dialog[open]').waitFor();const inventory=await transientCapture(f.page);
+   await f.page.evaluate(()=>document.getElementById('game-settings').click());await rejectUnchanged(f.page,inventory,'Inventory rejects unrelated Settings');
+  }finally{await f.close();}
+ });
+ await check('native parent close is repaired in top-layer order without losing focus or progress',async()=>{
+  const f=await open({saved:existing(2,{turns:1}).saved});try{
+   await enter(f.page);await f.page.locator('#pause').focus();await f.page.locator('#pause').tap();await f.page.locator('#pause-settings').tap();await f.page.locator('#settings-full-reset').tap();
+   await f.page.locator('#full-reset-dialog[open]').waitFor();await f.page.locator('#full-reset-cancel').focus();const before=await profile(f.page),canonical=await f.page.evaluate(()=>localStorage.getItem('hexrota-profile-v2'));
+   await f.page.evaluate(()=>new Promise(resolve=>{const parent=document.getElementById('settings-dialog');parent.addEventListener('close',resolve,{once:true});parent.close();}));
+   await f.page.waitForFunction(()=>['pause-dialog','settings-dialog','full-reset-dialog'].every(id=>document.getElementById(id).open)&&document.activeElement?.closest('dialog')?.id==='full-reset-dialog');
+   await settledDialog(f.page,'#full-reset-dialog');const button=await f.page.locator('#full-reset-cancel').boundingBox();
+   assert.equal(await f.page.evaluate(({x,y})=>document.elementFromPoint(x,y)?.closest('dialog')?.id,{x:button.x+button.width/2,y:button.y+button.height/2}),'full-reset-dialog','the repaired child is actually the native top layer');
+   assert.equal(await f.page.evaluate(()=>localStorage.getItem('hexrota-profile-v2')),canonical,'repair is presentation-only and emits no authoritative close transaction');
+   for(const [closed,parent]of [['full-reset-dialog','settings-dialog'],['settings-dialog','pause-dialog'],['pause-dialog',null]]){
+    await f.page.keyboard.press('Escape');await f.page.waitForFunction(id=>!document.getElementById(id).open,closed);
+    assert.equal(await f.page.evaluate(()=>document.activeElement?.closest('dialog')?.id||null),parent,'Escape restores focus to the still-live parent');
+   }
+   assert.deepEqual(await openDialogs(f.page),[]);await screen(f.page,'game');unchanged(before,await profile(f.page),'native parent repair and top-first Escape');assert.equal(await f.page.evaluate(()=>document.activeElement?.id),'pause','focus finally returns to the actual game trigger');
+   await screenshot(f.page,'native-parent-repaired');
+  }finally{await f.close();}
+ });
+ await check('queued native preview close cannot clear a newer reopened stage request',async()=>{
+  const f=await open({saved:existing(2,{turns:1}).saved});try{
+   const before=await profile(f.page);await f.page.locator('#home-screen [data-nav="journey"]').tap();await f.page.locator('[data-stage="1"]').tap();await f.page.locator('#pregame-dialog[open]').waitFor();
+   await f.page.evaluate(()=>new Promise(resolve=>{const old=document.getElementById('pregame-dialog');old.addEventListener('close',resolve,{once:true});old.close();const next=document.createElement('button');next.dataset.stage='0';document.body.appendChild(next);try{next.click();}finally{next.remove();}}));
+   assert.equal(await f.page.locator('#pregame-dialog').evaluate(n=>n.open),true,'the new preview survives the old native close event');assert.match(await f.page.locator('#pregame-tag').textContent(),/ÖĞREN 01/);
+   await f.page.locator('#pregame-start').tap();await screen(f.page,'game');const after=await profile(f.page);assert.equal(after.game.current,0,'the newer T1 request is the stage actually started');assert.equal(activeBoard(after).turn,0);assert.equal(after.game.variantSelection.serial,before.game.variantSelection.serial+1,'one start allocates one attempt');assert.deepEqual(after.game.boards[2],before.game.boards[2]);assert.deepEqual(after.game.economy,before.game.economy);assert.deepEqual(after.energy,before.energy);
+  }finally{await f.close();}
  });
  await check('real offline PWA reload resumes authoritative data with the state runtime cached',async()=>{
   const f=await open({saved:existing(2,{turns:1}).saved,serviceWorkers:'allow'});try{await enter(f.page);const before=await profile(f.page);await f.page.evaluate(async()=>{await navigator.serviceWorker.ready;if(!navigator.serviceWorker.controller)await new Promise(resolve=>navigator.serviceWorker.addEventListener('controllerchange',resolve,{once:true}));navigator.serviceWorker.controller.postMessage({type:'CACHE_APP'});});
