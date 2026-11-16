@@ -102,6 +102,46 @@ test('home to real game preserves the same world and actor without replaying an 
  }finally{f.close();}
 });
 
+test('the strict tutorial portrait flag replaces the board actor in both lessons and motion modes',async()=>{
+ const f=mount();try{
+  f.update({screen:'game',tutorialPortrait:false});await until(()=>f.snapshot().actorVisible,'the fixture can place a full-body actor');const actor=f.actors[0];
+  for(const levelId of ['learn-1','learn-2'])for(const reducedMotion of [false,true]){
+   f.update({screen:'game',levelId,tutorialPortrait:true,reducedMotion});
+   await until(()=>f.d.querySelector('.hx-scene-actor-anchor')?.dataset.hiddenReason==='dialogue','the copied portrait flag suppresses the actor');
+   assert.equal(f.snapshot().actorVisible,false);assert.equal(actor.destroyCount,0,'the reusable world actor is hidden, not replaced');
+   f.w.dispatchEvent(new f.w.Event('resize'));await sleep(25);assert.equal(f.snapshot().actorVisible,false,'a relayout cannot reveal the body beside the portrait');
+   f.update({screen:'game',levelId,tutorialPortrait:false,reducedMotion});await until(()=>f.snapshot().actorVisible,'clearing the flag restores the existing actor');
+  }
+  const portrait=f.d.createElement('span');portrait.className='tavik-portrait';
+  portrait.getBoundingClientRect=()=>({left:220,top:190,right:330,bottom:390,width:110,height:200});f.d.querySelector('.tavik-intro').append(portrait);
+  f.update({screen:'home',tutorialPortrait:true});await until(()=>f.snapshot().actorVisible,'the gameplay portrait flag does not hide the home actor');
+  assert.equal(f.actors.length,1);f.unchanged();
+ }finally{f.close();}
+});
+
+test('omitted and nonboolean portrait flags do not hide the normal scene actor',async()=>{
+ const f=mount();try{
+  for(const tutorialPortrait of [undefined,false,0,1,'true',null]){
+   f.update({screen:'game',tutorialPortrait:true});await until(()=>f.d.querySelector('.hx-scene-actor-anchor')?.dataset.hiddenReason==='dialogue','portrait suppression settles');
+   f.update({screen:'game',tutorialPortrait});await until(()=>f.snapshot().actorVisible,'only literal true enables portrait suppression');
+  }
+  f.unchanged();
+ }finally{f.close();}
+});
+
+test('late actor readiness and approved-image fallback cannot reveal a body during portrait teaching',async()=>{
+ for(const library of [true,false]){
+  const f=mount({library,autoActor:false});try{
+   f.update({screen:'game',levelId:'learn-2',tutorialPortrait:true});
+   if(library)f.actors[0].readyControl.resolve(true);
+   await until(()=>library?f.snapshot().actorReady:f.snapshot().fallbackReady,'the actual presentation resource becomes ready');
+   await until(()=>f.d.querySelector('.hx-scene-actor-anchor')?.dataset.hiddenReason==='dialogue','a late resource still honors the copied flag');
+   assert.equal(f.snapshot().actorVisible,false);f.update({screen:'game',levelId:'learn-2',tutorialPortrait:true,reducedMotion:true});
+   await sleep(25);assert.equal(f.snapshot().actorVisible,false);f.unchanged();
+  }finally{f.close();}
+ }
+});
+
 test('both orientations use the same supplied tutorial JPEG',async()=>{
  const f=mount();try{
   f.update();await until(()=>f.snapshot().backgroundReady,'portrait foundation ready');
