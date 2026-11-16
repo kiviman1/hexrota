@@ -27,7 +27,7 @@ window.HexSessionStore.boot(function startApp(session) {
   // Capture this before loadLevel prepares the read-only tutorial preview.
   let firstOpening=!gameLoadIssue&&!saved.done.length&&!Object.keys(saved.boards).length&&!Object.keys(saved.attempts).length&&!saved.variantSelection.serial;
   let fullResetPending=false;
-  let active=saved.current,activeLevel=levels[saved.current],activeAttempt=null,attemptPending=true,saveBlocked=false,loadIssue=null,engine, selected=null, hinted=null, busy=false, focusIndex=0;
+  let active=saved.current,activeLevel=levels[saved.current],activeAttempt=null,attemptPending=true,saveBlocked=false,loadIssue=null,engine, selected=null, hinted=null, focusIndex=0;
   let pointer=null, toastTimer, terminalTimer, epoch=0, comboText='',presentation=null,hintJob=null;
   const geometryCache=new Map();
   let pendingStage=null,pendingRestart=null,invalidPresentation=null;
@@ -35,6 +35,8 @@ window.HexSessionStore.boot(function startApp(session) {
   appState.dispatch({type:'APP_VISIBILITY_CHANGED',hidden:document.hidden});
   const appScreen=()=>appState.snapshot().navigation.screen;
   const appPaused=()=>window.HexAppState.isPaused(appState.snapshot());
+  const appBusy=()=>window.HexStateSelectors.isResolving(appState.snapshot());
+  const appHintPending=()=>!!hintJob&&!!hintJob.uiOperation&&appState.isCurrentOperation(hintJob.uiOperation);
   let navigationEffectGeneration=0;
   const stateEffects=window.HexStateEffects.create({
     document,window,state:appState,getFacts:()=>modalFacts(),
@@ -55,6 +57,13 @@ window.HexSessionStore.boot(function startApp(session) {
   tutorialBuildCounter.className='tutorial-build-counter';tutorialBuildCounter.hidden=true;
   tutorialBuildCounter.setAttribute('role','status');tutorialBuildCounter.setAttribute('aria-live','polite');tutorialBuildCounter.setAttribute('aria-atomic','true');
   $('coach-step').after(tutorialBuildCounter);
+  function inputDomainView(){
+    const modal=topDialog();
+    return {attemptReady:!!engine&&!!activeAttempt&&!attemptPending&&!saveBlocked,
+      engineStatus:engine?.status||null,canOpen:canOpen(active),writeBlocked:lifeWriteFailed||saveBlocked,
+      lifeDiscarded:lifeDiscarded(),resetPending:fullResetPending,nativeModalOpen:!!modal,nativeModalId:modal?.id||null,
+      tutorial:isTutorial(),activeIndex:active,tutorialCount,feedback:!!guideFeedback()};
+  }
   function presentationDomainView(){
     return {attemptReady:!!engine&&!!activeAttempt&&!attemptPending&&!saveBlocked,
       engineStatus:engine?.status||'playing',activeIndex:active,tutorialCount,tutorial:isTutorial(),
@@ -92,7 +101,7 @@ window.HexSessionStore.boot(function startApp(session) {
   function refreshLessonDemo(){
     lessonDemo.stop();
     const step=guidedStep();
-    if(appScreen()!=='game'||busy||appPaused()||document.hidden||topDialog()||selected!==null||pointer||!step||!gameInputAllowed())return;
+    if(appScreen()!=='game'||appBusy()||appPaused()||document.hidden||topDialog()||selected!==null||pointer||!step||!gameInputAllowed())return;
     const layout=geometry();
     lessonDemo.show({layout,pair:step.pair,paths:window.HexBoardView.swapPaths(layout,...step.pair)});
   }
@@ -301,7 +310,7 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   function beginRescueAd(){
     if(pendingRescueReceipt){showRescueProvider(pendingRescueReceipt.receipt.transactionId);return {applied:false,reason:'pending_rescue_delivery'};}
-    if(appScreen()!=='game'||!$('lose-dialog').open||busy||appPaused()||lifeWriteFailed)return {applied:false,reason:'unavailable'};
+    if(appScreen()!=='game'||!$('lose-dialog').open||appBusy()||appPaused()||lifeWriteFailed)return {applied:false,reason:'unavailable'};
     const offer=rescueOffer();if(!offer?.eligible)return {applied:false,reason:'unavailable'};
     if(offer.ad.pendingTransactionId){showRescueProvider(offer.ad.pendingTransactionId);return {applied:false,reason:'ad_pending'};}
     if(!offer.ad.allowed){renderRescue();return {applied:false,reason:offer.ad.reason};}
@@ -356,7 +365,7 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   function rescueWithGold(){
     if(pendingRescueReceipt){showRescueProvider(pendingRescueReceipt.receipt.transactionId);return {applied:false,reason:'pending_rescue_delivery'};}
-    if(appScreen()!=='game'||!$('lose-dialog').open||busy||appPaused()||lifeWriteFailed)return {applied:false,reason:'unavailable'};
+    if(appScreen()!=='game'||!$('lose-dialog').open||appBusy()||appPaused()||lifeWriteFailed)return {applied:false,reason:'unavailable'};
     const offer=rescueOffer();if(!offer?.gold.allowed)return {applied:false,reason:offer?.gold.reason||'unavailable'};
     const operationId=`rescue:${activeAttempt.attemptId}`,result=rescueManager.applyGold(saved.rescue,rescueContext(),operationId,{gold:economyView().gold});
     if(!result.applied)return {applied:false,reason:result.reason};
@@ -409,7 +418,7 @@ window.HexSessionStore.boot(function startApp(session) {
     }
   }
   function inventoryUsage(itemId){return validCounter(engine?.usage?.[itemId]);}
-  function inventoryPlayable(){return appScreen()==='game'&&canOpen(active)&&active>=tutorialCount&&!attemptPending&&!saveBlocked&&!lifeWriteFailed&&!lifeDiscarded()&&!appPaused()&&!busy&&engine?.status==='playing';}
+  function inventoryPlayable(){return !fullResetPending&&window.HexStateSelectors.canUseInventory(appState.snapshot(),inputDomainView());}
   function renderInventory(){
     const view=economyView();if(!view)return;
     for(const [itemId,suffix]of [['greenBrush','green-brush'],['colorKey','color-key']]){
@@ -487,7 +496,7 @@ window.HexSessionStore.boot(function startApp(session) {
   const isTutorial=()=>active<tutorialCount;
   const stageLabel=i=>i<tutorialCount?`ÖĞREN ${pad(i+1)}`:`BÖLÜM ${pad(i-tutorialCount+1)}`;
   const guideFeedback=()=>{
-    if(busy||!isTutorial()||engine?.status!=='playing'||!engine.turn)return null;
+    if(appBusy()||!isTutorial()||engine?.status!=='playing'||!engine.turn)return null;
     const step=activeLevel.steps[engine.turn-1],id=`${active}:${engine.turn}`;
     return step?.acknowledge&&!saved.guideAcks.includes(id)?{step,id}:null;
   };
@@ -564,7 +573,7 @@ window.HexSessionStore.boot(function startApp(session) {
     sessionPlaytestDirty=false;try{localStorage.setItem(playtestKey,JSON.stringify(playtest.snapshot()));}catch(_){}
   }
   function syncPlaytestActivity(){
-    if(!playtest)return;try{playtest.setActivity({playing:appScreen()==='game'&&!busy&&!appPaused()&&!document.hidden&&!topDialog()&&engine?.status==='playing',attemptId:activeAttempt?.attemptId||null});}catch(_){}
+    if(!playtest)return;try{playtest.setActivity({playing:appScreen()==='game'&&!appBusy()&&!appPaused()&&!document.hidden&&!topDialog()&&engine?.status==='playing',attemptId:activeAttempt?.attemptId||null});}catch(_){}
   }
   function observePlaytest(name,context,details={}){
     if(!playtest)return;try{const{timestamp,...fields}=context||{};playtest.recordEvent(name,fields,{...details,developerBypass:!!lifeFeature?.life?.developerBypass});syncPlaytestActivity();persistPlaytest();}catch(_){}
@@ -864,7 +873,7 @@ window.HexSessionStore.boot(function startApp(session) {
   on(document,'dblclick',preventZoom);
   on(window,'keydown',event=>{if((event.ctrlKey||event.metaKey)&&['+','-','=','0'].includes(event.key))preventZoom(event);});
   function topDialog(){return stateEffects.topDialog();}
-  const gameInputAllowed=()=>!fullResetPending&&canOpen(active)&&!lifeWriteFailed&&!attemptPending&&!saveBlocked&&appScreen()==='game'&&!appPaused()&&!topDialog()&&!lifeDiscarded();
+  const gameInputAllowed=()=>!fullResetPending&&window.HexStateSelectors.canRouteBoardInput(appState.snapshot(),inputDomainView());
   function syncAudio(){document.body.classList.toggle('reduce-motion',reduceMotion());audio?.configure({sfx:saved.sound,music:saved.preferences.music,volume:saved.preferences.volume});audio?.setActive(!document.hidden&&!appPaused());syncScene();}
   function unlockAudio(){syncAudio();audio?.unlock().catch(()=>{});}
   function openModal(id){
@@ -1072,7 +1081,7 @@ window.HexSessionStore.boot(function startApp(session) {
   function loadLevel(index,fresh=false,{activate=false}={}) {
     if(activate&&!campaignEntryAllowed(index))return false;
     clearScoreReceipt();cancelAssistance();
-    cancelPresentation();cancelHint();epoch++;clearTimeout(terminalTimer);stopPointer();busy=false;
+    cancelPresentation();cancelHint();epoch++;appState.invalidateOperations();clearTimeout(terminalTimer);stopPointer();
     active=canOpen(index)?index:nextCampaignIndex()??0;lastEconomyReward=null;activeLevel=levels[active];activeAttempt=null;attemptPending=true;saveBlocked=false;loadIssue=null;
     if(fresh)saved.guideAcks=saved.guideAcks.filter(id=>!id.startsWith(`${active}:`));
     let restored=null;
@@ -1114,7 +1123,7 @@ window.HexSessionStore.boot(function startApp(session) {
     const layout = geometry(), { width, height } = layout;
     $('board').setAttribute('viewBox', `${-width/2} ${-height/2} ${width} ${height}`);
     return window.HexBoardView.markup(activeLevel, state, layout, {
-      matching, falling, busy, feedback: !!guideFeedback(), status: engine.status,
+      matching, falling, busy:appBusy(), feedback: !!guideFeedback(), status: engine.status,
       guided: guidedStep(), selected, hinted, focusIndex,
       selectedNeighbors: selected === null ? [] : engine.neighbors[selected]
     });
@@ -1132,16 +1141,16 @@ window.HexSessionStore.boot(function startApp(session) {
     $('move-counter').textContent=`${engine.turn} / ${activeLevel.moves+(engine.bonusMoves||0)} HAMLE`;
     $('coverage').textContent=`${covered} / ${total}`;
     $('coverage-ring').style.strokeDashoffset=String(87.965*(1-covered/total));
-    $('hint').disabled=busy||!!hintJob||!!guideFeedback()||engine.status!=='playing';
-    $('hint').querySelector('span').textContent=hintJob?'Aranıyor…':'İpucu';
+    $('hint').disabled=appBusy()||appHintPending()||!!guideFeedback()||engine.status!=='playing';
+    $('hint').querySelector('span').textContent=appHintPending()?'Aranıyor…':'İpucu';
     $('reset').disabled=false;
-    $('open-inventory').hidden=isTutorial();$('open-inventory').disabled=busy||engine.status!=='playing'||attemptPending||saveBlocked;
+    $('open-inventory').hidden=isTutorial();$('open-inventory').disabled=appBusy()||engine.status!=='playing'||attemptPending||saveBlocked;
     $('skip-animation').hidden=true; // Permanent animation-skip control is intentionally hidden; board remains full-size.
-    $('continue').hidden=busy||engine.status==='playing';
+    $('continue').hidden=appBusy()||engine.status==='playing';
     $('continue').textContent=engine.status==='lost'?'Yeniden dene →':'Devam et →';
-    $('board').setAttribute('aria-busy',String(busy));
-    $('board').setAttribute('aria-disabled',String(busy||!!guideFeedback()||engine.status!=='playing'));
-    $('board-stage').classList.toggle('busy',busy);
+    $('board').setAttribute('aria-busy',String(appBusy()));
+    $('board').setAttribute('aria-disabled',String(appBusy()||!!guideFeedback()||engine.status!=='playing'));
+    $('board-stage').classList.toggle('busy',appBusy());
     $('last-combo').textContent=comboText;
     const status=$('board-status');status.className='board-status';
     let text;
@@ -1159,22 +1168,22 @@ window.HexSessionStore.boot(function startApp(session) {
     renderCoach();syncPlaytestActivity();refreshLessonDemo();syncScene();
   }
   function renderCoach(){
-    const coach=$('tutorial-coach'),tutorial=isTutorial(),feedback=guideFeedback();coach.hidden=!tutorial||(engine.status!=='playing'&&!busy);
+    const coach=$('tutorial-coach'),tutorial=isTutorial(),feedback=guideFeedback();coach.hidden=!tutorial||(engine.status!=='playing'&&!appBusy());
     document.body.dataset.learning=active===0?'first':tutorial?'goals':'';
     document.body.dataset.hasLayers=String(activeLevel.cells.some(cell=>cell.layers===2));
     document.body.dataset.guideFeedback=String(!!feedback);
-    document.body.dataset.guideStep=tutorial?String(busy?Math.max(0,engine.turn-1):engine.turn):'';
+    document.body.dataset.guideStep=tutorial?String(appBusy()?Math.max(0,engine.turn-1):engine.turn):'';
     if($('coach-next')){$('coach-next').hidden=!feedback;$('coach-next').disabled=!feedback;}
     if(!tutorial)return;
-    const steps=activeLevel.steps,index=Math.min(engine.turn,steps.length-1),step=steps[index],previous=steps[Math.max(0,engine.turn-1)],showFeedback=busy||!!feedback;
-    $('coach-step').textContent=feedback?'BU HAMLEDE':`${busy?'İZLE · ':''}ADIM ${busy?Math.max(1,engine.turn):Math.min(engine.turn+1,steps.length)} / ${steps.length}`;
+    const steps=activeLevel.steps,index=Math.min(engine.turn,steps.length-1),step=steps[index],previous=steps[Math.max(0,engine.turn-1)],showFeedback=appBusy()||!!feedback;
+    $('coach-step').textContent=feedback?'BU HAMLEDE':`${appBusy()?'İZLE · ':''}ADIM ${appBusy()?Math.max(1,engine.turn):Math.min(engine.turn+1,steps.length)} / ${steps.length}`;
     $('coach-title').textContent=showFeedback?(previous.afterTitle||'İşte böyle!'):(step?.title||activeLevel.title||activeLevel.name);
     const partner=selected!==null&&step?.pair.includes(selected)?step.pair.find(i=>i!==selected):null;
     const destination=partner!==null?engine.values[partner]:null;
     $('coach-text').textContent=showFeedback?(previous.afterText||'Yeni taşlar geliyor. Yeşil alanlar yerinde kalıyor.'):partner!==null?`Şimdi parlayan ${destination} yazan taşa dokun.`:step?.text||'Hazırsın!';
-    const lessonCopy=window.HexFirstPlay.copy(activeLevel.id,engine.turn,{feedback:!!feedback,busy});
+    const lessonCopy=window.HexFirstPlay.copy(activeLevel.id,engine.turn,{feedback:!!feedback,busy:appBusy()});
     if(lessonCopy){$('coach-title').textContent=lessonCopy.title;if(partner===null||showFeedback)$('coach-text').textContent=lessonCopy.text;}
-    if($('guide-explanation')){$('guide-explanation').hidden=active!==0||engine.turn>0||busy;$('guide-explanation').textContent='Aynı sayıdan 3 taşı eşleştir. Üç tane 2, toplam 6 puan kazandırır.';}
+    if($('guide-explanation')){$('guide-explanation').hidden=active!==0||engine.turn>0||appBusy();$('guide-explanation').textContent='Aynı sayıdan 3 taşı eşleştir. Üç tane 2, toplam 6 puan kazandırır.';}
     $('coach-progress').style.width=`${engine.turn/steps.length*100}%`;
   }
   function renderScore(value){
@@ -1194,7 +1203,7 @@ window.HexSessionStore.boot(function startApp(session) {
   function flyScore(job,frame,options){return scorePresentation.flyScore(job,frame,options);}
   const canAnimate=()=>!document.hidden&&!reduceMotion()&&typeof window.Element.prototype.animate==='function';
   function startPresentation(job){
-    presentation=job;busy=true;
+    presentation=job;
     // This token coordinates visual lifetime only. Failure to allocate it must
     // never reject an already valid domain command or its atomic profile write.
     try{job.uiOperation=appState.beginOperation('presentation',activeAttempt?.attemptId||null);}catch(_){job.uiOperation=null;}
@@ -1207,7 +1216,7 @@ window.HexSessionStore.boot(function startApp(session) {
     clearInvalidSwap();
     const job=presentation;
     if(job?.uiOperation)appState.settleOperation(job.uiOperation,outcome);
-    presentation=null;busy=false;
+    presentation=null;
     if(job){clearTimeout(job.watchdog);job.controller.abort();job.swapVisual?.cleanup();for(const a of job.animations)try{a.cancel?.();}catch(_){}for(const node of job.rewardNodes||[])node.classList.remove('reward-goal-hit');clearScoreReceipt();}
   }
   function finishPresentation(job,outcome='succeeded') {
@@ -1220,13 +1229,13 @@ window.HexSessionStore.boot(function startApp(session) {
     try{renderLevels();render();persist();}
     catch(_){persist();}
     finally{
-      busy=false;$('board').setAttribute('aria-busy','false');$('board-stage').classList.remove('busy');$('reset').disabled=false;$('skip-animation').hidden=true;
+      $('board').setAttribute('aria-busy','false');$('board-stage').classList.remove('busy');$('reset').disabled=false;$('skip-animation').hidden=true;
     }
     const receipt=$('score-receipt');if(receipt)receipt.textContent=result.scoreGain?`+${result.scoreGain}`:'';
     syncScene();reactScene(job);
     if(result.reshuffled)toast('Eşleşme kalmadı; sayılar karıştırıldı. Zemin ve hamlelerin korundu.');
-    if(appScreen()==='game'&&!appPaused()&&engine.status!=='playing'&&!document.hidden){
-      terminalTimer=setTimeout(()=>{if(job.token===epoch&&appScreen()==='game'&&!appPaused()&&!document.hidden&&!topDialog())showResult();},80);
+    if(appScreen()==='game'&&!appPaused()&&engine.status!=='playing'&&!document.hidden&&!appState.snapshot().lifecycle.suspended){
+      terminalTimer=setTimeout(()=>{if(job.token===epoch&&appScreen()==='game'&&!appPaused()&&!document.hidden&&!appState.snapshot().lifecycle.suspended&&!topDialog())showResult();},80);
     }
   }
   function pause(ms,job) {
@@ -1365,8 +1374,8 @@ window.HexSessionStore.boot(function startApp(session) {
     if(!gameInputAllowed()||guideFeedback())return;
     lessonDemo.stop();
     if(assistanceMode){chooseAssistanceTarget(a);return;}
-    if(busy){finishPresentation(presentation);return;}
-    if(engine.status!=='playing')return;
+    if(appBusy()){finishPresentation(presentation);return;}
+    if(!window.HexStateSelectors.canStartMove(appState.snapshot(),inputDomainView()))return;
     const guide=guidedStep();
     if(guide&&!samePair(a,b,guide.pair)){selected=null;hinted=guide.pair;render();toast('Bu adımda parlayan iki taşı değiştir. Hamlen harcanmadı.');return;}
     clearScoreReceipt();cancelHint();clearInvalidSwap();
@@ -1406,8 +1415,8 @@ window.HexSessionStore.boot(function startApp(session) {
     if(!gameInputAllowed()||guideFeedback())return;
     lessonDemo.stop();
     if(assistanceMode){chooseAssistanceTarget(index);return;}
-    if(busy){finishPresentation(presentation);return;}
-    if(engine.status!=='playing')return;
+    if(appBusy()){finishPresentation(presentation);return;}
+    if(!window.HexStateSelectors.canStartMove(appState.snapshot(),inputDomainView()))return;
     const guide=guidedStep();
     if(guide&&!guide.pair.includes(index)){hinted=guide.pair;render();toast('Önce parlayan iki altıgeni dene.');return;}
     focusIndex=index;hinted=null;
@@ -1470,13 +1479,20 @@ window.HexSessionStore.boot(function startApp(session) {
     const source=suggestion?.source||suggestion?.kind||kind,guarantee=source==='proven_route'?'certified_route':source==='search_win'?'bounded_search':source==='guided'?'guided':'none';
     emitEvent('hint_used',{hintKind:source,hintGuarantee:guarantee});});
   }
-  function cancelHint(){const job=hintJob;hintJob=null;if(job){clearTimeout(job.timer);job.worker?.terminate();job.resolve?.(null);}}
+  function cancelHint(outcome='cancelled'){
+    const job=hintJob;hintJob=null;if(!job)return;
+    if(job.uiOperation)appState.settleOperation(job.uiOperation,outcome);
+    clearTimeout(job.timer);try{job.worker?.terminate();}catch(_){}try{job.resolve?.(null);}catch(_){}
+  }
   async function hint(){
-    if(!gameInputAllowed()||guideFeedback()||busy||hintJob||engine.status!=='playing')return;
+    if(!gameInputAllowed()||guideFeedback()||appBusy()||hintJob||engine.status!=='playing')return;
     cancelAssistance();
     const guide=guidedStep();if(guide){selected=null;hinted=guide.pair;hintEvent({kind:'guided',guarantee:'guided'},'guided');render();toast(guide.text);return;}
-    const job={token:epoch,game:engine,worker:null,timer:null,resolve:null};hintJob=job;render();
-    let suggestion=null;
+    let uiOperation=null;try{uiOperation=appState.beginOperation('hint',activeAttempt?.attemptId||null);}catch(_){}
+    if(!uiOperation)return;
+    const job={token:epoch,game:engine,uiOperation,worker:null,timer:null,resolve:null};hintJob=job;
+    if(!appState.markOperationPending(uiOperation).accepted){cancelHint();return;}
+    render();let suggestion=null,outcome='cancelled';
     try{
       if(typeof window.Worker==='function'&&!engine.assisted){
         suggestion=await new Promise(resolve=>{
@@ -1490,12 +1506,13 @@ window.HexSessionStore.boot(function startApp(session) {
           }catch(_){resolve(null);}
         });
       }
-      if(hintJob!==job||job.token!==epoch||job.game!==engine)return;
+      if(hintJob!==job||job.token!==epoch||job.game!==engine||!appState.isCurrentOperation(job.uiOperation))return;
       if(!suggestion)suggestion=engine.hint({maxMs:12,maxDepth:1});
       if(suggestion?.pair){selected=null;hinted=suggestion.pair;hintEvent(suggestion);toast(suggestion.source==='heuristic'?'Parlayan iki taşın yerini değiştir. Bu bir öneri; kazanma garantisi yok.':'Parlayan iki taşın yerini değiştir.');}
       else toast('Şu anda ipucu bulunamadı. Başka bir üçlü arayabilirsin.');
-    }catch(_){toast('İpucu şu anda hazır değil. Oynamaya devam edebilirsin.');}
-    finally{if(hintJob===job){cancelHint();render();}}
+      outcome='succeeded';
+    }catch(_){outcome='failed';toast('İpucu şu anda hazır değil. Oynamaya devam edebilirsin.');}
+    finally{if(hintJob===job){cancelHint(outcome);if(!fullResetPending&&!appState.snapshot().lifecycle.suspended)render();}}
   }
   on($('levels'),'click',e=>{
     const b=e.target.closest('[data-level]');if(!b||b.disabled||+b.dataset.level===active)return;
@@ -1528,7 +1545,7 @@ window.HexSessionStore.boot(function startApp(session) {
   on($('board'),'pointerdown',e=>{
     if(pointer&&pointer.id!==e.pointerId){stopPointer();return;}
     if(!gameInputAllowed()||guideFeedback()||e.isPrimary===false||(e.button!==0&&e.pointerType!=='touch'))return;
-    if(busy){e.preventDefault();finishPresentation(presentation);return;}
+    if(appBusy()){e.preventDefault();finishPresentation(presentation);return;}
     if(engine.status!=='playing'||pointer||outsideViewport(e))return;
     lessonDemo.stop();
     const downTile=e.target.closest?.('[data-index]');
@@ -1553,7 +1570,7 @@ window.HexSessionStore.boot(function startApp(session) {
   on(window,'pointerup',e=>{
     if(!pointer||pointer.id!==e.pointerId)return;
     samplePointer(e);const gesture=pointer,target=tileAt(e);stopPointer();
-    if(outsideViewport(e)||gesture.invalid||gesture.conflicted||gesture.epoch!==epoch||gesture.game!==engine||!gameInputAllowed()||busy)return;
+    if(outsideViewport(e)||gesture.invalid||gesture.conflicted||gesture.epoch!==epoch||gesture.game!==engine||!gameInputAllowed()||appBusy())return;
     if(gesture.local){
       if(gesture.target!==null)performSwap(gesture.index,gesture.target);
       else if(gesture.maxDistance<12&&target===gesture.index)select(gesture.index);
@@ -1569,14 +1586,20 @@ window.HexSessionStore.boot(function startApp(session) {
   on($('board'),'lostpointercapture',cancelPointer);
   on(window,'pointercancel',cancelPointer);
   on(window,'blur',()=>{lessonDemo.stop();cancelAssistance();stopPointer();if(presentation)finishPresentation(presentation);pauseGame();});
-  on(document,'visibilitychange',()=>{appState.dispatch({type:'APP_VISIBILITY_CHANGED',hidden:document.hidden});if(document.hidden){lessonDemo.stop();cancelAssistance();}stopPointer();if(document.hidden){if(presentation)finishPresentation(presentation);pauseGame();}syncAudio();refreshLessonDemo();});
-  on(window,'pagehide',()=>{lessonDemo.stop();cancelAssistance();stopPointer();clearInvalidSwap();if(presentation)finishPresentation(presentation);appState.dispatch({type:'APP_SUSPENDED'});syncScene();try{scenePresentation?.destroy();}catch(_){}finally{scenePresentation=null;}});
+  on(document,'visibilitychange',()=>{appState.dispatch({type:'APP_VISIBILITY_CHANGED',hidden:document.hidden});if(document.hidden){lessonDemo.stop();cancelAssistance();cancelHint();}stopPointer();if(document.hidden){if(presentation)finishPresentation(presentation);pauseGame();}syncAudio();refreshLessonDemo();});
+  on(window,'pagehide',()=>{
+    lessonDemo.stop();cancelAssistance();stopPointer();clearInvalidSwap();
+    if(presentation)finishPresentation(presentation);
+    cancelHint();clearTimeout(terminalTimer);terminalTimer=null;epoch++;
+    appState.dispatch({type:'APP_SUSPENDED'});syncScene();
+    try{scenePresentation?.destroy();}catch(_){}finally{scenePresentation=null;}
+  });
   // A BFCache return reuses this host. Recreate only the disposed presentation;
   // SessionStore retains its existing persisted-pageshow lock/reload policy.
   on(window,'pageshow',()=>{appState.dispatch({type:'APP_RESUMED'});appState.dispatch({type:'APP_VISIBILITY_CHANGED',hidden:document.hidden});mountScene();renderCoach();syncScene();});
   on($('board'),'click',e=>{if(e.detail===0){const tile=e.target.closest('[data-index]');if(tile)select(+tile.dataset.index);}});
   on($('board'),'keydown',e=>{
-    const tile=e.target.closest('[data-index]');if(!tile||!gameInputAllowed())return;if(guideFeedback()){e.preventDefault();return;}if(busy){e.preventDefault();finishPresentation(presentation);return;}
+    const tile=e.target.closest('[data-index]');if(!tile||!gameInputAllowed())return;if(guideFeedback()){e.preventDefault();return;}if(appBusy()){e.preventDefault();finishPresentation(presentation);return;}
     const index=+tile.dataset.index;
     if(e.key==='Enter'||e.key===' '){e.preventDefault();select(index);return;}
     const direction={ArrowRight:[1,0],ArrowLeft:[-1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];if(!direction)return;
@@ -1676,7 +1699,7 @@ window.HexSessionStore.boot(function startApp(session) {
     // The new profile is already durable. Freeze every old callback before
     // navigation can fire pagehide, blur, provider or observation handlers.
     fullResetPending=true;sessionDirty=false;sessionPlaytestDirty=false;
-    stateEffects.destroy();appState.destroy();
+    stateEffects.destroy();appState.destroy();try{tavikDialogue?.destroy();}catch(_){}
     try{scenePresentation?.destroy();}catch(_){}
     saved=freshGame;lifeFeature=freshEnergy;engine=null;activeAttempt=null;attemptPending=true;
     pendingRescueReceipt=null;pendingLifeReceipt=null;eventState=null;playtest=null;

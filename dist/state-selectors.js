@@ -51,7 +51,9 @@
   }
   function gameplayPhase(state,domain){
     if(!validStateView(state)||domain?.attemptReady!==true||!ENGINE_STATUSES.has(domain.engineStatus))return 'READY';
-    if(isResolving(state))return 'RESOLVING';
+    // Reservation locks input before the existing synchronous transaction, but
+    // is not yet a committed visual phase or proof of a terminal result.
+    if(isResolving(state))return state.operations.presentation.status==='pending'?'RESOLVING':'PLAYING';
     return domain.engineStatus==='won'?'WON':domain.engineStatus==='lost'?'LOST':'PLAYING';
   }
   function canRouteBoardInput(state,domain){

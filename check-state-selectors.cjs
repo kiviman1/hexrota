@@ -43,15 +43,19 @@ test('READY distinguishes a read-only preview from an activated engine',()=>{
   assert.equal(S.gameplayPhase(null,facts()),'READY');
 });
 
-test('visual resolving can coexist with the real committed win or loss',()=>{
+test('requested input reservation differs from committed resolving and cannot publish a speculative terminal phase',()=>{
   for(const status of ['requested','pending'])for(const engineStatus of ['playing','won','lost']){
     const current=state({operation:'a',status}),domain=facts({engineStatus});
-    assert.equal(S.isResolving(current),true);assert.equal(S.gameplayPhase(current,domain),'RESOLVING');
-    assert.equal(S.projectPresentation(current,domain).scene.status,engineStatus,'presentation never rewrites the real engine outcome');
+    assert.equal(S.isResolving(current),true,'both reservation and pending visual work lock new input');
+    assert.equal(S.gameplayPhase(current,domain),status==='pending'?'RESOLVING':'PLAYING');
+    assert.equal(S.canStartMove(current,domain),false,'semantic PLAYING during reservation is not a second move permission');
+    assert.equal(S.projectPresentation(current,domain).scene.status,engineStatus,'the selector never rewrites the supplied engine fact');
   }
   for(const status of ['succeeded','failed','cancelled']){
     assert.equal(S.isResolving(state({operation:'a',status})),false);
     assert.equal(S.gameplayPhase(state({operation:'a',status}),facts({engineStatus:'won'})),'WON');
+    assert.equal(S.gameplayPhase(state({operation:'a',status}),facts({engineStatus:'lost'})),'LOST');
+    assert.equal(S.gameplayPhase(state({operation:'a',status}),facts({engineStatus:'playing'})),'PLAYING');
   }
   assert.equal(S.isResolving(state({operation:'a',kind:'hint'})),false);
   assert.equal(S.canStartMove(state({operation:'a',kind:'hint'}),facts()),true,'a real move may cancel a pending hint');
@@ -61,6 +65,7 @@ test('the actual core operation lifecycle feeds selectors without copied domain 
   const store=Core.create();
   assert(store.dispatch({type:'NAVIGATE',screen:'game'},{gameAvailable:true}).accepted);
   const token=store.beginOperation('presentation','a');assert(token);assert(S.isResolving(store.snapshot()));
+  assert.equal(S.gameplayPhase(store.snapshot(),facts({engineStatus:'won'})),'PLAYING','a reservation is not a committed win');
   assert(store.markOperationPending(token).accepted);assert.equal(S.gameplayPhase(store.snapshot(),facts()),'RESOLVING');
   assert(store.settleOperation(token,'failed').accepted);assert.equal(S.gameplayPhase(store.snapshot(),facts()),'PLAYING');
   const newer=store.beginOperation('presentation','b');assert(newer);store.invalidateOperations();
