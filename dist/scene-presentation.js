@@ -112,7 +112,7 @@
    }
    hideActor('nospace');
   }
-  function layoutNow(){frame=null;if(!active||disposed||!anchor)return;if(speech)speech.hidden=true;if(paused()){hideActor(view?.modalOpen?'modal':'paused');return;}if(!actorReady&&!fallbackReady){hideActor('loading');return;}if(mode==='game')layoutGame();else layoutHome();}
+  function layoutNow(){frame=null;if(!active||disposed||!anchor)return;if(speech)speech.hidden=true;if(paused()){hideActor(view?.modalOpen?'modal':'paused');return;}if(!actorReady&&!fallbackReady){hideActor('loading');return;}if(mode==='game'&&view?.tutorialPortrait){hideActor('dialogue');return;}if(mode==='game')layoutGame();else layoutHome();}
   function scheduleLayout(){if(frame!==null||!active)return;frame=win.requestAnimationFrame?win.requestAnimationFrame(layoutNow):win.setTimeout(layoutNow,0);}
   function showFallback(){
    if(!anchor||fallback||actorReady)return;const token=generation;fallback=doc.createElement('img');fallback.className='hx-scene-fallback';fallback.alt='Tavik';fallback.width=147;fallback.height=238;fallback.draggable=false;fallback.hidden=true;facing.appendChild(fallback);

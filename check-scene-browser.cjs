@@ -55,7 +55,7 @@ async function layout(page,{requireActor=false,verifyPixels=false}={}){
   return{active,actor:active?rect(image):null,anchor:anchor?rect(anchor):null,layout:anchor?.dataset.layout,face:anchor?.dataset.face,hiddenReason:anchor?.dataset.hiddenReason,cells,controls,focus,board:rect(document.querySelector('#board')),overflow:document.documentElement.scrollWidth>innerWidth,pointer:anchor?getComputedStyle(anchor).pointerEvents:null};
  });
  assert.equal(data.overflow,false,'scene adds no horizontal overflow');
- if(requireActor)assert(data.active,'Tavik is visible at this supported viewport');
+ if(requireActor)assert(data.active||await page.locator('.hx-tavik-dialogue:not([hidden])').isVisible(),'Tavik actor or dialogue portrait is visible at this viewport');
  if(data.active){
   assert.equal(data.pointer,'none','the actor cannot intercept a board gesture');
   for(const target of [...data.cells,...data.controls])assert(!overlap(data.actor,target,1),'painted Tavik image cannot cover a stone, HUD, coach or control');
