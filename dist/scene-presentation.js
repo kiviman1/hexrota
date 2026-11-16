@@ -170,7 +170,7 @@
   function update(input){
    if(disposed)return false;if(!input||!integer(input.completedTutorialCount)||input.completedTutorialCount>2||!integer(input.tutorialTurn))throw new TypeError('invalid_scene_view');
    const previous=view,previousStage=stage,wasActive=active;
-   view={screen:input.screen,firstOpening:input.firstOpening,completedTutorialCount:input.completedTutorialCount,tutorialTurn:input.tutorialTurn,levelId:input.levelId,attemptId:input.attemptId,turn:input.turn,status:input.status,busy:input.busy,feedback:input.feedback,paused:input.paused,hidden:input.hidden,modalOpen:input.modalOpen,reducedMotion:input.reducedMotion,lessonPair:Array.isArray(input.lessonPair)?input.lessonPair.slice(0,2):[]};
+   view={screen:input.screen,firstOpening:input.firstOpening,tutorialPortrait:input.tutorialPortrait===true,completedTutorialCount:input.completedTutorialCount,tutorialTurn:input.tutorialTurn,levelId:input.levelId,attemptId:input.attemptId,turn:input.turn,status:input.status,busy:input.busy,feedback:input.feedback,paused:input.paused,hidden:input.hidden,modalOpen:input.modalOpen,reducedMotion:input.reducedMotion,lessonPair:Array.isArray(input.lessonPair)?input.lessonPair.slice(0,2):[]};
    if(!['home','game'].includes(view.screen)){close();mode=null;return true;}
    mode=view.screen==='game'?'game':view.firstOpening?'opening':'home';stage=stageForTutorials(config,view.completedTutorialCount);setBody('sceneMode',mode);setBody('sceneStage',stage);
    if(!active)mount();else{reparent(mode==='game'?gameHost:homeHost);requestBackground();}
