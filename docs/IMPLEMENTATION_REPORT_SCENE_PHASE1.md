@@ -1,5 +1,7 @@
 # Tavik sahne entegrasyonu — Phase 1
 
+> Tarihsel rapor: Bu belgedeki yıldız temelli kümes ilerlemesinin yerini `feature/tutorial-coop-build-flow` çalışmasındaki [öğretici kümes akışı](TUTORIAL_COOP_BUILD_FLOW.md) almıştır. Aşağıdaki önceki teslim/test geçmişi korunur; güncel davranış için yeni belgeyi okuyun.
+
 Tarih: 16 Kasım 2026. Başlangıç: `assets/tavik-coop-scene-pack-v1` (`2ced5d0`); güncel ana oyun referansı `e4321b5`. Uygulama dalı: `feature/tavik-scene-phase1`. Bu çalışma yalnız sunum katmanıdır; yeni bir oyun/kayıt sürümü değildir.
 
 ## Gerçekleştirilen akış

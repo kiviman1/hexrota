@@ -2,19 +2,21 @@
  * view facts; visual callbacks have no authority over a player's results. */
 (function(root){
  'use strict';
- const ids=['clearing','frame','roof','finished'];
+ const ids=['foundation','frame','finished'];
  const own=(value,keys)=>!!value&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).length===keys.length&&keys.every(key=>Object.prototype.hasOwnProperty.call(value,key));
  const integer=value=>Number.isSafeInteger(value)&&value>=0;
  function validateConfig(config){
   const need=condition=>{if(!condition)throw new TypeError('invalid_scene_config');};
-  need(own(config,['schemaVersion','id','assetBase','fallbackPortrait','stages','transitionMs','actor','copy','futureStory']));
-  need(config.schemaVersion===1&&config.id==='coop-scene-phase1'&&config.assetBase==='./assets/scenes/coop-v1/'&&config.fallbackPortrait==='./assets/characters/tavik/front.webp');
-  need(Array.isArray(config.stages)&&config.stages.length===4&&config.stages.every((stage,index)=>own(stage,['id','minStars','background','mobileBackground'])&&stage.id===ids[index]&&integer(stage.minStars)&&(index===0?stage.minStars===0:stage.minStars>config.stages[index-1].minStars)&&stage.background==='backgrounds/'+ids[index]+'.webp'&&stage.mobileBackground==='backgrounds/'+ids[index]+'-mobile.webp'));
+  need(own(config,['schemaVersion','id','assetBase','backgroundBase','fallbackPortrait','stages','tutorials','transitionMs','actor','copy','futureStory']));
+  need(config.schemaVersion===2&&config.id==='tutorial-coop-build-flow'&&config.assetBase==='./assets/scenes/coop-v1/'&&config.backgroundBase==='./assets/scenes/tutorial-coop-v1/'&&config.fallbackPortrait==='./assets/characters/tavik/front.webp');
+  need(Array.isArray(config.stages)&&config.stages.length===3&&config.stages.every((stage,index)=>own(stage,['id','minCompletedTutorials','background'])&&stage.id===ids[index]&&integer(stage.minCompletedTutorials)&&stage.minCompletedTutorials<=2&&(index===0?stage.minCompletedTutorials===0:stage.minCompletedTutorials>config.stages[index-1].minCompletedTutorials)&&stage.background==='backgrounds/'+ids[index]+'.jpg'));
+  need(Array.isArray(config.tutorials)&&config.tutorials.length===2&&config.tutorials.every((tutorial,index)=>own(tutorial,['levelId','label','target'])&&tutorial.levelId==='learn-'+(index+1)&&tutorial.label===['Tahta','Çivi'][index]&&integer(tutorial.target)&&tutorial.target>0&&tutorial.target<=10));
   need(integer(config.transitionMs)&&config.transitionMs<=500&&own(config.actor,['homeSize','gameMaxSize','gameMinSize','clearance']));
   need(integer(config.actor.homeSize)&&config.actor.homeSize>=80&&config.actor.homeSize<=240&&integer(config.actor.gameMaxSize)&&config.actor.gameMaxSize<=140&&integer(config.actor.gameMinSize)&&config.actor.gameMinSize>=64&&config.actor.gameMinSize<=config.actor.gameMaxSize&&integer(config.actor.clearance)&&config.actor.clearance>=4&&config.actor.clearance<=24);
   need(own(config.copy,['intro'])&&typeof config.copy.intro==='string'&&config.copy.intro.length>0&&config.copy.intro.length<=80&&own(config.futureStory,['enabled','hooks'])&&config.futureStory.enabled===false&&Array.isArray(config.futureStory.hooks)&&config.futureStory.hooks.length===0);return true;
  }
- function stageForStars(config,stars){validateConfig(config);if(!integer(stars))throw new TypeError('invalid_scene_stars');return config.stages.reduce((chosen,stage)=>stars>=stage.minStars?stage:chosen,config.stages[0]).id;}
+ function stageForTutorials(config,count){validateConfig(config);if(!integer(count)||count>2)throw new TypeError('invalid_scene_tutorial_count');return config.stages.reduce((chosen,stage)=>count>=stage.minCompletedTutorials?stage:chosen,config.stages[0]).id;}
+ function tutorialCounter(config,levelId,turn){validateConfig(config);if(!integer(turn))throw new TypeError('invalid_scene_tutorial_turn');const tutorial=config.tutorials.find(entry=>entry.levelId===levelId);return tutorial?Object.freeze({label:tutorial.label,current:Math.min(turn,tutorial.target),target:tutorial.target}):null;}
  function create(options){
   const opts=options||{},doc=opts.document||root.document,win=opts.window||doc?.defaultView||root,config=JSON.parse(JSON.stringify(opts.config||root.HEX_SCENE_CONFIG));
   validateConfig(config);if(!doc?.body||!opts.homeHost||!opts.gameHost)throw new TypeError('Scene requires DOM hosts');
@@ -135,14 +137,14 @@
    background.src=image.src;background.hidden=false;backgroundReady=true;loadedStage=targetStage;world.dataset.fallback=String(targetStage!==stage);background.dataset.ready='true';shade.dataset.dark='false';
   }
   function requestBackground(){
-   const selected=config.stages.find(entry=>entry.id===stage),mobile=(win.innerWidth||1024)<=650&&(win.innerHeight||768)>=(win.innerWidth||1024),src=config.assetBase+(mobile?selected.mobileBackground:selected.background);
+   const selected=config.stages.find(entry=>entry.id===stage),src=config.backgroundBase+selected.background;
    if(src===backgroundKey)return;backgroundKey=src;cancelFade();const token=++backgroundEpoch,life=generation;
    const load=failedImages.has(src)?Promise.reject(new Error('Scene image unavailable')):decode(src);
    load.then(image=>applyBackground(image,selected.id,token,life)).catch(error=>{
     if(!valid(life)||token!==backgroundEpoch)return;failedImages.add(src);report(error);backgroundReady=false;background.hidden=true;world.dataset.fallback='true';
-    const safe=config.assetBase+config.stages[0].mobileBackground;
+    const safe=config.backgroundBase+config.stages[0].background;
     if(src===safe||failedImages.has(safe)){loadedStage=null;return;}
-    decode(safe).then(image=>applyBackground(image,'clearing',token,life)).catch(error=>{if(valid(life)&&token===backgroundEpoch){failedImages.add(safe);loadedStage=null;report(error);}});
+    decode(safe).then(image=>applyBackground(image,'foundation',token,life)).catch(error=>{if(valid(life)&&token===backgroundEpoch){failedImages.add(safe);loadedStage=null;report(error);}});
    });
   }
   function bind(target,type,callback){target.addEventListener(type,callback);listeners.push(()=>target.removeEventListener(type,callback));}
@@ -166,14 +168,15 @@
    world?.remove();anchor?.remove();speech?.remove();world=background=shade=anchor=facing=speech=actor=fallback=null;actorReady=fallbackReady=backgroundReady=false;layout=null;pose=desiredPose=null;seenReactions.clear();failedImages.clear();setBody('sceneActive',false);setBody('sceneActorReady',false);setBody('scenePaused',false);
   }
   function update(input){
-   if(disposed)return false;if(!input||!integer(input.committedStars))throw new TypeError('invalid_scene_view');
-   const previous=view,previousStage=stage,wasActive=active;view={...input,lessonPair:Array.isArray(input.lessonPair)?input.lessonPair.slice(0,2):[]};
+   if(disposed)return false;if(!input||!integer(input.completedTutorialCount)||input.completedTutorialCount>2||!integer(input.tutorialTurn))throw new TypeError('invalid_scene_view');
+   const previous=view,previousStage=stage,wasActive=active;
+   view={screen:input.screen,firstOpening:input.firstOpening,completedTutorialCount:input.completedTutorialCount,tutorialTurn:input.tutorialTurn,levelId:input.levelId,attemptId:input.attemptId,turn:input.turn,status:input.status,busy:input.busy,feedback:input.feedback,paused:input.paused,hidden:input.hidden,modalOpen:input.modalOpen,reducedMotion:input.reducedMotion,lessonPair:Array.isArray(input.lessonPair)?input.lessonPair.slice(0,2):[]};
    if(!['home','game'].includes(view.screen)){close();mode=null;return true;}
-   mode=view.screen==='game'?'game':view.firstOpening?'opening':'home';stage=stageForStars(config,view.committedStars);setBody('sceneMode',mode);setBody('sceneStage',stage);
+   mode=view.screen==='game'?'game':view.firstOpening?'opening':'home';stage=stageForTutorials(config,view.completedTutorialCount);setBody('sceneMode',mode);setBody('sceneStage',stage);
    if(!active)mount();else{reparent(mode==='game'?gameHost:homeHost);requestBackground();}
    if(previous&&(previous.screen!==view.screen||previous.attemptId!==view.attemptId||previous.turn!==view.turn||paused())){clearReaction();desiredPose=null;}
    motionPolicy();updatePose();scheduleLayout();
-   if(wasActive&&previousStage&&previousStage!==stage&&previous&&view.committedStars>previous.committedStars)react({key:'stage:'+view.committedStars+':'+(view.attemptId||''),kind:'build'});
+   if(wasActive&&previousStage&&previousStage!==stage&&previous&&view.completedTutorialCount>previous.completedTutorialCount)react({key:'tutorial-stage:'+view.completedTutorialCount+':'+(view.attemptId||''),kind:'build'});
    return true;
   }
   function react(event){
@@ -184,5 +187,5 @@
   function destroy(){if(disposed)return;close();disposed=true;}
   return Object.freeze({update,react,destroy,snapshot});
  }
- const api=Object.freeze({validateConfig,stageForStars,create});root.HexScenePresentation=api;if(typeof module==='object'&&module.exports)module.exports=api;
+ const api=Object.freeze({validateConfig,stageForTutorials,tutorialCounter,create});root.HexScenePresentation=api;if(typeof module==='object'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

@@ -13,7 +13,7 @@ index.html (sıralı defer bağımlılıkları)
           ├─ economy + lives + rescue: saf iş kuralları
           ├─ atomik profil commit'i
           ├─ board-view / board-input / score-presentation / garden / audio
-          └─ scene-presentation: kesinleşmiş yıldızlar + salt görünüm bilgisi
+          └─ scene-presentation: kesinleşmiş öğretici ilerlemesi + salt görünüm bilgisi
               └─ hazırlanmış Tavik hareket adaptörü / isteğe bağlı görseller
 ```
 
@@ -29,8 +29,8 @@ Görsel olaylar oyun kuralı değildir. Hamlenin kanonik sonucu önce kesinleşi
 | `dist/board-view.js` | Altıgen geometri, SVG işaretlemesi, iki yönlü taş animasyon yolu | DOM, motor, cüzdan, saat veya RNG'ye erişmek |
 | `dist/board-input.js` | Yerel koordinatla hücre ve altı yönlü kaydırma sınıflaması | Takas yapmak veya taş sonucunu tahmin etmek |
 | `dist/first-play.js` | Kısa öğretici sunumu ve durumsuz, yavaş SVG kaydırma gösterimi | Gerçek takas, kayıt, can veya ödül üretmek |
-| `dist/scene-presentation.js` | Dünya, dekoratif Tavik, yerleşim, poz ve kısa kararma yaşam döngüsü | Motor/kayıt/cüzdan sahibi olmak, ikinci girdi sistemi veya ödül kanıtı üretmek |
-| `data/scene-config-v1.json` → `dist/scene-config.json` / `.js` | Tek kaynakta sahne eşikleri, yerel varlık yolları ve sunum ayarları | İkinci kalıcı ilerleme sayacı tanımlamak |
+| `dist/scene-presentation.js` | Üç öğretici sahnesi, saf Tahta/Çivi sayaç hesabı, dekoratif Tavik, yerleşim ve yaşam döngüsü | Motor/kayıt/cüzdan sahibi olmak, kampanya yıldızı okumak veya ödül kanıtı üretmek |
+| `data/scene-config-v1.json` → `dist/scene-config.json` / `.js` | Sunum şeması v2: öğretici aşamaları, sayaç tanımları, yerel yollar ve sunum ayarları | İkinci kalıcı ilerleme sayacı veya yeni kayıt sürümü tanımlamak |
 | `dist/score-presentation.js` | Enjekte edilen görünüm bağımlılıklarıyla puan animasyonunun yaşam döngüsü | Kalıcı skor, Altın, hamle veya RNG değiştirmek |
 | `dist/engine.js` | `classic-v4` takas/eşleşme/düşüş/üretim ve replay | Ekonomi veya DOM |
 | `dist/commands.js` | `assisted-v1` yardımlı komut geçmişi | Klasik v4 geçmişini sessizce yeniden yorumlamak |
@@ -64,24 +64,25 @@ Görsel olaylar oyun kuralı değildir. Hamlenin kanonik sonucu önce kesinleşi
 
 `src/styles/manifest.json` kaynak bölümlerinin sırasını belirler. `npm run styles:sync`, bunları **aynı sırada tek `dist/style.css`** dosyasına birleştirir. Tarayıcıda `@import` zinciri veya ek CSS isteği yoktur. Hazır `dist/assets/scenes/coop-v1/tavik-motion.css` ve `src/styles/07-coop-scene.css` bu hatta eklenmiştir; mevcut çizgi roman teması son bölüm olarak kalır. Hazır hareket CSS'i varlık hash sözleşmesinin parçasıdır; değiştirilmez. Yeni yerleşim kuralları `07-coop-scene.css` içinde düzenlenir; üretilmiş çıktı da commit edilir.
 
-`dist/index.html` bağımlılıkları `defer` sırasıyla yükler. Yeni runtime betiği eklenince `dist/sw.js` allowlist/önbellek listesi, HTML, Worker query ve `qa-fixtures.cjs` birlikte güncellenir. Tavik sahne paketi **PWA v36** kullanır; bu kayıt formatının veya oyun kurallarının sürümünü değiştirmez. Hareket adaptörü, yapılandırma ve sahne modülü çevrimdışı kabuğa dahildir. Hazırlanmış 22 WebP yalnız açık izin listesiyle ihtiyaç anında önbelleğe alınır; ilk çevrimdışı fallback için `clearing-mobile.webp` ve `idle.webp` ayrıca ısıtılır. Kaynak PNG'ler ve bağımsız prova sayfası bu kapsamda değildir. WebP içerik türü doğrulanır; görsel hatası çevrimiçi oyunu veya kayıtları engellemez.
+`dist/index.html` bağımlılıkları `defer` sırasıyla yükler. Yeni runtime betiği eklenince `dist/sw.js` allowlist/önbellek listesi, HTML, Worker query ve `qa-fixtures.cjs` birlikte güncellenir. Öğretici kümes akışı **PWA v37** kullanır; kayıt formatının veya oyun kurallarının sürümünü değiştirmez. Hareket adaptörü, yapılandırma ve sahne modülü çevrimdışı kabuğa dahildir. Üç yeni JPEG ihtiyaçla yüklenir; ilk çevrimdışı fallback için `foundation.jpg` ve mevcut `idle.webp` ayrıca ısıtılır: toplam 276.693 byte. Hazır eski varlıklar korunur; yeni akış eski yatay arka planları istemez. Kaynak PNG'ler ve bağımsız prova sayfası bu kapsamda değildir. JPEG/WebP içerik türü doğrulanır; görsel hatası oyunu veya kayıtları engellemez.
 
 ## Tavik sahnesinin sunum sözleşmesi
 
-`node sync-scene-config.cjs`, `data/scene-config-v1.json` dosyasını doğrulayıp tarayıcı için `dist/scene-config.json` ve `dist/scene-config.js` üretir; `--check` eski çıktıyı reddeder. `scene-config.js` yalnız `HEX_SCENE_CONFIG` görünüm verisini yayımlar. Eşiklerin tek kaynağı bu JSON'dır; doğrulayıcı ilk eşiğin sıfır, diğerlerinin sıralı ve kesin artan, tümünün negatif olmayan güvenli tamsayı olmasını ister. Geçersiz yapılandırma, tanınmayan alan veya izin verilmeyen varlık yolu sessizce kabul edilmez. Gelecekteki hikâye için `futureStory: {enabled:false,hooks:[]}` veri uzantısı vardır; kaçırılma/kurtarma sistemi uygulanmış değildir.
+`node sync-scene-config.cjs`, adı korunan `data/scene-config-v1.json` dosyasının **sunum şeması v2** içeriğini doğrulayıp tarayıcı için `dist/scene-config.json` ve `dist/scene-config.js` üretir; `--check` eski çıktıyı reddeder. `scene-config.js` yalnız `HEX_SCENE_CONFIG` görünüm verisini yayımlar. Üç aşama ve iki öğretici sayacı bu JSON'dan okunur. `backgroundBase` yeni portre JPEG'lerini, `assetBase` değiştirilmemiş Tavik pozlarını gösterir. Geçersiz yapılandırma, sayaç/ilerleme girdisi veya izin verilmeyen yol reddedilir. Bu sürüm profil/snapshot sürümü değildir. Gelecekteki hikâye için `futureStory: {enabled:false,hooks:[]}` veri uzantısı vardır; kaçırılma/kurtarma sistemi uygulanmış değildir.
 
-`HexScenePresentation.create({document,window,config,board,homeHost,gameHost,onError})` bir DOM sunum adaptörüdür. Dışarıya `update(view)`, `react({key,kind})`, `snapshot()` ve `destroy()` verir. `view` yalnız ekran, ilk açılış, **kesinleşmiş yıldız**, deneme/tur kimliği, sonuç, öğretici çifti ve duraklama/görünürlük/hareket tercihini taşır. Modül motor, oturum deposu, can, ekonomi, RNG veya hamle komutuna erişmez. `app.js` yıldız önbelleğini başarılı atomik commit sonucundan yeniler; geri alma sırasında son geçerli profilden geri yükler. Taslak kazanımın bir kareliğine bile yapı açmaması bu sınırla sağlanır.
+`HexScenePresentation.create({document,window,config,board,homeHost,gameHost,onError})` bir DOM sunum adaptörüdür. Dışarıya `update(view)`, `react({key,kind})`, `snapshot()` ve `destroy()` verir. `view`, **kesinleşmiş `completedTutorialCount` (0–2)** ve **`tutorialTurn`**, ekran, ilk açılış, deneme/tur kimliği, sonuç, öğretici çifti ve duraklama/görünürlük/hareket tercihini taşır. Modül motor, profil, can, ekonomi, RNG veya kampanya yıldızına erişmez. Eski yıldız API'si kaldırılmıştır; `stageForTutorials(config,count)` yalnız bu sayıyı kullanır.
 
-| Kanonik kampanya yıldızı | Sahne |
+`app.js` sunum projeksiyonunu başarılı atomik commit'in kanonik oyun verisinden yeniler; geri almada son geçerli profile döner. `tutorialTurn`, yalnız kaydedilmiş öğretici checkpoint'inin Attempt ID'si etkin denemeyle aynıysa kullanılır. `tutorialCounter(config,levelId,turn)` salt hesapla `Tahta min(turn,3)/3` veya `Çivi min(turn,4)/4` döndürür; ana bölümün sayısal kimliğinde `null` verir. Host bunu mevcut öğretici kartında `.tutorial-build-counter` ile gösterir. Sayaç envanter, toplanabilir motor hedefi veya yeni bir kalıcı alan değildir; yanlış takas, gösterim ve başarısız kayıt sayacı artırmaz.
+
+| Kesinleşmiş öğretici ilerlemesi | Sahne |
 | --- | --- |
-| 0–1 | `clearing` |
-| 2–4 | `frame` |
-| 5–9 | `roof` |
-| 10 ve üstü | `finished` |
+| 0 — T1 öncesi / T1 sürerken | `foundation` |
+| 1 — T1 sonrası / T2 sürerken | `frame` |
+| 2 — T2 sonrası / kampanya | `finished` |
 
-Yıldız harcanmaz ve sahne için ayrı kayıt tutulmaz. İlk yüklemede mevcut oyuncunun doğru aşaması gösterilir; inşa kutlaması veya öğretici zorlanmaz. Öğretici tamamlama, tekrar ve başlangıç Altını sahne eşiğini değiştirmez. **T2 sonrasındaki tekil +20 Altın**, ön plandaki Altın/sandık ve dönen ışık sunumuyla birlikte korunur. Poz yüklenmesi veya hareketin bitmesi hiçbir ödül yazmaz.
+Sahne için ayrı kayıt tutulmaz. Eksik öğretici bayrakları olan geçerli eski kayıtta, T2'ye ulaşılmış olması en az bir tamamlanmış öğretici; kampanyaya ulaşılmış olması iki tamamlanmış öğretici olarak **yalnız sunumda** yorumlanır. Bu çıkarım `done`, Altın veya ödül hakkı yazmaz. Öğretici tekrarı tamamlanmış kümesi temele döndürmez; kampanya yıldızları kümesi büyütmez. Mevcut Atla akışı iki öğreticiyi tamamlanmış işaretlediğinde üçüncü sahne gösterilir; Atla hoş geldin ödülü üretmez. **İlk gerçek T2 kazanımındaki tekil +20 Altın**, ön plandaki Altın/sandık ve dönen ışık sunumuyla birlikte korunur. İnşa tepkisi yalnız kesinleşmiş öğretici ilerlemesi artarsa çalışır; görsel hareket veya decode hiçbir ödül yazmaz.
 
-Arka planlar hizalı yapı katmanları değildir. Yüklenen aşama, tahta altında kısa karartmayla değiştirilir: yapılandırma beklemesi 140 ms, CSS opaklık geçişi 120 ms'dir. Azaltılmış harekette geçiş anlıktır. Önce etkin arka plan ve idle, sonraki pozlar/aşamalar ihtiyaçla yüklenir. Geciken decode ve poz yanıtları yaşam döngüsü/istek nesilleriyle elenir. Hata durumunda önbellekteki clearing, statik renk veya onaylı mevcut Tavik portresi kullanılır; oyun tahtası kullanılabilir kalır.
+Üç teslim JPEG'i 720×1280 boyutunda ve toplam 794.105 byte'tır; yön değişiminde aynı dosyalar kırpılarak kullanılır. Arka planlar hizalı yapı katmanları değildir. Yüklenen aşama, tahta altında kısa karartmayla değiştirilir: yapılandırma beklemesi 140 ms, CSS opaklık geçişi 120 ms'dir. Azaltılmış harekette geçiş anlıktır. Önce etkin arka plan ve idle, sonraki pozlar/aşamalar ihtiyaçla yüklenir. Geciken decode ve poz yanıtları yaşam döngüsü/istek nesilleriyle elenir. Hata durumunda önbellekteki foundation, statik renk veya onaylı mevcut Tavik portresi kullanılır; oyun tahtası kullanılabilir kalır. Eski paketin 39 dosyası ve 12 hareketi byte olarak korunur.
 
 Tek dünya ve tek Tavik ana menüden gerçek T1 tahtasına geçerken korunur; örnek prova tahtası kullanılmaz. Dekoratif katmanlarda `pointer-events:none` bulunur. Normal oyunda 80–110 px Tavik için gerçek SVG hücrelerinin, HUD'un ve öğretici kartının sınırlayıcı kutuları kontrol edilir; hareket için yukarıda 24 px, yanlarda 10 px ek pay ayrılır. Dar öğretici ekranda mevcut Menü/Mola boşluğuna 44–48 px statik yerleşim kullanılabilir. Güvenli alan yoksa karakter gizlenir; tahta veya dokunma alanı küçültülmez. İşaret etme yönü gerçek öğretici çiftine göre yalnız dış kapsayıcıda çevrilir.
 

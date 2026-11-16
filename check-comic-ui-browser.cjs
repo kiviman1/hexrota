@@ -3,7 +3,7 @@
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
 const {chromium,webkit}=require('playwright'),{legacyClears}=require('./check-progression-ui.cjs'),{lifePool,NOW}=require('./check-lives-ui.cjs');
 const name=process.env.HEXROTA_BROWSER||'chromium',root=path.join(__dirname,'dist'),out=process.env.HEXROTA_COMIC_SCREENSHOT_DIR||path.join(__dirname,'test-results','comic-'+name);assert(['chromium','webkit'].includes(name));fs.mkdirSync(out,{recursive:true});
-const mime={'.html':'text/html','.js':'application/javascript','.css':'text/css','.svg':'image/svg+xml','.json':'application/json','.webmanifest':'application/manifest+json','.png':'image/png','.webp':'image/webp'};
+const mime={'.html':'text/html','.js':'application/javascript','.css':'text/css','.svg':'image/svg+xml','.json':'application/json','.webmanifest':'application/manifest+json','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg','.jpeg':'image/jpeg'};
 const server=http.createServer((req,res)=>{let file;try{const url=new URL(req.url,'http://local');file=path.resolve(root,'.'+(url.pathname==='/'?'/index.html':decodeURIComponent(url.pathname)));}catch{res.writeHead(400).end();return;}if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}fs.readFile(file,(e,b)=>{if(e){res.writeHead(404).end();return;}res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream','Cache-Control':'no-store'}).end(b);});});
 let browser;const results=[],errors=[];
 async function check(label,fn){await fn();results.push(label);console.log('PASS '+label);}
