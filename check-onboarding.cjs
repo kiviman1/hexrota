@@ -174,6 +174,7 @@ test('the second lesson separates stone values, double ground and the two win co
   assert.equal(f.node('#score-goal-check').hidden,false,'score goal visibly completes independently');
   assert.equal(f.node('#ground-goal-check').hidden,true,'unfinished ground goal remains visibly incomplete');
   assert.equal(f.node('#win-dialog').open,false,'score alone cannot complete the lesson');
+  assert.equal(f.save().economy.gold,0,'a partial lesson cannot grant the welcome gift');
   const explanation=f.node('#coach-text').textContent.toLocaleLowerCase('tr-TR');
   assert(/puan/.test(explanation)&&/yeşil|yeşer/.test(explanation),'feedback names the score and green area goals');
   assert(/bitmedi|gerek|olmalı|kazan|tamamlan|son.*yeşert/.test(explanation),'feedback explains that score alone does not finish the level');
@@ -181,6 +182,12 @@ test('the second lesson separates stone values, double ground and the two win co
   assert(engine.swap(...level.solution[3]).ok);await play(f,level.solution[3]);exact(f,engine,'last ground completes both goals');
   assert.equal(f.node('#score-goal-check').hidden,false);assert.equal(f.node('#ground-goal-check').hidden,false,'both goal checks are visible only when both goals complete');
   await until(()=>f.node('#win-dialog').open,'both goals open the completed lesson');
+  assert.equal(f.save().economy.gold,20,'a verified T2 win banks the one-time welcome gift');
+  assert.equal(f.node('#win-dialog').dataset.welcome,'true','the first verified T2 win uses the welcome chest presentation');
+  assert.equal(visible(f,f.node('#welcome-reward')),true,'the real welcome gift is visibly celebrated');
+  assert.match(f.node('#welcome-gold').textContent,/20.*Altın/i);
+  assert.equal(f.save().economy.stars,0,'welcome gift never grants campaign stars');
+  assert.deepEqual(plain(f.save().economy.inventory),{greenBrush:0,colorKey:0},'welcome gift does not unlock inventory');
  }finally{f.close();}
 });
 

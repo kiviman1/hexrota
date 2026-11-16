@@ -86,7 +86,9 @@ async function playLesson(page,index){
  for(const [turn,pair]of level.solution.entries()){
   await acknowledge(page);const beforeBoard=await page.locator('#board').boundingBox();assert(model.swap(...pair).ok);await tapPair(page,plain(pair));
   const saved=await still(page,model,`T${index+1} turn ${turn+1}`);
-  assert.equal(saved.economy.gold,0,'tutorial cannot award Gold');assert.equal(saved.economy.stars,0,'tutorial cannot award a campaign star');
+  const welcomeGold=index===1&&model.status==='won'?20:0;
+  assert.equal(saved.economy.gold,welcomeGold,'only the verified final lesson earns the one-time welcome Gold');assert.equal(saved.economy.stars,0,'teaching never awards a campaign star');
+  assert.deepEqual(saved.economy.inventory,{greenBrush:0,colorKey:0},'welcome gift does not unlock or invent boosters');
   if(index===0&&turn===0){
    assert.equal(await page.locator('#coach-next').isVisible(),true,'the first result waits for the player');
    assert.match(await page.locator('#coach-text').textContent(),/6.*puan|puan.*6/i);
@@ -99,6 +101,12 @@ async function playLesson(page,index){
  await page.locator('#win-dialog[open]').waitFor();
  await fits(page,'#win-title');await fits(page,'#next');
  await hidden(page,['#win-rewards','#review','#win-map','#win-home']);
+ if(index===1){
+  assert.equal(await page.locator('#win-dialog').getAttribute('data-welcome'),'true','the earned gift has its own chest presentation');
+  assert.equal(await page.locator('#welcome-reward').isVisible(),true,'T2 visibly celebrates the banked welcome gift');
+  assert.match(await page.locator('#welcome-gold').textContent(),/20.*Altın/i);
+  await fits(page,'#welcome-chest');await fits(page,'#welcome-gold');
+ }else await hidden(page,['#welcome-reward']);
  await screenshot(page,'t'+(index+1)+'-earned-completion');
 }
 (async()=>{
@@ -133,7 +141,7 @@ async function playLesson(page,index){
    await page.waitForFunction(()=>!document.querySelector('#toast').classList.contains('show'));
    await playLesson(page,0);
   });
-  await check('the next concept follows T1 and both tutorials remain rewardless',async()=>{
+  await check('the next concept follows T1 and the final lesson earns one welcome gift',async()=>{
    await page.locator('#next').tap();await page.waitForFunction(()=>document.body.dataset.learning==='goals');
    for(const index of [0,4])assert.equal(await page.locator(`#board [data-index="${index}"] .layer-pips circle`).count(),2,'T2 identifies each double-layer cell with two pips');
    await screenshot(page,'t2-next-concept');await playLesson(page,1);
@@ -146,7 +154,8 @@ async function playLesson(page,index){
    assert.equal(await page.locator('#tutorial-coach').isVisible(),false);assert.equal(await page.locator('.tutorial-focus,.tutorial-demo-layer').count(),0,'campaign has no prescribed pair or demonstration');
    for(const pair of level.solution){assert(model.swap(...pair).ok);await tapPair(page,plain(pair));await still(page,model,'campaign move');}
    await page.locator('#win-dialog[open]').waitFor();assert.equal(await page.locator('#win-rewards').isVisible(),true,'real earned rewards are celebrated');
-   const win=await checkpoint(page);assert.equal(win.economy.gold,20);assert.equal(win.economy.stars,1);
+   await hidden(page,['#welcome-reward']);assert.notEqual(await page.locator('#win-dialog').getAttribute('data-welcome'),'true','campaign result cannot retain the tutorial chest presentation');
+   const win=await checkpoint(page);assert.equal(win.economy.gold,40,'welcome20 and first campaign20 are separate earned grants');assert.equal(win.economy.stars,1);
    await screenshot(page,'campaign-first-earned-reward');await page.locator('#review').tap();await page.locator('#continue').tap();await page.locator('#win-dialog[open]').waitFor();
    assert.deepEqual((await checkpoint(page)).economy,win.economy,'reviewing a result cannot mint another reward');
   });

@@ -1,0 +1,24 @@
+{
+  "base": "41ff100f4d567843e3276af7c76b208f0c7f5fbb",
+  "scope": "Reviewed one-time welcome gift and explicit developer full-profile reset; all other frozen rules and authored data remain unchanged.",
+  "sha256": {
+    "dist/economy-config.js": "638c3b2939f060868bbf9195326fac1c1221d658983e50bb75aca3f5d42c86c7",
+    "dist/economy.js": "14119a3e4f811fb63949c1838749fc75983c42c42a854daa6b801f4023409770",
+    "dist/session-store.js": "7fd751818ed07b26fc995d722168b8f796a9e9a0828a4edf4bc8cdd51b475be2",
+    "unity/Application/GameSessionController.cs": "b490f7bf5ee3dae1340839f22132b48059c6107986b2ea4a72e864682224ce45",
+    "unity/Economy/EconomyDefaults.cs": "bc79fd68847c7dd8c3fccdf898fc99f29805e401168bc1c6b9b2aec0a914c44a",
+    "unity/Economy/EconomyManager.cs": "71b7778fcbf56f77333568a02fc5c85a3b3e0bdef72a516df438ac863c55eefe",
+    "unity/EconomyParityHarness/Program.cs": "6614f5f54a901df39e516391a22bbdd17ddaa123b4b2e11a11e5a4d83c6ba921"
+  },
+  "addedIds": [
+    "welcome-reward",
+    "welcome-chest",
+    "welcome-gold",
+    "settings-full-reset",
+    "full-reset-dialog",
+    "full-reset-title",
+    "full-reset-description",
+    "full-reset-confirm",
+    "full-reset-cancel"
+  ]
+}

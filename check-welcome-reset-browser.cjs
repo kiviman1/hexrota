@@ -1,0 +1,70 @@
+/* Real mobile browsers: a banked welcome chest, then an explicit new-player test reset.
+ * Uses fresh private contexts and localhost only; no real player data or SDKs. */
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),http=require('node:http');
+const {chromium,webkit}=require('playwright'),{PNG}=require('pngjs');
+const {tutorialBeforeWin}=require('./check-welcome-reset-ui.cjs'),{lifePool,NOW}=require('./check-lives-ui.cjs');
+const browserName=process.env.HEXROTA_BROWSER||'chromium',root=path.join(__dirname,'dist');
+assert(['chromium','webkit'].includes(browserName),'supported browser');
+const out=process.env.HEXROTA_WELCOME_SCREENSHOT_DIR||path.join(__dirname,'test-results','welcome-reset-'+browserName);fs.mkdirSync(out,{recursive:true});
+const PROFILE='hexrota-profile-v2',GAME='hexrota-match-v5',ENERGY='hexrota-lives-v1',plain=value=>JSON.parse(JSON.stringify(value));
+const mime={'.html':'text/html','.js':'application/javascript','.css':'text/css','.svg':'image/svg+xml','.json':'application/json','.webmanifest':'application/manifest+json','.webp':'image/webp','.png':'image/png'};
+const server=http.createServer((req,res)=>{let file;try{const url=new URL(req.url,'http://local');file=path.resolve(root,'.'+(url.pathname==='/'?'/index.html':decodeURIComponent(url.pathname)));}catch{res.writeHead(400).end();return;}if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}fs.readFile(file,(error,body)=>{if(error){res.writeHead(404).end();return;}res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream','Cache-Control':'no-store'}).end(body);});});
+const results=[],errors=[];let browser,url;
+async function check(name,run){await run();results.push(name);console.log('PASS '+name);}
+async function profile(page){return page.evaluate(key=>JSON.parse(localStorage.getItem(key)),PROFILE);}
+async function fits(page,selector){const box=await page.locator(selector).boundingBox(),v=page.viewportSize();assert(box&&box.width>0&&box.height>0,selector+' visible');assert(box.x>=-1&&box.y>=-1&&box.x+box.width<=v.width+1&&box.y+box.height<=v.height+1,selector+' fits within the mobile viewport');return box;}
+async function screenshot(page,name,selector){const buffer=await(selector?page.locator(selector).screenshot({animations:'allow'}):page.screenshot({animations:'allow'}));fs.writeFileSync(path.join(out,name+'.png'),buffer);const png=PNG.sync.read(buffer),colors=new Set();for(let i=0;i<png.data.length;i+=4*31)colors.add(png.data[i]+','+png.data[i+1]+','+png.data[i+2]);assert(colors.size>15,name+' contains rendered visual content');return png;}
+function changedPixels(a,b){assert.equal(a.width,b.width);assert.equal(a.height,b.height);let n=0;for(let i=0;i<a.data.length;i+=4)if(Math.abs(a.data[i]-b.data[i])+Math.abs(a.data[i+1]-b.data[i+1])+Math.abs(a.data[i+2]-b.data[i+2])>35)n++;return n;}
+async function open(size,{motion='reduce',saved=tutorialBeforeWin(),energy=lifePool(5)}={}){
+ const context=await browser.newContext({viewport:size,deviceScaleFactor:1,isMobile:true,hasTouch:true,reducedMotion:motion==='reduce'?'reduce':'no-preference',serviceWorkers:'block'});
+ await context.addInitScript(({saved,energy,now,motion})=>{Date.now=()=>now;if(location.protocol!=='http:')return;if(!localStorage.getItem('hexrota-profile-v2')){saved.preferences={...saved.preferences,motion};localStorage.setItem('hexrota-match-v5',JSON.stringify(saved));localStorage.setItem('hexrota-lives-v1',JSON.stringify(energy));}},{saved,energy,now:NOW,motion});
+ const page=await context.newPage();page.on('pageerror',error=>errors.push(error.message));await page.goto(url);await page.waitForFunction(()=>document.body.dataset.screen==='home');return{context,page};
+}
+async function start(page){await page.locator('#home-play').tap();if(await page.locator('#pregame-dialog').evaluate(node=>node.open))await page.locator('#pregame-start').tap();await page.waitForFunction(()=>document.body.dataset.screen==='game');}
+async function pair(page,pair){for(const index of pair){const node=page.locator(`#board [data-index="${index}"]`),box=await node.boundingBox();assert(box);await page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2);}await page.waitForFunction(()=>document.querySelector('#board').getAttribute('aria-busy')==='false');}
+async function finishT2(page){await start(page);const last=await page.evaluate(()=>window.HEX_TUTORIALS[1].solution.at(-1));await pair(page,last);await page.locator('#win-dialog[open]').waitFor();}
+async function lesson(page,index){const route=await page.evaluate(index=>window.HEX_TUTORIALS[index].solution,index);for(const move of route){if(await page.locator('#coach-next').isVisible())await page.locator('#coach-next').tap();await pair(page,move);}await page.locator('#win-dialog[open]').waitFor();}
+async function settingsFromPausedLesson(page){await page.locator('#pause').tap();await page.locator('#pause-settings').tap();await page.locator('#settings-dialog[open]').waitFor();await page.locator('#settings-full-reset').scrollIntoViewIfNeeded();await fits(page,'#settings-full-reset');}
+async function confirmResetDialog(page){await page.locator('#settings-full-reset').tap();await page.locator('#full-reset-dialog[open]').waitFor();await fits(page,'#full-reset-confirm');await fits(page,'#full-reset-cancel');}
+async function claimVisible(page){const value=await profile(page);assert.equal(value.game.economy.gold,20);assert.equal(value.game.economy.stars,0);assert.deepEqual(value.game.economy.inventory,{greenBrush:0,colorKey:0});assert.equal(Object.values(value.game.economy.transactions).filter(row=>row.kind==='welcome').length,1);assert.equal(await page.locator('#win-dialog').getAttribute('data-welcome'),'true');assert.equal(await page.locator('#welcome-reward').isVisible(),true);assert.match(await page.locator('#welcome-gold').textContent(),/\+?20\s*Altın/i);return value;}
+(async()=>{
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));url='http://127.0.0.1:'+server.address().port+'/';
+ const executable=browserName==='webkit'?process.env.HEXROTA_WEBKIT_PATH:process.env.HEXROTA_CHROMIUM_PATH||(fs.existsSync('/usr/bin/chromium')?'/usr/bin/chromium':undefined);
+ browser=await(browserName==='webkit'?webkit:chromium).launch({headless:true,...(executable?{executablePath:executable}:{}),...(browserName==='chromium'?{args:['--no-sandbox']}:{})});
+ for(const size of [{width:320,height:568},{width:390,height:844},{width:844,height:390},{width:1280,height:900}]){
+  const current=await open(size);try{await check(`${size.width}×${size.height} a verified welcome chest and continuation fit`,async()=>{
+   const{page}=current;await finishT2(page);await claimVisible(page);for(const selector of ['#win-title','#welcome-chest','#welcome-gold','#next'])await fits(page,selector);
+   assert.equal(await page.locator('#win-rewards').isVisible(),false,'welcome is not falsely presented as a campaign star reward');
+   assert.equal(await page.locator('#welcome-chest').evaluate(node=>node.getAnimations({subtree:true}).length),0,'reduced motion presents the open chest without movement');
+   await screenshot(page,'welcome-'+size.width+'x'+size.height);const before=await profile(page);await page.locator('#next').tap();await page.locator('#pregame-dialog[open]').waitFor();assert.equal(await page.locator('#win-dialog').isVisible(),false,'the closed welcome result never remains drawn behind the next screen');assert.deepEqual((await profile(page)).game.economy,before.game.economy,'the next action never pays again');
+  });}finally{await current.context.close();}
+ }
+ const animated=await open({width:390,height:844},{motion:'full'});try{await check('the slow automatic chest opening changes pixels, never the stored reward',async()=>{
+  const{page}=animated;await finishT2(page);const before=await claimVisible(page);
+  const animations=await page.locator('#welcome-chest').evaluate(node=>node.getAnimations({subtree:true}).map(animation=>({duration:animation.effect.getTiming().duration,playState:animation.playState})));
+  assert(animations.length>0,'full motion has a real chest animation');assert(animations.some(animation=>animation.duration>=800),'opening has a readable pace');
+  await page.locator('#welcome-chest').evaluate(node=>node.getAnimations({subtree:true}).forEach(animation=>{animation.pause();animation.currentTime=0;}));const closed=await screenshot(page,'chest-closed','#welcome-chest');
+  await page.locator('#welcome-chest').evaluate(node=>node.getAnimations({subtree:true}).forEach(animation=>{animation.currentTime=Number(animation.effect.getTiming().duration)*.9;}));const opened=await screenshot(page,'chest-opened','#welcome-chest');assert(changedPixels(closed,opened)>40,'pixels prove that the visible chest opens');
+  assert.deepEqual((await profile(page)).game.economy,before.game.economy,'seeking or replaying the effect cannot award Gold');assert.equal(await page.locator('#next').isEnabled(),true,'continuation is never blocked by the effect');
+ });}finally{await animated.context.close();}
+ const reset=await open({width:320,height:568},{energy:lifePool(1,{gold:90,bypass:true})});try{
+  const{page}=reset;await start(page);await settingsFromPausedLesson(page);
+  await check('full reset is reachable from a paused phone lesson and cancellation is harmless',async()=>{
+   const before=await profile(page);await confirmResetDialog(page);assert.match(await page.locator('#full-reset-dialog').textContent(),/test/i);await screenshot(page,'full-reset-confirmation');await page.locator('#full-reset-cancel').tap();assert.equal(await page.locator('#settings-dialog').isVisible(),true);assert.deepEqual(await profile(page),before,'Cancel changes no game, life, Gold or revision');
+  });
+  await check('a failed reset write preserves the profile and permits a safe retry',async()=>{
+   await confirmResetDialog(page);const before=await profile(page);await page.evaluate(()=>{window.__resetNativeSet=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(key==='hexrota-profile-v2')throw new DOMException('injected reset quota','QuotaExceededError');return window.__resetNativeSet.call(this,key,value);};});
+   await page.locator('#full-reset-confirm').tap();assert.deepEqual(await profile(page),before);assert.equal(await page.locator('body').getAttribute('data-first-opening'),'false');await page.evaluate(()=>{Storage.prototype.setItem=window.__resetNativeSet;delete window.__resetNativeSet;});await page.locator('#full-reset-cancel').tap();
+  });
+  await check('confirmed reset really reloads a new profile and both lessons can earn the chest again',async()=>{
+   await page.evaluate(()=>{localStorage.setItem('other-app-preference','retain');for(const key of ['hexrota-match-v4','hexrota-match-v3','hexrota-match-v2'])localStorage.setItem(key,JSON.stringify({current:8,done:[0,1,2,3,4,5,6,7,8]}));localStorage.setItem('hexrota-events-v1',JSON.stringify({old:'events'}));localStorage.setItem('hexrota-playtest-v1',JSON.stringify({old:'observations'}));});
+   const old=await profile(page);await confirmResetDialog(page);await Promise.all([page.waitForEvent('load'),page.locator('#full-reset-confirm').tap()]);await page.waitForFunction(()=>document.body.dataset.screen==='home'&&document.body.dataset.firstOpening==='true');
+   const fresh=await profile(page);assert(fresh.revision>old.revision);assert.equal(fresh.game.current,0);assert.deepEqual(fresh.game.done,[]);assert.deepEqual(fresh.game.attempts,{});assert.equal(fresh.game.variantSelection.serial,0);assert.equal(fresh.game.economy.gold,0);assert.equal(fresh.game.economy.stars,0);assert.deepEqual(fresh.game.economy.inventory,{greenBrush:0,colorKey:0});assert.equal(fresh.energy.life.lives,5);assert.equal(fresh.energy.life.developerBypass,false);assert.equal(fresh.energy.testWallet.gold,300);
+   const leftovers=await page.evaluate(()=>({other:localStorage.getItem('other-app-preference'),legacy:['hexrota-match-v4','hexrota-match-v3','hexrota-match-v2'].map(key=>localStorage.getItem(key)),events:JSON.parse(localStorage.getItem('hexrota-events-v1')||'null'),playtest:JSON.parse(localStorage.getItem('hexrota-playtest-v1')||'null')}));assert.equal(leftovers.other,'retain');assert.deepEqual(leftovers.legacy,[null,null,null]);assert.notDeepEqual(leftovers.events,{old:'events'});assert.notDeepEqual(leftovers.playtest,{old:'observations'});
+   assert.equal((await page.locator('#home-play-label').textContent()).trim(),'Başlayalım');await screenshot(page,'new-player-after-reset');await start(page);assert.equal(await page.locator('#pregame-dialog').evaluate(node=>node.open),false,'fresh player enters T1 directly');await lesson(page,0);assert.equal((await profile(page)).game.economy.gold,0);await page.locator('#next').tap();await page.waitForFunction(()=>document.body.dataset.learning==='goals');await lesson(page,1);await claimVisible(page);await screenshot(page,'repeated-test-earned-chest');
+   const claimed=await profile(page);await page.reload();await page.waitForFunction(()=>document.body.dataset.screen==='home');assert.deepEqual((await profile(page)).game.economy,claimed.game.economy,'a reload cannot reapply the welcome reward');assert.equal(await page.locator('#welcome-reward').isVisible(),false);
+  });
+ }finally{await reset.context.close();}
+ assert.deepEqual(errors,[],'no real browser errors');fs.writeFileSync(path.join(out,'results.json'),JSON.stringify({browser:browserName,groups:results.length,results,physicalDeviceTested:false},null,2));
+})().catch(error=>{console.error(error);if(errors.length)console.error({pageErrors:errors});process.exitCode=1;}).finally(async()=>{if(browser)await browser.close();server.close();});

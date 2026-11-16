@@ -27,6 +27,7 @@ internal static class Program
                 else if (operation == "validate") result = manager.Validate(W.Has(command, "state") ? command["state"] : state);
                 else if (operation == "migrate") { result = manager.Migrate(state, W.Has(command, "legacy") ? W.Map(command["legacy"]) : null); state = W.Get(result, "state"); }
                 else if (operation == "complete") { result = manager.Complete(state, W.Map(command["context"])); state = W.Get(result, "state"); }
+                else if (operation == "claimWelcome") { result = manager.ClaimWelcome(state, W.IsMap(W.Get(command, "context")) ? W.Map(command["context"]) : null); state = W.Get(result, "state"); }
                 else if (operation == "canEnter") result = manager.CanEnter(state, command["levelId"]);
                 else if (operation == "nextLevel") result = manager.NextLevel(state);
                 else if (operation == "view") result = manager.View(state);

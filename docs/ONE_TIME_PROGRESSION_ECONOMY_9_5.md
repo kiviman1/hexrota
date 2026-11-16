@@ -4,12 +4,16 @@
 **Durum:** Ürün kuralları; uygulama ve fiyatlar pilot testten önce geliştirme adayıdır.  
 **Kaynak:** Oyuncu kararı (bölümler yalnız bir kez tamamlanır; tamamlananlar tekrar görünmez), Hexrota 9.3 çekirdeği, 9.4 Balance Lab ve ekonomi tasarım belgeleri.
 
+## 16 Kasım 2026 — ilk açılış ve test sıfırlaması kararı
+
+Oyuncunun son isteğiyle ilk oynanarak kazanılan T2 sonunda **bir defalık +20 Altın başlangıç hediyesi** verilir. Bu, kampanya bölüm ödülünden ayrı `onboarding-v1` hakkıdır; yıldız veya güçlendirici vermez. T1, öğreticiyi atlama, yüklenen eski done bayrakları ve öğretici tekrarı yeni hak oluşturmaz. Normal sıfırlama hakkı korur. Ayarlardaki ayrı **Test için her şeyi sıfırla**, açık veri-silme onayından sonra bu tarayıcıda tamamen yeni bir prototip profili oluşturabilir. Bu geliştirici işlemi gerçek ödeme veya hesap sistemi değildir. Ayrıntı: [WELCOME_REWARD_AND_TEST_RESET.md](WELCOME_REWARD_AND_TEST_RESET.md).
+
 ## 1. Değişmez ürün kuralları
 
 1. Bir ana kampanya bölümü **yalnızca ilk doğrulanmış tamamlamada** 20 Altın ve 1 yıldız kazandırır. Normal oyun modunda tamamlanan bölüm daha sonra yeniden oynanamaz.
 2. Tamamlanan ana bölüm **oynanabilir bölüm listelerinde, bölüm seçimi, menü CTA'sı ve sonuç ekranında tekrar seçenek olarak görünmez**. Eski kayıttan erişim, deep link, eskimiş dialog, DOM tetikleme, yeniden yükleme, yeniden deneme ve başka API yolları da sunucu olmadan mevcut uygulama/controller sınırında reddedilir. Yolculuk/bahçe geçmiş başarıları dekoratif olarak gösterebilir; bunlar tıklanabilen eski bölümler değildir.
 3. Yalnız henüz tamamlanmamış bölüm devam ettirilebilir, kaybedilmişse yeniden denenebilir. Sonuç ekranında kazanınca **sonraki tamamlanmamış bölüm** açılır; hepsi tamamlanınca kampanya sonu/bahçe ekranı açılır.
-4. Öğreticiler T1/T2 **ödülsüz tekrar oynanabilir**; oyuncuya kuralları hatırlatır. Öğreticiyi atlamak yıldız, Altın veya güçlendirici vermez.
+4. Öğreticiler T1/T2 **yeniden ödül vermeden tekrar oynanabilir**; ilk gerçek T2 kazanımında ayrı, tek seferlik 20 Altın başlangıç hediyesi vardır. Öğreticiyi atlamak yıldız, Altın veya güçlendirici vermez.
 5. Başarısızlık, yeniden deneme, ipucu, animasyon, oyun kapa/aç ve bölümü sıfırlama Altın/yıldız/kampanya hediyesi üretmez.
 6. Üretim ana bölüm ilerlemesi geri alınamaz. Mevcut “bütün ilerlemeyi sıfırla” ekranı tamamlanmış ana bölümleri yeniden oynatabilecek durumda bırakılmamalı; yalnız açık/bitmemiş oyun, tercihler ve test verileri için kapsamı açıkça ayrıştırılmalı. Tam veri silme yalnız açık uyarılı **tam kullanıcı verisi silme** gibi farklı bir işlem olabilir; sıradan reset çift ödül yaratamaz. Test laboratuvarı normal profil/ödül erişiminden izole kalır.
 7. Tamamlamalar kampanya+kalıcı sayısal Level ID ile anahtarlanır. Variant, Attempt, seed, tarih ve kayıt sürümü değişirse yeni hak doğmaz. 10 ana bölüm varsa en fazla 10 yıldız ve 200 Altın ilk-bitiş kazancı vardır; gelecekte yeni bölümler ayrı Level ID alır.
@@ -22,7 +26,7 @@
 | Yıldız | Her yeni ana bölümün ilk bitişinde +1 | Harcanmaz, satılmaz; botanik dünyadaki görsel eşikleri açar | Kalıcı tamamlama sayacı; hiçbir ödeme/ad/replay yıldız üretmez |
 | Güçlendirici envanteri | Bölüm 3'ün ilk bitişinde 3 Yeşil Fırça; bölüm 6'nın ilk bitişinde 3 Renk Anahtarı | Oyun sırasında açık onayla tekil kullanım | Hediye bir kez; kalan adet kayıtlıdır; harcama tekil ve geri yüklenebilir |
 
-**Pilot fiyat adayları:** Yeşil Fırça 70 Altın, Renk Anahtarı 90 Altın, +5 hamle kurtarması 140 Altın. Bunlar ticari olarak doğrulanmış fiyatlar değildir. Başlangıç Altını, tekrar ödülü veya günlük Altın farmı **yok**. Mevcut 300 **TEST Altın** cüzdanı yeni gerçek/oyun Altınına otomatik dönüştürülmez. Prototipte yeni ürünler de açıkça test ürünleridir; gerçek ödeme yok.
+**Pilot fiyat adayları:** Yeşil Fırça 70 Altın, Renk Anahtarı 90 Altın, +5 hamle kurtarması 140 Altın. Bunlar ticari olarak doğrulanmış fiyatlar değildir. Yeni profil 0 Altınla başlar. İlk gerçek T2 kazanımı 20 Altın başlangıç hediyesi verir; tekrar ödülü veya günlük Altın farmı **yok**. Mevcut 300 **TEST Altın** cüzdanı yeni gerçek/oyun Altınına otomatik dönüştürülmez. Prototipte yeni ürünler de açıkça test ürünleridir; gerçek ödeme yok.
 
 **Yıldız/botanik eşik taslağı:** 2 yıldız çiçekler, 5 yıldız bitkiler, 8 yıldız ağaçlar, 10 yıldız bütün bahçe. Bir kere açılan görsel her zaman açık kalır; yıldıza ödeme kapısı kurulmaz.
 
@@ -71,7 +75,7 @@ Yeni C# 9.3 `GameSessionController`, LifeManager, Catalog ve kayıt katmanı ile
 - İlerleme çubuğu tamamlanan sayısını gösterebilir; botanik dünyada önceki tamamlama dekorasyonu olabilir ama “Bölüm X tekrar oyna” çağrısı bulunmaz.
 - Kazanma sonucunda tam **bir** kez “+20 Altın / +1 Yıldız” ve uygun seviye hediyesi göster. Tarihsel migration yeniden sonuç pop-up'ı üretmez. Bir sonraki oynanabilir **tamamlanmamış** bölüme ilerle; finalde “Bahçeni gör” ve “Yeni bölümler yakında”.
 - Başarısızlıkta gerçek eksik hedef(ler)i göster, reklam/Altın +5 hamle seçeneklerini sun ama mağazayı/reklamı otomatik başlatma.
-- Öğreticiler hâlâ ihtiyaç halinde ödülsüz yeniden açıklanır. Tamamlanmış kampanya bölümleri için “yeniden oyna” düğmesi veya sonuç CTA'sı yok.
+- Öğreticiler ihtiyaç halinde yeniden açıklanır; alınmış başlangıç hediyesi tekrar verilmez. Tamamlanmış kampanya bölümleri için “yeniden oyna” düğmesi veya sonuç CTA'sı yok.
 - Yardımlı/yardımsız başarı işaretlenir; önceden sertifikalı ücretsiz kazanma yolu hesapları eski kurallarla korunur.
 - Tahta kaydırması, taşların iki yönde görünür hareketi, sabit tahta boyutu, kaldırılmış “Animasyonu geç” butonu/alt açıklama şeridi korunur.
 
@@ -87,7 +91,7 @@ Yeni C# 9.3 `GameSessionController`, LifeManager, Catalog ve kayıt katmanı ile
 
 ## 8. Kabul ve güvenlik kapıları
 
-- 10 kampanya bölümü: en fazla 10 yıldız ve 200 Altın ilk-bitiş; her biri ayrı Level ID üzerinden idempotent.
+- 10 kampanya bölümü: en fazla 10 yıldız ve 200 Altın ilk-bitiş; her biri ayrı Level ID üzerinden idempotent. Ayrı tek seferlik başlangıç hediyesiyle toplam kaynak 220 Altın, yıldız tavanı yine 10 olur.
 - L3 +3 Yeşil Fırça ve L6 +3 Renk Anahtarı sadece tek sefer.
 - Tamamlanmış ana bölümler UI ve komut düzeyinde tekrar oynatılamaz; sonraki yeni bölüme geçilir.
 - Kayıp, restart, tekrar gönderilmiş işlem, refresh, retry, ödül görseli ve tarihsel migration çift ödül üretmez.

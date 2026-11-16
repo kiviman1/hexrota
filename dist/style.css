@@ -776,3 +776,49 @@ body[data-screen="game"] #win-dialog[data-learning="tutorial"] #next{margin-top:
  body[data-screen="game"][data-learning="first"] .mini-progress{display:none}
  body[data-screen="game"][data-learning="first"] .ground-goal #coverage{font-size:20px}
 }
+
+/* A real one-time welcome grant: the ledger is committed before this reveal. */
+body[data-ui-theme="comic"] .win-modal[data-welcome="true"]{overflow-x:hidden;background:radial-gradient(ellipse at 50% 45%,#87539d 0,#4e2d70 53%,#34204c 100%);border-color:#efc574;color:#fff2cf}
+body[data-ui-theme="comic"] .win-modal[data-welcome="true"] .victory-mark{display:none}
+body[data-ui-theme="comic"] .win-modal[data-welcome="true"]>#win-eyebrow{color:#ffe19a;letter-spacing:1.5px}
+body[data-ui-theme="comic"] .win-modal[data-welcome="true"]>#win-title{margin:12px 0 10px;color:#fff4cf;background:none;border:0;box-shadow:none;text-shadow:0 3px #623058;font-size:31px;padding:0;transform:none}
+body[data-ui-theme="comic"] .win-modal[data-welcome="true"]>#win-title::before,body[data-ui-theme="comic"] .win-modal[data-welcome="true"]>#win-title::after{display:none}
+body[data-ui-theme="comic"] .win-modal[data-welcome="true"]>#win-description{color:#eddaee;font-size:14px;line-height:1.45;max-width:280px;margin:0 auto}
+.welcome-reward{position:relative;isolation:isolate;text-align:center;padding:6px 0 0;margin:0;min-width:0}
+.welcome-glow{position:absolute;inset:6px -12px 26px;z-index:-1;pointer-events:none;background:repeating-conic-gradient(from 10deg,#ffd77735 0deg 12deg,transparent 12deg 28deg);mask-image:radial-gradient(ellipse,#000 5%,transparent 69%);-webkit-mask-image:radial-gradient(ellipse,#000 5%,transparent 69%);animation:welcome-glow-in 1.4s ease-out both}
+#welcome-chest{display:block;width:240px;max-width:100%;height:189px;overflow:visible;margin:0 auto}
+.welcome-lid{transform-box:fill-box;transform-origin:15% 85%;transform:translateY(-32px) rotate(-18deg);animation:welcome-open 1.25s cubic-bezier(.2,.65,.3,1) both}
+.welcome-treasure{animation:welcome-treasure-in 1.25s ease-out both}
+.welcome-prize{display:flex;align-items:center;justify-content:center;gap:11px;min-height:52px;color:#ffe28b;animation:welcome-prize-in 1.45s cubic-bezier(.2,.65,.3,1) both;text-shadow:0 3px #723e2a}
+.welcome-prize>strong{font-size:34px;line-height:1;font-weight:900;letter-spacing:-.5px}
+.welcome-coin{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;border:3px solid #fff1a4;background:linear-gradient(#ffdb63,#e7a735);box-shadow:inset 0 0 0 3px #cf8f27,0 3px #80502e;color:#fff5ac;font-size:27px;text-shadow:0 2px #bd8124}
+.welcome-saved{margin:8px 0 0;font-size:12px;color:#e7d6ee}
+body[data-ui-theme="comic"] .full-reset-setting{padding-top:18px;margin-top:20px;border-top:1px solid #bd9a8055}
+body[data-ui-theme="comic"] .full-reset-setting h3{font-size:15px;margin:0 0 8px}
+body[data-ui-theme="comic"] .full-reset-setting p{color:#75576b;font-size:12px;line-height:1.5;margin:0 0 14px}
+body[data-ui-theme="comic"] #settings-full-reset{display:block;width:100%;min-height:48px;padding:11px 13px;font-size:14px}
+body[data-ui-theme="comic"] .full-reset-modal .confirm-actions{display:flex;flex-direction:column;gap:12px}
+body[data-ui-theme="comic"] .full-reset-modal .confirm-actions>button{width:100%;min-height:48px}
+@keyframes welcome-open{0%,22%{transform:translateY(0) rotate(0)}75%{transform:translateY(-38px) rotate(-22deg)}100%{transform:translateY(-32px) rotate(-18deg)}}
+@keyframes welcome-treasure-in{0%,22%{opacity:0;transform:translateY(16px)}70%,100%{opacity:1;transform:translateY(0)}}
+@keyframes welcome-prize-in{0%,35%{opacity:0;transform:translateY(12px) scale(.85)}75%{opacity:1;transform:translateY(-3px) scale(1.06)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes welcome-glow-in{0%{opacity:0;transform:scale(.6)}65%,100%{opacity:1;transform:scale(1)}}
+@media(max-width:360px){
+ body[data-ui-theme="comic"] .win-modal[data-welcome="true"]>#win-title{font-size:26px;margin-top:9px}
+ body[data-ui-theme="comic"] .win-modal[data-welcome="true"]>#win-description{font-size:13px}
+ #welcome-chest{width:210px;height:165px}
+ .welcome-prize>strong{font-size:31px}
+ body[data-ui-theme="comic"] #win-dialog[data-welcome="true"] #next{margin-top:16px}
+}
+@media(max-height:520px) and (min-width:601px){
+ body[data-ui-theme="comic"] .win-modal[open][data-welcome="true"]{width:640px;display:grid;grid-template-columns:1fr 1.15fr;column-gap:20px;align-items:center;padding:20px 24px}
+ body[data-ui-theme="comic"] .win-modal[data-welcome="true"]>#win-eyebrow{grid-column:2;grid-row:1;margin:0;align-self:end}
+ body[data-ui-theme="comic"] .win-modal[data-welcome="true"]>#win-title{grid-column:2;grid-row:2;font-size:27px;margin:8px 0}
+ body[data-ui-theme="comic"] .win-modal[data-welcome="true"]>#win-description{grid-column:2;grid-row:3;margin:0;align-self:start}
+ body[data-ui-theme="comic"] .win-modal[data-welcome="true"]>.welcome-reward{grid-column:1;grid-row:1 / 5}
+ body[data-ui-theme="comic"] #win-dialog[data-welcome="true"] #next{grid-column:2;grid-row:4;margin-top:16px;align-self:start}
+ #welcome-chest{width:220px;height:173px}
+ .welcome-prize>strong{font-size:29px}
+}
+body.reduce-motion :is(.welcome-lid,.welcome-treasure,.welcome-prize,.welcome-glow){animation:none}
+@media(prefers-reduced-motion:reduce){.welcome-lid,.welcome-treasure,.welcome-prize,.welcome-glow{animation:none}}

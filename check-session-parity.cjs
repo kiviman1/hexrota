@@ -85,6 +85,28 @@ function writeFailure(f,flags){if(!f._nativeSetItem){f._nativeSetItem=f.w.Storag
   op({op:'swap',pair:[4,3]},f=>move(f,[4,3])),
   op({op:'ack'},f=>f.click('#coach-next'))
  ]);
+ // Execute the new controller welcome branch against actual JS tutorial moves.
+ // Replaying and ordinary progress reset retain the fixed grant; no stars are minted.
+ const t2=R.HEX_TUTORIALS[1],t2Route=plain(t2.solution),welcomeId='welcome:'+R.HEX_ECONOMY_CONFIG.campaignId+':onboarding-v1';
+ function t2Steps(){return t2Route.flatMap((pair,index)=>[
+  op({op:'swap',pair},async f=>{await move(f,pair);if(index===t2Route.length-1){assert.equal(f.save().economy.gold,20,'T2 welcome Gold is paid once');assert.equal(f.save().economy.stars,0,'tutorial never adds a campaign star');assert.equal(f.save().economy.transactions[welcomeId].kind,'welcome');assert.equal(f.game().status,'won');}}),
+  ...(t2.steps[index].acknowledge?[op({op:'ack'},f=>f.click('#coach-next'))]:[])
+ ]);}
+ await flow('real T2 completion, tutorial replay and ordinary reset preserve one welcome grant',{saved:fresh(1),life:lifePool(0)},[
+  stageEntry(1),...t2Steps(),
+  op({op:'menu'},f=>f.click('#game-home')),stageEntry(1,'replay'),...t2Steps(),
+  op({op:'reset',confirmed:true},f=>{const before=plain(f.save().economy);f.click('#game-settings');f.click('#settings-reset');f.click('#reset-confirm');assert.deepEqual(f.save().economy,before,'normal reset preserves welcome transaction');assert.equal(f.life().life.lives,0);}),
+  stageEntry(1),...t2Steps()
+ ]);
+ const t2Near=fresh(1),t2Model=new R.HexMatch(t2);for(const pair of t2Route.slice(0,-1))assert(t2Model.swap(...pair).ok);
+ t2Near.boards[1]=plain(t2Model.snapshot());t2Near.guideAcks=['1:1','1:3'];
+ const t2Last=t2Route.at(-1);
+ await flow('T2 final move and welcome reward roll back together on failed profile write',{saved:t2Near,life:lifePool(0)},[
+  op({op:'enter',stage:1},enter),op({op:'fail',profile:true},f=>writeFailure(f,{profile:true})),
+  op({op:'swap',pair:t2Last},async f=>{const before=plain(f.save());await move(f,t2Last);assert.deepEqual(f.save(),before,'failed winning move leaves no partial reward or won snapshot');assert.equal(f.save().economy.gold,0);assert.equal(f.save().economy.transactions[welcomeId],undefined);}),
+  op({op:'fail'},f=>writeFailure(f,{})),op({op:'refresh'},f=>f.return()),
+  op({op:'swap',pair:t2Last},async f=>{await move(f,t2Last);assert.equal(f.save().economy.gold,20);assert.equal(f.game().status,'won');assert.equal(f.life().life.lives,0,'free T2 cannot spend a life');})
+ ]);
  for(const stage of Array.from({length:10},(_,i)=>i+2)){
   const entry=existing(stage,{turns:0}),level=R.HexAttempts.createCatalog(R.HEX_LEVELS,R.HEX_VARIANTS,R.HexMatch).resolveLevel(R.HEX_LEVELS[stage-2].id,entry.metadata.variantId,entry.metadata.levelDataVersion);
   const steps=[op({op:'enter',stage,reason:'stage_entry'},enter),...plain(level.solution).map(pair=>op({op:'swap',pair},f=>move(f,pair)))];

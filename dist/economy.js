@@ -2,6 +2,8 @@
 (function(root){
  'use strict';
  const ITEMS=Object.freeze(['greenBrush','colorKey']);
+ // Published grant version: its historical value remains 20 Gold.
+ const WELCOME=Object.freeze({version:'onboarding-v1',gold:20});
  const copy=value=>JSON.parse(JSON.stringify(value));
  const map=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
  const integer=value=>Number.isSafeInteger(value)&&value>=0;
@@ -11,8 +13,10 @@
  function fail(code){const error=new Error(code);error.code=code;throw error;}
  function need(condition,code){if(!condition)fail(code);}
  function validateConfig(config){
-  need(exact(config,['schemaVersion','rulesVersion','pricesVersion','campaignId','levelIds','tutorialIds','tutorialCount','reward','inventory','rescue','botanical'])&&config.schemaVersion===1&&config.rulesVersion==='economy-v1'&&token(config.pricesVersion)&&token(config.campaignId),'invalid_economy_config');
+  const fields=['schemaVersion','rulesVersion','pricesVersion','campaignId','levelIds','tutorialIds','tutorialCount','reward','inventory','rescue','botanical'];
+  need((exact(config,fields)||exact(config,[...fields,'welcome']))&&config.schemaVersion===1&&config.rulesVersion==='economy-v1'&&token(config.pricesVersion)&&token(config.campaignId),'invalid_economy_config');
   need(Array.isArray(config.levelIds)&&config.levelIds.length>0&&config.levelIds.every((id,index)=>integer(id)&&id>0&&(!index||id>config.levelIds[index-1]))&&Array.isArray(config.tutorialIds)&&config.tutorialIds.length===2&&config.tutorialIds.every(token)&&new Set(config.tutorialIds).size===2&&config.tutorialCount===2,'invalid_economy_config');
+  if(Object.prototype.hasOwnProperty.call(config,'welcome'))need(exact(config.welcome,['version','gold'])&&config.welcome.version===WELCOME.version&&config.welcome.gold===WELCOME.gold,'invalid_economy_config');
   need(exact(config.reward,['gold','stars'])&&config.reward.gold===20&&config.reward.stars===1&&exact(config.inventory,ITEMS),'invalid_economy_config');
   for(const item of ITEMS){const entry=config.inventory[item];need(exact(entry,['unlockAfterLevelId','gift','costGold','maxPerAttempt'])&&config.levelIds.includes(entry.unlockAfterLevelId)&&entry.gift===3&&integer(entry.costGold)&&entry.costGold>0&&integer(entry.maxPerAttempt)&&entry.maxPerAttempt>0&&entry.maxPerAttempt<=10,'invalid_economy_config');}
   need(config.inventory.greenBrush.unlockAfterLevelId===3&&config.inventory.colorKey.unlockAfterLevelId===6,'invalid_economy_config');
@@ -26,6 +30,7 @@
   const idList=value=>Array.isArray(value)&&value.every(known)&&same(value,sorted(value));
   const next=cleared=>config.levelIds.find(id=>!cleared.includes(id))??null;
   const clearId=id=>`clear:${config.campaignId}:${id}`,giftId=(id,item)=>`gift:${config.campaignId}:${id}:${item}`;
+  const welcome=config.welcome||WELCOME,welcomeId=`welcome:${config.campaignId}:${welcome.version}`;
   function createState(){return {schemaVersion:1,rulesVersion:'economy-v1',campaignId:config.campaignId,clearedLevelIds:[],claimedLevelIds:[],gold:0,stars:0,inventory:{greenBrush:0,colorKey:0},migration:{schemaVersion:1,source:'new',recognizedLevelIds:[],verifiedLevelIds:[]},transactions:{}};}
   function validate(state){
    need(exact(state,['schemaVersion','rulesVersion','campaignId','clearedLevelIds','claimedLevelIds','gold','stars','inventory','migration','transactions'])&&state.schemaVersion===1&&state.rulesVersion==='economy-v1'&&state.campaignId===config.campaignId&&idList(state.clearedLevelIds)&&idList(state.claimedLevelIds)&&integer(state.gold)&&integer(state.stars)&&exact(state.inventory,ITEMS)&&ITEMS.every(item=>integer(state.inventory[item]))&&map(state.transactions),'invalid_economy_state');
@@ -41,6 +46,8 @@
      if(!cleared.includes(row.levelId))cleared.push(row.levelId);claimed.push(row.levelId);gold+=config.reward.gold;stars+=config.reward.stars;
     }else if(row.kind==='gift'){
      need(ITEMS.includes(row.itemId)&&row.levelId===config.inventory[row.itemId].unlockAfterLevelId&&claimed.includes(row.levelId)&&token(row.attemptId)&&row.attemptId===state.transactions[clearId(row.levelId)].attemptId&&row.assisted===state.transactions[clearId(row.levelId)].assisted&&row.source==='milestone'&&row.costGold===0&&row.pricesVersion===null&&id===giftId(row.levelId,row.itemId)&&!gifts.has(row.itemId),'invalid_economy_ledger');gifts.add(row.itemId);inventory[row.itemId]+=config.inventory[row.itemId].gift;
+    }else if(row.kind==='welcome'){
+     need(id===welcomeId&&row.levelId===null&&token(row.attemptId)&&row.itemId===null&&row.source==='onboarding'&&row.assisted===false&&row.costGold===0&&row.pricesVersion===welcome.version,'invalid_economy_ledger');gold+=welcome.gold;
     }else if(row.kind==='purchase'){
      need(!id.startsWith('clear:')&&!id.startsWith('gift:')&&ITEMS.includes(row.itemId)&&cleared.includes(config.inventory[row.itemId].unlockAfterLevelId)&&row.levelId===null&&row.attemptId===null&&row.source==='command'&&row.assisted===false&&row.pricesVersion===config.pricesVersion&&row.costGold===config.inventory[row.itemId].costGold&&gold>=row.costGold,'invalid_economy_ledger');gold-=row.costGold;inventory[row.itemId]++;
     }else if(row.kind==='use'||row.kind==='rescue'){
@@ -85,10 +92,18 @@
    if(state.clearedLevelIds.includes(context.levelId))return result(state,false,'already_cleared');if(context.levelId!==next(state.clearedLevelIds))return result(state,false,'level_locked');if(context.status!=='won')return result(state,false,'not_won');if(!context.verified)return result(state,false,'unverified_win');
    const reward=grant(state,context.levelId,context.attemptId,'gameplay',context.assisted===true);validate(state);return result(state,true,'level_claimed',reward);
   }
+  function claimWelcome(raw,context){
+   const state=restore(raw);need(exact(context,['levelId','attemptId','status','verified'])&&token(context.attemptId)&&['won','lost','playing'].includes(context.status)&&typeof context.verified==='boolean','invalid_welcome_context');
+   if(context.levelId!==config.tutorialIds[1])return result(state,false,'welcome_unavailable');
+   if(Object.prototype.hasOwnProperty.call(state.transactions,welcomeId))return result(state,false,state.transactions[welcomeId].kind==='welcome'?'welcome_already_claimed':'transaction_conflict');
+   if(context.status!=='won')return result(state,false,'not_won');if(!context.verified)return result(state,false,'unverified_win');
+   const reward={gold:welcome.gold,stars:0,inventory:{greenBrush:0,colorKey:0}};
+   append(state,welcomeId,row('welcome',null,context.attemptId,null,'onboarding',false,0,welcome.version));state.gold+=welcome.gold;validate(state);return result(state,true,'welcome_claimed',reward);
+  }
   function canEnter(raw,levelId){const state=restore(raw);return config.tutorialIds.includes(levelId)||known(levelId)&&next(state.clearedLevelIds)===levelId;}
   function view(raw){const state=restore(raw),nextLevelId=next(state.clearedLevelIds);return {gold:state.gold,stars:state.stars,inventory:copy(state.inventory),cleared:state.clearedLevelIds.slice(),claimed:state.claimedLevelIds.slice(),clearedLevelIds:state.clearedLevelIds.slice(),claimedLevelIds:state.claimedLevelIds.slice(),nextLevelId,campaignComplete:nextLevelId===null,pendingReviewLevelIds:state.migration.recognizedLevelIds.filter(id=>!state.claimedLevelIds.includes(id)),unlocks:Object.fromEntries(ITEMS.map(item=>[item,state.clearedLevelIds.includes(config.inventory[item].unlockAfterLevelId)])),botanical:config.botanical.map(entry=>({...entry,unlocked:state.stars>=entry.stars}))};}
   function operation(raw,context,kind){
-   const state=restore(raw),allowed=kind==='purchase'?['operationId','itemId']:kind==='use'?['operationId','itemId','attemptId','levelId']:['operationId','attemptId','levelId'];need(exact(context,allowed)&&token(context.operationId)&&!context.operationId.startsWith('clear:')&&!context.operationId.startsWith('gift:'),'invalid_economy_operation');
+   const state=restore(raw),allowed=kind==='purchase'?['operationId','itemId']:kind==='use'?['operationId','itemId','attemptId','levelId']:['operationId','attemptId','levelId'];need(exact(context,allowed)&&token(context.operationId)&&!context.operationId.startsWith('clear:')&&!context.operationId.startsWith('gift:')&&!context.operationId.startsWith('welcome:'),'invalid_economy_operation');
    if(kind!=='rescue')need(ITEMS.includes(context.itemId),'invalid_economy_item');if(kind!=='purchase')need(known(context.levelId)&&token(context.attemptId),'invalid_economy_context');
    const itemId=kind==='rescue'?'rescue5':context.itemId,levelId=kind==='purchase'?null:context.levelId,attemptId=kind==='purchase'?null:context.attemptId;
    const prior=Object.prototype.hasOwnProperty.call(state.transactions,context.operationId)?state.transactions[context.operationId]:null;if(prior)return result(state,false,prior.kind===kind&&prior.itemId===itemId&&prior.levelId===levelId&&prior.attemptId===attemptId?'duplicate_transaction':'transaction_conflict');
@@ -100,7 +115,7 @@
    const costGold=kind==='purchase'?config.inventory[itemId].costGold:kind==='rescue'?config.rescue.goldCost:0;if(state.gold<costGold)return result(state,false,'insufficient_gold');if(kind==='use'&&state.inventory[itemId]===0)return result(state,false,'insufficient_stock');
    append(state,context.operationId,row(kind,levelId,attemptId,itemId,'command',kind!=='purchase',costGold,costGold?config.pricesVersion:null));state.gold-=costGold;if(kind==='purchase')state.inventory[itemId]++;if(kind==='use')state.inventory[itemId]--;validate(state);return {...result(state,true,kind==='purchase'?'item_purchased':kind==='use'?'item_consumed':'rescue_paid'),costGold,itemId};
   }
-  return Object.freeze({createState,validate,restore,migrate,complete,canEnter,nextLevel:state=>next(restore(state).clearedLevelIds),view,purchase:(state,context)=>operation(state,context,'purchase'),consume:(state,context)=>operation(state,context,'use'),spendRescue:(state,context)=>operation(state,context,'rescue'),getTransaction:(state,id)=>{need(token(id),'invalid_economy_operation');const ledger=restore(state).transactions;return copy(Object.prototype.hasOwnProperty.call(ledger,id)?ledger[id]:null);},config:()=>copy(config)});
+  return Object.freeze({createState,validate,restore,migrate,complete,claimWelcome,canEnter,nextLevel:state=>next(restore(state).clearedLevelIds),view,purchase:(state,context)=>operation(state,context,'purchase'),consume:(state,context)=>operation(state,context,'use'),spendRescue:(state,context)=>operation(state,context,'rescue'),getTransaction:(state,id)=>{need(token(id),'invalid_economy_operation');const ledger=restore(state).transactions;return copy(Object.prototype.hasOwnProperty.call(ledger,id)?ledger[id]:null);},config:()=>copy(config)});
  }
  const api=Object.freeze({createManager,validateConfig});root.HexEconomy=api;if(typeof module==='object'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
