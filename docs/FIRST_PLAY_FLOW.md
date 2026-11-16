@@ -33,7 +33,7 @@
 
 Yeni tarayıcı testi 320×568, 390×844, 844×390 ve 1280×900 görünümünde ilk açılışı; gerçek dokunuşlarla iki öğreticiyi, ilk kampanya ödülünü ve yavaş gösterimde piksel değişimini kontrol eder. Gösterim öncesi/sonrası motor snapshot'ı karşılaştırılır. Mevcut mobil giriş, takas görünürlüğü, atomik kayıt ve C# karşılaştırmaları ayrıca çalıştırılır.
 
-PWA paketi v34'tür; yeni modül HTML bağımlılık sırasına, çevrimdışı önbelleğe ve test yükleyicisine eklenmiştir. Bu bir kayıt veya oyun kuralı sürümü değildir. Dağıtım önce ayrı feature PR / Preview ile doğrulanır; Production yayını için kullanıcı onayı gerekir.
+PWA paketi v35'tür; yeni modül HTML bağımlılık sırasına, çevrimdışı önbelleğe ve test yükleyicisine eklenmiştir. Bu bir kayıt veya oyun kuralı sürümü değildir. Dağıtım önce ayrı feature PR / Preview ile doğrulanır; Production yayını için kullanıcı onayı gerekir.
 
 Otomatik WebKit testi fiziksel iPhone Safari testi yerine geçmez. İlk gerçek oyuncu denemesinde açıklama yapmadan şu üç gözlem alınmalı: ilk doğru kaydırma, puan ile yeşil alanın farkını anlatabilme ve ilk ana bölümde bağımsız bir eşleşme. Takılma varsa önce hangi ekrana/dokunuşa takıldıkları kaydedilmeli; bölüm dengesi bu sunum değişikliğinin içinde değiştirilmemelidir.
 

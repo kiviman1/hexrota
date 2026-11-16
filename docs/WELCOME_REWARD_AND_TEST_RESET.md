@@ -11,6 +11,10 @@
 - Yeni ledger satırı harcanabilir bakiyenin doğrulamasına dahildir. Kampanyanın 200 Altın / 10 yıldız sınırı değişmez; başlangıç hediyesiyle toplam ilk kaynak 220 Altındır. Gerçek para, reklam veya yeni para birimi yoktur.
 - T2 sonuç ekranı sandığın açılışını, +20 Altını ve “İlk bölüme başla” eylemini sunar. Açılış animasyonu ödül vermez, geciktirilmiş callback ile para yazmaz. Azaltılmış harekette sandık doğrudan açık görünür; devam düğmesi animasyonu beklemez. Tekrar oynanan ve daha önce hakkı alınmış T2 yeni sandık vaat etmez.
 
+### Sandık sunumundaki katman düzeltmesi
+
+Altın madalyası SVG'de sandık gövdesi ve kapaktan **sonra**, ayrı bir ön katmanda çizilir. Kapak açıldıktan sonra gövdenin içinden yükselir ve önde görünür kalır. Arka ışık halesinin maskesi sabittir; ışın dokusu kendi katmanında 24 saniyelik sürekli dönüş yapar. Bu dönüş ile ilk açılışın ölçek/fade hareketi ayrı katmanlardadır. Azaltılmış hareket modunda madalya doğrudan görünür son konumunda durur, ışınlar dönmez. Bu değişiklik yalnız sunumdur; bakiye ve ödül işlemleri değişmez.
+
 **Eski sürüme dönüş sınırı:** Yeni `welcome` satırını tanımayan eski uygulama bu ledger'ı kabul etmez. Yeni sürüm eski kayıtları okur; geri dağıtım gerekiyorsa welcome okuma desteği korunmalıdır. Yeni snapshot, oyun kuralı veya profil zarfı icat edilmez; mevcut ekonomi işlem sözleşmesi açık sürümlü bir işlemle genişler.
 
 ## Ayarlardan tamamen yeni test profili
@@ -24,7 +28,8 @@ Yalnız bilinen Hexrota legacy/olay/test anahtarları temizlenir. `localStorage.
 ## Doğrulama ve taşınabilirlik
 
 - `npm run test:welcome-reset`: 10 storage hata/yarış vakası ve 9 gerçek uygulama akışı.
+- `npm run test:welcome-visual`: Chromium/WebKit içinde 320/390 portre ve 844 yatayda ilk/orta/son Altın piksel görünürlüğü, gerçek yükseliş, dönen ışın pikselleri, değişmeyen profil/geometri ve azaltılmış hareket kontrolü. Kanıtlar CI ekran görüntüsü artefaktlarına yazılır.
 - `npm run test:welcome-reset-browser`: Chromium/WebKit'te 320/390 portre, 844 yatay ve 1280 masaüstü; görünür sandık/piksel değişimi, gerçek bakiye, vazgeçme, kayıt hatası, gerçek sayfa yenileme ve ilk açılışın yeniden oynanması.
 - Ekonomi ve uygulama karşılaştırmaları C# 7.3 / .NET 8 ile gerçekten derlenir. Welcome JS/C# iş kuralıdır. Web tam sıfırlama/reload UI'si platform adaptörüdür; Unity veri-silme ekranı ve cihaz saklama adaptörü henüz yapılmadı. Unity host aynı taze DTO'ları atomik repository yazımından geçirip eski session'ı kapatmalıdır.
-- Classic-v4, Snapshot4, 40 varyant, 80 kazanma rotası, can kuralları, kaydırma ve sabit tahta boyutu değişmez. PWA shell v34 yalnız bu web paketini sürümler.
+- Classic-v4, Snapshot4, 40 varyant, 80 kazanma rotası, can kuralları, kaydırma ve sabit tahta boyutu değişmez. PWA shell v35 yalnız bu web paketini sürümler.
 - Fiziksel iPhone/Android ve Unity/IL2CPP doğrulaması yapılmış sayılmaz.

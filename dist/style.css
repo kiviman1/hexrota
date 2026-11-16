@@ -785,10 +785,11 @@ body[data-ui-theme="comic"] .win-modal[data-welcome="true"]>#win-title{margin:12
 body[data-ui-theme="comic"] .win-modal[data-welcome="true"]>#win-title::before,body[data-ui-theme="comic"] .win-modal[data-welcome="true"]>#win-title::after{display:none}
 body[data-ui-theme="comic"] .win-modal[data-welcome="true"]>#win-description{color:#eddaee;font-size:14px;line-height:1.45;max-width:280px;margin:0 auto}
 .welcome-reward{position:relative;isolation:isolate;text-align:center;padding:6px 0 0;margin:0;min-width:0}
-.welcome-glow{position:absolute;inset:6px -12px 26px;z-index:-1;pointer-events:none;background:repeating-conic-gradient(from 10deg,#ffd77735 0deg 12deg,transparent 12deg 28deg);mask-image:radial-gradient(ellipse,#000 5%,transparent 69%);-webkit-mask-image:radial-gradient(ellipse,#000 5%,transparent 69%);animation:welcome-glow-in 1.4s ease-out both}
+.welcome-glow{position:absolute;inset:6px -12px 26px;z-index:-1;pointer-events:none;overflow:hidden;mask-image:radial-gradient(ellipse,#000 5%,transparent 69%);-webkit-mask-image:radial-gradient(ellipse,#000 5%,transparent 69%);animation:welcome-glow-in 1.4s ease-out both}
+.welcome-glow::before{content:"";position:absolute;left:50%;top:50%;width:200%;aspect-ratio:1;background:repeating-conic-gradient(from 10deg,#ffd77735 0deg 12deg,transparent 12deg 28deg);transform:translate(-50%,-50%) rotate(0deg);animation:welcome-rays-spin 24s linear infinite}
 #welcome-chest{display:block;width:240px;max-width:100%;height:189px;overflow:visible;margin:0 auto}
 .welcome-lid{transform-box:fill-box;transform-origin:15% 85%;transform:translateY(-32px) rotate(-18deg);animation:welcome-open 1.25s cubic-bezier(.2,.65,.3,1) both}
-.welcome-treasure{animation:welcome-treasure-in 1.25s ease-out both}
+.welcome-treasure{transform-box:fill-box;transform-origin:50% 50%;transform:translateY(-12px) scale(1);animation:welcome-treasure-in 1.55s cubic-bezier(.2,.65,.3,1) both}
 .welcome-prize{display:flex;align-items:center;justify-content:center;gap:11px;min-height:52px;color:#ffe28b;animation:welcome-prize-in 1.45s cubic-bezier(.2,.65,.3,1) both;text-shadow:0 3px #723e2a}
 .welcome-prize>strong{font-size:34px;line-height:1;font-weight:900;letter-spacing:-.5px}
 .welcome-coin{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;border:3px solid #fff1a4;background:linear-gradient(#ffdb63,#e7a735);box-shadow:inset 0 0 0 3px #cf8f27,0 3px #80502e;color:#fff5ac;font-size:27px;text-shadow:0 2px #bd8124}
@@ -800,9 +801,10 @@ body[data-ui-theme="comic"] #settings-full-reset{display:block;width:100%;min-he
 body[data-ui-theme="comic"] .full-reset-modal .confirm-actions{display:flex;flex-direction:column;gap:12px}
 body[data-ui-theme="comic"] .full-reset-modal .confirm-actions>button{width:100%;min-height:48px}
 @keyframes welcome-open{0%,22%{transform:translateY(0) rotate(0)}75%{transform:translateY(-38px) rotate(-22deg)}100%{transform:translateY(-32px) rotate(-18deg)}}
-@keyframes welcome-treasure-in{0%,22%{opacity:0;transform:translateY(16px)}70%,100%{opacity:1;transform:translateY(0)}}
+@keyframes welcome-treasure-in{0%,30%{opacity:0;transform:translateY(58px) scale(.45)}42%{opacity:1;transform:translateY(42px) scale(.65)}76%{opacity:1;transform:translateY(-20px) scale(1.12)}100%{opacity:1;transform:translateY(-12px) scale(1)}}
 @keyframes welcome-prize-in{0%,35%{opacity:0;transform:translateY(12px) scale(.85)}75%{opacity:1;transform:translateY(-3px) scale(1.06)}100%{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes welcome-glow-in{0%{opacity:0;transform:scale(.6)}65%,100%{opacity:1;transform:scale(1)}}
+@keyframes welcome-rays-spin{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
 @media(max-width:360px){
  body[data-ui-theme="comic"] .win-modal[data-welcome="true"]>#win-title{font-size:26px;margin-top:9px}
  body[data-ui-theme="comic"] .win-modal[data-welcome="true"]>#win-description{font-size:13px}
@@ -820,5 +822,5 @@ body[data-ui-theme="comic"] .full-reset-modal .confirm-actions>button{width:100%
  #welcome-chest{width:220px;height:173px}
  .welcome-prize>strong{font-size:29px}
 }
-body.reduce-motion :is(.welcome-lid,.welcome-treasure,.welcome-prize,.welcome-glow){animation:none}
-@media(prefers-reduced-motion:reduce){.welcome-lid,.welcome-treasure,.welcome-prize,.welcome-glow{animation:none}}
+body.reduce-motion :is(.welcome-lid,.welcome-treasure,.welcome-prize,.welcome-glow),body.reduce-motion .welcome-glow::before{animation:none}
+@media(prefers-reduced-motion:reduce){.welcome-lid,.welcome-treasure,.welcome-prize,.welcome-glow,.welcome-glow::before{animation:none}}
