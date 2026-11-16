@@ -101,4 +101,4 @@ PR #24'ün portresi, üç sütunlu tek coach kartı, 118 px kart ve aynı board/
 
 ## B–F uygulama kaydı
 
-Bu bölüm aşamalar gerçek kod ve testlerle tamamlandıkça güncellenecek. Henüz pure core, yeni runtime veya tamamlanmış migration iddiası yoktur. Kamu API'leri, son sahiplik ve Unity eşlemesi uygulama tamamlandıktan sonra gerçek dosyalara göre yazılacaktır.
+Bu bölüm aşamalar gerçek kod ve testlerle tamamlandıkça güncellenecek. B aşamasında `app-state.js` ve `state-selectors.js` eklendi; henüz uygulamaya bağlanmadı. Core üç küçük koordinasyon alanı taşır: navigasyon, örnek kimlikli modal yığını ve yaşam döngüsü; yalnız presentation/hint için bounded transient operasyon kayıtları vardır. Board/ekonomi/can/kayıt içeriği saklanmaz. `initialState`, `transition`, `create`, `snapshot/preview/dispatch/subscribe/destroy` saf/sınırlı API'lerdir; reentrant dispatch FIFO, eski modal/iş kimlikleri reddedilir. Selector phase ve Tavik/sahne görünümünü salt domain facts'tan türetir. Core ve selector testleri B kapısında gerçekten çalıştırıldı; C–F henüz tamamlandı sayılmaz.
