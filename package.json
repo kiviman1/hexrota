@@ -48,7 +48,8 @@
     "test:comic-ui-browser": "node check-comic-ui-browser.cjs",
     "test:first-play": "node check-onboarding.cjs && node check-first-play.cjs && node check-first-play-browser.cjs",
     "test:welcome-reset": "node check-full-reset-store.cjs && node check-welcome-reset-ui.cjs",
-    "test:welcome-reset-browser": "node check-welcome-reset-browser.cjs"
+    "test:welcome-reset-browser": "node check-welcome-reset-browser.cjs",
+    "test:welcome-visual": "node check-welcome-visual.cjs"
   },
   "devDependencies": {
     "jsdom": "31.0.1",

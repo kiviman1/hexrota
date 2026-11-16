@@ -14,34 +14,34 @@
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="./style.css?v=34">
-  <script src="./engine.js?v=34" defer></script>
-  <script src="./levels.js?v=34" defer></script>
-  <script src="./tutorials.js?v=34" defer></script>
-  <script src="./variants-data.js?v=34" defer></script>
-  <script src="./attempts.js?v=34" defer></script>
-  <script src="./events.js?v=34" defer></script>
-  <script src="./lives-config.js?v=34" defer></script>
-  <script src="./lives.js?v=34" defer></script>
-  <script src="./life-providers.js?v=34" defer></script>
-  <script src="./playtest.js?v=34" defer></script>
-  <script src="./reward-rules.js?v=34" defer></script>
-  <script src="./rewards.js?v=34" defer></script>
-  <script src="./reward-adapter.js?v=34" defer></script>
-  <script src="./audio.js?v=34" defer></script>
-  <script src="./session-store.js?v=34" defer></script>
-  <script src="./economy-config.js?v=34" defer></script>
-  <script src="./economy.js?v=34" defer></script>
-  <script src="./commands.js?v=34" defer></script>
-  <script src="./rescue.js?v=34" defer></script>
-  <script src="./garden.js?v=34" defer></script>
-  <script src="./game-save.js?v=34" defer></script>
-  <script src="./board-view.js?v=34" defer></script>
-  <script src="./board-input.js?v=34" defer></script>
-  <script src="./score-presentation.js?v=34" defer></script>
-  <script src="./first-play.js?v=34" defer></script>
-  <script src="./app.js?v=34" defer></script>
-  <script src="./pwa.js?v=34" defer></script>
+  <link rel="stylesheet" href="./style.css?v=35">
+  <script src="./engine.js?v=35" defer></script>
+  <script src="./levels.js?v=35" defer></script>
+  <script src="./tutorials.js?v=35" defer></script>
+  <script src="./variants-data.js?v=35" defer></script>
+  <script src="./attempts.js?v=35" defer></script>
+  <script src="./events.js?v=35" defer></script>
+  <script src="./lives-config.js?v=35" defer></script>
+  <script src="./lives.js?v=35" defer></script>
+  <script src="./life-providers.js?v=35" defer></script>
+  <script src="./playtest.js?v=35" defer></script>
+  <script src="./reward-rules.js?v=35" defer></script>
+  <script src="./rewards.js?v=35" defer></script>
+  <script src="./reward-adapter.js?v=35" defer></script>
+  <script src="./audio.js?v=35" defer></script>
+  <script src="./session-store.js?v=35" defer></script>
+  <script src="./economy-config.js?v=35" defer></script>
+  <script src="./economy.js?v=35" defer></script>
+  <script src="./commands.js?v=35" defer></script>
+  <script src="./rescue.js?v=35" defer></script>
+  <script src="./garden.js?v=35" defer></script>
+  <script src="./game-save.js?v=35" defer></script>
+  <script src="./board-view.js?v=35" defer></script>
+  <script src="./board-input.js?v=35" defer></script>
+  <script src="./score-presentation.js?v=35" defer></script>
+  <script src="./first-play.js?v=35" defer></script>
+  <script src="./app.js?v=35" defer></script>
+  <script src="./pwa.js?v=35" defer></script>
 </head>
 <body data-ui-theme="comic">
   <svg class="icon-library" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -166,7 +166,7 @@
       <div class="welcome-glow" aria-hidden="true"></div>
       <svg id="welcome-chest" viewBox="0 0 280 220" role="img" aria-label="Altın hediyesi sandığı">
         <ellipse cx="142" cy="199" rx="91" ry="13" fill="#281337" opacity=".3"/>
-        <g class="welcome-treasure" fill="#ffda65" stroke="#d48b2a" stroke-width="3"><circle cx="116" cy="108" r="16"/><circle cx="145" cy="99" r="18"/><circle cx="171" cy="111" r="16"/><path d="m142 66 4 10 11 1-8 7 2 11-9-6-10 6 3-11-9-7 12-1Z" fill="#fff3ac"/></g>
+        <g class="welcome-chest-shell">
         <path d="m56 110 30-19 143 12-1 68-28 27-142-17Z" fill="#9452a1" stroke="#4b285d" stroke-width="5" stroke-linejoin="round"/>
         <path d="m58 115 142 14v66L59 179Z" fill="#b969bf" stroke="#f0b5df" stroke-width="3"/>
         <path d="m200 129 27-21v64l-27 24Z" fill="#673b87"/>
@@ -180,6 +180,14 @@
         </g>
         <path d="m127 135 28 3v28l-14 12-14-14Z" fill="#ffdc77" stroke="#fff0b9" stroke-width="3" stroke-linejoin="round"/>
         <path d="M147 145c-12-5-20 3-14 12 8 3 13-2 14-12Zm-15 14 9-10" fill="#66a740" stroke="#396d32" stroke-width="2" stroke-linecap="round"/>
+        </g>
+        <g class="welcome-treasure" pointer-events="none">
+          <circle cx="147" cy="97" r="31" fill="#9d6228"/>
+          <circle cx="145" cy="93" r="31" fill="#f5c34f" stroke="#fff1a7" stroke-width="3.2"/>
+          <circle cx="145" cy="93" r="24" fill="#ffdc6d" stroke="#d99c31" stroke-width="2"/>
+          <path d="m145 74 5.5 11.2 12.5 1.8-9 8.8 2.2 12.4-11.2-5.9-11.2 5.9 2.2-12.4-9-8.8 12.5-1.8Z" fill="#fff1ab" stroke="#ca8b2b" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M124 83c4-8 11-13 20-14" fill="none" stroke="#fff9d1" stroke-width="3" stroke-linecap="round"/>
+        </g>
       </svg>
       <div class="welcome-prize"><span class="welcome-coin" aria-hidden="true">✦</span><strong id="welcome-gold">+20 Altın</strong></div>
       <p class="welcome-saved">Hediyen hesabına eklendi.</p>

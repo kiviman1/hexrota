@@ -124,6 +124,19 @@ jobs:
         env:
           HEXROTA_BROWSER: ${{ matrix.browser }}
           HEXROTA_WELCOME_SCREENSHOT_DIR: test-results/welcome-reset-${{ matrix.browser }}
+      - name: Verify the emerging Gold stays in front and the halo visibly rotates
+        run: npm run test:welcome-visual
+        env:
+          HEXROTA_BROWSER: ${{ matrix.browser }}
+          HEXROTA_WELCOME_VISUAL_SCREENSHOT_DIR: test-results/welcome-visual-${{ matrix.browser }}
+      - name: Keep welcome coin layering and halo pixel evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: welcome-visual-${{ matrix.browser }}
+          path: test-results/welcome-visual-${{ matrix.browser }}
+          if-no-files-found: warn
+          retention-days: 7
       - name: Keep welcome reward and reset screenshots
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

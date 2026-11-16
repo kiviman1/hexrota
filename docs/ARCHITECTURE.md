@@ -60,7 +60,7 @@ Görsel olaylar oyun kuralı değildir. Hamlenin kanonik sonucu önce kesinleşi
 
 `src/styles/manifest.json` kaynak bölümlerinin sırasını belirler. `npm run styles:sync`, bunları **aynı sırada tek `dist/style.css`** dosyasına birleştirir. Tarayıcıda `@import` zinciri veya ek CSS isteği yoktur. Eski cascade sırası ve iletilen CSS bu bakımda byte-for-byte korunmuştur. Stili kaynak bölümde değiştir; üretilmiş çıktıdaki değişikliği de commit et.
 
-`dist/index.html` bağımlılıkları `defer` sırasıyla yükler. Yeni runtime betiği eklenince `dist/sw.js` allowlist/önbellek listesi, HTML, Worker query ve `qa-fixtures.cjs` birlikte güncellenir. İlk açılış sunumu PWA v34 kullanır; bu kayıt formatının veya oyun kurallarının sürümünü değiştirmez.
+`dist/index.html` bağımlılıkları `defer` sırasıyla yükler. Yeni runtime betiği eklenince `dist/sw.js` allowlist/önbellek listesi, HTML, Worker query ve `qa-fixtures.cjs` birlikte güncellenir. İlk açılış sunumu PWA v35 kullanır; bu kayıt formatının veya oyun kurallarının sürümünü değiştirmez.
 
 ## Geliştirme kontrol listesi
 
