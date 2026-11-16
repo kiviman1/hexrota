@@ -1,85 +1,91 @@
-# Durum mimarisi — aşamalı geçiş planı
+# Durum mimarisi — uygulanan aşamalı geçiş
 
-## Başlangıç ve kapsam
+## Referans, kapsam ve kanıt sınırı
 
-Denetim tabanı: `main` / `996462b8513cfbdbe2747941c0aad76528357842` (PR #24 dahil). Çalışma dalı `refactor/hexrota-state-architecture`.
+Başlangıç `main`: `996462b8513cfbdbe2747941c0aad76528357842` (PR #24 dahil). Dal `refactor/hexrota-state-architecture`. Bu belge ilk Stage A planını, gerçekten uygulanan aşama kaydına dönüştürür. Baseline envanteri `STATE_ARCHITECTURE.md` / `STATE_TRANSITION_MATRIX.md` içinde tarihsel olarak korunur; yeni API'ler başlangıçta varmış gibi yazılmaz.
 
-Bu belgenin ilk sürümü **Aşama A denetim planıdır**. Aşağıdaki sonraki aşamalar uygulandı sayılmaz; her aşamanın gerçek sonucu ve ilgili commit'i teslim raporunda kaydedilir. Var olan uygulama önce karakterize edilir, sonra küçük sınırlarla taşınır. Evrensel, her alanı içeren tek bir durum nesnesi oluşturulmaz.
+Kod göçü ve son konsolidasyon uygulandı; son yerel `npm test` geçti. Nihai browser, derlenmiş C# karşılaştırmaları, CI/PR ve Vercel Preview kanıtları `STATE_REFACTOR_REPORT.md` içinde commit bazında kaydedilir. Buradaki workflow/test tanımı, henüz gözlenmemiş uzak koşumun geçtiği iddiası değildir.
 
-## Korunan işlem ve veri sınırları
-
-| Yetkili veri | Mevcut sahip / değişmeyecek sözleşme |
+| Aşama | Gerçek değişiklik / commit |
 | --- | --- |
-| Taşlar, zemin, skor, RNG, tur, durum | `HexMatch`, Snapshot v4 / `classic-v4`; yardımlı işlemlerde `HexAssistedGame`, `assisted-v1` komut geçmişi |
-| Bölüm, varyant ve deneme | `HexAttempts`; metadata v1, türü korunan Level ID, arşivli veri sürümü ve seçim RNG'si |
-| Altın, yıldız, stok ve kalıcı tamamlama | `HexEconomy`; kendi doğrulanan işlem defteri |
+| A — Envanter ve host karakterizasyonu | `8fe2e7f`; runtime değişmeden üç belge ve 11 gerçek uygulama grubu. |
+| A — Mobil baseline | `3509f58`; runtime değişmeden Chromium/WebKit 19'ar grup. |
+| B — Saf çekirdek | `ed14aeb`; DOM'suz Core/selector ve bağımsız geçiş testleri. |
+| C — Navigation ve native modal | `a6daca1`; `screen`, `paused`, `modalStack` kaldırıldı, sınırlı DOM/history/focus adaptörü bağlandı. |
+| D — Öğretici/Tavik/dünya | `0c41663`; tek committed presentation projeksiyonu ve ortak board/inventory giriş selector'ları. |
+| E — Async presentation | `4176aa9`; derived busy, commit sonrası pending, hint kimlikleri ve suspension guard'ı. |
+| F — Konsolidasyon | Başarılı full-reset recurring timer/resource cleanup, gerçek sahiplik belgeleri ve yeni CI state-browser matrisi; son teslim commit'i rapordadır. |
+
+## Değişmeyen yetkili veri sınırları
+
+| Yetkili veri | Korunan sahip / sözleşme |
+| --- | --- |
+| Taşlar, zemin, skor, RNG, tur, durum | `HexMatch`, Snapshot v4 / `classic-v4`; yardımda `HexAssistedGame`, `assisted-v1` komut geçmişi |
+| Bölüm, varyant ve deneme | `HexAttempts`; metadata v1, typed Level ID, arşivli veri sürümü, ayrı selection RNG |
+| Altın, yıldız, stok, kalıcı tamamlama ve welcome | `HexEconomy`; tekil doğrulanan işlem defteri |
 | Can ve muafiyet | `HexLives`; LifeState v2, UTC clock/verifier adaptörü |
-| +5 hareket ve makbuz hakkı | `HexRescue` + mevcut sağlayıcı; aynı Attempt ID ve tekil işlem defterleri |
-| Kalıcı profil | `HexSessionStore`, `hexrota-profile-v2`; `game + energy` tek revision / tek kanonik yazım |
+| +5 hareket ve makbuz hakkı | `HexRescue` + mevcut provider, aynı Attempt ID ve tekil defterler |
+| Kalıcı profil | `HexSessionStore`, `hexrota-profile-v2`; game+energy tek revision/kanonik yazım |
 | Uyumluluk aynaları | `hexrota-match-v5`, `hexrota-lives-v1`; başarıdan sonra tamir edilebilir aynalar |
-| Öğretici ilerlemesi | Replay ile doğrulanan kayıt; sahne yalnız son başarılı commit projeksiyonunu okur |
+| Öğretici ilerlemesi | Replay doğrulanan son başarılı profil; yeni dünya/malzeme kaydı yok |
 
-Yeni UI çekirdeği bu verileri yazmaz, replay etmez ve ikinci kopyalarını yetkili kabul etmez. Oyun/enerji işlemlerini event reducer içine taşımak yasaktır. Eski bozuk/null kaydı varsayılan yeni oyuncu olarak kabul etmek yasaktır.
+UI reducer bu değerleri yazmaz, replay etmez veya ikinci authoritative kopyalarını saklamaz. Bozuk/null save yeni oyuncu olarak kabul edilmez. `sessionAction` hâlâ senkron batch'tir; Promise'i bekleyen yeni bir transaction framework kurulmadı. Gerçek takas/booster komutu ve mevcut atomik commit ilk await'ten önce tamamlanır. Görsel hata authoritative başarıyı geri alamaz.
 
-`app.js:sessionAction` senkron bir batch sınırıdır; dönen Promise'i bekleyen bir işlem yöneticisi değildir. `performSwap` ve `confirmAssistance` gerçek komutu ve atomik commit'i ilk `await` öncesinde yürütür. Bu sıralama, görsel hata/iptalde sonucun kaybolmamasını sağlar. Yeni effect katmanı bu commit'i geciktirmemelidir.
+## A — Önce gözle, sonra değiştir
 
-## A — Envanter ve karakterizasyon
+Envanterde gerçek beş ekran, 15 native modal, ortak mutable alanlar ve async kaynak/kimlikleri çıkarıldı. Normal davranışın baseline `npm test`, 11 host ve iki browser'ın 19'ar grubu runtime değişmeden kaydedildi.
 
-1. Ekranlar, modaller, kalıcı alanlar, geçici kaynaklar ve async kimlikler gerçek kaynaklardan çıkarılır.
-2. `STATE_ARCHITECTURE.md` ve `STATE_TRANSITION_MATRIX.md` mevcut davranışı, beklenen iyileştirmelerden ayırır.
-3. `npm test` ve anlamlı karakterizasyon kontrolleri baseline üzerinde çalıştırılır. Yeni yaşam döngüsü hatası için kırmızı kanıt ayrı tutulur; geçmekte olan baseline testi diye sunulmaz.
-4. Bilinen kırmızı durum: son gerçek kazanma hamlesinin animasyonu sürerken, görünürlük değişmeden gönderilen sentetik `pagehide.persisted` sonrasında gecikmiş sonuç diyaloğu açılır. Profil game/energy ve ödül aynı kalır. Bu bir **Medium sunum yaşam döngüsü** hatasıdır; native BFCache veya fiziksel cihaz kanıtı değildir. `check-state-lifecycle.cjs` amaçlanan güvenli davranışı tarif eder ve başlangıçta kırmızıdır.
+Adversarial guard hedefleri başlangıçta 2/8 geçti: altı hatalı navigasyon/modal/pending-stage senaryosu kırmızıydı. Bunlar normal native inertlik arkasında oyuncu tıklaması gibi gösterilmez. Ayrı lifecycle kırmızı test, son gerçek kazanma hamlesinden sonra sentetik persisted pagehide'da stale win modalı açılmasını gösterdi; game/energy/ödül aynıydı. Bu kanıt native BFCache veya fiziksel cihaz testi değildir. Düzeltmelerle bu kontroller normal test zincirinde yeşile döndü.
 
-Çıkış kapısı: envanter ve başlangıç karakterizasyon commit'i; runtime henüz taşınmamış olmalı.
+## B — Küçük saf çekirdek
 
-## B — Saf çekirdek
+`app-state.js` dört paralel transient bölgeyi taşır: navigation, overlays, lifecycle ve yalnız presentation/hint için bounded operations. Motor, receipt, engine clone, Worker veya DOM snapshot'a girmez. Doğrulanan olay kataloğu, immutable own-data kopyası, guard, FIFO reentrancy ve kaldırılabilir abonelik vardır. Unknown payload ve stale instance/token güvenle reddedilir.
 
-Küçük, DOM'suz reducer/store; doğrulanan dar olay kataloğu, immutable snapshot, guard, selector, subscription ve cleanup. Navigasyon, modal, sunum işlemi ve yaşam döngüsü paralel bölgeler olarak ayrılır. Motor sonucu veya ekonomi burada saklanmaz. Operation kaydı yalnız transient kimlik/status olabilir; Worker, AbortController, DOM node ve engine clone reducer snapshot'ına girmez.
+`state-selectors.js` Core'un ekran/kind kataloğu ve temel salt yardımcılarını kullanır; ikinci katalog/state authority oluşturmaz. Geçerli eski indexed container'lar committed tutorial projeksiyonunda desteklenir. Kalıtılmış serialization hook'ları veya recognized accessor'lar event/facts kopyalanırken çalıştırılmaz; caller domain nesnesi dondurulmaz.
 
-Test kapısı: başlangıç, geçerli/geçersiz payload, idempotency, bilinmeyen olay, reentrant dispatch, abonelik kaldırma, immutable snapshot ve eski operation tamamlamasının reddi. Bu aşama mevcut app davranışını henüz değiştirmez.
+## C — Ekran ve modal koordinasyonu
 
-## C — Navigasyon ve modal koordinasyonu
+Gerçek `home/game/journey/records/garden` ekranları korundu. Settings modal kaldı. Geçersiz NAVIGATE/OPEN_MODAL ilk iptal/persist/history/native DOM etkisinden önce reddedilir. Pending stage yalnız kabul edilebilir önizlemede atanır; Başla yalnız açık/en üst önizlemeyi kullanır.
 
-`home/game/journey/records/garden` gerçek ekranlarına bağlanır. Settings bir modal olarak kalır. DOM adapter aynı düğümlere `hidden/inert`, history ve focus etkilerini uygular; tahta yaratma veya bölüm açma işlemi reducer'a girmez. Mevcut pause → settings ve sağlayıcı/sonuç iç içeliği açık politikalarla korunur.
+`state-effects.js` aynı DOM düğümlerini, native close acknowledgment'larını, focus ve history'yi yönetir. Pause→Settings→Reset, Settings→TEST provider ve aynı denemede rescue provider akışları korunur. Açılış instance'ı geç eski close olayını fence eder; gerekli ebeveynin kapanışı yasak zincir bırakıyorsa reddedilir. Native close zaten gerçekleşmişse aynı instance'lar özgün top-layer sırasıyla onarılır ve domain cleanup çağrılmaz.
 
-Mevcut `gameInputAllowed` resolving sırasında bir dokunuşu mevcut animasyonu açığa çıkarmak için kabul edebilir; bunu yanlışlıkla yeni hamle veya tamamen cevapsız girişe çevirmeyin. Board guard ile envanterin kendi modalında çalışan komut guard'ı aynı şey değildir.
+Provider close temizliği tek `modalClosed` sahibinde, mevcut `sessionAction` bariyeri altında çalışır. Board input ile modal içi inventory komutlarının izinleri ayrı selector'lardır; resolving dokunuşu yalnız mevcut committed sonucu açığa çıkarır, yeni hamle değildir.
 
-Çıkış kapısı: Back/Escape, nested modal/focus, invalid screen/modal, pause/resume ve kayıt hatası geçişleri. Kalıcı işlem ve provider içleri değişmez.
+## D — Tek Tavik ve sahne projeksiyonu
 
-## D — Öğretici, Tavik ve dünya sunumu
+`syncScene()` bir `projectPresentation` çağrısının `.portrait` ve `.scene` payload'larını iki mevcut adaptöre verir. Tek actorMode `PORTRAIT/WORLD/NONE` üretir. Tutorial boyunca portre kanalı rezerve kalır; kart terminalde/gizliyken küçük full-body tekrar ortaya çıkmaz. Mevcut decode/pose generation'ları, clip adları, fallback ve yerel cleanup korundu.
 
-Tek bir host sunum projeksiyonu, portre/full-body/hidden seçimini üretir; portre ve sahne adaptörleri bu ortak kararı uygular. Varlık decode/pose epoch'ları ve modül cleanup'ı yerel kalır. Mevcut defensive görünürlük korumaları ancak aynı güvence testle sağlanınca sadeleştirilir.
+İlerleme yalnız son başarılı committed profile dayanır: `0→foundation`, `1→frame`, `2→finished`; T1 Tahta min(turn,3)/3, T2 Çivi min(turn,4)/4. Aynı Attempt ID olmadan speculative turn sayılmaz. Yıldızlar kümese bağlanmaz; yeni envanter/kayıt yoktur. PR #24'ün 118 px tek kartı, üç sütunu ve gerçek tahta/HUD ölçüsü korunur.
 
-İlerleme: doğrulanmış öğretici tamamlama sayısı `0 → foundation`, `1 → frame`, `2 → finished`. T1 `Tahta min(committedTurn,3)/3`, T2 `Çivi min(committedTurn,4)/4`; yeni envanter/kayıt alanı değildir. Yıldızlar kümese bağlanmaz. PR #24'ün tek koç kartı, 118 px yüksekliği, üç sütunu ve değişmeyen tahta boyutu korunur.
+## E — İş rezervasyonu ile committed sunumu ayır
 
-Çıkış kapısı: gerçek iki öğretici, tek +20 hoş geldin Altını, replay/skip, kayıt hatası/rollback, geç varlık/fallback, düşük hareket ve altı viewport'ta ölçüm.
+Mevcut epoch, current job/engine referansı ve AbortController kaldı; UI token'ı bunların veya ekonomik transaction kimliğinin yerine geçmez. Presentation requested yalnız giriş rezervasyonudur: `appBusy()` bunu kilit olarak görür, semantik `gameplayPhase` PLAYING kalır. Başarılı kanonik commit sonrasında pending ve RESOLVING olur. Terminal outcome sonrası gerçek motorun PLAYING/WON/LOST görünümü türetilir; ayrıca yazılan faz yoktur.
 
-## E — Async oyun sunumu
+UI token tahsisi null/hatalıysa geçerli takas/booster commit'i reddedilmez; mevcut committed sonuç hızlı gösterilir. Dört gerçek operation UI grubu commit sırasını, geç token'ı, token tahsis arızasını ve failed-write/retry ödülünü doğrular. Invalid-swap feedback kendi küçük yerel görsel işi olarak kaldı. Hint token'ı ayrıca job/engine/epoch ile korunur; Worker terminate, resolver ve timer cleanup yapılır.
 
-Mevcut `epoch`, job identity, engine identity, AbortController ve watchdog önce korunur. Yeni transient operation token'ı bu kimliklerin yerine ekonomik işlem kimliği olarak kullanılmaz. Commit sonrası sunum başlayabilir; görsel hata veya süre aşımı authoritative sonucu geri almaz. İptal, geçici taşları/skor paketlerini ve zamanlayıcıları temizleyip etkileşimi açar; eski callback yeni işleme dokunamaz.
+Visibility mevcut pause/result davranışını korur. Pagehide mevcut committed sunumu bitirip yeni kurulmuş terminal timer'ı da temizler, epoch'u artırır, APP_SUSPENDED ile UI generation'ı emekli eder ve sahneyi kaldırır. Pageshow mevcut görünürlük/APP_RESUMED üzerinden yalnız görünümü kurar; eski işi yeniden başlatmaz. `check-state-lifecycle.cjs` kırmızıdan yeşile döndü. Gerçek `pageshow.persisted` reload ve Web Lock'u tekrar edinme politikası değişmedi.
 
-`APP_SUSPENDED` benzeri yaşam döngüsü geçişi, son commit'i göstermeyi güvenle tamamladıktan sonra ertelenmiş sonuç açma etkisini emekli etmelidir. `check-state-lifecycle.cjs` bu aşamada düzeltmeyle birlikte yeşile çevrilir. Native `pageshow.persisted` yeniden yükleme ve Web Lock'u tekrar edinme politikası değiştirilmez.
+Doğrulanmış fakat yazılamamış life/rescue receipt, disposable animasyon işi değildir. Açık yeniden teslim, provider proof ve tekil defterler korunur; ekran/presentation iptali bu hakkı silmez.
 
-Doğrulanmış fakat yazılamamış `pendingLifeReceipt` / `pendingRescueReceipt` disposable animasyon işi değildir. Mevcut açık yeniden teslim süreci, provider kanıtı ve tekil defterler korunur. Ekran/presentation iptali bu hakları silmez. Tam test sıfırlaması yalnız mevcut başarılı atomik reset sonrasında eski writer/callback'leri kapatır.
+## F — Temizlik ve teslim sınırı
 
-## F — Konsolidasyon ve teslim
+Bağımsız mutable screen/paused/modalStack/busy kaldırıldı; appScreen/appPaused/appBusy salt selector'dır. Transaction baseline'ları, request quote'ları, preview clone'ları ve faydalı epoch/engine guard'ları tutuldu. Genel bir wildcard bus veya ikinci veritabanı oluşturulmadı.
 
-- Eski flag yalnız kanıtlanan selector/owner karşılığı varsa kaldırılır. Kalıcı transaction baseline'ları, replay ve receipt kanıtları korunur.
-- Listener/timer cleanup açık sahiplerde olur; pagehide'da mevcut son kayıt yazımı ile writer revoke sırası bozulmaz.
-- Mevcut testler, 15 Actions çalıştırması ve gerçek .NET 8 / C# 7.3 parity işleri korunur. Yeni unit/browser kontrolleri eklenir; başarı eşiği gevşetilmez.
-- PWA allowlist/HTML/fixture yükleme sırası yeni runtime modülleriyle birlikte güncellenir; save sürümleri ve Production yapılandırması değişmez.
-- `STATE_REFACTOR_REPORT.md` gerçek değişiklik/commit, kaldırılan flag, hata ve çözüm, test sonucu ve kalan borcu yazar. `ARCHITECTURE.md` gerçek final sahipliğini gösterir.
-- Tek entegrasyon PR'ı ve Vercel Preview oluşturulur; kullanıcı onayı olmadan main'e merge/Production promotion yapılmaz.
+Başarılı full reset önce mevcut `resetForTesting` commit + writer revoke yapar. Sonra reset bariyeri açılır, sahiplenilen iki life/rescue recurring timer durdurulur; Effects/Core/portre/sahne kaynakları destroy edilir. Başarısız reset önceki session'ı kullanılabilir bırakır. Mevcut global callback'ler host bariyerinden geçer; bütün platform dinleyicilerinin gereksiz yere yeniden yazıldığı iddia edilmez.
 
-## Unity eşlemesi ve bilinçli sınırlar
+`npm test` bütün eski kontrolleri ve yeni `test:state` zincirini tutar. `test:state-browser` gerçek Chromium/WebKit geçiş/native modal/offline kapsamıdır. Mevcut 15 Actions işi kaldırılmadı; state-browser matrisine iki ayrı iş eklendi. Son yerel npm koşumu geçti. Final uzak koşum, parity sayıları, PR ve Preview bağlantısı raporda doğrulanır; başarısız veya yapılmamış test yeşil sayılmaz.
+
+PWA v40 yalnız üç runtime modülünü HTML/allowlist/fixture yükleme sırasına ekleyen cache kuşağıdır; profil/snapshot/command/attempt/life sürümleri ve Production yapılandırması değişmedi. Onay olmadan merge yapılmaz.
+
+## Unity kavramsal eşlemesi ve bilinçli kapsam dışı işler
 
 | Web kavramı | Gelecekte Unity sunum karşılığı |
 | --- | --- |
-| Saf navigasyon/modal reducer | Screen/Canvas koordinatörü ve doğrulanan UI komutları |
-| Authoritative domain selector | Mevcut C# `GameSessionController` / Gameplay sonucu üzerinden salt görünüm |
-| İşlem token'ı / generation | CancellationToken veya explicit operation identity; gerçek makbuz kimliği ayrı |
-| Tavik actor form / pose view | Portre UI / Animator adaptörü; mevcut asset clip adları |
-| Derived coop stage | Başarılı profil commit'inden scene view; ikinci dünya veritabanı yok |
-| Browser history/focus/DOM/Worker | Platform adaptörleri; saf transition tanımlarına girmez |
+| Saf navigation/modal reducer | Screen/Canvas koordinatörü ve doğrulanan UI komutları |
+| Domain selector | Mevcut C# GameSessionController/Gameplay sonucu üzerinden salt view |
+| Operation token/generation | CancellationToken veya explicit operation identity; makbuz ID'si ayrı |
+| Tavik actorMode/pose | Portre UI / Animator adaptörü, mevcut onaylı clip adları |
+| Committed coop stage | Başarılı profilden scene view; ikinci dünya veritabanı yok |
+| DOM/history/focus/Worker | Platform adaptörleri; saf transition tanımlarına girmez |
 
-Bu görev yeni C# gameplay veya `GameSessionController` yeniden yazımı değildir. C# `Execute` ve `ProfileRepository.CompareExchange` atomik sınırı olduğu gibi korunur. Web'e Unity bağımlılığı, native kayıt formatı, SDK, Unity sahnesi veya fiziksel cihaz doğrulaması eklenmez.
+Bu görev C# gameplay veya GameSessionController yeniden yazımı değildir. `Execute` ve `ProfileRepository.CompareExchange` sınırı korundu. Web'e UnityEngine bağımlılığı, yeni native kayıt biçimi, SDK veya Unity sahnesi eklenmedi. Fiziksel iOS/Android ve Unity/IL2CPP doğrulaması yapılmadı.

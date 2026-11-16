@@ -60,9 +60,13 @@ Görsel olaylar oyun kuralı değildir. Hamlenin kanonik sonucu önce kesinleşi
 
 DOM/focus/history adaptörü profil yazmaz. `onClose` host'un mevcut `sessionAction` bariyerinde çalışır; provider iptal/teslim kuralları kendi sahiplerinde kalır. Odak yalnız bağlı, görünür, etkin ve kalan üst modala uygun opener'a döner; gezinme eski gizli tahtada odak bırakmaz. Saf store `snapshot/preview/dispatch/subscribe/destroy` API'lerini, sıralı reentrant dispatch ve unsubscribe yaşam döngüsünü sağlar. İş token'ları `kind/id/attemptId/generation` taşır; işin eski tamamlanması yeni işi kapatamaz.
 
-`state-selectors.gameplayPhase` READY/PLAYING/RESOLVING/WON/LOST görünümünü mevcut motor sonucundan ve görsel işten türetir. WON/LOST yeni bir kazanma hesaplaması değildir. `canRouteBoardInput`, çözümleme sırasında mevcut kesinleşmiş sonucu açığa çıkarabilecek dokunuşla `canStartMove` iznini ayırır; `canUseInventory` gerçek envanter/yardım modalını ilgisiz modaldan ayırır. İş kurallarının uygunluğu mevcut domain sahiplerince hesaplanır, seçiciye anlık salt görünüm olarak verilir.
+`state-selectors.gameplayPhase` READY/PLAYING/RESOLVING/WON/LOST görünümünü mevcut motor sonucundan ve görsel işten türetir. Presentation `requested` yalnız giriş rezervasyonu ve semantik PLAYING'dir; `pending` yalnız başarılı kanonik commit sonrası RESOLVING olur. `appBusy()` requested/pending kilidini türetir; ayrı mutable `busy` yoktur. WON/LOST yeni bir kazanma hesaplaması değildir. `canRouteBoardInput`, çözümleme sırasında mevcut kesinleşmiş sonucu açığa çıkarabilecek dokunuşla `canStartMove` iznini ayırır; `canUseInventory` gerçek envanter/yardım modalını ilgisiz modaldan ayırır. İş kurallarının uygunluğu mevcut domain sahiplerince hesaplanır, seçiciye anlık salt görünüm olarak verilir.
 
-**Entegrasyon notu:** navigasyon/modal ve merkezi Tavik projeksiyonu bağlanmıştır; giriş ve asenkron iş evrelerinin bağlanması Stage E'de tamamlanmaktadır. Bu belgedeki API tanımı yeni tarayıcı/CI koşumlarının geçtiği iddiası değildir. Güncel uygulama kapsamı ve gerçek sonuçlar `STATE_REFACTOR_REPORT.md` içinde kaydedilir.
+Navigasyon/modal, merkezi Tavik projeksiyonu, board/inventory selector'ları ve presentation/hint operation yaşam döngüsü bağlandı. `startPresentation` görsel owner'ı rezerve eder; başarılı atomik commit sonrasında `activatePresentation` pending'e geçirir. UI token tahsisi başarısızsa geçerli komut/ödül kaydı engellenmez; gerçek committed sonuç hızlı gösterilir. Mevcut epoch, job/engine referansları ve AbortController korumaları tutulur. Invalid-swap feedback yerel görsel iş olarak kalır.
+
+Pagehide committed sunumu güvenle bitirir, hint/terminal timer'ı temizler, epoch'u artırıp `APP_SUSPENDED` ile UI neslini emekli eder; sahne host'unu kaldırır. Pageshow `APP_RESUMED` ve mevcut görünürlükle yalnız sunumu yeniden kurar. Gerçek persisted dönüşte SessionStore'un reload/yazıcı kilidini tekrar alma politikası değişmez. Sonuç timer'ı ayrıca suspension guard'ı taşır; kapanmış belgeye geç win/lose diyaloğu açamaz.
+
+Başarılı `resetForTesting` sonrasında full-reset bariyeri önce etkinleşir, sahiplenilmiş iki life/rescue recurring timer durur, StateEffects/Core/Tavik/sahne kaynakları destroy edilir. Başarısız reset eski writer/session'ı kullanılabilir bırakır. Existing provider/receipt/commit kuralları yeni store'a taşınmaz. Bu kod sözleşmesi uzak test başarısı iddiası değildir; güncel gerçek browser/CI/Preview sonuçları `STATE_REFACTOR_REPORT.md` içinde kaydedilir.
 
 ## C# sahipliği
 
@@ -117,7 +121,7 @@ Gizli sekme, mola ve açık diyalog hareketi durdurur, geçici tepkileri/kararma
 1. Güncel `main`den ayrı branch; kullanıcı onayı olmadan merge/Production değişikliği yok.
 2. Yeni davranışı önce testle tarif et; düzeltmede önce eski davranışın hatasını yeniden üret.
 3. Saf kural değişirse gerçek derlenmiş JS/C# karşılaştırması; sunum değişirse gerçek Chromium/WebKit görüntü ve dokunma testleri.
-4. `npm test` mevcut bütün zinciri ve `test:maintenance` kontrolünü çalıştırır. Hiçbir eski test kaldırılmaz; eşiği hatayı gizlemek için gevşetme.
+4. `npm test` mevcut bütün zinciri, `test:maintenance` ve yeni `test:state` kontrollerini çalıştırır. `test:state-browser` gerçek native modal/geçiş/offline akışını Chromium/WebKit üzerinde dener. Mevcut 15 Actions işi korunur; iki state-browser matris işi eklenir. Workflow tanımı koşum başarısı değildir; sonucu son commit'te doğrula. Hiçbir eski test kaldırılmaz; eşiği hatayı gizlemek için gevşetme.
 5. `npm run test:maintenance`: CSS üretim tutarlılığı, hafif bağımlılık/syntax korumaları, kayıt sınırı ve dondurulmuş sunum testleri.
 6. Görünür ekran davranışı için fiziksel iPhone kontrolü ayrıca gerekir. Otomatik WebKit sonucu iPhone testi diye yazılmaz.
 7. Değişikliğin nedeni, modülü, sözleşme etkisi ve kanıtı bakım raporuna/PR açıklamasına yazılır.

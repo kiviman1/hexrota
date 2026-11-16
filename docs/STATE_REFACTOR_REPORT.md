@@ -1,125 +1,128 @@
 # Durum mimarisi refaktörü — uygulama ve doğrulama raporu
 
-## Raporun kapsamı ve mevcut aşama
+## Kapsam
 
-Başlangıç: `main` / `996462b8513cfbdbe2747941c0aad76528357842`, PR #24 dahil. Dal: `refactor/hexrota-state-architecture`. Bu sürüm **A/B tamamlandı, C uygulaması doğrulanıyor** kontrol noktasıdır; D/E/F ve nihai CI/Preview henüz tamamlandı diye raporlanmaz. Bekleyen sonuçlar aşağıda açıkça işaretlenmiştir.
+Başlangıç `main`: `996462b8513cfbdbe2747941c0aad76528357842` (PR #24 dahil). Dal: `refactor/hexrota-state-architecture`. Aşağıdaki değişiklikler ekran/sunum sahipliğini düzenler; oyun, ekonomi ve kalıcı kayıt yöneticileri yeniden yazılmadı. Bu rapor gerçek yerel sonuçları kaydeder; GitHub kontrolleri ve Preview ayrıca PR üzerinde doğrulanır. Main'e doğrudan yazılmaz, otomatik merge açılmaz.
 
-| Aşama | Gerçek commit / durum |
+| Aşama | İncelenebilir commit / sonuç |
 | --- | --- |
-| A — Envanter ve mevcut uygulama karakterizasyonu | `8fe2e7f`: üç mimari belge ve 11 gerçek uygulama grubu; runtime değişmedi. |
-| A — Gerçek tarayıcı baseline'ı | `3509f58`: mobil geçiş karakterizasyonu; Chromium ve WebKit 19'ar grup. Runtime değişmedi. |
-| B — Saf durum çekirdeği ve selector'lar | `ed14aeb`: DOM'suz iki modül ve bağımsız testler; henüz uygulamaya bağlanmadı. |
-| C — Navigasyon / modal adaptörü | Çalışma kopyasında uygulandı; `test:state` geçti. Commit ve geniş regresyon sonuçları eklenecek. |
-| D — Tek öğretici/Tavik/sahne projeksiyonu | Bekliyor; çalışan mevcut portre/sahne akışı bu aşamada kaldırılmadı. |
-| E — Görsel operation ve suspension yaşam döngüsü | Bekliyor; `busy` ve mevcut epoch/job korumaları şu anda duruyor. |
-| F — Konsolidasyon, nihai belgeler, CI ve Preview | Bekliyor. Kullanıcı onayı olmadan merge yapılmayacak. |
+| A — Envanter, geçiş matrisi, gerçek uygulama karakterizasyonu | `8fe2e7f`; runtime değişmeden 11 grup. |
+| A — Gerçek tarayıcı baseline'ı | `3509f58`; Chromium ve WebKit 19'ar grup, altı viewport. |
+| B — Saf çekirdek ve selector | `ed14aeb`; uygulamaya bağlamadan bağımsız test edildi. |
+| C — Ekran ve modal koordinasyonu | `a6daca1`; mevcut native dialog ve transaction içleri korunarak adaptör bağlandı. |
+| D — Öğretici, Tavik ve dünya projeksiyonu | `0c41663`; tek actor-form politikası ve committed tutorial view. |
+| E — Async görsel/hint yaşam döngüsü | `4176aa9`; commit sonrası pending, türetilmiş busy, suspension ve stale-result koruması. |
+| F — Konsolidasyon ve son doğrulama | Full reset sonrası recurring timer cleanup; yeni browser CI matrisi; nihai dokümantasyon ve regresyonlar. |
 
-## Başlangıçta bulunan mimari sorunlar
+## Başlangıçta bulunan sorunlar ve gerçek düzeltmeler
 
-Envanterin tamamı [STATE_ARCHITECTURE.md](STATE_ARCHITECTURE.md), geçişler [STATE_TRANSITION_MATRIX.md](STATE_TRANSITION_MATRIX.md), aşamalı plan [STATE_MIGRATION_PLAN.md](STATE_MIGRATION_PLAN.md) içindedir.
+Tam envanter [STATE_ARCHITECTURE.md](STATE_ARCHITECTURE.md), sınırlar [STATE_TRANSITION_MATRIX.md](STATE_TRANSITION_MATRIX.md), aşamalar [STATE_MIGRATION_PLAN.md](STATE_MIGRATION_PLAN.md) içindedir.
 
-| Şiddet / bulgu | Başlangıç kanıtı | Sonuç ve sınırı |
+| Şiddet / bulgu | Tekrarlanabilir başlangıç davranışı | Son durum |
 | --- | --- | --- |
-| Medium — geçersiz navigasyon güvenli no-op değildi | Bilinmeyen `data-nav`, oyun içinden Home'a dönüyor; modal/iş temizliği ve persist/history etkileri çalışabiliyordu. | C'de guard ilk yan etkiden önce çalışır. Hatalı hedef mevcut ekranı, SVG'yi, profili ve URL'yi değiştirmez. |
-| Medium — bağımsız modal birleşimleri mümkündü | Kimlik/ekran/ebeveyn kataloğu yoktu; programatik gizli DOM komutları Settings/Inventory/preview kombinasyonlarını açabiliyordu. | C'de açık modal politikası ve instance kimliğiyle reddedilir. Normal native inertlik ile zaten engellenen kullanıcı tıklamasını ekonomik açık diye sunmuyoruz. |
-| Medium — ekran/pause/yığın ve native `dialog.open` ayrı mutable kaynaklardı | Host `screen`, `paused`, `modalStack` ve native close dinleyicileriyle eşleştirme yapıyordu. | C'de ekran ve modal kayıtları Core'a; native DOM, focus ve close onayı Effects'e taşındı. Native fallback yalnız koruyucu input bariyeridir. |
-| Medium — gecikmiş sonuç UI'sı retired belgeye dönebiliyordu | Son gerçek L1 kazanma hamlesinin sunumu sırasında görünürlük değişmeden sentetik `pagehide.persisted`; +150 ms sonra win modalı açıldı. | Kayıt game/energy, RNG, ödül defteri ve olaylar değişmedi. Fiziksel iPhone/native BFCache hatası değil. E için kırmızı test var; düzeltme henüz tamamlandı sayılmaz. |
-| Medium — Tavik form kararı dağınıktı | Host portre güncellemesi ve sahneye verilen `tutorialPortrait` ayrı çağrılardaydı. PR #24 mevcut görünürlük hatasını zaten düzeltmişti. | D'de ortak salt projeksiyon planlandı. Yeni çift-Tavik hatası bulunduğu iddia edilmiyor; mevcut doğru davranış korunuyor. |
-| Low — kaynak cleanup ve guard ifadeleri host'a dağılmıştı | Görsel job, Worker, timer, listener, epoch ve domain guard'ları farklı sahiplerde çağrılıyordu. | Yalnız gerçek UI alanları taşınıyor; faydalı güvenlik guard'ları kısaltma amacıyla kaldırılmıyor. |
+| Medium — geçersiz navigasyon güvenli no-op değildi | Bilinmeyen `data-nav`, Home'a dönüp modal/iş temizliği, persist ve history etkilerini çalıştırabiliyordu. | Hedef, herhangi bir iptal/yazma/render etkisinden önce doğrulanır. Geçersiz olay ekranı, SVG'yi, kaydı ve URL'yi değiştirmez. |
+| Medium — bağımsız modal birleşimleri | Gizli programatik DOM komutları Settings/Inventory/preview kombinasyonlarını açabiliyor, reddedilmesi gereken stage isteği `pendingStage` bırakabiliyordu. | Kimlik/ekran/ebeveyn politikası ve instance kontrolü eklendi. Gizli Başla komutu yalnız etkin pregame modalına ait geçerli pending stage ile çalışır. |
+| Medium — aynı durumun ayrı mutable sahipleri | `screen`, `paused`, `modalStack` ve native close işleyicileri eşleştiriliyordu. | Ekran/yığın Core; DOM/focus/native close Effects; pause ve busy selector üzerinden türetilir. |
+| Medium — retired belgede gecikmiş sonuç UI'sı | Gerçek son L1 hamlesinin commit'inden sonra, görünürlük değişmeden sentetik `pagehide.persisted` gönderildiğinde +150 ms sonra win modalı açılıyordu. | Pagehide committed görseli tamamlar, hint'i/timer'ı iptal eder, epoch ve operation generation'ını geçersizleştirir, sunumu suspend eder. Aynı kayıt/ödül korunur, eski sonuç penceresi açılmaz. Native BFCache/iPhone hatası iddiası değildir. |
+| Medium — Tavik form kararı dağınıktı | Portre güncellemesi ile sahnenin `tutorialPortrait` girdisi ayrı hazırlanıyordu. PR #24 görünür çift-actor hatasını zaten düzeltmişti. | `projectPresentation` ortak karar üretir; `syncScene` iki modülü besler. Terminal/hidden coach sırasında da tutorial portrait rezervasyonu korunur. Yeni main görünürlük hatası bulunduğu iddia edilmez. |
+| Low — kaynak ve input guard'ları dağınıktı | Animation/Worker/timer/epoch ve alan kontrolleri host'a dağılmıştı. | İki gerçek UI operation türü kimliklendirilir; yeni hamle ve board-routing guard'ları ayrılır. Başarılı full reset eski iki recurring timer'ı temizler. |
 
-Bu denetimde baseline üzerinde **yeni bir kalıcı kayıt/ekonomi bozulması veya çift hamle hatası yeniden üretilmedi**. CAS, tek-yazıcı, replay, tekil makbuz/ödül ve commit-before-presentation sırası mevcut korumalardır.
+Baseline üzerinde **yeni ekonomik bozulma, çift can kesintisi veya çift hamle hatası yeniden üretilmedi**. Mevcut CAS, Web Lock, replay ve tekil makbuz kuralları korunur.
 
-### Guard'ların kırmızıdan yeşile kanıtı
+`check-state-guards.cjs` baseline'da **2/8**, düzeltme sonrası **8/8** geçti. Altı kırmızı kontrol geçersiz hedef, etkin olmayan GAME, iki ters Settings/Inventory birleşimi ve iki stale-stage başlatmasıdır. `check-state-lifecycle.cjs` baseline'da kırmızı, son sürümde yeşildir. Bu başlangıç başarısızlıkları gizlenmedi.
 
-`check-state-guards.cjs`, C'den önce baseline host üzerinde **2/8** geçti; aşağıdaki altı kontrol beklenen şekilde kırmızıydı. C sonrasında **8/8** geçti. Başlangıçtaki başarısızlıklar gizlenmedi veya başarı adedine eklenmedi.
+Yeni çekirdek entegrasyon öncesinde de sertleştirildi: kalıtılmış `toJSON`/getter hook'ları çalıştırılmaz; zorunlu ebeveyn kapanışı orphan modal bırakamaz; native ebeveyn kapanışı özgün instance sırasıyla onarılır; subscriber içinde convenience operation başlatma sahipsiz queued token üretmez. Bunlar eski main'in ekonomik açıkları değildir.
 
-1. Hatalı ekran adının mevcut ekran/modal/profil/history durumunu değiştirmemesi.
-2. Salt Home önizlemesinin ham `GAME` navigasyonuyla kayıtlı bir denemeye dönüşmemesi.
-3. Settings açıkken gizli Inventory komutunun reddi.
-4. Inventory açıkken gizli Settings komutunun reddi.
-5. Settings üstüne gizli bölüm önizlemesinin yığılmaması.
-6. Yasak önizleme isteğinden kalan `pendingStage` ile sonraki gizli Başla callback'inin etkin bölümü T1'e değiştirememesi.
+## Alan sahipliği ve yeni modüller
 
-`check-state-lifecycle.cjs` ayrı bir **başlangıçta kırmızı** suspension kontrolüdür. Önce gerçek commit, aynı profil/can/olaylar, temiz geçici taşlar ve busy'nin çözülmesi doğrulanır; yalnız retired belgenin win modalını yeniden açmaması assertion'ı baseline'da başarısız olur. E'deki düzeltme ve son sonuç ayrıca kaydedilecek.
-
-### Yeni çekirdeğin entegrasyon öncesi incelemesinde düzeltilen hatalar
-
-Bunlar mevcut main'in ekonomik açıkları değil, yeni modüller devreye alınmadan yakalanan geliştirme hatalarıdır:
-
-- Kalıtılmış `toJSON`, doğrulanmış olayın Journey hedefini kopyalama sırasında Garden'a çevirebiliyordu. Own-data descriptor kopyası artık event, token ve enjekte edilen state'i hook çalıştırmadan taşır; hook çağrısı sıfır ve özgün kimlik/niyet korunur.
-- Settings'in zorunlu Full Reset çocuğu açıkken ebeveyni kapatmak geçersiz yığın bırakabiliyordu. Core kalan topolojiyi doğrular; geçersiz kapanışı reddeder. Native close zaten gerçekleşmişse Effects ilgili native diyaloğu ve çocuklarını özgün sırada onarır; ekonomik/provider cleanup çağırmaz. Pause kaldırılıp Settings'in geçerli kök olarak kalması korunur.
-- Subscriber içinden `beginOperation` bir sahibi olmayan queued iş bırakabiliyor veya dış çağrıya başka replacement işin token'ını döndürebiliyordu. Convenience API bildirim sırasında yeni iş başlatmaz; dış çağrı yalnız kendi talep token'ını alır. Genel reentrant dispatch FIFO kalır.
-- Recognized facts accessors'ın çalışmaması ve normalize edilmeden önceki geçerli indexed-array legacy container projeksiyonu test edildi; caller domain nesneleri dondurulmaz.
-
-## Sahiplik ve modül sınırları
-
-| Alan | Bu kontrol noktasındaki sahibi |
+| Alan | Yetkili sahibi / sınır |
 | --- | --- |
-| Ekran ve modal instance/yığın/izinler | `HexAppState`; `home/game/journey/records/garden`. Settings ekran değil, modal. |
-| Native dialog, focus, close onayı, DOM/history | `HexStateEffects`; mevcut DOM düğümleri kullanılır, tahta yeniden yaratılmaz. |
-| Gameplay fazı / board guard / actor form / dünya görünümü | `HexStateSelectors` saf API'si test edildi. Host'a tam bağlama D/E'de tamamlanacak. Domain verisi saklanmaz. |
-| Tahta, skor, tur, RNG, katlar ve sonuç | Mevcut `HexMatch` / `HexAssistedGame`; UI reducer yeni motor değildir. |
-| Katalog, varyant ve deneme | Mevcut `HexAttempts`; metadata v1 ve typed kimlikler. |
-| Altın, yıldız, stok ve kalıcı tamamlama | Mevcut `HexEconomy` ve doğrulanan işlem defteri. |
-| Can, sağlayıcı ve ikinci şans | Mevcut Life/Rescue yöneticileri, verifier'lar ve tekil makbuz defterleri. |
-| Kalıcı profil ve atomik game+energy | Mevcut `HexSessionStore`; tek-yazıcı Web Lock ve revision kontrolü. |
-| Görsel kaynak/Worker/animasyon handle'ları | Sahip modüller/host; immutable UI snapshot'ına DOM, engine clone veya receipt eklenmez. |
+| Beş ekran: home/game/journey/records/garden | `HexAppState.navigation`; Settings modal olarak kalır. |
+| Modal instance/yığın/topoloji | `HexAppState.overlays`; native düğüm, focus, history ve close onayı `HexStateEffects`. |
+| Lifecycle ve iki transient operation | Core hidden/suspended ile presentation/hint token'larını tutar; engine, receipt veya DOM tutmaz. |
+| Gameplay fazı ve input | Selector her çağrıda gerçek engine/attempt/write facts'ini okur; ikinci oyun motoru yoktur. |
+| Tavik/diyalog/dünya | `projectPresentation` → tek `syncScene` sahibi; mevcut pose/decode/animation sahipleri korunur. |
+| Board/skor/RNG/zemin/turn/sonuç | Mevcut `HexMatch` / `HexAssistedGame`. |
+| Bölüm/varyant/Attempt ID | Mevcut katalog ve `HexAttempts`. |
+| Altın/yıldız/stok/kalıcı tamamlama | Mevcut `HexEconomy`. |
+| Can ve kurtarma/makbuz | Mevcut Life/Rescue/provider/verifier sistemleri. |
+| Kalıcı atomik profil | Mevcut `HexSessionStore`; UI reducer storage'a erişmez. |
 
-Üç yeni runtime modülü yeterlidir; `state-adapters.js` gibi ikinci bir katman sırf dosya sayısını artırmak için oluşturulmadı:
+- `dist/app-state.js`: saf transition, dar payload/event kataloğu, guard, immutable snapshot, FIFO dispatch, subscribe/destroy ve stale operation kimlikleri.
+- `dist/state-selectors.js`: faz, input, committed tutorial progress, dünya/actor/portrait projeksiyonu. Domain nesnelerini saklamaz veya dondurmaz.
+- `dist/state-effects.js`: mevcut ekran/dialog DOM'u, browser history, instance-aware close/focus, kontrollü callbacks ve cleanup. Domain cleanup mevcut `sessionAction` bariyerinde çalışır; grant/receipt/commit içermez.
 
-- `dist/app-state.js`: dar doğrulanmış olaylar, saf transition/guard, immutable snapshot, FIFO subscription ve transient operation kimlikleri. DOM, clock, storage ve gameplay içermez.
-- `dist/state-selectors.js`: her çağrıda verilen domain facts üzerinden faz/input/committed-tutorial/scene/portrait projeksiyonu. Yetkili verinin kopyasını tutmaz.
-- `dist/state-effects.js`: izin verilen modal effects, instance-aware native close, focus/history ve cleanup. `onClose`, mevcut `sessionAction` bariyerinden geçer; receipt/grant/commit yapmaz.
+Toplam üç runtime dosyası yaklaşık 43 KB kaynak (minify/gzip öncesi) ekler; yeni npm bağımlılığı veya framework eklenmez. Ayrı `state-adapters.js` sırf dosya sayısı için üretilmedi.
 
-## Kaldırılan ve bilinçli korunan alanlar
+## Konsolidasyon ve commit sınırı
 
-C'de bağımsız mutable `screen`, `paused` ve `modalStack` kaldırıldı. `appScreen()` Core'un navigasyonunu, `appPaused()` Pause modal üyeliğini okur. Genel dialog close işleyicisi ile iki provider'a ait ek close dinleyicisi, instance başına tek `modalClosed` callback sahibinde birleştirildi. Geç eski native close yeni provider/request alanlarını temizleyemez.
+Bağımsız mutable `screen`, `paused`, `modalStack`, `busy` kaldırıldı. `appScreen`, `appPaused`, `appBusy` salt Core/selector okumasıdır. Genel dialog close ile iki provider close listener'ı tek instance-aware `modalClosed` sahibinde birleşir. Portre ve sahne ortak projeksiyon alır. Kapanış timer'ları ve hint completion kimlikleri mevcut epoch/engine/worker guard'larıyla birlikte çalışır.
 
-`navigationEffectGeneration` yeni bir ekran otoritesi değil, reentrant close/rollback sırasında kuyruğa giren eski DOM render microtask'ını elemek için geçici effect kimliğidir.
+İstek rezervasyonu yalnız input kilididir: **requested → PLAYING** (aday engine terminal olsa bile), **başarılı canonical commit → pending/RESOLVING**, sonuç veya güvenli iptal sonrası gerçek engine fazı. `isResolving` API adı requested+pending kilidini kapsar; `gameplayPhase` semantik farkı korur. Görsel token üretilemezse doğrulanmış komut ve ödül geri alınmaz; committed görüntü hızlıca gösterilir. Animasyon callback'i oyun komutu çalıştırmaz.
 
-**Henüz kaldırılmayanlar:** `busy` E'de taşınacak. `epoch`, `presentation`, `hintJob`, `activeAttempt`, `attemptPending`, `saveBlocked`, `firstOpening`, `committedSceneGame`, provider/request context'leri ve transaction baseline'ları şu aşamada korunur. `pendingLifeReceipt` / `pendingRescueReceipt` doğrulanmış fakat yazılamamış haklardır; animasyon iptali bunları silemez. `fullResetPending`, yalnız başarılı atomik full resetten sonra eski document için geri alınamaz güvenlik bariyeridir.
+`epoch`, animation handle `presentation`, Worker `hintJob`, pointer/selection, `activeAttempt`, `attemptPending`, `saveBlocked`, `firstOpening`, `committedSceneGame`, pending request/receipt context'leri ve transaction baseline'ları bilinçli olarak yerinde kaldı. Bunlar tek bir evrensel UI snapshot'ına kopyalanmaz. Özellikle doğrulanmış fakat henüz yazılamamış receipt, navigasyon iptaliyle kaybedilmez. `fullResetPending` yalnız başarılı geri alınamaz canonical reset sonrasında eski belgeyi kapatır; başarısız reset refresh timer'larını veya geçerli profili silmez.
 
-## Değişen dosyalar
+## Tam dosya listesi
 
-Aşağıdaki liste baseline'a göre bu kontrol noktasında gerçekten bulunan değişiklikleri kapsar; E/F ve CI bağlantıları eklendiğinde yenilenecek. Henüz mevcut olmayan dosya uygulanmış gösterilmez.
+Baseline'a göre 27 dosya:
 
-| Grup | Tam yollar |
+| Grup | Dosyalar |
 | --- | --- |
-| Yeni transient runtime | `dist/app-state.js`, `dist/state-selectors.js`, `dist/state-effects.js` |
-| Host entegrasyonu | `dist/app.js` |
-| Yükleme / çevrimdışı kabuk | `dist/index.html`, `dist/sw.js`, `dist/hint-worker.js`, `dist/ui-kit.html`, `qa-fixtures.cjs` |
-| Test komutları / sınır kontrolü | `package.json`, `scripts/check-architecture.cjs` |
-| Yeni state testleri | `check-app-state.cjs`, `check-state-selectors.cjs`, `check-state-effects.cjs`, `check-state-characterization.cjs`, `check-state-guards.cjs`, `check-state-browser.cjs` |
-| E için ayrı kırmızı test | `check-state-lifecycle.cjs` — şu anda normal geçen test zincirine dahil değil; E düzeltmesiyle birlikte etkinleştirilecek. |
-| Belgeler | `docs/STATE_ARCHITECTURE.md`, `docs/STATE_TRANSITION_MATRIX.md`, `docs/STATE_MIGRATION_PLAN.md`, `docs/STATE_REFACTOR_REPORT.md` |
+| Yeni runtime | `dist/app-state.js`, `dist/state-selectors.js`, `dist/state-effects.js` |
+| Host | `dist/app.js` |
+| PWA/yükleme/fixture | `dist/index.html`, `dist/sw.js`, `dist/hint-worker.js`, `dist/ui-kit.html`, `qa-fixtures.cjs` |
+| Komutlar/CI/sınır kontrolleri | `package.json`, `.github/workflows/ci.yml`, `scripts/check-architecture.cjs`, `check-comic-ui.cjs`, `check-lives-ui.cjs` |
+| Yeni testler | `check-app-state.cjs`, `check-state-selectors.cjs`, `check-state-effects.cjs`, `check-state-characterization.cjs`, `check-state-guards.cjs`, `check-state-operation-ui.cjs`, `check-state-lifecycle.cjs`, `check-state-browser.cjs` |
+| Belgeler | `docs/ARCHITECTURE.md`, `docs/STATE_ARCHITECTURE.md`, `docs/STATE_TRANSITION_MATRIX.md`, `docs/STATE_MIGRATION_PLAN.md`, `docs/STATE_REFACTOR_REPORT.md` |
 
-C'deki **PWA v40** yalnız yeni üç modülü yükleme/allowlist/fixture hattına ve sunum önbelleğine ekler. Profil/snapshot/command/attempt/life sürümleri değişmez. `package-lock.json`, bölüm/varyant verileri ve C# oyun/oturum kaynakları bu kontrol noktasında değişmedi. CSS ve hazırlanmış Tavik görselleri değiştirilmedi; PR #24'ün üç sütunlu koç kartı korunur.
+PWA v40 yalnız yeni üç runtime modülünü tutarlı offline allowlist/defer/fixture hattına ekler. `check-comic-ui.cjs` dondurulmuş SW kapsamında yalnız bu üç açık literal'i normalize eder; 88 korunan dosyanın kalan hash'i veya eski assertion'lar gevşetilmez. `check-lives-ui.cjs` isteğe bağlı test-only `beforeApp` gözlem kancası alır; default davranışı değişmez.
 
-## Gerçek test sonuçları
+`engine`, commands, attempts, level/tutorial/variant data, game-save, SessionStore, economy, lives, rescue, reward/adapter, board/input/score, first-play, scene/portrait, events, garden modülleri; bütün C# kaynakları, stiller/görseller, `package-lock.json` ve Vercel yapılandırması baseline ile aynıdır. `hexrota-profile-v2`, `hexrota-match-v5`, Snapshot v4, assisted command sürümleri, Attempt metadata v1 ve LifeState v2 değişmez.
 
-Sayılar farklı birimleri ölçer; grup, assertion, vektör, hamle ve parity karşılaştırmaları tek toplam test sayısına çevrilmez.
+## Gerçek doğrulama sonuçları
 
-| Koşum | Durum / kapsam |
+Grup, assertion, vektör, route ve JSON karşılaştırmaları ayrı birimlerdir; tek hayali test toplamına eklenmez.
+
+| Kontrol | Sonuç |
 | --- | --- |
-| Başlangıç `npm test` | Baseline üzerinde geçti. Son refaktör sonucu yerine kullanılmaz. |
-| Başlangıç karakterizasyonu | 11 gerçek uygulama grubu geçti; aynı SVG, iki öğretici, modal nesting, zero-life resume, save rollback, hint cancellation ve aynı-denemede rescue. |
-| Başlangıç gerçek browser | Chromium **19/19**, WebKit **19/19**; altı viewport, sıfır pageerror. Bunlar refaktör sonrası sonuçlar değildir. |
-| C `npm run test:state` | **Geçti:** Core 19 grup / 1.861 assertion; selector 19 grup; DOM effects 15 grup; karakterizasyon 11 grup; guard 8 grup. |
-| C sonrası tam `npm test` | Seri tam koşum exit 0. İlk kapsam hatasında yalnız üç yeni SW betiği açık normalizasyona eklendi; 88 korunan dosyanın kalan hash'i değişmedi. Paralel yerel koşumda mevcut survivor-fall zaman testi bir kez başarısız oldu; aynı assertion tek başına ve seri tam koşumda geçti, eşik değiştirilmedi. D–F sonrası son koşum ayrıca gereklidir. |
-| C sonrası gerçek C# session / event | .NET 8.0.428 / C# 7.3 ile session 1.362 tam JSON / 36 gerçek app akışı / 56 native fault-guard; event 580 tam JSON / 462 ret mesajı geçti. Son CI diğer parity işlerini de çalıştıracak. |
-| E lifecycle kırmızı→yeşil | **Bekliyor:** baseline kırmızı kanıtı var; düzeltme/son test henüz teslim edilmedi. |
-| C sonrası Chromium / WebKit | 24/24 ve 24/24 gerçek browser grubu, sıfır pageerror, main baseline'ına göre bütün ölçülerde 0 px fark. D–F sonrası son koşum ayrıca gereklidir. |
-| GitHub Actions | **Bekliyor:** mevcut 15 iş korunuyor; nihai commit'teki gerçek sonuç eklenecek. |
-| Vercel Preview | **Bekliyor:** PR ve commit bağlantısı burada/PR açıklamasında paylaşılacak. Production yapılandırması değişmez. |
+| Başlangıç `npm test` | Geçti; runtime değişmeden referans kaydedildi. |
+| Son tam seri `npm test` | **Geçti, exit 0**. Eski zincirin tamamı ve yeni `test:state` açık. 40 varyant, 80 sertifikalı rota, 600 restored checkpoint korunur. |
+| Son `test:state` | Core **19 grup / 1.861 assertion**; selectors **19**, effects **15**, actual-app karakterizasyon **11**, guard **8**, operation UI **4**, lifecycle **1** grup geçti. |
+| Gerçek Chromium/WebKit state geçişleri | **25/25 + 25/25 geçti**, sıfır pageerror. Altı viewport, tarayıcı başına 12 board box ölçüsü main ile **0 px fark**, coach **118 px**. Gerçek stopped-origin offline reload; sentetik hidden/pagehide testleri native cihaz testi diye sunulmaz. |
+| Gerçek .NET parity | **10 komutun tamamı geçti**, SDK **8.0.428 / C# 7.3** gerçekten derlendi; aşağıdaki karşılaştırma tablosu. |
+| Diğer gerçek browser / observable | Eski CI işleri korunur ve PR üzerinde çalıştırılır. Observable invariant kontrolü 80 board / 1.920 gizli-RNG karşılaştırması / 160 sampled decision geçti; tam rapor tekrar üretimi ve eski browser suite sonuçları PR doğrulama kaydında ayrıca belirtilir. |
 
-Fiziksel iPhone/Android, Unity Editor ve IL2CPP testi yapılmadı. Otomatik WebKit bu cihazların testi diye sunulmaz.
+| C# komutu | Gerçek karşılaştırma kapsamı |
+| --- | --- |
+| `test:unity-rewards` | 104 ortak vektör + factory; 98 valid / 7 rejected. |
+| `test:unity-gameplay` | 71 mekanik örnek, 80 tam certified route, 120 off-route run; 1.913 valid swap, 256 resume, 260 replay, 2.172 clone; bütün ara dalgalar eşit. |
+| `test:unity-catalog` | 2.107 complete JSON; 725 selection, 610 resume; 40 varyant / 80 rota. |
+| `test:unity-hints` | 1.000 karşılaştırma; 680 published route state, 280 search state, 11 clock policy; her garanti bağımsız win replay ile doğrulandı. |
+| `test:unity-reward-adapter` | 175 route, 1.456 turn, 2.928 wave, 1.564 restore/replay. |
+| `test:unity-lives` | 19 ortak + 1 stress senaryosu / 460 transition; 152 frozen-v1 migration, 172 ek probe. |
+| `test:unity-session` | Event 580 complete JSON / 462 ret mesajı; session 1.362 complete JSON, 36 gerçek app akışı, 56 native fault/guard. |
+| `test:unity-economy` | 125 akış / 579 complete result+state. |
+| `test:unity-commands` | 2.928 comparison, 16.001 step, 3.259 wave; 80 certified route / 680 legacy prefix. |
+| `test:unity-rescue` | 293 comparison; 12 frozen case + 600 compiled lifecycle transition. |
 
-## Kalan borç ve bilinçli sınırlar
+Eski 15 GitHub Actions işi ve adımları değiştirilmeden korunur. İki yeni gerçek browser işi (`Application state in chromium/webkit`) eklenir; `test:state` mevcut `npm test` zincirine dahildir. Toplam **17 CI işi** beklenir. Her C# işinde .NET SDK kurulumu ve gerçek derleme korunur. Nihai head'in check sonucu PR Checks sekmesinden, Preview git SHA/READY durumu Vercel'den doğrulanır; kaynak raporu henüz alınmamış bir sonucu geçti diye saymaz.
 
-- Bu bir ekran/sunum mimarisi çalışmasıdır; `sessionAction`/`commitSession`, makbuz doğrulama, can/ekonomi ve C# `GameSessionController.Execute` yeniden yazılmaz.
-- App host hâlâ mevcut domain komutlarını ve rollback'i bağlar. Her mutable değişkeni state makinesine taşımak gerekmiyor; request context, transaction scratch, cache ve platform handle'ları kendi sınırında kalır.
-- Scene/portrait decode ve düşük hareket cleanup'ı mevcut modüllerinde kalır. Yeni actor policy yalnız form/görünüm seçimini koordine eder; hayali animasyon dosyası eklenmez.
-- Doğrulanmış öğretici tamamlama `0/1/2 → foundation/frame/finished`; Tahta/Çivi sayaçları committed turn sunumudur. Kampanya yıldızı, yeni dünya kaydı veya malzeme envanteri oluşturulmaz.
-- Gelecekte Unity, bu transient screen/modal/operation kavramlarını Canvas/Animator adaptörlerine eşleyebilir. Saf transition'lara UnityEngine veya tarayıcı API'si girmez; mevcut C# gameplay/ekonomi tekrar edilmez.
+Geliştirme sırasında ilk geniş koşumda yeni üç SW asset'i eski kapsam hash'iyle çakıştı; yalnız dar allowlist normalizasyonu eklendi. Paralel C koşumunda mevcut input survivor-fall zaman sınırı bir kez başarısız oldu; aynı assertion tek başına ve seri tam koşumda geçti. E'de mevcut score long-chain zaman testi bir kez başarısız oldu; nedeni kanıtlanmadı, aynı kaynak üzerinde tek başına ve son seri tam `npm test`te geçti. Eşikler, gameplay veya assertion'lar değiştirilmedi.
 
-Nihai teslimde bu kontrol noktası metni, gerçek D/E/F değişiklikleri, başarısız testlerin çözümleri, tam dosya listesi, son CI ve PR/Preview bağlantılarıyla güncellenecek.
+## İnceleme ve Preview
+
+- Integration PR: https://github.com/kiviman1/hexrota/pull/25
+- Nihai head için CI: https://github.com/kiviman1/hexrota/pull/25/checks
+- Dalın Vercel Preview alias'ı: https://hexrota-git-refactor-hexrota-518689-kivanc-tascioglu-s-projects.vercel.app
+
+Alias dalın son Preview'ına ilerler. Korumalı dağıtıma erişim için Vercel'in mevcut kimliği/paylaşım akışı kullanılır; Production veya deployment protection ayarı değiştirilmez. Otomasyonun access token/share cookie'si kaynaklara veya test artifact'larına yazılmaz. Son head, READY/Preview target ve oynanabilirlik teslimde ayrıca doğrulanır.
+
+Ortam yeniden başlatılması, tamamlanmış npm/state/C# sonuçlarından sonra başlamış yerel ek browser/observable süreçlerini kesti. Kesilen koşumlar başarı sayılmaz; yeniden çalıştırılan yerel sonuçlar ve kesintiden etkilenmeyen GitHub CI sonuçları PR doğrulama kaydında ayrılır.
+
+## Kalan sınırlar ve Unity
+
+- UI host domain komutlarını/rollback'i bağlamaya devam eder; SessionStore, receipt doğrulaması veya C# `GameSessionController` yeniden tasarlanmaz.
+- İki UI operation türü gerçekten ortak input/screen yaşam döngüsü gerektirir. Profile write senkron mevcut transaction içinde, provider/earned receipt mevcut domain sahibinde, asset decode mevcut modül generation'ında kalır. Her async işi ikinci bir operation/veritabanı otoritesine çevirmemek bilinçli sapmadır.
+- Dünya `0/1/2` doğrulanmış öğretici → FOUNDATION/FRAME/FINISHED'tır. Tahta/Çivi committed turn sunumudur; kampanya yıldızı, yeni inventory veya ikinci kalıcı dünya kaydı eklenmez.
+- Unity daha sonra bu transient kavramları Canvas/screen ve Animator adaptörlerine eşleyebilir. Saf transition'lar browser/UnityEngine kullanmaz; mevcut C# gameplay/ekonomi tekrarlanmaz.
+- Fiziksel iPhone/Android, native BFCache davranışı, Unity Editor ve IL2CPP testi yapılmadı. WebKit masaüstü otomasyonu bunların yerine geçmiş sayılmaz.
