@@ -30,7 +30,7 @@ function mount({saved=fresh(),life,observations,animated=false}={}){
  class AudioStub{configure(){}unlock(){return Promise.resolve();}setActive(){}move(){}victory(){}reward(){}click(){}stop(){}dispose(){}}
  w.HexAudio=AudioStub;w.localStorage.setItem(GAME,JSON.stringify(saved));
  if(life!==undefined)w.localStorage.setItem(LIFE,JSON.stringify(life));if(observations!==undefined)w.localStorage.setItem(OBS,JSON.stringify(observations));
- for(const script of d.querySelectorAll('script[src]')){const file=script.getAttribute('src').split('/').at(-1).split('?')[0];if(!['audio.js','pwa.js'].includes(file))w.eval(read(file));}
+ for(const script of d.querySelectorAll('script[src]')){const file=script.getAttribute('src').split('?')[0].replace(/^\.\//,'');if(!['audio.js','pwa.js'].includes(file))w.eval(read(file));}
  const f={dom,w,d,network,blobs,downloads,advance(ms){mono+=ms;},save:()=>JSON.parse(w.localStorage.getItem(PROFILE)||'null')?.game||JSON.parse(w.localStorage.getItem(GAME)),life:()=>JSON.parse(w.localStorage.getItem(PROFILE)||'null')?.energy||JSON.parse(w.localStorage.getItem(LIFE)),observed:()=>JSON.parse(w.localStorage.getItem(OBS)||'null'),close(){w.close();}};
  f.node=selector=>{const result=d.querySelector(selector);assert(result,selector+' exists');return result;};
  f.click=selector=>f.node(selector).dispatchEvent(new w.MouseEvent('click',{bubbles:true,detail:0}));

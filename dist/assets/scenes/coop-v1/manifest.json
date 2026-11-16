@@ -1,0 +1,362 @@
+{
+  "schemaVersion": 1,
+  "assetPack": "hexrota-coop-v1",
+  "repositoryBase": "e4321b50a8d307b158f886c21f2d2bf9466fde5f",
+  "approvedMascot": "Tavik",
+  "backgrounds": [
+    {
+      "id": "clearing",
+      "sourceFile": "sunny_fantasy_coop_build_site.png",
+      "sourceSHA256": "c8d5fa9e9714119a1fdb31f291eb11539fea1df62b97a32e919e907e7288552d",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "id": "frame",
+      "sourceFile": "sunny_farm_coop_construction_meadow.png",
+      "sourceSHA256": "d34eb085de17fccf55bbf5cb06148ce84e8c7a70d82f8914032e0cd900687445",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "id": "roof",
+      "sourceFile": "whimsical_half_built_chicken_coop_meadow.png",
+      "sourceSHA256": "362a357fd8a07573c3b8ec88da6a827c2ce5391c1e9d97b4f949d0c73edc1312",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "id": "finished",
+      "sourceFile": "sunny_chicken_coop_valley.png",
+      "sourceSHA256": "38764477930ae67a933df74735889ffc56146cc62d2b63563ea8b2be5cb1854a",
+      "width": 1672,
+      "height": 941
+    }
+  ],
+  "poses": [
+    {
+      "id": "idle",
+      "file": "tavik/idle.webp",
+      "width": 384,
+      "height": 384,
+      "pivot": [
+        0.5,
+        0.953125
+      ],
+      "sourceFile": "tavik_s_six_explorer_poses.png",
+      "sourceSHA256": "337664eb905e59b66e4156a9fd7abb5473a81d4222f930a490dda6b06a1427af",
+      "sourceCrop": [
+        0,
+        0,
+        512,
+        512
+      ],
+      "alphaCleanup": "largest opaque component with 2px antialiased border",
+      "kind": "static-pose"
+    },
+    {
+      "id": "hop",
+      "file": "tavik/hop.webp",
+      "width": 384,
+      "height": 384,
+      "pivot": [
+        0.5,
+        0.953125
+      ],
+      "sourceFile": "tavik_s_six_explorer_poses.png",
+      "sourceSHA256": "337664eb905e59b66e4156a9fd7abb5473a81d4222f930a490dda6b06a1427af",
+      "sourceCrop": [
+        512,
+        0,
+        1024,
+        512
+      ],
+      "alphaCleanup": "largest opaque component with 2px antialiased border",
+      "kind": "static-pose"
+    },
+    {
+      "id": "point",
+      "file": "tavik/point.webp",
+      "width": 384,
+      "height": 384,
+      "pivot": [
+        0.5,
+        0.953125
+      ],
+      "sourceFile": "tavik_s_six_explorer_poses.png",
+      "sourceSHA256": "337664eb905e59b66e4156a9fd7abb5473a81d4222f930a490dda6b06a1427af",
+      "sourceCrop": [
+        1024,
+        0,
+        1536,
+        512
+      ],
+      "alphaCleanup": "largest opaque component with 2px antialiased border",
+      "kind": "static-pose"
+    },
+    {
+      "id": "inspect",
+      "file": "tavik/inspect.webp",
+      "width": 384,
+      "height": 384,
+      "pivot": [
+        0.5,
+        0.953125
+      ],
+      "sourceFile": "tavik_s_six_explorer_poses.png",
+      "sourceSHA256": "337664eb905e59b66e4156a9fd7abb5473a81d4222f930a490dda6b06a1427af",
+      "sourceCrop": [
+        0,
+        512,
+        512,
+        1024
+      ],
+      "alphaCleanup": "largest opaque component with 2px antialiased border",
+      "kind": "static-pose"
+    },
+    {
+      "id": "worried",
+      "file": "tavik/worried.webp",
+      "width": 384,
+      "height": 384,
+      "pivot": [
+        0.5,
+        0.953125
+      ],
+      "sourceFile": "tavik_s_six_explorer_poses.png",
+      "sourceSHA256": "337664eb905e59b66e4156a9fd7abb5473a81d4222f930a490dda6b06a1427af",
+      "sourceCrop": [
+        512,
+        512,
+        1024,
+        1024
+      ],
+      "alphaCleanup": "largest opaque component with 2px antialiased border",
+      "kind": "static-pose"
+    },
+    {
+      "id": "celebrate",
+      "file": "tavik/celebrate.webp",
+      "width": 384,
+      "height": 384,
+      "pivot": [
+        0.5,
+        0.953125
+      ],
+      "sourceFile": "tavik_s_six_explorer_poses.png",
+      "sourceSHA256": "337664eb905e59b66e4156a9fd7abb5473a81d4222f930a490dda6b06a1427af",
+      "sourceCrop": [
+        1024,
+        512,
+        1536,
+        1024
+      ],
+      "alphaCleanup": "largest opaque component with 2px antialiased border",
+      "kind": "static-pose"
+    },
+    {
+      "id": "walk-pose",
+      "file": "tavik/walk-pose.webp",
+      "width": 384,
+      "height": 384,
+      "pivot": [
+        0.5,
+        0.953125
+      ],
+      "sourceFile": "tavik_chicken_adventure_pose_sprite_sheet.png",
+      "sourceSHA256": "36649de60f46ca4ff2f926a623efc7f7b5ff245b1d6e91976a567ac781066cfb",
+      "sourceCrop": [
+        0,
+        0,
+        444,
+        444
+      ],
+      "alphaCleanup": "largest opaque component with 2px antialiased border",
+      "kind": "static-pose"
+    },
+    {
+      "id": "run-pose",
+      "file": "tavik/run-pose.webp",
+      "width": 384,
+      "height": 384,
+      "pivot": [
+        0.5,
+        0.953125
+      ],
+      "sourceFile": "tavik_chicken_adventure_pose_sprite_sheet.png",
+      "sourceSHA256": "36649de60f46ca4ff2f926a623efc7f7b5ff245b1d6e91976a567ac781066cfb",
+      "sourceCrop": [
+        444,
+        0,
+        887,
+        444
+      ],
+      "alphaCleanup": "largest opaque component with 2px antialiased border",
+      "kind": "static-pose"
+    },
+    {
+      "id": "carry",
+      "file": "tavik/carry.webp",
+      "width": 384,
+      "height": 384,
+      "pivot": [
+        0.5,
+        0.953125
+      ],
+      "sourceFile": "tavik_chicken_adventure_pose_sprite_sheet.png",
+      "sourceSHA256": "36649de60f46ca4ff2f926a623efc7f7b5ff245b1d6e91976a567ac781066cfb",
+      "sourceCrop": [
+        887,
+        0,
+        1330,
+        444
+      ],
+      "alphaCleanup": "largest opaque component with 2px antialiased border",
+      "kind": "static-pose"
+    },
+    {
+      "id": "build",
+      "file": "tavik/build.webp",
+      "width": 384,
+      "height": 384,
+      "pivot": [
+        0.5,
+        0.953125
+      ],
+      "sourceFile": "tavik_chicken_adventure_pose_sprite_sheet.png",
+      "sourceSHA256": "36649de60f46ca4ff2f926a623efc7f7b5ff245b1d6e91976a567ac781066cfb",
+      "sourceCrop": [
+        1330,
+        0,
+        1774,
+        444
+      ],
+      "alphaCleanup": "largest opaque component with 2px antialiased border",
+      "kind": "static-pose"
+    },
+    {
+      "id": "proud",
+      "file": "tavik/proud.webp",
+      "width": 384,
+      "height": 384,
+      "pivot": [
+        0.5,
+        0.953125
+      ],
+      "sourceFile": "tavik_chicken_adventure_pose_sprite_sheet.png",
+      "sourceSHA256": "36649de60f46ca4ff2f926a623efc7f7b5ff245b1d6e91976a567ac781066cfb",
+      "sourceCrop": [
+        0,
+        444,
+        444,
+        887
+      ],
+      "alphaCleanup": "largest opaque component with 2px antialiased border",
+      "kind": "static-pose"
+    },
+    {
+      "id": "think",
+      "file": "tavik/think.webp",
+      "width": 384,
+      "height": 384,
+      "pivot": [
+        0.5,
+        0.953125
+      ],
+      "sourceFile": "tavik_chicken_adventure_pose_sprite_sheet.png",
+      "sourceSHA256": "36649de60f46ca4ff2f926a623efc7f7b5ff245b1d6e91976a567ac781066cfb",
+      "sourceCrop": [
+        444,
+        444,
+        887,
+        887
+      ],
+      "alphaCleanup": "largest opaque component with 2px antialiased border",
+      "kind": "static-pose"
+    },
+    {
+      "id": "call",
+      "file": "tavik/call.webp",
+      "width": 384,
+      "height": 384,
+      "pivot": [
+        0.5,
+        0.953125
+      ],
+      "sourceFile": "tavik_chicken_adventure_pose_sprite_sheet.png",
+      "sourceSHA256": "36649de60f46ca4ff2f926a623efc7f7b5ff245b1d6e91976a567ac781066cfb",
+      "sourceCrop": [
+        887,
+        444,
+        1330,
+        887
+      ],
+      "alphaCleanup": "largest opaque component with 2px antialiased border",
+      "kind": "static-pose"
+    },
+    {
+      "id": "rest",
+      "file": "tavik/rest.webp",
+      "width": 384,
+      "height": 384,
+      "pivot": [
+        0.5,
+        0.953125
+      ],
+      "sourceFile": "tavik_chicken_adventure_pose_sprite_sheet.png",
+      "sourceSHA256": "36649de60f46ca4ff2f926a623efc7f7b5ff245b1d6e91976a567ac781066cfb",
+      "sourceCrop": [
+        1330,
+        444,
+        1774,
+        887
+      ],
+      "alphaCleanup": "largest opaque component with 2px antialiased border",
+      "kind": "static-pose"
+    }
+  ],
+  "notes": [
+    "Generated pose derivatives are not exact multi-view 3D renders.",
+    "Four full-scene paintings have camera/prop differences; transition with a brief fade, never interpolate them as aligned construction layers.",
+    "Motion clips are cutout/transform animations, not skeletal rigs or frame-by-frame walk cycles.",
+    "No cold, snow, injury, captivity or antagonist art is included.",
+    "Gameplay, economy, persistent state and existing UI files are not modified."
+  ],
+  "motionLibrary": {
+    "css": "tavik-motion.css",
+    "script": "tavik-motion.js",
+    "technique": "2D cutout transform animation; static pose is selected per clip",
+    "states": [
+      "idle",
+      "point",
+      "inspect",
+      "worried",
+      "celebrate",
+      "hop",
+      "carry",
+      "build",
+      "proud",
+      "think",
+      "call",
+      "rest"
+    ],
+    "doesNotInclude": [
+      "frame-by-frame walking",
+      "eye-blink rig",
+      "independently articulated hammer arm",
+      "3D skeletal animation"
+    ]
+  },
+  "backgroundUsage": {
+    "landscape": {
+      "fit": "cover",
+      "position": "50% 50%"
+    },
+    "portrait": {
+      "fit": "cover",
+      "position": "72% 50%"
+    },
+    "transition": "fade-to-dark then replace; camera positions are not pixel registered",
+    "loading": "Load only active background and idle pose first; prefetch at most next stage. Do not eagerly decode all states."
+  }
+}

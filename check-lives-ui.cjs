@@ -48,7 +48,7 @@ function mount({saved=fresh(),life,now=NOW,oldV4,profile,events,writeFailure=fal
  if(profile)w.localStorage.setItem(profileKey,JSON.stringify(profile));
  if(events!==undefined)w.localStorage.setItem(eventKey,JSON.stringify(events));
  if(writeFailure){const native=w.Storage.prototype.setItem;w.Storage.prototype.setItem=function(key,value){if(key===profileKey)throw new w.DOMException('Life storage unavailable','QuotaExceededError');return native.call(this,key,value);};}
- for(const script of d.querySelectorAll('script[src]')){const file=script.getAttribute('src').split('/').at(-1).split('?')[0];if(!['audio.js','pwa.js'].includes(file))w.eval(read(file));}
+ for(const script of d.querySelectorAll('script[src]')){const file=script.getAttribute('src').split('?')[0].replace(/^\.\//,'');if(!['audio.js','pwa.js'].includes(file))w.eval(read(file));}
  const f={dom,w,d,network,get now(){return utc;},set now(value){utc=value;},save:()=>JSON.parse(w.localStorage.getItem(gameKey)),life:()=>JSON.parse(w.localStorage.getItem(lifeKey)),events:()=>JSON.parse(w.localStorage.getItem(eventKey)||'null'),close(){dom.window.close();}};
  f.node=selector=>{const n=d.querySelector(selector);assert(n,selector+' exists');return n;};f.click=selector=>f.node(selector).dispatchEvent(new w.MouseEvent('click',{bubbles:true,detail:0}));
  f.return=()=>{Object.defineProperty(d,'hidden',{configurable:true,value:false});d.dispatchEvent(new w.Event('visibilitychange'));w.dispatchEvent(new w.Event('focus'));};

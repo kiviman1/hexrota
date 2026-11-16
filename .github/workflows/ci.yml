@@ -93,7 +93,7 @@ jobs:
   mobile-input-browser:
     name: Mobile input in ${{ matrix.browser }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -173,6 +173,20 @@ jobs:
         env:
           HEXROTA_BROWSER: ${{ matrix.browser }}
           HEXROTA_COMIC_SCREENSHOT_DIR: test-results/comic-${{ matrix.browser }}
+      - name: Verify Tavik scene, canonical construction, fixed board geometry and real offline reload
+        run: npm run test:scene-browser
+        env:
+          HEXROTA_BROWSER: ${{ matrix.browser }}
+          HEXROTA_SCENE_SCREENSHOT_DIR: test-results/scene-${{ matrix.browser }}
+          HEXROTA_SCENE_TRACE: '1'
+      - name: Keep Tavik scene screenshots and browser results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: tavik-scene-${{ matrix.browser }}
+          path: test-results/scene-${{ matrix.browser }}
+          if-no-files-found: warn
+          retention-days: 7
       - name: Keep Comic Adventure screenshots and browser results
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

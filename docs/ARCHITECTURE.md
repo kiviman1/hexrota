@@ -1,6 +1,6 @@
 # Hexrota — kod sahipliği ve bakım rehberi
 
-Bu belge 9.5 davranışını değiştirmeyen bakım çalışmasındaki modül sınırlarını açıklar. Oyun kuralları için ilgili sürümlü ürün sözleşmeleri geçerlidir; burada yeni güçlendirici, fiyat veya denge kuralı tanımlanmaz.
+Bu belge mevcut oyun ve Tavik sahne sunumunun modül sınırlarını açıklar. Oyun kuralları için ilgili sürümlü ürün sözleşmeleri geçerlidir; burada yeni güçlendirici, fiyat veya denge kuralı tanımlanmaz.
 
 ## Veri akışı
 
@@ -12,7 +12,9 @@ index.html (sıralı defer bağımlılıkları)
           ├─ attempts + engine/commands: deneme ve deterministik oyun
           ├─ economy + lives + rescue: saf iş kuralları
           ├─ atomik profil commit'i
-          └─ board-view / board-input / score-presentation / garden / audio
+          ├─ board-view / board-input / score-presentation / garden / audio
+          └─ scene-presentation: kesinleşmiş yıldızlar + salt görünüm bilgisi
+              └─ hazırlanmış Tavik hareket adaptörü / isteğe bağlı görseller
 ```
 
 Görsel olaylar oyun kuralı değildir. Hamlenin kanonik sonucu önce kesinleşir; animasyon arızası, iptal veya arka plana geçiş ikinci bir hamle/ödül oluşturamaz. Analitik kayıt hatası kanonik oyunu geri almamalı; başarısız kanonik hamle de analitiğe başarı diye yazılmamalıdır.
@@ -27,6 +29,8 @@ Görsel olaylar oyun kuralı değildir. Hamlenin kanonik sonucu önce kesinleşi
 | `dist/board-view.js` | Altıgen geometri, SVG işaretlemesi, iki yönlü taş animasyon yolu | DOM, motor, cüzdan, saat veya RNG'ye erişmek |
 | `dist/board-input.js` | Yerel koordinatla hücre ve altı yönlü kaydırma sınıflaması | Takas yapmak veya taş sonucunu tahmin etmek |
 | `dist/first-play.js` | Kısa öğretici sunumu ve durumsuz, yavaş SVG kaydırma gösterimi | Gerçek takas, kayıt, can veya ödül üretmek |
+| `dist/scene-presentation.js` | Dünya, dekoratif Tavik, yerleşim, poz ve kısa kararma yaşam döngüsü | Motor/kayıt/cüzdan sahibi olmak, ikinci girdi sistemi veya ödül kanıtı üretmek |
+| `data/scene-config-v1.json` → `dist/scene-config.json` / `.js` | Tek kaynakta sahne eşikleri, yerel varlık yolları ve sunum ayarları | İkinci kalıcı ilerleme sayacı tanımlamak |
 | `dist/score-presentation.js` | Enjekte edilen görünüm bağımlılıklarıyla puan animasyonunun yaşam döngüsü | Kalıcı skor, Altın, hamle veya RNG değiştirmek |
 | `dist/engine.js` | `classic-v4` takas/eşleşme/düşüş/üretim ve replay | Ekonomi veya DOM |
 | `dist/commands.js` | `assisted-v1` yardımlı komut geçmişi | Klasik v4 geçmişini sessizce yeniden yorumlamak |
@@ -58,9 +62,30 @@ Görsel olaylar oyun kuralı değildir. Hamlenin kanonik sonucu önce kesinleşi
 
 ## CSS ve çevrimdışı paket
 
-`src/styles/manifest.json` kaynak bölümlerinin sırasını belirler. `npm run styles:sync`, bunları **aynı sırada tek `dist/style.css`** dosyasına birleştirir. Tarayıcıda `@import` zinciri veya ek CSS isteği yoktur. Eski cascade sırası ve iletilen CSS bu bakımda byte-for-byte korunmuştur. Stili kaynak bölümde değiştir; üretilmiş çıktıdaki değişikliği de commit et.
+`src/styles/manifest.json` kaynak bölümlerinin sırasını belirler. `npm run styles:sync`, bunları **aynı sırada tek `dist/style.css`** dosyasına birleştirir. Tarayıcıda `@import` zinciri veya ek CSS isteği yoktur. Hazır `dist/assets/scenes/coop-v1/tavik-motion.css` ve `src/styles/07-coop-scene.css` bu hatta eklenmiştir; mevcut çizgi roman teması son bölüm olarak kalır. Hazır hareket CSS'i varlık hash sözleşmesinin parçasıdır; değiştirilmez. Yeni yerleşim kuralları `07-coop-scene.css` içinde düzenlenir; üretilmiş çıktı da commit edilir.
 
-`dist/index.html` bağımlılıkları `defer` sırasıyla yükler. Yeni runtime betiği eklenince `dist/sw.js` allowlist/önbellek listesi, HTML, Worker query ve `qa-fixtures.cjs` birlikte güncellenir. İlk açılış sunumu PWA v35 kullanır; bu kayıt formatının veya oyun kurallarının sürümünü değiştirmez.
+`dist/index.html` bağımlılıkları `defer` sırasıyla yükler. Yeni runtime betiği eklenince `dist/sw.js` allowlist/önbellek listesi, HTML, Worker query ve `qa-fixtures.cjs` birlikte güncellenir. Tavik sahne paketi **PWA v36** kullanır; bu kayıt formatının veya oyun kurallarının sürümünü değiştirmez. Hareket adaptörü, yapılandırma ve sahne modülü çevrimdışı kabuğa dahildir. Hazırlanmış 22 WebP yalnız açık izin listesiyle ihtiyaç anında önbelleğe alınır; ilk çevrimdışı fallback için `clearing-mobile.webp` ve `idle.webp` ayrıca ısıtılır. Kaynak PNG'ler ve bağımsız prova sayfası bu kapsamda değildir. WebP içerik türü doğrulanır; görsel hatası çevrimiçi oyunu veya kayıtları engellemez.
+
+## Tavik sahnesinin sunum sözleşmesi
+
+`node sync-scene-config.cjs`, `data/scene-config-v1.json` dosyasını doğrulayıp tarayıcı için `dist/scene-config.json` ve `dist/scene-config.js` üretir; `--check` eski çıktıyı reddeder. `scene-config.js` yalnız `HEX_SCENE_CONFIG` görünüm verisini yayımlar. Eşiklerin tek kaynağı bu JSON'dır; doğrulayıcı ilk eşiğin sıfır, diğerlerinin sıralı ve kesin artan, tümünün negatif olmayan güvenli tamsayı olmasını ister. Geçersiz yapılandırma, tanınmayan alan veya izin verilmeyen varlık yolu sessizce kabul edilmez. Gelecekteki hikâye için `futureStory: {enabled:false,hooks:[]}` veri uzantısı vardır; kaçırılma/kurtarma sistemi uygulanmış değildir.
+
+`HexScenePresentation.create({document,window,config,board,homeHost,gameHost,onError})` bir DOM sunum adaptörüdür. Dışarıya `update(view)`, `react({key,kind})`, `snapshot()` ve `destroy()` verir. `view` yalnız ekran, ilk açılış, **kesinleşmiş yıldız**, deneme/tur kimliği, sonuç, öğretici çifti ve duraklama/görünürlük/hareket tercihini taşır. Modül motor, oturum deposu, can, ekonomi, RNG veya hamle komutuna erişmez. `app.js` yıldız önbelleğini başarılı atomik commit sonucundan yeniler; geri alma sırasında son geçerli profilden geri yükler. Taslak kazanımın bir kareliğine bile yapı açmaması bu sınırla sağlanır.
+
+| Kanonik kampanya yıldızı | Sahne |
+| --- | --- |
+| 0–1 | `clearing` |
+| 2–4 | `frame` |
+| 5–9 | `roof` |
+| 10 ve üstü | `finished` |
+
+Yıldız harcanmaz ve sahne için ayrı kayıt tutulmaz. İlk yüklemede mevcut oyuncunun doğru aşaması gösterilir; inşa kutlaması veya öğretici zorlanmaz. Öğretici tamamlama, tekrar ve başlangıç Altını sahne eşiğini değiştirmez. **T2 sonrasındaki tekil +20 Altın**, ön plandaki Altın/sandık ve dönen ışık sunumuyla birlikte korunur. Poz yüklenmesi veya hareketin bitmesi hiçbir ödül yazmaz.
+
+Arka planlar hizalı yapı katmanları değildir. Yüklenen aşama, tahta altında kısa karartmayla değiştirilir: yapılandırma beklemesi 140 ms, CSS opaklık geçişi 120 ms'dir. Azaltılmış harekette geçiş anlıktır. Önce etkin arka plan ve idle, sonraki pozlar/aşamalar ihtiyaçla yüklenir. Geciken decode ve poz yanıtları yaşam döngüsü/istek nesilleriyle elenir. Hata durumunda önbellekteki clearing, statik renk veya onaylı mevcut Tavik portresi kullanılır; oyun tahtası kullanılabilir kalır.
+
+Tek dünya ve tek Tavik ana menüden gerçek T1 tahtasına geçerken korunur; örnek prova tahtası kullanılmaz. Dekoratif katmanlarda `pointer-events:none` bulunur. Normal oyunda 80–110 px Tavik için gerçek SVG hücrelerinin, HUD'un ve öğretici kartının sınırlayıcı kutuları kontrol edilir; hareket için yukarıda 24 px, yanlarda 10 px ek pay ayrılır. Dar öğretici ekranda mevcut Menü/Mola boşluğuna 44–48 px statik yerleşim kullanılabilir. Güvenli alan yoksa karakter gizlenir; tahta veya dokunma alanı küçültülmez. İşaret etme yönü gerçek öğretici çiftine göre yalnız dış kapsayıcıda çevrilir.
+
+Gizli sekme, mola ve açık diyalog hareketi durdurur, geçici tepkileri/kararmayı temizler. Ana menü/oyun dışındaki ekranlar sahne düğümlerini ve dinleyicilerini kaldırır; aynı modül daha sonra yeni bir görünüm kurabilir. `destroy()` nihai ve tekrarlanabilir temizlemedir; `pagehide` ve tam test sıfırlamasında çağrılır. `pagehide` host başvurusunu da boşaltır; sahne host'u normal `pageshow` sırasında mevcut görünümden yeni bir modül kurabilir. **Mevcut kayıt deposunun BFCache politikası değişmemiştir:** `pageshow.persisted` sayfayı yeniden yükler ve tek-yazıcı sahipliği yeniden alınır. Sahneye özel geri dönüş kancası yeni bir BFCache kayıt/oturum akışı değildir. Gizli sekme güncellemesi kendiliğinden modül diriltmez. Hiçbir eski async yanıt temizlenen sahneye yazamaz. Fiziksel cihaz ve Unity/IL2CPP doğrulaması ayrı platform işidir.
 
 ## Geliştirme kontrol listesi
 

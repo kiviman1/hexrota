@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 1,
+  "files": {
+    "art/coop-scene-v1/source/build.png": {
+      "bytes": 158950,
+      "sha256": "95cb52f5ed7dae2a9695b81bc955320f9198c47dc60ce7fea8999e40dd1757a1"
+    },
+    "art/coop-scene-v1/source/call.png": {
+      "bytes": 152365,
+      "sha256": "a8dc112333629cf69a20b0fcf15c154fb85b6348d84b7494d1eb6ab4f6e0ad15"
+    },
+    "art/coop-scene-v1/source/carry.png": {
+      "bytes": 146822,
+      "sha256": "49f3256d3b2dacb6d493681ef4ae24f7d5a4b792cccf2f638faef54185cb26ff"
+    },
+    "art/coop-scene-v1/source/celebrate.png": {
+      "bytes": 167483,
+      "sha256": "24bd056eefe1096ee45510202fa2bdf99d2391ac3e0aa1dd0ff27f83e5dba152"
+    },
+    "art/coop-scene-v1/source/hop.png": {
+      "bytes": 162419,
+      "sha256": "be1982033ce4682e294ea9ace9207a363aa642095d24b00b1f43b3f42f2ce327"
+    },
+    "art/coop-scene-v1/source/idle.png": {
+      "bytes": 128143,
+      "sha256": "a444fa1c08dc10461d1bbfd1acf00d4e8e6338001e83554f369e272febb7e644"
+    },
+    "art/coop-scene-v1/source/inspect.png": {
+      "bytes": 151290,
+      "sha256": "0fd9487e3e4f80e270558bded905376d2fecc01113eb6d11d85cc13de5aff57a"
+    },
+    "art/coop-scene-v1/source/point.png": {
+      "bytes": 137706,
+      "sha256": "cc898f4f9370c2fe09959982c0edb15ad97f969a5335c7b669286c32d9730f37"
+    },
+    "art/coop-scene-v1/source/proud.png": {
+      "bytes": 142806,
+      "sha256": "4fd0d02afd1300664266834b8ad732945786f601464b444d20ed189c5577a6b8"
+    },
+    "art/coop-scene-v1/source/rest.png": {
+      "bytes": 141699,
+      "sha256": "435388e9919a85b3cebd84f997693d26417894afb387797cb8febe4f8cb925f5"
+    },
+    "art/coop-scene-v1/source/run-pose.png": {
+      "bytes": 153830,
+      "sha256": "e0a1d410c6e7d9ef399559e99aaf6735c1920cfcf805083bf66987fbd73445c6"
+    },
+    "art/coop-scene-v1/source/think.png": {
+      "bytes": 137669,
+      "sha256": "d131fc89c58a553235d69e88fa79d08d62f68bcd3e8243752bf0f7e827112306"
+    },
+    "art/coop-scene-v1/source/walk-pose.png": {
+      "bytes": 137920,
+      "sha256": "3186bf9787a597959f7ccc67b97976c97f569511b9b6c27c8e1cc85a2ece4a39"
+    },
+    "art/coop-scene-v1/source/worried.png": {
+      "bytes": 144276,
+      "sha256": "65e920be84d4f0bc2d93a8f48b4ac3b16ef965e9dbaba02c5bdbec1361d34abe"
+    },
+    "dist/assets/scenes/coop-v1/backgrounds/clearing-mobile.webp": {
+      "bytes": 99662,
+      "sha256": "6d205c7ea8beadf53e43feb426a961e1a1520aca305ed1192556abb1eed330c8"
+    },
+    "dist/assets/scenes/coop-v1/backgrounds/clearing.webp": {
+      "bytes": 223454,
+      "sha256": "d4ee59583618396347daf9da69930686e65381f46c3735ffd64469538e567e5f"
+    },
+    "dist/assets/scenes/coop-v1/backgrounds/finished-mobile.webp": {
+      "bytes": 133466,
+      "sha256": "b26999c0671a6b8015f88b8e600db84cd03f9a245a722fbd90ad8484cecb3563"
+    },
+    "dist/assets/scenes/coop-v1/backgrounds/finished.webp": {
+      "bytes": 306922,
+      "sha256": "8499de47a89658e4a32e8269a2e1b22003536b0d1c5b37627e2e8d219791924a"
+    },
+    "dist/assets/scenes/coop-v1/backgrounds/frame-mobile.webp": {
+      "bytes": 129434,
+      "sha256": "ec00a13b9d402047d46c0d39c5cb2cb3c44c2d9ff1299ac72685eaf04802d733"
+    },
+    "dist/assets/scenes/coop-v1/backgrounds/frame.webp": {
+      "bytes": 296594,
+      "sha256": "0790466aad24952698d166ec361a565d6f0b501b94e7cf954bc5945435e67fba"
+    },
+    "dist/assets/scenes/coop-v1/backgrounds/roof-mobile.webp": {
+      "bytes": 142076,
+      "sha256": "53a25f89c3deb8c65b6788b70e5048c12629b9b10dbb0ca8a88445b6c7af6167"
+    },
+    "dist/assets/scenes/coop-v1/backgrounds/roof.webp": {
+      "bytes": 324630,
+      "sha256": "ba823fcc5dfed82953292a84897ab8462e1ef63440f124344fd3a025dfacbdf6"
+    },
+    "dist/assets/scenes/coop-v1/manifest.json": {
+      "bytes": 9619,
+      "sha256": "8360ed1ddc805f32544a62d0e7cd57ca210890877ab17e5759d125cf373366b9"
+    },
+    "dist/assets/scenes/coop-v1/tavik/build.webp": {
+      "bytes": 43618,
+      "sha256": "68ed54e3fe9c0a8c80de35c30b38c42dfb2a23d4e7d994e8176298b4a4bd46f9"
+    },
+    "dist/assets/scenes/coop-v1/tavik/call.webp": {
+      "bytes": 43072,
+      "sha256": "7b7e8787f8b0b395e374d2fe6b5b7e2a32b4f14b0262eb9072a1232fc4a43446"
+    },
+    "dist/assets/scenes/coop-v1/tavik/carry.webp": {
+      "bytes": 40552,
+      "sha256": "1f32a34b2152208fdf5dd2eed9584862fa8dbaebc0f441c0857fe9c93cd6819b"
+    },
+    "dist/assets/scenes/coop-v1/tavik/celebrate.webp": {
+      "bytes": 42680,
+      "sha256": "160cae3c4cd10bdf00f1dde3204bbebfb1d533024695c97c64ff778e756f22ac"
+    },
+    "dist/assets/scenes/coop-v1/tavik/hop.webp": {
+      "bytes": 41198,
+      "sha256": "472d0c076521d9d71421ee30c1a715f5e84eb47e02fa3a4da195ef6151c929df"
+    },
+    "dist/assets/scenes/coop-v1/tavik/idle.webp": {
+      "bytes": 33342,
+      "sha256": "d44cb3e8c5f22824a98788b7c62a045ca756773be709b68ee5060f55a08dd921"
+    },
+    "dist/assets/scenes/coop-v1/tavik/inspect.webp": {
+      "bytes": 38660,
+      "sha256": "01d24e1089543405a777964bd680b3d7770a11c6827c724e27b03c11a18653e5"
+    },
+    "dist/assets/scenes/coop-v1/tavik/point.webp": {
+      "bytes": 36770,
+      "sha256": "3c69427c17299df8a70b8df7a153a4f8216cf331006b9fccd1f5205b0854eed9"
+    },
+    "dist/assets/scenes/coop-v1/tavik/proud.webp": {
+      "bytes": 39992,
+      "sha256": "629dc31faad3685d1794f96ab87ecf76997a5ceae3fbf1e137ff37554ad5f01c"
+    },
+    "dist/assets/scenes/coop-v1/tavik/rest.webp": {
+      "bytes": 34272,
+      "sha256": "4f7d5c12d44d892cefe307f63cde14e8c09fa742f6bc775510b67283fcd99dae"
+    },
+    "dist/assets/scenes/coop-v1/tavik/run-pose.webp": {
+      "bytes": 42416,
+      "sha256": "38453714f53ecd3a3b41bd86e5baab0b09d2575da15a8d0640d383ff66eb54d5"
+    },
+    "dist/assets/scenes/coop-v1/tavik/think.webp": {
+      "bytes": 37726,
+      "sha256": "758e3ce4f546092fb064f0145f2fb3b67f318172262fac1f28d94600e4f013e5"
+    },
+    "dist/assets/scenes/coop-v1/tavik/walk-pose.webp": {
+      "bytes": 38286,
+      "sha256": "84a2fe95cb43763deb08f70cf45bb627201cf30903db5dc16932a7cfbe70d03c"
+    },
+    "dist/assets/scenes/coop-v1/tavik/worried.webp": {
+      "bytes": 37322,
+      "sha256": "494a81604aa52bc4b4b430cb2b352841f3ef8d548add057dc5aeb887c755c913"
+    },
+    "dist/assets/scenes/coop-v1/tavik-motion.css": {
+      "bytes": 3108,
+      "sha256": "25ff22145c69f225e74bd7f117d041d1219de091fa6fcde7869e9d68432cc5e1"
+    },
+    "dist/assets/scenes/coop-v1/tavik-motion.js": {
+      "bytes": 2897,
+      "sha256": "c48ad842c978281d452b2641510b62b2750ef2828cd9788a880322a364ec0351"
+    }
+  }
+}
