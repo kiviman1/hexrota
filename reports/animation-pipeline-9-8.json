@@ -1,0 +1,1437 @@
+{
+  "schemaVersion": 1,
+  "baselineCommit": "ecba596cc0a31d65ddacac1a724e5286b99de735",
+  "candidateCodeCommit": "bc3fc1c",
+  "samePortableScript": "2059d480ca4abdc4931d1d64e70612cfd4fd7fdf44c5fc9ca11e827427b12b15",
+  "sourceHashes": {
+    "app.js": "970e3ea2c1b7867faa4bc5573929d2185a5b96e1329bbc188338cfce149e280f",
+    "board-view.js": "a5ea9a09eca0bfbc0cecdffe8008b3310e6a1b90fb34aa4a3621851a2d462344",
+    "score-presentation.js": "c83248d2f23d2de42ba2df8fb6928311e95b4eab789d87983ac283f5e44a9acf",
+    "move-presentation.js": "c857b988264baeddee771cdbd76fdc4c318a21e096fff74d7dc926cf1b94e29c"
+  },
+  "functional": {
+    "chromium": {
+      "success": true,
+      "groups": 23,
+      "filter": null,
+      "errors": [],
+      "viewports": [
+        [
+          320,
+          568
+        ],
+        [
+          390,
+          844
+        ],
+        [
+          430,
+          932
+        ],
+        [
+          844,
+          390
+        ],
+        [
+          932,
+          430
+        ],
+        [
+          1280,
+          720
+        ]
+      ],
+      "nativeTouch": true,
+      "physicalDevice": false
+    },
+    "webkit": {
+      "success": true,
+      "groups": 23,
+      "filter": null,
+      "errors": [],
+      "viewports": [
+        [
+          320,
+          568
+        ],
+        [
+          390,
+          844
+        ],
+        [
+          430,
+          932
+        ],
+        [
+          844,
+          390
+        ],
+        [
+          932,
+          430
+        ],
+        [
+          1280,
+          720
+        ]
+      ],
+      "nativeTouch": true,
+      "physicalDevice": false
+    }
+  },
+  "benchmark": {
+    "samePortableScript": true,
+    "sameFixtures": true,
+    "serialIdleHost": true,
+    "samplesPerFullMotionCase": 3,
+    "samplesPerReducedCase": 1,
+    "rowsPerVersion": 16,
+    "all32ExactSnapshotsAndGeometry": true,
+    "all32SingleCommandWrites": true,
+    "before": {
+      "sourceHashes": {
+        "app.js": "6ab84114750f4f7aedff5ef9956b3fa290605d6198c151039fe13b55cb46d418",
+        "board-view.js": "a5bfc3526f19e577c508e48d875b40245d957cb0c28e5baf83ee32bb6d831cbc",
+        "score-presentation.js": "5ace8c78868a494379f1a6f95f489f80c76ed2b0702776d9e7fc61cf8d237ee7"
+      },
+      "summary": [
+        {
+          "browser": "chromium",
+          "motion": "full",
+          "kind": "one-wave",
+          "samples": 3,
+          "busyMsRange": [
+            1622.3999999985099,
+            1691
+          ],
+          "busyMsMedian": 1630.4000000059605,
+          "renderCounts": [
+            4
+          ],
+          "boardRebuilds": [
+            4
+          ],
+          "reconcileCalls": [
+            0
+          ],
+          "reusedGemNodes": [
+            0
+          ],
+          "animationCounts": [
+            75
+          ],
+          "engineWaves": 1,
+          "shownWaves": [
+            1
+          ],
+          "maxRafMs": 83.30000000000018,
+          "rafOver50ms": 1
+        },
+        {
+          "browser": "chromium",
+          "motion": "full",
+          "kind": "multi-wave",
+          "samples": 3,
+          "busyMsRange": [
+            2912.7000000029802,
+            2923.2000000029802
+          ],
+          "busyMsMedian": 2922.89999999851,
+          "renderCounts": [
+            6
+          ],
+          "boardRebuilds": [
+            6
+          ],
+          "reconcileCalls": [
+            0
+          ],
+          "reusedGemNodes": [
+            0
+          ],
+          "animationCounts": [
+            154
+          ],
+          "engineWaves": 5,
+          "shownWaves": [
+            2
+          ],
+          "maxRafMs": 33.40000000000009,
+          "rafOver50ms": 0
+        },
+        {
+          "browser": "chromium",
+          "motion": "reduce",
+          "kind": "one-wave",
+          "samples": 1,
+          "busyMsRange": null,
+          "busyMsMedian": null,
+          "renderCounts": [
+            1
+          ],
+          "boardRebuilds": [
+            1
+          ],
+          "reconcileCalls": [
+            0
+          ],
+          "reusedGemNodes": [
+            0
+          ],
+          "animationCounts": [
+            0
+          ],
+          "engineWaves": 1,
+          "shownWaves": [
+            0
+          ],
+          "maxRafMs": 0,
+          "rafOver50ms": 0
+        },
+        {
+          "browser": "chromium",
+          "motion": "reduce",
+          "kind": "multi-wave",
+          "samples": 1,
+          "busyMsRange": null,
+          "busyMsMedian": null,
+          "renderCounts": [
+            1
+          ],
+          "boardRebuilds": [
+            1
+          ],
+          "reconcileCalls": [
+            0
+          ],
+          "reusedGemNodes": [
+            0
+          ],
+          "animationCounts": [
+            0
+          ],
+          "engineWaves": 5,
+          "shownWaves": [
+            0
+          ],
+          "maxRafMs": 0,
+          "rafOver50ms": 0
+        },
+        {
+          "browser": "webkit",
+          "motion": "full",
+          "kind": "one-wave",
+          "samples": 3,
+          "busyMsRange": [
+            1668,
+            1723
+          ],
+          "busyMsMedian": 1693,
+          "renderCounts": [
+            4
+          ],
+          "boardRebuilds": [
+            4
+          ],
+          "reconcileCalls": [
+            0
+          ],
+          "reusedGemNodes": [
+            0
+          ],
+          "animationCounts": [
+            75
+          ],
+          "engineWaves": 1,
+          "shownWaves": [
+            1
+          ],
+          "maxRafMs": 268,
+          "rafOver50ms": 31
+        },
+        {
+          "browser": "webkit",
+          "motion": "full",
+          "kind": "multi-wave",
+          "samples": 3,
+          "busyMsRange": [
+            3044,
+            3190
+          ],
+          "busyMsMedian": 3102,
+          "renderCounts": [
+            6
+          ],
+          "boardRebuilds": [
+            6
+          ],
+          "reconcileCalls": [
+            0
+          ],
+          "reusedGemNodes": [
+            0
+          ],
+          "animationCounts": [
+            154
+          ],
+          "engineWaves": 5,
+          "shownWaves": [
+            2
+          ],
+          "maxRafMs": 180,
+          "rafOver50ms": 68
+        },
+        {
+          "browser": "webkit",
+          "motion": "reduce",
+          "kind": "one-wave",
+          "samples": 1,
+          "busyMsRange": null,
+          "busyMsMedian": null,
+          "renderCounts": [
+            1
+          ],
+          "boardRebuilds": [
+            1
+          ],
+          "reconcileCalls": [
+            0
+          ],
+          "reusedGemNodes": [
+            0
+          ],
+          "animationCounts": [
+            0
+          ],
+          "engineWaves": 1,
+          "shownWaves": [
+            0
+          ],
+          "maxRafMs": 0,
+          "rafOver50ms": 0
+        },
+        {
+          "browser": "webkit",
+          "motion": "reduce",
+          "kind": "multi-wave",
+          "samples": 1,
+          "busyMsRange": null,
+          "busyMsMedian": null,
+          "renderCounts": [
+            1
+          ],
+          "boardRebuilds": [
+            1
+          ],
+          "reconcileCalls": [
+            0
+          ],
+          "reusedGemNodes": [
+            0
+          ],
+          "animationCounts": [
+            0
+          ],
+          "engineWaves": 5,
+          "shownWaves": [
+            0
+          ],
+          "maxRafMs": 0,
+          "rafOver50ms": 0
+        }
+      ],
+      "samples": [
+        {
+          "browser": "chromium",
+          "motion": "full",
+          "kind": "one-wave",
+          "sample": 0,
+          "engineWaves": 1,
+          "observedAnimatedWaves": 1,
+          "busyMs": 1622.3999999985099,
+          "renderCount": 4,
+          "boardRebuilds": 4,
+          "reconcileCalls": 0,
+          "reusedGemNodes": 0,
+          "animationCount": 75,
+          "fallAnimationCount": 7,
+          "refillAnimationCount": 5,
+          "rafSamples": 98,
+          "meanRafMs": 16.66530612244898,
+          "maxRafMs": 16.800000000000182,
+          "rafOver50ms": 0,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "chromium",
+          "motion": "full",
+          "kind": "one-wave",
+          "sample": 1,
+          "engineWaves": 1,
+          "observedAnimatedWaves": 1,
+          "busyMs": 1691,
+          "renderCount": 4,
+          "boardRebuilds": 4,
+          "reconcileCalls": 0,
+          "reusedGemNodes": 0,
+          "animationCount": 75,
+          "fallAnimationCount": 7,
+          "refillAnimationCount": 5,
+          "rafSamples": 94,
+          "meanRafMs": 17.906063829787236,
+          "maxRafMs": 83.30000000000018,
+          "rafOver50ms": 1,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "chromium",
+          "motion": "full",
+          "kind": "one-wave",
+          "sample": 2,
+          "engineWaves": 1,
+          "observedAnimatedWaves": 1,
+          "busyMs": 1630.4000000059605,
+          "renderCount": 4,
+          "boardRebuilds": 4,
+          "reconcileCalls": 0,
+          "reusedGemNodes": 0,
+          "animationCount": 75,
+          "fallAnimationCount": 7,
+          "refillAnimationCount": 5,
+          "rafSamples": 98,
+          "meanRafMs": 16.665693877551025,
+          "maxRafMs": 16.799999999999727,
+          "rafOver50ms": 0,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "chromium",
+          "motion": "full",
+          "kind": "multi-wave",
+          "sample": 0,
+          "engineWaves": 5,
+          "observedAnimatedWaves": 2,
+          "busyMs": 2922.89999999851,
+          "renderCount": 6,
+          "boardRebuilds": 6,
+          "reconcileCalls": 0,
+          "reusedGemNodes": 0,
+          "animationCount": 154,
+          "fallAnimationCount": 21,
+          "refillAnimationCount": 9,
+          "rafSamples": 176,
+          "meanRafMs": 16.66590909090909,
+          "maxRafMs": 16.800000000000182,
+          "rafOver50ms": 0,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "chromium",
+          "motion": "full",
+          "kind": "multi-wave",
+          "sample": 1,
+          "engineWaves": 5,
+          "observedAnimatedWaves": 2,
+          "busyMs": 2912.7000000029802,
+          "renderCount": 6,
+          "boardRebuilds": 6,
+          "reconcileCalls": 0,
+          "reusedGemNodes": 0,
+          "animationCount": 154,
+          "fallAnimationCount": 21,
+          "refillAnimationCount": 9,
+          "rafSamples": 175,
+          "meanRafMs": 16.76078857142857,
+          "maxRafMs": 33.29999999999973,
+          "rafOver50ms": 0,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "chromium",
+          "motion": "full",
+          "kind": "multi-wave",
+          "sample": 2,
+          "engineWaves": 5,
+          "observedAnimatedWaves": 2,
+          "busyMs": 2923.2000000029802,
+          "renderCount": 6,
+          "boardRebuilds": 6,
+          "reconcileCalls": 0,
+          "reusedGemNodes": 0,
+          "animationCount": 154,
+          "fallAnimationCount": 21,
+          "refillAnimationCount": 9,
+          "rafSamples": 176,
+          "meanRafMs": 16.761363636363637,
+          "maxRafMs": 33.40000000000009,
+          "rafOver50ms": 0,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "chromium",
+          "motion": "reduce",
+          "kind": "one-wave",
+          "sample": 0,
+          "engineWaves": 1,
+          "observedAnimatedWaves": 0,
+          "busyMs": null,
+          "renderCount": 1,
+          "boardRebuilds": 1,
+          "reconcileCalls": 0,
+          "reusedGemNodes": 0,
+          "animationCount": 0,
+          "fallAnimationCount": 0,
+          "refillAnimationCount": 0,
+          "rafSamples": 0,
+          "meanRafMs": null,
+          "maxRafMs": null,
+          "rafOver50ms": 0,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "chromium",
+          "motion": "reduce",
+          "kind": "multi-wave",
+          "sample": 0,
+          "engineWaves": 5,
+          "observedAnimatedWaves": 0,
+          "busyMs": null,
+          "renderCount": 1,
+          "boardRebuilds": 1,
+          "reconcileCalls": 0,
+          "reusedGemNodes": 0,
+          "animationCount": 0,
+          "fallAnimationCount": 0,
+          "refillAnimationCount": 0,
+          "rafSamples": 0,
+          "meanRafMs": null,
+          "maxRafMs": null,
+          "rafOver50ms": 0,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "webkit",
+          "motion": "full",
+          "kind": "one-wave",
+          "sample": 0,
+          "engineWaves": 1,
+          "observedAnimatedWaves": 1,
+          "busyMs": 1693,
+          "renderCount": 4,
+          "boardRebuilds": 4,
+          "reconcileCalls": 0,
+          "reusedGemNodes": 0,
+          "animationCount": 75,
+          "fallAnimationCount": 7,
+          "refillAnimationCount": 5,
+          "rafSamples": 47,
+          "meanRafMs": 35.51063829787234,
+          "maxRafMs": 253,
+          "rafOver50ms": 10,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "webkit",
+          "motion": "full",
+          "kind": "one-wave",
+          "sample": 1,
+          "engineWaves": 1,
+          "observedAnimatedWaves": 1,
+          "busyMs": 1723,
+          "renderCount": 4,
+          "boardRebuilds": 4,
+          "reconcileCalls": 0,
+          "reusedGemNodes": 0,
+          "animationCount": 75,
+          "fallAnimationCount": 7,
+          "refillAnimationCount": 5,
+          "rafSamples": 29,
+          "meanRafMs": 60.62068965517241,
+          "maxRafMs": 203,
+          "rafOver50ms": 14,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "webkit",
+          "motion": "full",
+          "kind": "one-wave",
+          "sample": 2,
+          "engineWaves": 1,
+          "observedAnimatedWaves": 1,
+          "busyMs": 1668,
+          "renderCount": 4,
+          "boardRebuilds": 4,
+          "reconcileCalls": 0,
+          "reusedGemNodes": 0,
+          "animationCount": 75,
+          "fallAnimationCount": 7,
+          "refillAnimationCount": 5,
+          "rafSamples": 50,
+          "meanRafMs": 33.18,
+          "maxRafMs": 268,
+          "rafOver50ms": 7,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "webkit",
+          "motion": "full",
+          "kind": "multi-wave",
+          "sample": 0,
+          "engineWaves": 5,
+          "observedAnimatedWaves": 2,
+          "busyMs": 3102,
+          "renderCount": 6,
+          "boardRebuilds": 6,
+          "reconcileCalls": 0,
+          "reusedGemNodes": 0,
+          "animationCount": 154,
+          "fallAnimationCount": 21,
+          "refillAnimationCount": 9,
+          "rafSamples": 76,
+          "meanRafMs": 40.28947368421053,
+          "maxRafMs": 151,
+          "rafOver50ms": 26,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "webkit",
+          "motion": "full",
+          "kind": "multi-wave",
+          "sample": 1,
+          "engineWaves": 5,
+          "observedAnimatedWaves": 2,
+          "busyMs": 3044,
+          "renderCount": 6,
+          "boardRebuilds": 6,
+          "reconcileCalls": 0,
+          "reusedGemNodes": 0,
+          "animationCount": 154,
+          "fallAnimationCount": 21,
+          "refillAnimationCount": 9,
+          "rafSamples": 65,
+          "meanRafMs": 45.58461538461538,
+          "maxRafMs": 180,
+          "rafOver50ms": 18,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "webkit",
+          "motion": "full",
+          "kind": "multi-wave",
+          "sample": 2,
+          "engineWaves": 5,
+          "observedAnimatedWaves": 2,
+          "busyMs": 3190,
+          "renderCount": 6,
+          "boardRebuilds": 6,
+          "reconcileCalls": 0,
+          "reusedGemNodes": 0,
+          "animationCount": 154,
+          "fallAnimationCount": 21,
+          "refillAnimationCount": 9,
+          "rafSamples": 75,
+          "meanRafMs": 42.57333333333333,
+          "maxRafMs": 173,
+          "rafOver50ms": 24,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "webkit",
+          "motion": "reduce",
+          "kind": "one-wave",
+          "sample": 0,
+          "engineWaves": 1,
+          "observedAnimatedWaves": 0,
+          "busyMs": null,
+          "renderCount": 1,
+          "boardRebuilds": 1,
+          "reconcileCalls": 0,
+          "reusedGemNodes": 0,
+          "animationCount": 0,
+          "fallAnimationCount": 0,
+          "refillAnimationCount": 0,
+          "rafSamples": 0,
+          "meanRafMs": null,
+          "maxRafMs": null,
+          "rafOver50ms": 0,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "webkit",
+          "motion": "reduce",
+          "kind": "multi-wave",
+          "sample": 0,
+          "engineWaves": 5,
+          "observedAnimatedWaves": 0,
+          "busyMs": null,
+          "renderCount": 1,
+          "boardRebuilds": 1,
+          "reconcileCalls": 0,
+          "reusedGemNodes": 0,
+          "animationCount": 0,
+          "fallAnimationCount": 0,
+          "refillAnimationCount": 0,
+          "rafSamples": 0,
+          "meanRafMs": null,
+          "maxRafMs": null,
+          "rafOver50ms": 0,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        }
+      ],
+      "fixtureFingerprints": {
+        "one-wave": "828151906f24ea5d3f2a0e41fcbc4399a26215f781987a3065af2c5cbeced20a",
+        "multi-wave": "dd3646ba32ad5be11c8b8f198cbb75aca345f16d5873afce2c17feeca5b5f1e9"
+      }
+    },
+    "after": {
+      "sourceHashes": {
+        "app.js": "970e3ea2c1b7867faa4bc5573929d2185a5b96e1329bbc188338cfce149e280f",
+        "board-view.js": "a5ea9a09eca0bfbc0cecdffe8008b3310e6a1b90fb34aa4a3621851a2d462344",
+        "score-presentation.js": "c83248d2f23d2de42ba2df8fb6928311e95b4eab789d87983ac283f5e44a9acf",
+        "move-presentation.js": "c857b988264baeddee771cdbd76fdc4c318a21e096fff74d7dc926cf1b94e29c"
+      },
+      "summary": [
+        {
+          "browser": "chromium",
+          "motion": "full",
+          "kind": "one-wave",
+          "samples": 3,
+          "busyMsRange": [
+            1614.2000000029802,
+            1758.6000000014901
+          ],
+          "busyMsMedian": 1630.1000000014901,
+          "renderCounts": [
+            4
+          ],
+          "boardRebuilds": [
+            0
+          ],
+          "reconcileCalls": [
+            4
+          ],
+          "reusedGemNodes": [
+            71
+          ],
+          "animationCounts": [
+            75
+          ],
+          "engineWaves": 1,
+          "shownWaves": [
+            1
+          ],
+          "maxRafMs": 183.29999999999995,
+          "rafOver50ms": 1
+        },
+        {
+          "browser": "chromium",
+          "motion": "full",
+          "kind": "multi-wave",
+          "samples": 3,
+          "busyMsRange": [
+            3204.5,
+            3653.89999999851
+          ],
+          "busyMsMedian": 3246.39999999851,
+          "renderCounts": [
+            12
+          ],
+          "boardRebuilds": [
+            0
+          ],
+          "reconcileCalls": [
+            12
+          ],
+          "reusedGemNodes": [
+            210
+          ],
+          "animationCounts": [
+            319
+          ],
+          "engineWaves": 5,
+          "shownWaves": [
+            5
+          ],
+          "maxRafMs": 133.30000000000018,
+          "rafOver50ms": 7
+        },
+        {
+          "browser": "chromium",
+          "motion": "reduce",
+          "kind": "one-wave",
+          "samples": 1,
+          "busyMsRange": null,
+          "busyMsMedian": null,
+          "renderCounts": [
+            1
+          ],
+          "boardRebuilds": [
+            0
+          ],
+          "reconcileCalls": [
+            1
+          ],
+          "reusedGemNodes": [
+            15
+          ],
+          "animationCounts": [
+            0
+          ],
+          "engineWaves": 1,
+          "shownWaves": [
+            0
+          ],
+          "maxRafMs": 0,
+          "rafOver50ms": 0
+        },
+        {
+          "browser": "chromium",
+          "motion": "reduce",
+          "kind": "multi-wave",
+          "samples": 1,
+          "busyMsRange": null,
+          "busyMsMedian": null,
+          "renderCounts": [
+            1
+          ],
+          "boardRebuilds": [
+            0
+          ],
+          "reconcileCalls": [
+            1
+          ],
+          "reusedGemNodes": [
+            9
+          ],
+          "animationCounts": [
+            0
+          ],
+          "engineWaves": 5,
+          "shownWaves": [
+            0
+          ],
+          "maxRafMs": 0,
+          "rafOver50ms": 0
+        },
+        {
+          "browser": "webkit",
+          "motion": "full",
+          "kind": "one-wave",
+          "samples": 3,
+          "busyMsRange": [
+            1628,
+            1653
+          ],
+          "busyMsMedian": 1639,
+          "renderCounts": [
+            4
+          ],
+          "boardRebuilds": [
+            0
+          ],
+          "reconcileCalls": [
+            4
+          ],
+          "reusedGemNodes": [
+            71
+          ],
+          "animationCounts": [
+            75
+          ],
+          "engineWaves": 1,
+          "shownWaves": [
+            1
+          ],
+          "maxRafMs": 273,
+          "rafOver50ms": 21
+        },
+        {
+          "browser": "webkit",
+          "motion": "full",
+          "kind": "multi-wave",
+          "samples": 3,
+          "busyMsRange": [
+            3465,
+            3527
+          ],
+          "busyMsMedian": 3477,
+          "renderCounts": [
+            12
+          ],
+          "boardRebuilds": [
+            0
+          ],
+          "reconcileCalls": [
+            12
+          ],
+          "reusedGemNodes": [
+            210
+          ],
+          "animationCounts": [
+            319
+          ],
+          "engineWaves": 5,
+          "shownWaves": [
+            5
+          ],
+          "maxRafMs": 193,
+          "rafOver50ms": 84
+        },
+        {
+          "browser": "webkit",
+          "motion": "reduce",
+          "kind": "one-wave",
+          "samples": 1,
+          "busyMsRange": null,
+          "busyMsMedian": null,
+          "renderCounts": [
+            1
+          ],
+          "boardRebuilds": [
+            0
+          ],
+          "reconcileCalls": [
+            1
+          ],
+          "reusedGemNodes": [
+            15
+          ],
+          "animationCounts": [
+            0
+          ],
+          "engineWaves": 1,
+          "shownWaves": [
+            0
+          ],
+          "maxRafMs": 0,
+          "rafOver50ms": 0
+        },
+        {
+          "browser": "webkit",
+          "motion": "reduce",
+          "kind": "multi-wave",
+          "samples": 1,
+          "busyMsRange": null,
+          "busyMsMedian": null,
+          "renderCounts": [
+            1
+          ],
+          "boardRebuilds": [
+            0
+          ],
+          "reconcileCalls": [
+            1
+          ],
+          "reusedGemNodes": [
+            9
+          ],
+          "animationCounts": [
+            0
+          ],
+          "engineWaves": 5,
+          "shownWaves": [
+            0
+          ],
+          "maxRafMs": 0,
+          "rafOver50ms": 0
+        }
+      ],
+      "samples": [
+        {
+          "browser": "chromium",
+          "motion": "full",
+          "kind": "one-wave",
+          "sample": 0,
+          "engineWaves": 1,
+          "observedAnimatedWaves": 1,
+          "busyMs": 1630.1000000014901,
+          "renderCount": 4,
+          "boardRebuilds": 0,
+          "reconcileCalls": 4,
+          "reusedGemNodes": 71,
+          "animationCount": 75,
+          "fallAnimationCount": 7,
+          "refillAnimationCount": 5,
+          "rafSamples": 99,
+          "meanRafMs": 16.665474747474747,
+          "maxRafMs": 16.800000000000182,
+          "rafOver50ms": 0,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "chromium",
+          "motion": "full",
+          "kind": "one-wave",
+          "sample": 1,
+          "engineWaves": 1,
+          "observedAnimatedWaves": 1,
+          "busyMs": 1758.6000000014901,
+          "renderCount": 4,
+          "boardRebuilds": 0,
+          "reconcileCalls": 4,
+          "reusedGemNodes": 71,
+          "animationCount": 75,
+          "fallAnimationCount": 7,
+          "refillAnimationCount": 5,
+          "rafSamples": 95,
+          "meanRafMs": 18.94736842105263,
+          "maxRafMs": 183.29999999999995,
+          "rafOver50ms": 1,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "chromium",
+          "motion": "full",
+          "kind": "one-wave",
+          "sample": 2,
+          "engineWaves": 1,
+          "observedAnimatedWaves": 1,
+          "busyMs": 1614.2000000029802,
+          "renderCount": 4,
+          "boardRebuilds": 0,
+          "reconcileCalls": 4,
+          "reusedGemNodes": 71,
+          "animationCount": 75,
+          "fallAnimationCount": 7,
+          "refillAnimationCount": 5,
+          "rafSamples": 99,
+          "meanRafMs": 16.66567676767677,
+          "maxRafMs": 16.800000000000182,
+          "rafOver50ms": 0,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "chromium",
+          "motion": "full",
+          "kind": "multi-wave",
+          "sample": 0,
+          "engineWaves": 5,
+          "observedAnimatedWaves": 5,
+          "busyMs": 3246.39999999851,
+          "renderCount": 12,
+          "boardRebuilds": 0,
+          "reconcileCalls": 12,
+          "reusedGemNodes": 210,
+          "animationCount": 319,
+          "fallAnimationCount": 46,
+          "refillAnimationCount": 18,
+          "rafSamples": 189,
+          "meanRafMs": 17.81216931216931,
+          "maxRafMs": 133.29999999999995,
+          "rafOver50ms": 3,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "chromium",
+          "motion": "full",
+          "kind": "multi-wave",
+          "sample": 1,
+          "engineWaves": 5,
+          "observedAnimatedWaves": 5,
+          "busyMs": 3653.89999999851,
+          "renderCount": 12,
+          "boardRebuilds": 0,
+          "reconcileCalls": 12,
+          "reusedGemNodes": 210,
+          "animationCount": 319,
+          "fallAnimationCount": 46,
+          "refillAnimationCount": 18,
+          "rafSamples": 185,
+          "meanRafMs": 19.81894054054054,
+          "maxRafMs": 133.30000000000018,
+          "rafOver50ms": 4,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "chromium",
+          "motion": "full",
+          "kind": "multi-wave",
+          "sample": 2,
+          "engineWaves": 5,
+          "observedAnimatedWaves": 5,
+          "busyMs": 3204.5,
+          "renderCount": 12,
+          "boardRebuilds": 0,
+          "reconcileCalls": 12,
+          "reusedGemNodes": 210,
+          "animationCount": 319,
+          "fallAnimationCount": 46,
+          "refillAnimationCount": 18,
+          "rafSamples": 192,
+          "meanRafMs": 16.752333333333333,
+          "maxRafMs": 33.29999999999973,
+          "rafOver50ms": 0,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "chromium",
+          "motion": "reduce",
+          "kind": "one-wave",
+          "sample": 0,
+          "engineWaves": 1,
+          "observedAnimatedWaves": 0,
+          "busyMs": null,
+          "renderCount": 1,
+          "boardRebuilds": 0,
+          "reconcileCalls": 1,
+          "reusedGemNodes": 15,
+          "animationCount": 0,
+          "fallAnimationCount": 0,
+          "refillAnimationCount": 0,
+          "rafSamples": 0,
+          "meanRafMs": null,
+          "maxRafMs": null,
+          "rafOver50ms": 0,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "chromium",
+          "motion": "reduce",
+          "kind": "multi-wave",
+          "sample": 0,
+          "engineWaves": 5,
+          "observedAnimatedWaves": 0,
+          "busyMs": null,
+          "renderCount": 1,
+          "boardRebuilds": 0,
+          "reconcileCalls": 1,
+          "reusedGemNodes": 9,
+          "animationCount": 0,
+          "fallAnimationCount": 0,
+          "refillAnimationCount": 0,
+          "rafSamples": 0,
+          "meanRafMs": null,
+          "maxRafMs": null,
+          "rafOver50ms": 0,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "webkit",
+          "motion": "full",
+          "kind": "one-wave",
+          "sample": 0,
+          "engineWaves": 1,
+          "observedAnimatedWaves": 1,
+          "busyMs": 1628,
+          "renderCount": 4,
+          "boardRebuilds": 0,
+          "reconcileCalls": 4,
+          "reusedGemNodes": 71,
+          "animationCount": 75,
+          "fallAnimationCount": 7,
+          "refillAnimationCount": 5,
+          "rafSamples": 44,
+          "meanRafMs": 36.31818181818182,
+          "maxRafMs": 215,
+          "rafOver50ms": 9,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "webkit",
+          "motion": "full",
+          "kind": "one-wave",
+          "sample": 1,
+          "engineWaves": 1,
+          "observedAnimatedWaves": 1,
+          "busyMs": 1653,
+          "renderCount": 4,
+          "boardRebuilds": 0,
+          "reconcileCalls": 4,
+          "reusedGemNodes": 71,
+          "animationCount": 75,
+          "fallAnimationCount": 7,
+          "refillAnimationCount": 5,
+          "rafSamples": 41,
+          "meanRafMs": 39.390243902439025,
+          "maxRafMs": 273,
+          "rafOver50ms": 11,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "webkit",
+          "motion": "full",
+          "kind": "one-wave",
+          "sample": 2,
+          "engineWaves": 1,
+          "observedAnimatedWaves": 1,
+          "busyMs": 1639,
+          "renderCount": 4,
+          "boardRebuilds": 0,
+          "reconcileCalls": 4,
+          "reusedGemNodes": 71,
+          "animationCount": 75,
+          "fallAnimationCount": 7,
+          "refillAnimationCount": 5,
+          "rafSamples": 69,
+          "meanRafMs": 23.55072463768116,
+          "maxRafMs": 95,
+          "rafOver50ms": 1,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "webkit",
+          "motion": "full",
+          "kind": "multi-wave",
+          "sample": 0,
+          "engineWaves": 5,
+          "observedAnimatedWaves": 5,
+          "busyMs": 3527,
+          "renderCount": 12,
+          "boardRebuilds": 0,
+          "reconcileCalls": 12,
+          "reusedGemNodes": 210,
+          "animationCount": 319,
+          "fallAnimationCount": 46,
+          "refillAnimationCount": 18,
+          "rafSamples": 64,
+          "meanRafMs": 54.921875,
+          "maxRafMs": 164,
+          "rafOver50ms": 32,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "webkit",
+          "motion": "full",
+          "kind": "multi-wave",
+          "sample": 1,
+          "engineWaves": 5,
+          "observedAnimatedWaves": 5,
+          "busyMs": 3465,
+          "renderCount": 12,
+          "boardRebuilds": 0,
+          "reconcileCalls": 12,
+          "reusedGemNodes": 210,
+          "animationCount": 319,
+          "fallAnimationCount": 46,
+          "refillAnimationCount": 18,
+          "rafSamples": 62,
+          "meanRafMs": 55.645161290322584,
+          "maxRafMs": 193,
+          "rafOver50ms": 31,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "webkit",
+          "motion": "full",
+          "kind": "multi-wave",
+          "sample": 2,
+          "engineWaves": 5,
+          "observedAnimatedWaves": 5,
+          "busyMs": 3477,
+          "renderCount": 12,
+          "boardRebuilds": 0,
+          "reconcileCalls": 12,
+          "reusedGemNodes": 210,
+          "animationCount": 319,
+          "fallAnimationCount": 46,
+          "refillAnimationCount": 18,
+          "rafSamples": 73,
+          "meanRafMs": 47.42465753424658,
+          "maxRafMs": 185,
+          "rafOver50ms": 21,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "webkit",
+          "motion": "reduce",
+          "kind": "one-wave",
+          "sample": 0,
+          "engineWaves": 1,
+          "observedAnimatedWaves": 0,
+          "busyMs": null,
+          "renderCount": 1,
+          "boardRebuilds": 0,
+          "reconcileCalls": 1,
+          "reusedGemNodes": 15,
+          "animationCount": 0,
+          "fallAnimationCount": 0,
+          "refillAnimationCount": 0,
+          "rafSamples": 0,
+          "meanRafMs": null,
+          "maxRafMs": null,
+          "rafOver50ms": 0,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        },
+        {
+          "browser": "webkit",
+          "motion": "reduce",
+          "kind": "multi-wave",
+          "sample": 0,
+          "engineWaves": 5,
+          "observedAnimatedWaves": 0,
+          "busyMs": null,
+          "renderCount": 1,
+          "boardRebuilds": 0,
+          "reconcileCalls": 1,
+          "reusedGemNodes": 9,
+          "animationCount": 0,
+          "fallAnimationCount": 0,
+          "refillAnimationCount": 0,
+          "rafSamples": 0,
+          "meanRafMs": null,
+          "maxRafMs": null,
+          "rafOver50ms": 0,
+          "writes": 1,
+          "revisionDelta": 1,
+          "exactSnapshot": true,
+          "exactGeometry": true,
+          "errors": []
+        }
+      ],
+      "fixtureFingerprints": {
+        "one-wave": "828151906f24ea5d3f2a0e41fcbc4399a26215f781987a3065af2c5cbeced20a",
+        "multi-wave": "dd3646ba32ad5be11c8b8f198cbb75aca345f16d5873afce2c17feeca5b5f1e9"
+      }
+    }
+  },
+  "measurementRuns": [
+    {
+      "kind": "before",
+      "started": "2026-11-16T21:52:03.255140+00:00",
+      "command": "npm run measure:animation",
+      "exitCode": 0,
+      "elapsedSeconds": 67.229,
+      "finished": "2026-11-16T21:53:10.484297+00:00"
+    },
+    {
+      "kind": "after",
+      "started": "2026-11-16T21:53:10.484706+00:00",
+      "command": "npm run measure:animation",
+      "exitCode": 0,
+      "elapsedSeconds": 69.239,
+      "finished": "2026-11-16T21:54:19.723404+00:00"
+    }
+  ],
+  "physicalDeviceTested": false,
+  "limitations": [
+    "headless shared host; not physical iPhone",
+    "3 full-motion repeats, one reduced-motion repeat per fixture and browser",
+    "rAF observations are coarse frame continuity, not hardware performance claims",
+    "legacy score collection and gravity overlap; phases inferred from actual target/options and DOM projection when coordinator is absent",
+    "projection calls, full board rebuilds and reconcile calls are distinct; cumulative reused-node counts are not unique stone counts"
+  ]
+}

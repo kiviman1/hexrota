@@ -32,7 +32,7 @@ Başarılı normal veya assisted komut bütün motor dalgalarını senkron çöz
 4. **FALL:** Gerçek `frame.after` ve ground layers monte edilir; hayatta kalan gem'ler motordaki `fall.from → fall.to` koordinatlarıyla hareket eder.
 5. **REFILL:** `spawn:true` hareketler gerçek hedef ve spawn sıra verileriyle başlar. FALL ve REFILL ayrı semantik fazlardır ama animasyonları birlikte sürer; aralarında ek bekleme konmaz.
 6. **CASCADE:** İkinci ve sonraki gerçek motor dalgalarının her biri için MATCH → CLEAR → FALL → REFILL tekrarlanır. Artık üçüncü ve sonraki dalgalar ikinci dalganın puan paketine sıkıştırılmaz.
-7. **SETTLE:** Son salt projeksiyon gösterilir. Bu görünüm mevcut authoritative sonuca aittir; karıştırma olmuşsa son tahta ara dalgadan farklı olabilir.
+7. **SETTLE:** Coordinator görsel sıranın bittiğini bildirir. Mevcut host finisher, operation kapandıktan hemen sonra authoritative final tahtayı çizer; ek bir erken final redraw yapılmaz. Karıştırma olmuşsa bu son tahta ara dalgadan farklı olabilir.
 8. **REACTION:** Mevcut host isteğe bağlı Tavik/feedback çağrısını yapar. Karakter animasyonu await edilmez; oyun devamının ön koşulu değildir.
 9. **RESULT:** Mevcut host, uygun GAME ekranında ve pause/modal/hidden/suspension engeli yoksa terminal sonucu gösterir. Sonuç uygunluğu hâlâ gerçek motor durumuna dayanır.
 
@@ -68,7 +68,7 @@ Adaptör sözleşmesi:
 - `clear(wave)` puan görevini başlatıp Promise döndürür; coordinator bu görevin reddini hemen gözler, fakat düşüşü başlatmadan tamamlanmasını beklemez.
 - `fall(wave)` ve `refill(wave)` görselleri başlatıp en uzun süreyi milisaniye olarak döndürür.
 - `pause(ms)` host'un mevcut abort edilebilir beklemesidir.
-- `settle(plan)` yalnız final projeksiyonu gösterir.
+- `settle(plan)` yalnız final sunum adaptörüdür; mevcut host bağında no-op kalır, çünkü son çizim operation kapandıktan sonra mevcut `finishPresentation()` tarafından yapılır.
 
 Sonuç `{status, phase, wavesPresented, error?}` biçimindedir; `status` `succeeded`, `failed` veya `cancelled` olabilir. Bu sonuç ekonomik işlem, yeni motor komutu veya kanonik kayıt değildir. Host sonuçtan sonra mevcut `finishPresentation()` yoluyla temizlik ve uygun terminal sunumunu tamamlar.
 
@@ -83,7 +83,7 @@ Her faz bildirimi ve her await dönüşü aynı Attempt ID/token ile güncellik 
 | Sekme gizlenmesi/pagehide | Mevcut görünürlük/suspension işlemleri görselleri temizler ve eski terminal timer'ını engeller. Committed snapshot korunur; pagehide'in kendi checkpoint/life/rescue kayıtları görsel commit sayılmaz. |
 | Native Animation API throw/reject | Optional sunum başarısız olur; host authoritative final görünümüne döner ve kontrolleri bırakır. `animation.finished` reddi gözlenir; zaten abort edilmiş handle'ın normal iptal reddi ikinci sonuç üretmez. |
 | Eski token/Attempt callback'i | Sonraki faz, board güncellemesi veya modal açılışı için yetki vermez. |
-| Reduced motion | Dekoratif swap/dalga beklemesi çalışmadan yalnız SETTLE yolu kullanılır. Aynı komut zaten kaydedilmiştir. |
+| Reduced motion / animasyon API'si yok | Mevcut host'un doğrudan final yolu korunur: dekoratif coordinator işi veya yeni await zinciri oluşturulmaz. Geçici iş SETTLE olarak işaretlenir; mevcut finisher authoritative tahtayı gösterir. Saf coordinator doğrudan reduced girdi alırsa SETTLE-only davranışı ayrıca test edilir. |
 | İlk authoritative kayıt hatası | Mevcut tam rollback korunur; görsel plan, başarısız işlemi başarıya çeviremez. |
 | Son redraw hatası | F-01 koruması sürer: görsel hata kanonik persist/rollback veya `lifeWriteFailed` üretmez; mevcut finally temizliği çalışır. |
 
