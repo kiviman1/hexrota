@@ -27,6 +27,7 @@ window.HexSessionStore.boot(function startApp(session) {
   // Capture this before loadLevel prepares the read-only tutorial preview.
   let firstOpening=!gameLoadIssue&&!saved.done.length&&!Object.keys(saved.boards).length&&!Object.keys(saved.attempts).length&&!saved.variantSelection.serial;
   let fullResetPending=false;
+  const recurringTimers=[];
   let active=saved.current,activeLevel=levels[saved.current],activeAttempt=null,attemptPending=true,saveBlocked=false,loadIssue=null,engine, selected=null, hinted=null, focusIndex=0;
   let pointer=null, toastTimer, terminalTimer, epoch=0, comboText='',presentation=null,hintJob=null;
   const geometryCache=new Map();
@@ -384,7 +385,7 @@ window.HexSessionStore.boot(function startApp(session) {
     on($('rescue-provider-confirm'),'click',finishRescueProvider);on($('rescue-receipt-retry'),'click',finishRescueProvider);
     on($('setting-rescue-ad'),'change',event=>{saved.rescue=rescueManager.setAdAvailable(saved.rescue,event.target.checked);persist();if(commitSession())renderRescue();});
     on(window,'focus',()=>rescueRefresh({write:true}));on(document,'visibilitychange',()=>{if(!document.hidden)rescueRefresh({write:true});});
-    window.setInterval(()=>sessionAction(()=>{if(Math.floor(rescueClock()/86400000)!==saved.rescue.adUsage.day)rescueRefresh({write:true});}),1000);
+    recurringTimers.push(window.setInterval(()=>sessionAction(()=>{if(Math.floor(rescueClock()/86400000)!==saved.rescue.adUsage.day)rescueRefresh({write:true});}),1000));
     on(window,'pagehide',()=>rescueRefresh({write:true}));
     window.HexRescueTestAdapter=Object.freeze({applyReceipt:(receipt,provider)=>sessionAction(()=>applyRescueReceipt(receipt,provider))});
   }
@@ -806,7 +807,7 @@ window.HexSessionStore.boot(function startApp(session) {
     on($('setting-lives-bypass'),'change',event=>{if(!lifeReady())return;const result=lifeManager.setDeveloperBypass(lifeFeature.life,event.target.checked);lifeCommit({...lifeFeature,life:result.state});renderLives();});
     on($('setting-mock-ad'),'change',event=>{if(!lifeReady())return;lifeCommit({...lifeFeature,provider:window.HexLifeProviders.setAdAvailable(lifeFeature.provider,event.target.checked)});renderLives();});
     const tick=()=>{lifeRefresh();renderLives();};
-    window.setInterval(()=>sessionAction(tick),1000);on(window,'focus',()=>{lifeRefresh({persist:true});renderLives();});
+    recurringTimers.push(window.setInterval(()=>sessionAction(tick),1000));on(window,'focus',()=>{lifeRefresh({persist:true});renderLives();});
     on(document,'visibilitychange',()=>{if(!document.hidden){lifeRefresh({persist:true});renderLives();}});
     on(window,'pagehide',()=>lifeRefresh({persist:true}));
     window.HexLifeTestAdapter=Object.freeze({applyReceipt:receipt=>sessionAction(()=>applyLifeReceipt(receipt))});
@@ -1699,6 +1700,7 @@ window.HexSessionStore.boot(function startApp(session) {
     // The new profile is already durable. Freeze every old callback before
     // navigation can fire pagehide, blur, provider or observation handlers.
     fullResetPending=true;sessionDirty=false;sessionPlaytestDirty=false;
+    for(const timer of recurringTimers.splice(0))window.clearInterval(timer);
     stateEffects.destroy();appState.destroy();try{tavikDialogue?.destroy();}catch(_){}
     try{scenePresentation?.destroy();}catch(_){}
     saved=freshGame;lifeFeature=freshEnergy;engine=null;activeAttempt=null;attemptPending=true;
