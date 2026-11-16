@@ -32,6 +32,7 @@ const OPTIONAL_SCENE_ASSETS=[
 ];
 const WARM_SCENE_ASSETS=['assets/scenes/coop-v1/backgrounds/clearing-mobile.webp','assets/scenes/coop-v1/tavik/idle.webp'];
 const ALLOWED=new Set([...ASSETS,...OPTIONAL_SCENE_ASSETS].map(path=>new URL(path,BASE).pathname));
+const OPTIONAL_SCENE_PATHS=new Set(OPTIONAL_SCENE_ASSETS.map(path=>new URL(path,BASE).pathname));
 const HOME=new URL('./',BASE).href;
 const PRELOAD=[...ASSETS,...WARM_SCENE_ASSETS].map(path=>new URL(/\.(?:js|css)$/.test(path)?path+'?v=36':path,BASE).href);
 function assetType(url,response){
@@ -93,6 +94,13 @@ self.addEventListener('fetch',event=>{
   if(url.search&&url.search!=='?v=36')return;
   event.respondWith((async()=>{
     try{return await storeAsset(request,await fetch(request));}
-    catch(_){const saved=await stored(request);if(saved&&assetType(url,saved))return saved;throw _;}
+    catch(_){
+      const saved=await stored(request);if(saved&&assetType(url,saved))return saved;
+      // An unavailable optional image is an ordinary resource failure. Resolve
+      // it explicitly so WebKit can run the image loader's fallback without an
+      // unhandled rejected service-worker response. Never cache this response.
+      if(OPTIONAL_SCENE_PATHS.has(url.pathname))return new Response('Scene image unavailable offline',{status:503,headers:{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store'}});
+      throw _;
+    }
   })());
 });

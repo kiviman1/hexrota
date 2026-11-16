@@ -34,7 +34,7 @@ Sunum `dist/scene-presentation.js` içindedir. `app.js` modüle motor yerine sal
 
 Arka planlar birbirine hizalı inşaat katmanları değildir; 140 ms beklemeli kısa kararmayla değiştirilir, üst üste yapı parçaları gibi canlandırılmaz. Karartma gerçek tahtanın altındadır. Tavik gerçek hücreleri, HUD'u ve öğretici kartını örtmeyecek güvenli alana yerleşir. Dar öğretici ekranlarda mevcut Menü/Mola boşluğundaki küçük statik yerleşim kullanılabilir; alan yoksa dekoratif karakter gizlenir. Tahta ve dokunma alanı bu nedenle küçültülmez.
 
-Sekme gizlenmesi, açık diyalog ve mola hareketi durdurur. Azaltılmış hareket tercihinde sabit poz ve anlık sahne geçişi kullanılır. Ekran kapanışında geçici düğümler, dinleyiciler ve zamanlayıcılar temizlenir; gecikmiş görsel yanıtları yeni sahneye yazamaz. Başarısız görsel yüklemesi onaylı portre/önbellekteki clearing/statik renge düşer; gerçek oyunu veya ödül akışını engellemez. Hazır hareket kodu kesit animasyonudur; yürüme döngüsü veya 3B rig eklenmemiştir.
+Sekme gizlenmesi, açık diyalog ve mola hareketi durdurur. Azaltılmış hareket tercihinde sabit poz ve anlık sahne geçişi kullanılır. Ekran kapanışında geçici düğümler, dinleyiciler ve zamanlayıcılar temizlenir; gecikmiş görsel yanıtları yeni sahneye yazamaz. Görsel host `pageshow` ile yeniden kurulabilir; mevcut kayıt deposu gerçek BFCache dönüşünde (`pageshow.persisted`) sayfayı yeniden yükleme ve yazıcı sahipliğini yeniden alma politikasını korur. Yeni bir BFCache kayıt akışı eklenmemiştir. Başarısız görsel yüklemesi onaylı portre/önbellekteki clearing/statik renge düşer; gerçek oyunu veya ödül akışını engellemez. Hazır hareket kodu kesit animasyonudur; yürüme döngüsü veya 3B rig eklenmemiştir.
 
 ## Sunum ve giriş sınırları
 

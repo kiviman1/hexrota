@@ -49,7 +49,7 @@ Yeni komutlar: `npm run scene:sync`, `npm run test:scene`, `npm run test:scene-b
 
 Arka plan ve karartma dünya katmanında, gerçek tahta bunun üstündedir. Tavik yalnız boşluk bulunan bir konuma yerleşir; taşların, HUD'un, öğretici kartının ve düğmelerin sınırları korunur. Güvenli köşe bulunamazsa öğreticide mevcut araç çubuğunun boş ortasında küçük statik poz denenir; güvenli alan yine yoksa karakter gizlenir. Tahta karaktere yer açmak için küçültülmez. Dekoratif katmanlar `pointer-events:none` kullanır.
 
-Dört arka plan ayrı kompozisyonlardır. Aşama ve yön değişiminde 140 ms kararma ile resim değiştirilir; hizalı inşaat parçaları gibi bindirme veya morph yapılmaz. Azaltılmış hareket anlık geçiş ve statik poz kullanır. Sekme gizlendiğinde/diyalog açıldığında hareket durur. Ekrandan çıkışta timer/listener/DOM ve gecikmiş decode sahipliği temizlenir. `pagehide` sahneyi dispose eder; `pageshow` aynı host'a dönüldüğünde yalnız sunumu yeniden kurar. Geliştirme tam sıfırlamasından sonra eski host yeniden sahne veya kayıt üretemez.
+Dört arka plan ayrı kompozisyonlardır. Aşama ve yön değişiminde 140 ms kararma ile resim değiştirilir; hizalı inşaat parçaları gibi bindirme veya morph yapılmaz. Azaltılmış hareket anlık geçiş ve statik poz kullanır. Sekme gizlendiğinde/diyalog açıldığında hareket durur. Ekrandan çıkışta timer/listener/DOM ve gecikmiş decode sahipliği temizlenir. `pagehide` sahneyi dispose eder; görsel host `pageshow` ile tekrar kurulabilir. Mevcut kayıt deposunun `pageshow.persisted → reload` ve tek-yazıcı kilidini yeniden alma politikası korunur; yeni bir BFCache kayıt akışı oluşturulmadı. Geliştirme tam sıfırlamasından sonra eski host yeniden sahne veya kayıt üretemez.
 
 Animasyon bitişi hiçbir puan, hamle, can, Altın, yıldız, stok, Attempt ID veya kalıcı durum üretmez. `scene-presentation` motor, ekonomi, profil veya depolama API'si almaz. Mevcut iki yönlü üst SVG takası, öğretici gösterim ve kaydırma motoru değiştirilmedi.
 
@@ -57,18 +57,54 @@ Animasyon bitişi hiçbir puan, hamle, can, Altın, yıldız, stok, Attempt ID v
 
 PWA `v36` sunum bağımlılıklarını çekirdek çevrimdışı kabuğa ekler. 22 hazır WebP yalnız açık izin listesi üzerinden istekle önbelleğe alınabilir. Kurulumda **isteğe bağlı** yalnız `clearing-mobile.webp` ve `idle.webp` ısıtılır: toplam **133.004 byte**; tüm WebP'lerin toplamı **2.206.144 byte**. Diğer 20 resim açılışta toplu indirilmez/decode edilmez. Aktif arka plan ve idle önce, gereken poz sonra yüklenir.
 
-WebP yerine gelen kimlik doğrulama HTML'i, yönlendirme, yanlış MIME, keyfi sorgu ve scope dışı yol saklanmaz. İsteğe bağlı görselin yokluğu kurulum veya başarılı çevrimiçi oyunu başarısız yapmaz. Çevrimdışı ileri aşama resmi henüz önbellekte değilse kayıtlı başlangıç arazisi/statik renk ve onaylı portre fallback'i kullanılır; kazanılmış yıldızlar düşürülmez.
+WebP yerine gelen kimlik doğrulama HTML'i, yönlendirme, yanlış MIME, keyfi sorgu ve scope dışı yol saklanmaz. İsteğe bağlı görselin yokluğu kurulum veya başarılı çevrimiçi oyunu başarısız yapmaz. Çevrimdışı ve önbelleksiz isteğe bağlı resim için `503 / no-store` döner; WebKit'te reddedilmiş servis çalışanı Promise'ı yerine normal görsel yükleme hatası ve mevcut fallback çalışır. Çekirdek JS dosyalarının hata davranışı değişmez. İleri aşama resmi henüz önbellekte değilse kayıtlı başlangıç arazisi/statik renk ve onaylı portre fallback'i kullanılır; kazanılmış yıldızlar düşürülmez.
 
 ## Test kanıtı
 
-Son entegre koşumlar ve CI/Preview bağlantıları bu bölümde teslim öncesi güncellenir. Fiziksel cihaz testi otomatik tarayıcı sonucuyla eşitlenmez.
+Yerel koşumların kapsamı aşağıdadır. Son commit'in GitHub Actions sonuçları ve Vercel Preview kontrolü [PR #22](https://github.com/kiviman1/hexrota/pull/22) üzerinde izlenir; 15 mevcut CI işi korunmuştur. Yeni sahne tarayıcı adımı mevcut Chromium/WebKit matrisine eklenir; bu işlerin zaman bütçesi ek kapsam için 15 dakikadan 20 dakikaya çıkarılmıştır. Ekran görüntüleri CI artifact'larında saklanır. Fiziksel cihaz testi otomatik tarayıcı sonucuyla eşitlenmez.
 
 - `node scripts/check-scene-assets.cjs`: 39 hash / 12 hareket doğrulaması geçti.
 - `node sync-scene-config.cjs --check`: geçti.
-- `node check-scene-presentation.cjs`: 17 odaklı grup geçti; async yarış, fallback, duraklatma, yerleşim, tekrar çağrı ve temizleme dahil.
+- `node check-scene-presentation.cjs`: 18 odaklı grup geçti; async yarış, fallback, duraklatma, yerleşim, tekrar çağrı ve temizleme dahil. Eşiklerin ikinci bir sabit listeden değil verilen JSON'dan okunduğu, alternatif test eşikleriyle ayrıca doğrulanır.
 - Yeni gerçek HTTP tarayıcı matrisi: 320×568, 390×844, 430×932, 844×390, 932×430, 1280×720. Ekran görüntüleri ve Tavik gizlenerek alınan karşılaştırmalı piksel kanıtı kullanılır; yalnız DOM doğruluğu yeterli sayılmaz.
 - Sahne kapatılmış referansla gerçek tahta geometrisi karşılaştırılır. İki gerçek öğretici, tekil 20 Altın, sıfır canla kayıt devamı, atomik son hamle hatası, yıldız eşikleri, geç decode/404, reduced-motion, modal/döndürme ve gerçek servis çalışanıyla ağ kesilerek çevrimdışı yeniden yükleme test edilir.
 - Geri dönüş testi sentetik `PageTransitionEvent` ve sekme testi kontrollü `document.hidden` olayı kullanır; fiziksel Safari arka planı veya gerçek işletim sistemi BFCache kanıtı olarak sunulmaz.
+
+Son yerel koşumlar:
+
+| Kontrol | Sonuç |
+| --- | --- |
+| `npm test` | Tam zincir exit 0; mevcut oyun/UI/kayıt/ekonomi ve yeni 18 sahne grubu dahil |
+| `test:scene-browser` | **Chromium 20/20, WebKit 20/20**, iki koşum da exit 0, yakalanmamış hata yok |
+| Mevcut mobil giriş | Chromium **40**, WebKit **37** kontrol; sıfır hata |
+| Mevcut takas piksel doğrulaması | Her tarayıcıda **16/16**; iki taşın başlangıç/orta/son görünürlüğü dahil |
+| İlk açılış, hoş geldin/sıfırlama, Altın/ışık piksel testleri | Her iki tarayıcıdaki mevcut üç komut geçti |
+| Mobil ekonomi ve bahçe | Her tarayıcıda **21 + 9** grup geçti |
+| Chromium atomik kayıt ve birleşik çevrimdışı oyun | Her iki komut geçti; birleşik koşum **6/6** |
+| `test:observable` | Exit 0; 80 görünür durum, 1.920 gizli RNG bağımsızlığı karşılaştırması, 160 örneklenmiş karar ve mevcut raporun tekrar üretimi |
+| PWA | **17/17** grup; isteğe bağlı eksik WebP ve bozuk MIME/önbellek senaryoları dahil |
+| Dar koruma denetimi | **8 grup / 88 korunan dosya** ve onaylı Tavik bütünlüğü geçti |
+
+Chromium giriş testi gerçek CDP dokunma olayları kullanır. WebKit'teki kaydırmalar native mouse, tek dokunuşlar native touch üzerinden çalıştırılır; iPhone parmağıyla gerçek Safari testi olduğu iddia edilmez. Son sahne sonuçlarının küçük JSON kopyaları `reports/scene-phase1-chromium.json` ve `reports/scene-phase1-webkit.json` altında; ekran görüntüleri CI artifact'larında bulunur.
+
+İlk aday koşumunda testlerin iki yanlış varsayımı düzeltildi: başarısız poz yüklemesinde hazır hareket adaptörü son geçerli `inspect` pozunu koruyabilir; mutlaka `idle` beklenmemelidir. Persisted `pageshow` sonrasında mevcut kayıt kilidi host'u gerçekten yeniden yükler; geçici DOM'a erken bakmak yerine yeniden yükleme ve kayıt devamı beklenir. Bunun yanında gerçek WebKit çevrimdışı isteğe bağlı-resim hatası yukarıdaki dar `503/no-store` düzeltmesiyle giderildi. Son yerel koşumlarda bu senaryolar geçmektedir.
+
+Gerçek .NET SDK **8.0.428** ile C# **7.3** derlenerek çalıştırılan mevcut karşılaştırmaların yerel sonuçları:
+
+| Komut | Gerçek karşılaştırma kapsamı | Sonuç |
+| --- | --- | --- |
+| `test:unity-gameplay` | 71 mekanik örneği, 80 sertifikalı yol, 120 rota dışı koşu; 1.913 geçerli takas ve ara dalgalar | Geçti |
+| `test:unity-rewards` | 104 paylaşılan vektör ve durum fabrikası | Geçti |
+| `test:unity-catalog` | 2.107 tam JSON karşılaştırması; 40 varyant/80 yol | Geçti |
+| `test:unity-lives` | 19 ortak senaryo + uzun koşu/460 geçiş, 152 v1 geçişi, 172 ek prob | Geçti |
+| `test:unity-hints` | 1.000 karşılaştırma; 680 yayımlanmış rota durumu, 280 arama durumu | Geçti |
+| `test:unity-reward-adapter` | 1.456 tur, 2.928 dalga, 1.564 yeniden oynatma/devam kontrolü | Geçti |
+| `test:unity-session` | 580 olay + 1.362 oturum JSON karşılaştırması, 36 gerçek app akışı | Geçti |
+| `test:unity-economy` | 125 akış / 579 tam sonuç-durum karşılaştırması | Geçti |
+| `test:unity-commands` | 2.928 karşılaştırma, 16.001 adım, 3.259 dalga | Geçti |
+| `test:unity-rescue` | 293 karşılaştırma + 600 derlenmiş yaşam döngüsü geçişi | Geçti |
+
+Balance Lab ekonomi izolasyonu, birleştirilmemiş `85bc092d` kaynağı salt test girdisi olarak kullanılarak **Chromium 6/6 ve WebKit 6/6** geçti. 79 değişmez dosya ve 10 korunan kayıt anahtarı kontrol edildi; 320×568, 390×844 ve 844×390 ekranlar, kazanma/kayıp/yeniden deneme, geçersiz deney reddi ve dış ağ isteği olmaması dahil. Lab üretim uygulamasına eklenmedi.
 
 ## Korunan sözleşmeler ve Unity uyarlaması
 

@@ -47,6 +47,17 @@ test('canonical scene thresholds are strict, data driven and have no future resc
  }finally{f.close();}
 });
 
+test('configuration is the single source of ordered nonnegative safe-integer thresholds',()=>{
+ const f=mount();try{
+  const changed=config();[0,3,6,11].forEach((value,index)=>changed.stages[index].minStars=value);
+  assert.equal(f.api.validateConfig(changed),true,'a valid configuration may change thresholds without a second code edit');
+  for(const [stars,stage]of [[0,'clearing'],[2,'clearing'],[3,'frame'],[5,'frame'],[6,'roof'],[10,'roof'],[11,'finished']])assert.equal(f.api.stageForStars(changed,stars),stage);
+  for(const values of [[1,3,6,11],[0,3,3,11],[0,3,2,11],[0,-1,6,11],[0,1.5,6,11],[0,'3',6,11],[0,3,6,Number.MAX_SAFE_INTEGER+1]]){
+   const invalid=config();values.forEach((value,index)=>invalid.stages[index].minStars=value);assert.throws(()=>f.api.validateConfig(invalid),'invalid or unordered thresholds are rejected');
+  }
+ }finally{f.close();}
+});
+
 test('first opening loads only its active world and one actor before showing intro motion',async()=>{
  const f=mount();try{
   f.update();await until(()=>f.snapshot().backgroundReady&&f.snapshot().actorReady,'initial scene assets become ready');

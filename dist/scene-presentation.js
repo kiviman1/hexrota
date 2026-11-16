@@ -2,14 +2,14 @@
  * view facts; visual callbacks have no authority over a player's results. */
 (function(root){
  'use strict';
- const ids=['clearing','frame','roof','finished'],thresholds=[0,2,5,10];
+ const ids=['clearing','frame','roof','finished'];
  const own=(value,keys)=>!!value&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).length===keys.length&&keys.every(key=>Object.prototype.hasOwnProperty.call(value,key));
  const integer=value=>Number.isSafeInteger(value)&&value>=0;
  function validateConfig(config){
   const need=condition=>{if(!condition)throw new TypeError('invalid_scene_config');};
   need(own(config,['schemaVersion','id','assetBase','fallbackPortrait','stages','transitionMs','actor','copy','futureStory']));
   need(config.schemaVersion===1&&config.id==='coop-scene-phase1'&&config.assetBase==='./assets/scenes/coop-v1/'&&config.fallbackPortrait==='./assets/characters/tavik/front.webp');
-  need(Array.isArray(config.stages)&&config.stages.length===4&&config.stages.every((stage,index)=>own(stage,['id','minStars','background','mobileBackground'])&&stage.id===ids[index]&&stage.minStars===thresholds[index]&&stage.background==='backgrounds/'+ids[index]+'.webp'&&stage.mobileBackground==='backgrounds/'+ids[index]+'-mobile.webp'));
+  need(Array.isArray(config.stages)&&config.stages.length===4&&config.stages.every((stage,index)=>own(stage,['id','minStars','background','mobileBackground'])&&stage.id===ids[index]&&integer(stage.minStars)&&(index===0?stage.minStars===0:stage.minStars>config.stages[index-1].minStars)&&stage.background==='backgrounds/'+ids[index]+'.webp'&&stage.mobileBackground==='backgrounds/'+ids[index]+'-mobile.webp'));
   need(integer(config.transitionMs)&&config.transitionMs<=500&&own(config.actor,['homeSize','gameMaxSize','gameMinSize','clearance']));
   need(integer(config.actor.homeSize)&&config.actor.homeSize>=80&&config.actor.homeSize<=240&&integer(config.actor.gameMaxSize)&&config.actor.gameMaxSize<=140&&integer(config.actor.gameMinSize)&&config.actor.gameMinSize>=64&&config.actor.gameMinSize<=config.actor.gameMaxSize&&integer(config.actor.clearance)&&config.actor.clearance>=4&&config.actor.clearance<=24);
   need(own(config.copy,['intro'])&&typeof config.copy.intro==='string'&&config.copy.intro.length>0&&config.copy.intro.length<=80&&own(config.futureStory,['enabled','hooks'])&&config.futureStory.enabled===false&&Array.isArray(config.futureStory.hooks)&&config.futureStory.hooks.length===0);return true;

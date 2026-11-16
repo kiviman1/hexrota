@@ -221,6 +221,12 @@ const expectedSceneImages=[
  ...['idle','hop','point','inspect','worried','celebrate','walk-pose','run-pose','carry','build','proud','think','call','rest'].map(id=>sceneImage('tavik/'+id+'.webp'))
 ];
 function preparedSceneResponse(file){return response(fs.readFileSync(path.join(root,file)),'image/webp');}
+async function assertSceneUnavailable(sw,file,message){
+ const result=await sw.fetch(file);assert(result.handled);assert.equal(result.response.status,503,message);
+ assert.equal(result.response.headers.get('cache-control'),'no-store');assert.match(result.response.headers.get('content-type'),/^text\/plain/);
+ assert.equal(await result.response.text(),'Scene image unavailable offline');
+ for(const data of sw.stores.values())for(const res of data.values())assert.notEqual(res.status,503,'optional failure responses are never cached');
+}
 function sceneNetwork(request){
  const file=new URL(request.url).pathname.slice('/demo/'.length);
  if(file.endsWith('.webp')&&file.startsWith(sceneRoot))return preparedSceneResponse(file);
@@ -243,7 +249,7 @@ test('scene pack is demand-cacheable with only a bounded mobile background and i
  assert.deepEqual(fetchedArt,sceneWarm,'other backgrounds and poses are not fetched on install');
  sw.setNetwork(async()=>{throw new Error('Offline');});
  for(const file of sceneWarm){const result=await sw.fetch(file);assert(result.handled);assert.equal(result.response.headers.get('content-type'),'image/webp');assert.deepEqual(Buffer.from(await result.response.arrayBuffer()),fs.readFileSync(path.join(root,file)),file+' is available offline after warmup');}
- await assert.rejects(sw.fetch(sceneImage('backgrounds/roof.webp')),/Offline/,'an unseen later background is not falsely claimed to be cached');
+ await assertSceneUnavailable(sw,sceneImage('backgrounds/roof.webp'),'an unseen later background explicitly fails without falsely claiming cached art');
 });
 
 test('later prepared backgrounds and poses cache lazily with exact typed offline bytes',async()=>{
@@ -258,11 +264,11 @@ test('later prepared backgrounds and poses cache lazily with exact typed offline
 test('optional scene art rejects auth HTML, redirects, poisoned caches and unapproved URL variants',async()=>{
  const file=sceneImage('tavik/point.webp');
  for(const invalid of [()=>response('<h1>Log in</h1>','text/html'),()=>response('not decoded image','application/octet-stream'),()=>response('missing','image/webp',404),()=>{const res=preparedSceneResponse(file);Object.defineProperty(res,'redirected',{value:true});return res;}]){
-  const sw=worker();sw.setNetwork(async()=>invalid());await sw.fetch(file);sw.setNetwork(async()=>{throw new Error('Offline');});await assert.rejects(sw.fetch(file),/Offline/,'invalid art must never become an offline image');
+  const sw=worker();sw.setNetwork(async()=>invalid());await sw.fetch(file);sw.setNetwork(async()=>{throw new Error('Offline');});await assertSceneUnavailable(sw,file,'invalid art must never become an offline image');
  }
  const sw=worker();sw.setNetwork(sceneNetwork);await sw.fetch(file);sw.setNetwork(async()=>response('<h1>Authentication</h1>','text/html'));assert.equal(await(await sw.fetch(file)).response.text(),'<h1>Authentication</h1>','online failures remain visible to the image loader/fallback');
  sw.setNetwork(async()=>{throw new Error('Offline');});assert.deepEqual(Buffer.from(await(await sw.fetch(file)).response.arrayBuffer()),fs.readFileSync(path.join(root,file)),'a failed online auth response does not replace a previously valid cached image');
- const poisoned=worker();await poisoned.seed(file,response('<h1>Login</h1>','text/html'));await assert.rejects(poisoned.fetch(file),/Offline/,'cached MIME is validated again');
+ const poisoned=worker();await poisoned.seed(file,response('<h1>Login</h1>','text/html'));await assertSceneUnavailable(poisoned,file,'cached MIME is validated again');
  const scoped=worker();scoped.setNetwork(async()=>{throw new Error('must not fetch');});
  for(const [url,options]of [[file+'?token=private',{}],[file+'?v='+shellVersion+'&token=private',{}],[file+'?v=1',{}],['https://other.test/demo/'+file,{}],['https://game.test/other/'+file,{}],[file,{method:'POST'}]])assert.equal((await scoped.fetch(url,options)).handled,false,url+' is not intercepted');
  assert.equal(scoped.requests.length,0,'excluded optional URLs never cause worker network reads');
@@ -273,7 +279,7 @@ test('missing or quota-failed optional scene art cannot fail installation or suc
   const sw=worker();sw.setNetwork(async request=>{const file=new URL(request.url).pathname.slice('/demo/'.length);if(sceneWarm.includes(file)){if(kind==='offline')throw new Error('Optional image unavailable');return kind==='auth'?response('<h1>Log in</h1>','text/html'):response('missing','image/webp',404);}return sceneNetwork(request);});
   await sw.emit('install');assert.equal(sw.messages.skip,0,'optional art failure never auto-replaces a live game');
   sw.setNetwork(async()=>{throw new Error('Offline');});assert.equal(await(await sw.fetch(versioned('engine.js'))).response.text(),'/* cached gameplay/presentation bootstrap */','the core shell is still installed when optional art fails');
-  for(const file of sceneWarm)await assert.rejects(sw.fetch(file),/Offline/,'missing scene art is left to the module static fallback');
+  for(const file of sceneWarm)await assertSceneUnavailable(sw,file,'missing scene art is left to the module static fallback');
  }
  for(const options of [{putFails:true},{openFails:true}]){
   const sw=worker(options);sw.setNetwork(sceneNetwork);const file=sceneImage('backgrounds/finished-mobile.webp'),result=await sw.fetch(file);assert.equal(result.response.status,200);assert.deepEqual(Buffer.from(await result.response.arrayBuffer()),fs.readFileSync(path.join(root,file)),'unavailable cache cannot discard a successful prepared image');
