@@ -2,7 +2,7 @@
  * view facts; visual callbacks have no authority over a player's results. */
 (function(root){
  'use strict';
- const ids=['clearing','frame','roof','finished'];
+ const ids=['clearing','frame','roof','finished'];const lessonStages=['clearing','frame','finished'];
  const own=(value,keys)=>!!value&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).length===keys.length&&keys.every(key=>Object.prototype.hasOwnProperty.call(value,key));
  const integer=value=>Number.isSafeInteger(value)&&value>=0;
  function validateConfig(config){
@@ -135,14 +135,14 @@
    background.src=image.src;background.hidden=false;backgroundReady=true;loadedStage=targetStage;world.dataset.fallback=String(targetStage!==stage);background.dataset.ready='true';shade.dataset.dark='false';
   }
   function requestBackground(){
-   const selected=config.stages.find(entry=>entry.id===stage),mobile=(win.innerWidth||1024)<=650&&(win.innerHeight||768)>=(win.innerWidth||1024),src=config.assetBase+(mobile?selected.mobileBackground:selected.background);
+   const selected=config.stages.find(entry=>entry.id===stage),mobile=(win.innerWidth||1024)<=650&&(win.innerHeight||768)>=(win.innerWidth||1024),src=(mobile&&view?.completedTutorials!==undefined)?config.assetBase+'backgrounds/tutorial-v2/'+(stage==='clearing'?'foundation':stage)+'.webp':config.assetBase+(mobile?selected.mobileBackground:selected.background);
    if(src===backgroundKey)return;backgroundKey=src;cancelFade();const token=++backgroundEpoch,life=generation;
    const load=failedImages.has(src)?Promise.reject(new Error('Scene image unavailable')):decode(src);
    load.then(image=>applyBackground(image,selected.id,token,life)).catch(error=>{
     if(!valid(life)||token!==backgroundEpoch)return;failedImages.add(src);report(error);backgroundReady=false;background.hidden=true;world.dataset.fallback='true';
-    const safe=config.assetBase+config.stages[0].mobileBackground;
+    const safe=config.assetBase+(view?.completedTutorials!==undefined?selected.mobileBackground:config.stages[0].mobileBackground);
     if(src===safe||failedImages.has(safe)){loadedStage=null;return;}
-    decode(safe).then(image=>applyBackground(image,'clearing',token,life)).catch(error=>{if(valid(life)&&token===backgroundEpoch){failedImages.add(safe);loadedStage=null;report(error);}});
+    decode(safe).then(image=>applyBackground(image,stage,token,life)).catch(error=>{if(valid(life)&&token===backgroundEpoch){failedImages.add(safe);loadedStage=null;report(error);}});
    });
   }
   function bind(target,type,callback){target.addEventListener(type,callback);listeners.push(()=>target.removeEventListener(type,callback));}
@@ -169,11 +169,11 @@
    if(disposed)return false;if(!input||!integer(input.committedStars))throw new TypeError('invalid_scene_view');
    const previous=view,previousStage=stage,wasActive=active;view={...input,lessonPair:Array.isArray(input.lessonPair)?input.lessonPair.slice(0,2):[]};
    if(!['home','game'].includes(view.screen)){close();mode=null;return true;}
-   mode=view.screen==='game'?'game':view.firstOpening?'opening':'home';stage=stageForStars(config,view.committedStars);setBody('sceneMode',mode);setBody('sceneStage',stage);
+   mode=view.screen==='game'?'game':view.firstOpening?'opening':'home';stage=view.completedTutorials===undefined?stageForStars(config,view.committedStars):lessonStages[view.completedTutorials];if(!stage)throw new TypeError('invalid_tutorial_clears');setBody('tutorialScene',view.completedTutorials!==undefined);setBody('sceneMode',mode);setBody('sceneStage',stage);
    if(!active)mount();else{reparent(mode==='game'?gameHost:homeHost);requestBackground();}
    if(previous&&(previous.screen!==view.screen||previous.attemptId!==view.attemptId||previous.turn!==view.turn||paused())){clearReaction();desiredPose=null;}
    motionPolicy();updatePose();scheduleLayout();
-   if(wasActive&&previousStage&&previousStage!==stage&&previous&&view.committedStars>previous.committedStars)react({key:'stage:'+view.committedStars+':'+(view.attemptId||''),kind:'build'});
+   if(wasActive&&previousStage&&previousStage!==stage&&previous&&(view.completedTutorials!==undefined?view.completedTutorials>(previous.completedTutorials||0):view.committedStars>previous.committedStars))react({key:'stage:'+view.committedStars+':'+(view.attemptId||''),kind:'build'});
    return true;
   }
   function react(event){

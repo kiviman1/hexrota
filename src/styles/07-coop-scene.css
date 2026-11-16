@@ -46,3 +46,7 @@ body.reduce-motion .hx-scene-actor-anchor .hx-tavik__sprite{animation:none!impor
 body[data-scene-paused="true"] .hx-scene-actor-anchor .hx-tavik__sprite{animation-play-state:paused!important}
 body[data-scene-paused="true"] .hx-scene-transition{transition:none}
 @media(prefers-reduced-motion:reduce){.hx-scene-transition{transition:none}.hx-scene-actor-anchor .hx-tavik__sprite{animation:none!important;transform:none!important;will-change:auto}}
+
+/* Portrait chapter scenes retain the approved 9:16 camera and do not resize the board. */
+body[data-tutorial-scene="true"] .hx-scene-background{object-position:50% 50%}
+body[data-tutorial-scene="true"] #level-note{font-weight:900;color:#fff3c6;background:#452d62d9;border:1px solid #efd18f;border-radius:12px;padding:3px 9px;box-shadow:0 2px #1b1230}

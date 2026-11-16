@@ -45,7 +45,7 @@ window.HexSessionStore.boot(function startApp(session) {
   mountScene();
   function syncScene(){
     if(!scenePresentation||fullResetPending)return;
-    try{scenePresentation.update({screen,firstOpening,committedStars:committedSceneStars,levelId:activeLevel?.id,attemptId:activeAttempt?.attemptId||null,turn:engine?.turn||0,status:engine?.status||'playing',busy,feedback:!!guideFeedback(),lessonPair:guidedStep()?.pair||null,paused,hidden:document.hidden,modalOpen:!!topDialog(),reducedMotion:reduceMotion()});}catch(_){}
+    try{scenePresentation.update({screen,firstOpening,committedStars:committedSceneStars,completedTutorials:saved.done.includes(1)?2:saved.done.includes(0)?1:0,levelId:activeLevel?.id,attemptId:activeAttempt?.attemptId||null,turn:engine?.turn||0,status:engine?.status||'playing',busy,feedback:!!guideFeedback(),lessonPair:guidedStep()?.pair||null,paused,hidden:document.hidden,modalOpen:!!topDialog(),reducedMotion:reduceMotion()});}catch(_){}
   }
   function sceneCommitted(profile){committedSceneStars=profile?.game?.economy?.stars||0;syncScene();}
   function reactScene(job){
@@ -1055,7 +1055,7 @@ window.HexSessionStore.boot(function startApp(session) {
     $('level-tag').textContent=stageLabel(active);$('level-name').textContent=activeLevel.name;
     const category=activeLevel.difficulty?.id||activeLevel.difficulty?.category||activeLevel.difficulty?.label;
     $('difficulty').textContent=isTutorial()?'Öğretici':activeAttempt?.variantId==='legacy-original'?'Kayıtlı bölüm':difficultyLabels[category]||activeLevel.difficulty?.label||'Bölüm';
-    $('target').textContent=activeLevel.target;$('level-note').textContent=activeLevel.subtitle;
+    $('target').textContent=activeLevel.target;$('level-note').textContent=isTutorial()?`${active===0?'🪵 Tahta':'🔩 Çivi'} ${Math.min(engine.turn,active===0?3:4)} / ${active===0?3:4}`:activeLevel.subtitle;
     if(isTutorial())focusIndex=activeLevel.steps[engine.turn]?.pair[0]||0;
     if(lifeReady()&&active>=tutorialCount&&activeAttempt&&!attemptPending&&!saveBlocked){const registration=lifeManager.registerAttempt(lifeFeature.life,{attemptId:activeAttempt.attemptId,levelId:activeLevel.id,tutorial:activeLevel.kind==='tutorial',resume:!!restored});lifeFeature={...lifeFeature,life:registration.state};}
     markCompleted();renderLevels();render();persist();return !saveBlocked;
