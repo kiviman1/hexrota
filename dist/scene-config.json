@@ -1,32 +1,36 @@
 {
-  "schemaVersion": 1,
-  "id": "coop-scene-phase1",
+  "schemaVersion": 2,
+  "id": "tutorial-coop-build-flow",
   "assetBase": "./assets/scenes/coop-v1/",
+  "backgroundBase": "./assets/scenes/tutorial-coop-v1/",
   "fallbackPortrait": "./assets/characters/tavik/front.webp",
   "stages": [
     {
-      "id": "clearing",
-      "minStars": 0,
-      "background": "backgrounds/clearing.webp",
-      "mobileBackground": "backgrounds/clearing-mobile.webp"
+      "id": "foundation",
+      "minCompletedTutorials": 0,
+      "background": "backgrounds/foundation.jpg"
     },
     {
       "id": "frame",
-      "minStars": 2,
-      "background": "backgrounds/frame.webp",
-      "mobileBackground": "backgrounds/frame-mobile.webp"
-    },
-    {
-      "id": "roof",
-      "minStars": 5,
-      "background": "backgrounds/roof.webp",
-      "mobileBackground": "backgrounds/roof-mobile.webp"
+      "minCompletedTutorials": 1,
+      "background": "backgrounds/frame.jpg"
     },
     {
       "id": "finished",
-      "minStars": 10,
-      "background": "backgrounds/finished.webp",
-      "mobileBackground": "backgrounds/finished-mobile.webp"
+      "minCompletedTutorials": 2,
+      "background": "backgrounds/finished.jpg"
+    }
+  ],
+  "tutorials": [
+    {
+      "levelId": "learn-1",
+      "label": "Tahta",
+      "target": 3
+    },
+    {
+      "levelId": "learn-2",
+      "label": "Çivi",
+      "target": 4
     }
   ],
   "transitionMs": 140,

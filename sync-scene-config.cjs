@@ -7,4 +7,4 @@ const js='/* Generated from data/scene-config-v1.json; run node sync-scene-confi
 for(const [file,source]of [['dist/scene-config.json',json],['dist/scene-config.js',js]]){
  const target=path.join(root,file);if(process.argv.includes('--check')){if(!fs.existsSync(target)||fs.readFileSync(target,'utf8')!==source)throw new Error(file+' is stale; run node sync-scene-config.cjs');}else fs.writeFileSync(target,source);
 }
-console.log('Scene configuration matches the canonical four-stage presentation contract.');
+console.log('Scene configuration matches the tutorial-only three-stage presentation contract.');

@@ -215,12 +215,16 @@ test('install preloads only safe scoped assets, activation preserves other apps,
 
 
 const sceneRoot='assets/scenes/coop-v1/',sceneImage=file=>sceneRoot+file;
-const sceneWarm=[sceneImage('backgrounds/clearing-mobile.webp'),sceneImage('tavik/idle.webp')];
+const tutorialSceneRoot='assets/scenes/tutorial-coop-v1/backgrounds/';
+const tutorialSceneImages=['foundation','frame','finished'].map(stage=>tutorialSceneRoot+stage+'.jpg');
+const sceneWarm=[tutorialSceneImages[0],sceneImage('tavik/idle.webp')];
 const expectedSceneImages=[
  ...['clearing','frame','roof','finished'].flatMap(id=>['-mobile',''].map(suffix=>sceneImage('backgrounds/'+id+suffix+'.webp'))),
- ...['idle','hop','point','inspect','worried','celebrate','walk-pose','run-pose','carry','build','proud','think','call','rest'].map(id=>sceneImage('tavik/'+id+'.webp'))
+ ...['idle','hop','point','inspect','worried','celebrate','walk-pose','run-pose','carry','build','proud','think','call','rest'].map(id=>sceneImage('tavik/'+id+'.webp')),
+ ...tutorialSceneImages
 ];
-function preparedSceneResponse(file){return response(fs.readFileSync(path.join(root,file)),'image/webp');}
+const sceneMime=file=>file.endsWith('.jpg')?'image/jpeg':'image/webp';
+function preparedSceneResponse(file){return response(fs.readFileSync(path.join(root,file)),sceneMime(file));}
 async function assertSceneUnavailable(sw,file,message){
  const result=await sw.fetch(file);assert(result.handled);assert.equal(result.response.status,503,message);
  assert.equal(result.response.headers.get('cache-control'),'no-store');assert.match(result.response.headers.get('content-type'),/^text\/plain/);
@@ -229,36 +233,50 @@ async function assertSceneUnavailable(sw,file,message){
 }
 function sceneNetwork(request){
  const file=new URL(request.url).pathname.slice('/demo/'.length);
- if(file.endsWith('.webp')&&file.startsWith(sceneRoot))return preparedSceneResponse(file);
+ if(expectedSceneImages.includes(file))return preparedSceneResponse(file);
  if(file.endsWith('.js'))return response('/* cached gameplay/presentation bootstrap */','application/javascript');
  if(file.endsWith('.css'))return response('body{}','text/css');
  if(file.endsWith('.json'))return response('{}','application/json');
  return response('missing','text/plain',404);
 }
-test('scene pack is demand-cacheable with only a bounded mobile background and idle warmup',async()=>{
- const sw=worker();assert.equal(sw.assets.optional.length,22);assert.deepEqual(sw.assets.optional.slice().sort(),expectedSceneImages.slice().sort());
- assert.deepEqual(sw.assets.warm,sceneWarm,'only the small clearing and idle are warmed');
+test('scene packs are demand-cacheable with only the supplied tutorial foundation and idle warmup',async()=>{
+ const sw=worker();assert.equal(sw.assets.optional.length,25);assert.deepEqual(sw.assets.optional.slice().sort(),expectedSceneImages.slice().sort());
+ assert.deepEqual(sw.assets.warm,sceneWarm,'only the new tutorial foundation and idle are warmed');
  assert.equal(new Set([...sw.assets.core,...sw.assets.optional]).size,sw.assets.core.length+sw.assets.optional.length,'core and optional lists do not duplicate assets');
  const warmBytes=sw.assets.warm.reduce((sum,file)=>sum+fs.statSync(path.join(root,file)).size,0);
- assert.equal(warmBytes,133004,'prepared warmup bytes are measured from the real supplied assets');assert(warmBytes<135000,'scene art adds less than135KB to install warmup');
+ assert.equal(warmBytes,276693,'warmup bytes are measured from the unmodified supplied JPEG and idle');assert(warmBytes<280000,'only the first of the three supplied tutorial JPEGs is warmed');
  for(const file of sw.assets.optional)assert(fs.existsSync(path.join(root,file)),file+' is provided');
  for(const file of ['scene-config.js','scene-config.json','scene-presentation.js',sceneRoot+'tavik-motion.js'])assert(sw.assets.core.includes(file),file+' is an offline runtime dependency');
  for(const url of sw.assets.preload){const file=new URL(url).pathname.slice('/demo/'.length);assert(!file.startsWith('art/')&&!file.endsWith('scene-assets-preview.html')&&!file.endsWith('tavik-motion.css')&&!(file.startsWith(sceneRoot)&&file.endsWith('.png')),'source PNGs, duplicate motion stylesheet and independent demo never enter startup');}
  sw.setNetwork(sceneNetwork);await sw.emit('install');
- const fetchedArt=sw.requests.map(url=>new URL(url).pathname.slice('/demo/'.length)).filter(file=>file.startsWith(sceneRoot)&&file.endsWith('.webp'));
+ const fetchedArt=sw.requests.map(url=>new URL(url).pathname.slice('/demo/'.length)).filter(file=>expectedSceneImages.includes(file));
  assert.deepEqual(fetchedArt,sceneWarm,'other backgrounds and poses are not fetched on install');
  sw.setNetwork(async()=>{throw new Error('Offline');});
- for(const file of sceneWarm){const result=await sw.fetch(file);assert(result.handled);assert.equal(result.response.headers.get('content-type'),'image/webp');assert.deepEqual(Buffer.from(await result.response.arrayBuffer()),fs.readFileSync(path.join(root,file)),file+' is available offline after warmup');}
+ for(const file of sceneWarm){const result=await sw.fetch(file);assert(result.handled);assert.equal(result.response.headers.get('content-type'),sceneMime(file));assert.deepEqual(Buffer.from(await result.response.arrayBuffer()),fs.readFileSync(path.join(root,file)),file+' is available offline after warmup');}
+ for(const file of [tutorialSceneImages[1],tutorialSceneImages[2],sceneImage('backgrounds/clearing-mobile.webp')])await assertSceneUnavailable(sw,file,'unseen later or retired backgrounds are not part of install warmup');
  await assertSceneUnavailable(sw,sceneImage('backgrounds/roof.webp'),'an unseen later background explicitly fails without falsely claiming cached art');
 });
 
 test('later prepared backgrounds and poses cache lazily with exact typed offline bytes',async()=>{
  const sw=worker();sw.setNetwork(sceneNetwork);await sw.emit('install');
- for(const file of expectedSceneImages.filter(file=>!sceneWarm.includes(file))){const result=await sw.fetch(file);assert(result.handled,file+' is explicitly allowed');assert.equal(result.response.headers.get('content-type'),'image/webp');}
+ for(const file of expectedSceneImages.filter(file=>!sceneWarm.includes(file))){const result=await sw.fetch(file);assert(result.handled,file+' is explicitly allowed');assert.equal(result.response.headers.get('content-type'),sceneMime(file));}
  sw.setNetwork(async()=>{throw new Error('Offline');});
  for(const file of expectedSceneImages){const result=await sw.fetch(file);assert(result.handled);assert.deepEqual(Buffer.from(await result.response.arrayBuffer()),fs.readFileSync(path.join(root,file)),file+' preserves the actual prepared art bytes offline');}
  assert.equal((await sw.fetch('scene-assets-preview.html',{navigate:true})).handled,false,'the independent demonstration is not an offline game route');
  for(const file of ['art/coop-scene-v1/source/idle.png',sceneImage('tavik/idle.png'),sceneImage('tavik/friend.webp'),sceneImage('backgrounds/unlisted.webp'),sceneRoot+'tavik-motion.css',sceneRoot+'manifest.json'])assert.equal((await sw.fetch(file)).handled,false,file+' is outside the reviewed runtime allowlist');
+});
+
+test('only the three supplied JPEG paths accept typed image/jpeg and optional offline fallback',async()=>{
+ for(const file of tutorialSceneImages){
+  for(const invalid of [()=>response('<h1>Log in</h1>','text/html'),()=>response('wrong format','image/webp'),()=>response('binary','application/octet-stream'),()=>response('missing','image/jpeg',404),()=>{const res=preparedSceneResponse(file);Object.defineProperty(res,'redirected',{value:true});return res;}]){
+   const sw=worker();sw.setNetwork(async()=>invalid());await sw.fetch(file);sw.setNetwork(async()=>{throw new Error('Offline');});await assertSceneUnavailable(sw,file,'untyped or unsuccessful JPEG responses cannot become cached scene art');
+  }
+  const sw=worker();sw.setNetwork(sceneNetwork);await sw.fetch(file);sw.setNetwork(async()=>{throw new Error('Offline');});const cached=await sw.fetch(file);assert.equal(cached.response.headers.get('content-type'),'image/jpeg');assert.deepEqual(Buffer.from(await cached.response.arrayBuffer()),fs.readFileSync(path.join(root,file)),'the supplied JPEG bytes survive lazy caching unchanged');
+  const poisoned=worker();await poisoned.seed(file,response('not JPEG','image/webp'));await assertSceneUnavailable(poisoned,file,'cached WebP content cannot impersonate a JPEG');
+ }
+ const scoped=worker();scoped.setNetwork(async()=>{throw new Error('must not fetch');});
+ for(const [url,options] of [[tutorialSceneRoot+'unlisted.jpg',{}],[tutorialSceneRoot+'foundation.jpeg',{}],[tutorialSceneRoot+'%66oundation.jpg',{}],[tutorialSceneImages[0]+'?token=private',{}],[tutorialSceneImages[0]+'?v=36',{}],['https://other.test/demo/'+tutorialSceneImages[0],{}],['https://game.test/elsewhere/'+tutorialSceneImages[0],{}],[tutorialSceneImages[0],{method:'POST'}]])assert.equal((await scoped.fetch(url,options)).handled,false,url+' stays outside the approved JPEG cache scope');
+ assert.equal(scoped.requests.length,0,'unapproved JPEG requests are left entirely to the browser');
 });
 
 test('optional scene art rejects auth HTML, redirects, poisoned caches and unapproved URL variants',async()=>{

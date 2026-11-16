@@ -36,7 +36,20 @@ window.HexSessionStore.boot(function startApp(session) {
   const modalStack=[];
   const lessonDemo=window.HexFirstPlay.createDemo({board:$('board'),reducedMotion:reduceMotion});
   let scenePresentation=null;
-  let committedSceneStars=session.current()?.game?.economy?.stars||0;
+  let committedSceneGame=session.current()?.game||null;
+  const tutorialBuildCounter=document.createElement('span');
+  tutorialBuildCounter.className='tutorial-build-counter';tutorialBuildCounter.hidden=true;
+  tutorialBuildCounter.setAttribute('role','status');tutorialBuildCounter.setAttribute('aria-live','polite');tutorialBuildCounter.setAttribute('aria-atomic','true');
+  $('tutorial-coach').insertBefore(tutorialBuildCounter,$('coach-skip'));
+  function committedTutorialProgress(){
+    const game=committedSceneGame,done=game?.done||[],indices=[game?.current,...done,...Object.keys(game?.boards||{}).map(Number),...Object.keys(game?.attempts||{}).map(Number)];
+    // Older saves may lack tutorial flags after reaching a later screen. Infer
+    // only presentation from that saved reach; never create completion/rewards.
+    const completedTutorialCount=indices.some(index=>Number.isInteger(index)&&index>=tutorialCount)?2:done.includes(1)?2:indices.includes(1)||done.includes(0)?1:0;
+    const checkpoint=game?.boards?.[active],attemptId=game?.attempts?.[active]?.attemptId;
+    const tutorialTurn=active<tutorialCount&&attemptId&&attemptId===activeAttempt?.attemptId?checkpoint?.turn||0:0;
+    return {completedTutorialCount,tutorialTurn};
+  }
   // Optional scene art owns no game state. Its failures must not block the board.
   function mountScene(){
     if(scenePresentation||fullResetPending)return;
@@ -44,10 +57,15 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   mountScene();
   function syncScene(){
-    if(!scenePresentation||fullResetPending)return;
-    try{scenePresentation.update({screen,firstOpening,committedStars:committedSceneStars,levelId:activeLevel?.id,attemptId:activeAttempt?.attemptId||null,turn:engine?.turn||0,status:engine?.status||'playing',busy,feedback:!!guideFeedback(),lessonPair:guidedStep()?.pair||null,paused,hidden:document.hidden,modalOpen:!!topDialog(),reducedMotion:reduceMotion()});}catch(_){}
+    if(fullResetPending)return;
+    try{
+      const progress=committedTutorialProgress(),counter=window.HexScenePresentation?.tutorialCounter(window.HEX_SCENE_CONFIG,activeLevel?.id,progress.tutorialTurn);
+      tutorialBuildCounter.hidden=screen!=='game'||!counter;
+      if(counter){const text=`${counter.label} ${counter.current}/${counter.target}`;if(tutorialBuildCounter.textContent!==text){tutorialBuildCounter.textContent=text;tutorialBuildCounter.setAttribute('aria-label',`Eğitim yapımı: ${text}`);}}
+      scenePresentation?.update({screen,firstOpening,...progress,levelId:activeLevel?.id,attemptId:activeAttempt?.attemptId||null,turn:engine?.turn||0,status:engine?.status||'playing',busy,feedback:!!guideFeedback(),lessonPair:guidedStep()?.pair||null,paused,hidden:document.hidden,modalOpen:!!topDialog(),reducedMotion:reduceMotion()});
+    }catch(_){tutorialBuildCounter.hidden=true;}
   }
-  function sceneCommitted(profile){committedSceneStars=profile?.game?.economy?.stars||0;syncScene();}
+  function sceneCommitted(profile){committedSceneGame=profile?.game||null;syncScene();}
   function reactScene(job){
     if(!job.committed||!scenePresentation||fullResetPending)return;
     try{scenePresentation.react({key:`${activeAttempt?.attemptId}:${engine.turn}`,kind:engine.status==='won'?'celebrate':engine.status==='lost'?'worried':'hop'});}catch(_){}
@@ -566,7 +584,7 @@ window.HexSessionStore.boot(function startApp(session) {
     if(economyManager)try{if(Object.prototype.hasOwnProperty.call(saved,'economy'))saved.economy=economyManager.restore(saved.economy);else initializeEconomy();syncCompletedCampaign();}catch(_){economyIssue='invalid';}lifeFeature=window.HexLifePrototype.validate(durable.energy,lifeManager);active=saved.current;
     try{if(!canOpen(active)){active=nextCampaignIndex()??0;saved.current=active;}
       const entry=restoredStage(active);if(entry){engine=entry.game;activeLevel=entry.level;activeAttempt=entry.metadata;attemptPending=false;saveBlocked=false;}else{activeLevel=levels[active];engine=new window.HexMatch(activeLevel);activeAttempt=null;attemptPending=true;saveBlocked=false;loadIssue=null;}}catch(_){saveBlocked=true;}
-    committedSceneStars=durable.game?.economy?.stars||0;
+    committedSceneGame=durable.game||null;
     sessionRestoring=true;try{cancelAssistance();cancelPresentation();cancelHint();selected=null;pendingStage=null;pendingRestart=null;pendingResetLifeCost=null;if(pendingLifeProvider&&!lifeFeature.provider.transactions[pendingLifeProvider]&&!pendingLifeReceipt){pendingLifeProvider=null;if($('life-provider-dialog')?.open)closeModal($('life-provider-dialog'));}if(attemptPending)showScreen('home',{replace:true});restoreRewards();renderLevels();render();renderLives();renderRescue();}catch(_){}finally{sessionRestoring=false;syncScene();}
   }
   function commitSession(){
@@ -1424,7 +1442,7 @@ window.HexSessionStore.boot(function startApp(session) {
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=36');
+            job.worker=new Worker('./hint-worker.js?v=37');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:activeLevel,snapshot:engine.snapshot()});

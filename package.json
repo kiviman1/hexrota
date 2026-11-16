@@ -51,8 +51,9 @@
     "test:welcome-reset-browser": "node check-welcome-reset-browser.cjs",
     "test:welcome-visual": "node check-welcome-visual.cjs",
     "scene:sync": "node sync-scene-config.cjs",
-    "test:scene": "node scripts/check-scene-assets.cjs && node sync-scene-config.cjs --check && node check-scene-presentation.cjs",
-    "test:scene-browser": "node check-scene-browser.cjs"
+    "test:scene": "node scripts/check-scene-assets.cjs && node scripts/check-tutorial-scene-assets.cjs && node sync-scene-config.cjs --check && node check-scene-presentation.cjs",
+    "test:scene-browser": "node check-scene-browser.cjs",
+    "test:tutorial-scene-assets": "node scripts/check-tutorial-scene-assets.cjs"
   },
   "devDependencies": {
     "jsdom": "31.0.1",

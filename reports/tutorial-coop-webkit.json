@@ -1,0 +1,239 @@
+{
+  "browser": "webkit",
+  "success": true,
+  "expectedGroups": 26,
+  "passed": 26,
+  "failure": null,
+  "results": [
+    "320×568 sunny opening becomes the same real board without smaller geometry or actor overlap",
+    "390×844 sunny opening becomes the same real board without smaller geometry or actor overlap",
+    "430×932 sunny opening becomes the same real board without smaller geometry or actor overlap",
+    "844×390 sunny opening becomes the same real board without smaller geometry or actor overlap",
+    "932×430 sunny opening becomes the same real board without smaller geometry or actor overlap",
+    "1280×720 sunny opening becomes the same real board without smaller geometry or actor overlap",
+    "two real tutorials preserve engine state and award only the single actual welcome gift",
+    "actual tutorial skip enters the campaign and completed coop without granting a welcome gift",
+    "full-motion real swipe keeps the board size and never lets Tavik cover its stones",
+    "all legacy campaign star counts keep their completed tutorial coop without a second progression counter",
+    "failed final campaign profile write cannot change completed tutorial construction or award partial progress",
+    "a saved campaign resumes exactly at zero lives while the scene remains presentation-only",
+    "wrong tutorial swipe grants no material and each committed move advances one counter step",
+    "legacy checkpoints and missing tutorial flags infer the reached scene without rewriting saved gameplay",
+    "nonfinal and final tutorial write failures never publish speculative material or construction",
+    "replaying either free tutorial never downgrades the completed coop or duplicates its welcome reward",
+    "restarting a free tutorial resets its counter for the new attempt while retaining its reached construction",
+    "a corrupt tutorial checkpoint cannot publish forged material or advance construction",
+    "rotation, open modals and simulated backgrounding preserve the game and pause Tavik",
+    "simulated persisted pagehide/pageshow preserves the lock reacquisition reload and restores the same attempt",
+    "late pose loads cannot repopulate a destroyed scene or advance a real saved board",
+    "unavailable scene images fall back safely and never block the real board or duplicate Tavik",
+    "a missing guided pose retains the previous decoded cutout and the real tutorial stays playable",
+    "the game is immediately usable while the active scene background is still loading",
+    "real offline cached scene and board reload without uncached pose downloads becoming gameplay failures",
+    "offline cached advanced scene and uncached advanced background fallback preserve canonical stars and board"
+  ],
+  "measurements": [
+    {
+      "viewport": {
+        "width": 320,
+        "height": 568
+      },
+      "actorVisible": true,
+      "paintedActorPixels": 647,
+      "layout": "dock",
+      "board": {
+        "x": 6,
+        "y": 265.1875,
+        "width": 308,
+        "height": 249.8125,
+        "top": 265.1875,
+        "right": 314,
+        "bottom": 515,
+        "left": 6
+      }
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "actorVisible": true,
+      "paintedActorPixels": 3074,
+      "layout": "game",
+      "board": {
+        "x": 6,
+        "y": 281.796875,
+        "width": 378,
+        "height": 509.203125,
+        "top": 281.796875,
+        "right": 384,
+        "bottom": 791,
+        "left": 6
+      }
+    },
+    {
+      "viewport": {
+        "width": 430,
+        "height": 932
+      },
+      "actorVisible": true,
+      "paintedActorPixels": 3996,
+      "layout": "game",
+      "board": {
+        "x": 6,
+        "y": 281.796875,
+        "width": 418,
+        "height": 597.203125,
+        "top": 281.796875,
+        "right": 424,
+        "bottom": 879,
+        "left": 6
+      }
+    },
+    {
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "actorVisible": false,
+      "layout": "hidden",
+      "hiddenReason": "nospace",
+      "board": {
+        "x": 148,
+        "y": 128,
+        "width": 607,
+        "height": 262,
+        "top": 128,
+        "right": 755,
+        "bottom": 390,
+        "left": 148
+      }
+    },
+    {
+      "viewport": {
+        "width": 932,
+        "height": 430
+      },
+      "actorVisible": false,
+      "layout": "hidden",
+      "hiddenReason": "nospace",
+      "board": {
+        "x": 148,
+        "y": 128,
+        "width": 695,
+        "height": 302,
+        "top": 128,
+        "right": 843,
+        "bottom": 430,
+        "left": 148
+      }
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "actorVisible": true,
+      "paintedActorPixels": 3997,
+      "layout": "game",
+      "board": {
+        "x": 250,
+        "y": 281.796875,
+        "width": 780,
+        "height": 385.203125,
+        "top": 281.796875,
+        "right": 1030,
+        "bottom": 667,
+        "left": 250
+      }
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "actorVisible": true,
+      "layout": "game",
+      "board": {
+        "x": 6,
+        "y": 281.796875,
+        "width": 378,
+        "height": 509.203125,
+        "top": 281.796875,
+        "right": 384,
+        "bottom": 791,
+        "left": 6
+      }
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "actorVisible": true,
+      "layout": "game",
+      "board": {
+        "x": 6,
+        "y": 281.796875,
+        "width": 378,
+        "height": 509.203125,
+        "top": 281.796875,
+        "right": 384,
+        "bottom": 791,
+        "left": 6
+      }
+    },
+    {
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "actorVisible": false,
+      "layout": "hidden",
+      "hiddenReason": "nospace",
+      "board": {
+        "x": 148,
+        "y": 128,
+        "width": 607,
+        "height": 262,
+        "top": 128,
+        "right": 755,
+        "bottom": 390,
+        "left": 148
+      }
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "actorVisible": true,
+      "layout": "game",
+      "board": {
+        "x": 6,
+        "y": 281.796875,
+        "width": 378,
+        "height": 509.203125,
+        "top": 281.796875,
+        "right": 384,
+        "bottom": 791,
+        "left": 6
+      }
+    }
+  ],
+  "errors": [],
+  "physicalDeviceTested": false,
+  "filteredRun": null,
+  "repetitions": 1,
+  "hiddenStateTest": "visibilitychange event with overridden document.hidden",
+  "serverOfflineTest": true,
+  "offlinePreconditions": {
+    "cache": "hexrota-shell-v37",
+    "typedBodyCount": 50,
+    "explicitBrowserOffline": false,
+    "serverListenerStopped": true
+  },
+  "bfcacheTest": "synthetic persisted PageTransitionEvent lifecycle with actual lock-reacquisition reload and resume; native BFCache eviction policy is not asserted",
+  "diagnosticEventCount": 7946,
+  "diagnosticsStoredIn": "CI artifact and local test-results"
+}
