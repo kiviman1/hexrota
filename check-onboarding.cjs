@@ -15,25 +15,29 @@ async function until(check,message,timeout=1600){const start=Date.now();while(!c
 function mount(state,{motion='reduce'}={}){
  const vc=new VirtualConsole();vc.on('jsdomError',error=>errors.push(error.message));
  const dom=new JSDOM(source('index.html'),{url:'https://hexrota-onboarding.example/',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});
- const w=dom.window,d=w.document;
+ const w=dom.window,d=w.document,animations=[];
  const style=d.createElement('style');style.textContent=source('style.css');d.head.appendChild(style);
  w.matchMedia=()=>({matches:motion==='reduce',addEventListener(){},removeEventListener(){}});
  w.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};
  w.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');this.dispatchEvent(new w.Event('close'));};
  w.HTMLElement.prototype.scrollIntoView=function(){};w.scrollTo=()=>{};
  // Hold the first real animation open so feedback cannot appear before presentation ends.
- if(motion==='full')w.Element.prototype.animate=function(){let finished,reject;return {get finished(){return finished||(finished=new Promise((_,no)=>{reject=no;}));},cancel(){reject?.(new w.DOMException('Animation cancelled','AbortError'));}};};
+ if(motion==='full')w.Element.prototype.animate=function(keyframes,options){let finished,reject;const animation={get finished(){return finished||(finished=new Promise((_,no)=>{reject=no;}));},cancel(){reject?.(new w.DOMException('Animation cancelled','AbortError'));}};animations.push({node:this,keyframes,options,animation});return animation;};
  class AudioStub{configure(){}unlock(){return Promise.resolve();}setActive(){}move(){}victory(){}click(){}stop(){}dispose(){}}
  w.HexAudio=AudioStub;
  if(state)w.localStorage.setItem(key,JSON.stringify(state));
  loadGame(w,['engine.js','levels.js','tutorials.js','app.js'],source);
- const f={dom,w,d,node(selector){const node=d.querySelector(selector);assert(node,selector+' exists');return node;},save(){return JSON.parse(w.localStorage.getItem(key));},close(){dom.window.close();}};
+ const f={dom,w,d,animations,node(selector){const node=d.querySelector(selector);assert(node,selector+' exists');return node;},save(){return JSON.parse(w.localStorage.getItem(key));},close(){dom.window.close();}};
  f.click=selector=>f.node(selector).dispatchEvent(new w.MouseEvent('click',{bubbles:true,detail:0}));
  f.board=()=>plain(f.save().boards[f.save().current]);
  f.levels=[...w.HEX_TUTORIALS,...w.HEX_LEVELS];
  return f;
 }
 function tile(f,index){return f.node(`#board [data-index="${index}"]`);}
+function visible(f,node){
+ for(let current=node;current&&current.nodeType===1;current=current.parentElement){const style=f.w.getComputedStyle(current);if(current.hidden||style.display==='none'||style.visibility==='hidden')return false;}
+ return true;
+}
 function tapPair(f,pair){for(const index of pair)f.click(`#board [data-index="${index}"]`);}
 function dragPair(f,pair){
  const pointer=(type,x,y)=>{const event=new f.w.MouseEvent(type,{bubbles:true,cancelable:true,button:0,buttons:type==='pointerup'?0:1,clientX:x,clientY:y});Object.defineProperties(event,{pointerId:{value:7},pointerType:{value:'touch'},isPrimary:{value:true}});return event;};
@@ -68,21 +72,50 @@ function stateAt(f,index,turns=0,extra={}){
  return {current:index,done:Array.from({length:index},(_,i)=>i),boards:{[index]:plain(engine.snapshot())},sound:false,preferences:{motion:'reduce'},records:{},...extra};
 }
 
-test('a new player sees what the numbers mean and the exact first swipe',async()=>{
+test('a fresh opening offers one task and one direct first action',async()=>{
  const f=mount();try{
-  f.click('#home-play');assert(f.node('#pregame-dialog').open);
-  const intro=f.node('#pregame-dialog').textContent;
-  assert(/aynı/i.test(intro)&&/sayı|rakam/i.test(intro),'intro says that equal numbers form a match');
-  assert(/kaydır|değiştir/i.test(intro),'intro gives a concrete swapping action');
-  assert(/puan/i.test(intro),'intro connects numbers to points');
-  const example=f.node('#pregame-lesson');assert.equal(example.hidden,false,'first preview shows one concrete lesson');
-  assert.deepEqual([...example.querySelectorAll('.demo-stone')].map(node=>node.textContent.trim()),['2','2','2'],'example uses the actual three matched twos');
-  assert(/\+?6\s*puan/i.test(example.textContent),'example connects the three twos to six points');
-  f.click('#pregame-start');assert.equal(f.d.body.dataset.learning,'first');feedback(f,false);
-  const text=f.node('#coach-text').textContent;
+  assert.equal(f.node('#home-play-label').textContent.trim(),'Başlayalım','first opening has one concrete start action');
+  for(const selector of ['#home-lives','#home-screen .campaign-wallet','#home-teach','#home-garden','.home-shortcuts','.home-progress','.app-navigation'])assert.equal(visible(f,f.node(selector)),false,selector+' is deferred until play has begun');
+  assert.equal(visible(f,f.node('#home-play')),true);
+  const before=plain(f.save());f.click('#home-play');
+  assert.equal(f.node('#pregame-dialog').open,false,'first action enters the lesson without a second start screen');
+  assert.equal(f.node('#game-screen').hidden,false);assert.equal(f.save().current,0);
+  const engine=new f.w.HexMatch(f.levels[0]);exact(f,engine,'starting the lesson preserves the fixed T1 board');
+  assert.deepEqual(f.save().economy,before.economy,'starting cannot grant Gold, stars or inventory');
+  assert.equal(f.d.body.dataset.learning,'first');feedback(f,false);
+  assert.equal(visible(f,f.node('#coverage')),true,'the first objective is visible');
+  assert.match(f.node('#ground-label').textContent,/yeşert/i,'the first objective uses an action');
+  assert.equal(visible(f,f.node('#moves-left')),true,'the first move budget is visible');
+  assert.equal(+f.node('#moves-left').textContent,5);
+  const text=f.node('#coach-title').textContent+' '+f.node('#coach-text').textContent;
   assert(/kaydır|değiştir/i.test(text),'first action stays explicit on the board');
   focus(f,f.levels[0].steps[0]);
   const original=f.board();tapPair(f,[0,1]);assert.deepEqual(f.board(),original,'unrelated taps cannot consume the teaching move');
+ }finally{f.close();}
+});
+
+test('the first opening is derived from progress and never replaces a returning checkpoint',async()=>{
+ let f=mount();try{
+  const state=stateAt(f,0,0),checkpoint=plain(state.boards[0]);f.close();f=mount(state);
+  assert.notEqual(f.node('#home-play-label').textContent.trim(),'Başlayalım','an existing untouched lesson is a returning profile');
+  f.click('#home-play');assert(f.node('#pregame-dialog').open,'returning untouched lesson retains the normal preview');
+  assert.deepEqual(f.save().boards[0],checkpoint,'preview does not recreate a checkpoint');
+  assert.equal(f.node('#game-screen').hidden,true);
+ }finally{f.close();}
+});
+
+test('the slow swap demonstration is decorative and never commits gameplay',async()=>{
+ const f=mount(null,{motion:'full'});try{
+  begin(f);const before=f.board(),layer=f.node('#board .tutorial-demo-layer');
+  assert.equal(layer.getAttribute('aria-hidden'),'true');assert.equal(f.w.getComputedStyle(layer).pointerEvents,'none');
+  assert.equal(layer.querySelectorAll('.tutorial-demo-stone .gem').length,2,'both real stone designs are demonstrated');
+  assert.equal(layer.querySelectorAll('[data-index],[tabindex],[role],[id]').length,0,'the demonstration adds no duplicate input or accessibility targets');
+  assert.equal(f.d.querySelectorAll('#board .tutorial-demo-source').length,2,'only the original pair is temporarily concealed');
+  const animations=f.animations.filter(item=>layer.contains(item.node));
+  assert.equal(animations.length,2);assert(animations.every(item=>item.options.duration>=3000&&item.options.iterations===Infinity),'the exchange is slow enough to follow');
+  await wait(60);assert.deepEqual(f.board(),before,'watching cannot consume moves, award score, advance history or RNG');
+  f.click('#game-home');assert.equal(f.d.querySelectorAll('.tutorial-demo-layer,.tutorial-demo-source').length,0,'leaving cleans up ghosts and restores the real pair');
+  assert.deepEqual(f.board(),before,'leaving a demonstration preserves the fixed checkpoint');
  }finally{f.close();}
 });
 
@@ -96,7 +129,7 @@ test('the first result stays explained until acknowledged, with safe controls st
   f.click('#skip-animation');await until(()=>f.node('#coach-next').hidden===false,'first result waits for acknowledgement');
   feedback(f);exact(f,engine,'first swipe awards exactly six');
   assert(/6/.test(f.node('#coach-text').textContent)&&/puan/i.test(f.node('#coach-text').textContent),'result explains the six-point gain');
-  assert(/yeşil/i.test(f.node('#coach-text').textContent),'result explains the ground change');
+  assert(/yeşil|yeşer/i.test(f.node('#coach-text').textContent),'result explains the ground change');
   const before=f.board(),text=f.node('#coach-text').textContent;
   tapPair(f,level.solution[1]);
   for(const index of level.solution[1])keypress(f,'Enter',tile(f,index));
@@ -142,8 +175,8 @@ test('the second lesson separates stone values, double ground and the two win co
   assert.equal(f.node('#ground-goal-check').hidden,true,'unfinished ground goal remains visibly incomplete');
   assert.equal(f.node('#win-dialog').open,false,'score alone cannot complete the lesson');
   const explanation=f.node('#coach-text').textContent.toLocaleLowerCase('tr-TR');
-  assert(/puan/.test(explanation)&&/yeşil/.test(explanation),'feedback names the score and green area goals');
-  assert(/bitmedi|gerek|olmalı|kazan|tamamlan/.test(explanation),'feedback explains that score alone does not finish the level');
+  assert(/puan/.test(explanation)&&/yeşil|yeşer/.test(explanation),'feedback names the score and green area goals');
+  assert(/bitmedi|gerek|olmalı|kazan|tamamlan|son.*yeşert/.test(explanation),'feedback explains that score alone does not finish the level');
   acknowledge(f);assert.deepEqual(plain(f.save().guideAcks),['1:1','1:3']);
   assert(engine.swap(...level.solution[3]).ok);await play(f,level.solution[3]);exact(f,engine,'last ground completes both goals');
   assert.equal(f.node('#score-goal-check').hidden,false);assert.equal(f.node('#ground-goal-check').hidden,false,'both goal checks are visible only when both goals complete');

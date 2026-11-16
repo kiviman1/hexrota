@@ -26,6 +26,7 @@ Görsel olaylar oyun kuralı değildir. Hamlenin kanonik sonucu önce kesinleşi
 | `dist/session-store.js` | Profil zarfı, revision, tek başarılı kanonik yazım, uyumluluk aynaları, tarayıcı kilidi | Ödül/hamle üretmek veya hatada kaydı silmek |
 | `dist/board-view.js` | Altıgen geometri, SVG işaretlemesi, iki yönlü taş animasyon yolu | DOM, motor, cüzdan, saat veya RNG'ye erişmek |
 | `dist/board-input.js` | Yerel koordinatla hücre ve altı yönlü kaydırma sınıflaması | Takas yapmak veya taş sonucunu tahmin etmek |
+| `dist/first-play.js` | Kısa öğretici sunumu ve durumsuz, yavaş SVG kaydırma gösterimi | Gerçek takas, kayıt, can veya ödül üretmek |
 | `dist/score-presentation.js` | Enjekte edilen görünüm bağımlılıklarıyla puan animasyonunun yaşam döngüsü | Kalıcı skor, Altın, hamle veya RNG değiştirmek |
 | `dist/engine.js` | `classic-v4` takas/eşleşme/düşüş/üretim ve replay | Ekonomi veya DOM |
 | `dist/commands.js` | `assisted-v1` yardımlı komut geçmişi | Klasik v4 geçmişini sessizce yeniden yorumlamak |
@@ -59,7 +60,7 @@ Görsel olaylar oyun kuralı değildir. Hamlenin kanonik sonucu önce kesinleşi
 
 `src/styles/manifest.json` kaynak bölümlerinin sırasını belirler. `npm run styles:sync`, bunları **aynı sırada tek `dist/style.css`** dosyasına birleştirir. Tarayıcıda `@import` zinciri veya ek CSS isteği yoktur. Eski cascade sırası ve iletilen CSS bu bakımda byte-for-byte korunmuştur. Stili kaynak bölümde değiştir; üretilmiş çıktıdaki değişikliği de commit et.
 
-`dist/index.html` bağımlılıkları `defer` sırasıyla yükler. Yeni runtime betiği eklenince `dist/sw.js` allowlist/önbellek listesi, HTML, Worker query ve `qa-fixtures.cjs` birlikte güncellenir. Bakım paketi PWA v29 kullanır; bu kayıt formatının veya oyun kurallarının sürümünü değiştirmez.
+`dist/index.html` bağımlılıkları `defer` sırasıyla yükler. Yeni runtime betiği eklenince `dist/sw.js` allowlist/önbellek listesi, HTML, Worker query ve `qa-fixtures.cjs` birlikte güncellenir. İlk açılış sunumu PWA v33 kullanır; bu kayıt formatının veya oyun kurallarının sürümünü değiştirmez.
 
 ## Geliştirme kontrol listesi
 
@@ -81,3 +82,5 @@ Görsel olaylar oyun kuralı değildir. Hamlenin kanonik sonucu önce kesinleşi
 ## Comic Adventure
 
 Yeni görsel kaynak: `UI_VISUAL_LANGUAGE.md`. Tema mevcut CSS hattında son bölümdür. Hikâye kitinin demo olması, sabit tahta boyutu ve saf oyun kurallarının korunması zorunludur. `test:comic-ui` bu sınırları denetler.
+
+İlk açılış akışı ve sunum sınırları: `FIRST_PLAY_FLOW.md`. Yeni görsel gösterim, sabit öğretici verilerini veya C# oyun çekirdeğini değiştirmez.
