@@ -23,6 +23,9 @@ window.HexSessionStore.boot(function startApp(session) {
     });
     saved = loaded.saved; sourceSaveKey = loaded.sourceSaveKey; migrated = loaded.migrated;
   } catch (_) { gameLoadIssue = 'invalid'; }
+  // A first visit has one invitation. Existing checkpoints keep the normal menu.
+  // Capture this before loadLevel prepares the read-only tutorial preview.
+  let firstOpening=!gameLoadIssue&&!saved.done.length&&!Object.keys(saved.boards).length&&!Object.keys(saved.attempts).length&&!saved.variantSelection.serial;
   let active=saved.current,activeLevel=levels[saved.current],activeAttempt=null,attemptPending=true,saveBlocked=false,loadIssue=null,engine, selected=null, hinted=null, busy=false, focusIndex=0;
   let pointer=null, toastTimer, terminalTimer, epoch=0, comboText='',presentation=null,hintJob=null;
   const geometryCache=new Map();
@@ -30,6 +33,14 @@ window.HexSessionStore.boot(function startApp(session) {
   let assistanceMode=null,pendingAssistance=null;
   let rescueManager=null,pendingRescueProvider=null,pendingRescueReceipt=null,rescueTimeFloor=0;
   const modalStack=[];
+  const lessonDemo=window.HexFirstPlay.createDemo({board:$('board'),reducedMotion:reduceMotion});
+  function refreshLessonDemo(){
+    lessonDemo.stop();
+    const step=guidedStep();
+    if(screen!=='game'||busy||paused||document.hidden||topDialog()||selected!==null||pointer||!step||!gameInputAllowed())return;
+    const layout=geometry();
+    lessonDemo.show({layout,pair:step.pair,paths:window.HexBoardView.swapPaths(layout,...step.pair)});
+  }
   const audio=window.HexAudio?new window.HexAudio({sfx:saved.sound,music:saved.preferences.music,volume:saved.preferences.volume}):null;
   const difficultyLabels={very_easy:'Çok kolay',easy:'Kolay',medium:'Orta',medium_hard:'Orta-zor',challenge:'Meydan okuma',relief:'Rahatlama',hard:'Zor',final:'Final'};
   let rewardState=null,completionReward=null,completionRewardPlayed=false;
@@ -781,7 +792,7 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   ['resize','orientationchange','pageshow'].forEach(name=>on(window,name,syncAppHeight,{passive:true}));
   on(document,'fullscreenchange',syncAppHeight);
-  const settleViewport=()=>{stopPointer();clearInvalidSwap();if(presentation)finishPresentation(presentation);};
+  const settleViewport=()=>{lessonDemo.stop();stopPointer();clearInvalidSwap();if(presentation)finishPresentation(presentation);refreshLessonDemo();};
   on(window,'resize',settleViewport,{passive:true});on(window,'orientationchange',settleViewport,{passive:true});
   appViewport?.addEventListener?.('resize',settleViewport,{passive:true});
   appViewport?.addEventListener?.('resize',syncAppHeight,{passive:true});
@@ -798,7 +809,7 @@ window.HexSessionStore.boot(function startApp(session) {
   function syncAudio(){document.body.classList.toggle('reduce-motion',reduceMotion());audio?.configure({sfx:saved.sound,music:saved.preferences.music,volume:saved.preferences.volume});audio?.setActive(!document.hidden&&!paused);}
   function unlockAudio(){syncAudio();audio?.unlock().catch(()=>{});}
   function openModal(id){
-    stopPointer();cancelHint();clearInvalidSwap();if(id!=='assistance-dialog')cancelAssistance();
+    lessonDemo.stop();stopPointer();cancelHint();clearInvalidSwap();if(id!=='assistance-dialog')cancelAssistance();
     if(presentation)finishPresentation(presentation);
     clearTimeout(terminalTimer);
     const dialog=$(id);if(!dialog.open){dialog.showModal();modalStack.push(id);}
@@ -817,7 +828,7 @@ window.HexSessionStore.boot(function startApp(session) {
       if(dialog.id==='pregame-dialog')pendingStage=null;
       if(dialog.id==='restart-dialog')pendingRestart=null;
       if(dialog.id==='assistance-dialog')pendingAssistance=null;
-      if(!topDialog())document.body.classList.remove('modal-open');syncPlaytestActivity();
+      if(!topDialog())document.body.classList.remove('modal-open');syncPlaytestActivity();refreshLessonDemo();
     });
     on(dialog,'click',e=>{
       if(e.target!==dialog)return;
@@ -859,8 +870,12 @@ window.HexSessionStore.boot(function startApp(session) {
     if(!$('home-play'))return;
     const next=nextStage(),completed=economyView()?.cleared.length||0;
     renderEconomy();
+    document.body.dataset.firstOpening=String(firstOpening);
     $('home-play-label').textContent=next?(next.rescue?'Tahtanı aç':next.resume?'Devam et':next.index===0?'Birlikte başlayalım':'Oyna'):'Bahçeni gör';
     $('home-play-detail').textContent=next?next.rescue?`${stageLabel(next.index)} · İkinci şans seçeneklerini gör`:next.resume?`${stageLabel(next.index)} · ${validCheckpoint(next.index).movesLeft} hamle kaldı`:next.index===0?'Aynı sayıları eşleştir, puan kazan.':`${stageLabel(next.index)} · ${levels[next.index].name}`:'Yeni bölümler yakında';
+    if(firstOpening){$('home-play-label').textContent='Başlayalım';$('home-play-detail').textContent='İlk hamleyi birlikte yapalım';}
+    $('home-title').innerHTML=firstOpening?'Birlikte<br><span>yeşertelim.</span>':'Aynı sayıları<br><span>eşleştir.</span>';
+    document.querySelector('.home-description').textContent=firstOpening?'Tavik ile ilk alanı yeşertmeye hazır mısın?':'Yan yana iki taşın yerini değiştir. Aynı sayıdan en az 3 taş bir sıra oluştursun.';
     $('home-stage-name').textContent=next?levels[next.index].name:'Bahçen ve bütün başarıların burada.';
     $('home-progress-text').textContent=`${completed} / ${campaignCount} bölüm tamamlandı`;
     $('home-progress-fill').style.width=`${completed/campaignCount*100}%`;
@@ -886,12 +901,12 @@ window.HexSessionStore.boot(function startApp(session) {
     if(!['home','journey','game','records','garden'].includes(next))next='home';
     if(presentation)finishPresentation(presentation);
     if(next!=='game')clearScoreReceipt();
-    cancelPresentation();cancelHint();stopPointer();clearTimeout(terminalTimer);epoch++;
+    lessonDemo.stop();cancelPresentation();cancelHint();stopPointer();clearTimeout(terminalTimer);epoch++;
     if(engine)persist();closeAllDialogs();paused=false;screen=next;
     for(const name of ['home','journey','game','records','garden']){const node=$(name+'-screen');node.hidden=name!==screen;node.inert=name!==screen;}
     document.body.dataset.screen=screen;
     document.querySelectorAll('[data-nav]').forEach(button=>{const active=button.dataset.nav===screen;button.classList.toggle('is-active',active);if(active)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
-    updateMenus();syncAudio();syncPlaytestActivity();renderLives();
+    updateMenus();syncAudio();syncPlaytestActivity();renderLives();refreshLessonDemo();
     if(historyChange&&(replace||previousScreen!==screen))try{history[replace?'replaceState':'pushState']({screen},'','#'+screen);}catch(_){}
     document.documentElement.scrollTop=0;document.body.scrollTop=0;
   }
@@ -923,7 +938,7 @@ window.HexSessionStore.boot(function startApp(session) {
     closeAllDialogs();paused=false;
     if(!loadLevel(index,fresh,{activate:true})){showScreen('home');toast(loadIssue==='data'?'Yeni tahtalar yüklenemedi. Sayfayı yenileyip tekrar dene.':'Kaydın açılamadı ve korundu. İstersen yeni bir deneme başlatabilirsin.');return false;}
     const previous=previousEntry?discardStage(index,reason,previousEntry):null;
-    showScreen('game');startEvent(reason);
+    firstOpening=false;showScreen('game');startEvent(reason);
     if(previous&&activeAttempt&&previous.attemptId!==activeAttempt.attemptId)emitEvent('level_retried',{reason,previousAttemptId:previous.attemptId});
     if(!newAttempt)observePlaytest('attempt_resumed',eventContext()||{});syncPlaytestActivity();
     unlockAudio();return true;
@@ -1031,7 +1046,7 @@ window.HexSessionStore.boot(function startApp(session) {
     });
   }
   function render(state=null,options={}) {
-    clearInvalidSwap();
+    lessonDemo.stop();clearInvalidSwap();
     const display=state||{values:engine.values,layers:engine.layers,score:engine.score,movesLeft:engine.movesLeft};
     const focused=document.activeElement?.closest?.('[data-index]')?.dataset.index;
     $('board').innerHTML=boardMarkup(display,options.matching||[],options.falling||[]);
@@ -1065,9 +1080,9 @@ window.HexSessionStore.boot(function startApp(session) {
     else text='Yan yana iki taşın yerini değiştir.';
     $('status-text').textContent=text;
     if($('ground-goal-check')){$('ground-goal-check').hidden=covered<total;$('ground-goal-check').setAttribute('aria-label',covered===total?'Her yer yeşil':'Henüz her yer yeşil değil');}
-    if($('ground-label'))$('ground-label').textContent=active===0&&engine.turn===0?'Taşların altı yeşil olur':'Yeşil alan';
-    if($('game-goal-title'))$('game-goal-title').textContent=active===0?'Aynı sayıları eşleştir':'Puanı topla, alanı boya';
-    renderCoach();syncPlaytestActivity();
+    if($('ground-label'))$('ground-label').textContent=isTutorial()?'Yeşert':'Yeşil alan';
+    if($('game-goal-title'))$('game-goal-title').textContent=active===0?'Her yeri yeşert':isTutorial()?'İki hedefi tamamla':'Puanı topla, alanı boya';
+    renderCoach();syncPlaytestActivity();refreshLessonDemo();
   }
   function renderCoach(){
     const coach=$('tutorial-coach'),tutorial=isTutorial(),feedback=guideFeedback();coach.hidden=!tutorial||(engine.status!=='playing'&&!busy);
@@ -1083,13 +1098,15 @@ window.HexSessionStore.boot(function startApp(session) {
     const partner=selected!==null&&step?.pair.includes(selected)?step.pair.find(i=>i!==selected):null;
     const destination=partner!==null?engine.values[partner]:null;
     $('coach-text').textContent=showFeedback?(previous.afterText||'Yeni taşlar geliyor. Yeşil alanlar yerinde kalıyor.'):partner!==null?`Şimdi parlayan ${destination} yazan taşa dokun.`:step?.text||'Hazırsın!';
+    const lessonCopy=window.HexFirstPlay.copy(activeLevel.id,engine.turn,{feedback:!!feedback,busy});
+    if(lessonCopy){$('coach-title').textContent=lessonCopy.title;if(partner===null||showFeedback)$('coach-text').textContent=lessonCopy.text;}
     if($('guide-explanation')){$('guide-explanation').hidden=active!==0||engine.turn>0||busy;$('guide-explanation').textContent='Aynı sayıdan 3 taşı eşleştir. Üç tane 2, toplam 6 puan kazandırır.';}
     $('coach-progress').style.width=`${engine.turn/steps.length*100}%`;
   }
   function renderScore(value){
     $('sum').textContent=value;
     $('score-progress').style.width=`${Math.min(1,value/activeLevel.target)*100}%`;
-    $('score-goal-label').textContent=active===0?'PUANIN':value>=activeLevel.target?'HEDEF TAMAM':'HEDEF PUAN';
+    $('score-goal-label').textContent=active===0?'PUAN':value>=activeLevel.target?'HEDEF TAMAM':'HEDEF PUAN';
     if($('score-goal-check')){$('score-goal-check').hidden=value<activeLevel.target;$('score-goal-check').setAttribute('aria-label',value>=activeLevel.target?'Puan hedefi tamam':'Puan hedefi sürüyor');}
   }
   // Presentation modules cannot mutate authoritative game/profile state.
@@ -1259,6 +1276,7 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   async function performSwap(a,b) {
     if(!gameInputAllowed()||guideFeedback())return;
+    lessonDemo.stop();
     if(assistanceMode){chooseAssistanceTarget(a);return;}
     if(busy){finishPresentation(presentation);return;}
     if(engine.status!=='playing')return;
@@ -1298,6 +1316,7 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   function select(index) {
     if(!gameInputAllowed()||guideFeedback())return;
+    lessonDemo.stop();
     if(assistanceMode){chooseAssistanceTarget(index);return;}
     if(busy){finishPresentation(presentation);return;}
     if(engine.status!=='playing')return;
@@ -1310,12 +1329,13 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   function showVictory(){
     const final=active===levels.length-1,learning=isTutorial();
+    $('win-dialog').dataset.learning=learning?'tutorial':'';
     $('win-eyebrow').textContent=final?'YOLCULUK TAMAMLANDI':`${stageLabel(active)} TAMAMLANDI`;
-    $('win-title').textContent=learning?(active===0?'İlk adım tamam!':'Artık hazırsın!'):final?'Usta işi!':'Harika eşleşme!';
+    $('win-title').textContent=learning?(active===0?'İlk alan yeşerdi!':'Hazırsın!'):final?'Usta işi!':'Harika eşleşme!';
     if(completionReward&&!learning)$('win-title').textContent=rewardLabel(completionReward);
-    $('win-description').textContent=learning?(active===0?'İlk bölüm tamam. Şimdi puan hedefine de ulaşmayı deneyelim.':'Yeterli puan topladın ve her yeri yeşile boyadın. Şimdi kendi başına oyna.'):final?'10 bölümün hepsini bitirdin!':`${engine.movesLeft} hamlen kaldı. Bölümü bitirdin!`;
+    $('win-description').textContent=learning?(active===0?'Aynı sayıları eşleştirdin, altlarındaki yerleri yeşerttin.':'Puanı topladın, her yeri yeşerttin. İlk bölüm seni bekliyor.'):final?'10 bölümün hepsini bitirdin!':`${engine.movesLeft} hamlen kaldı. Bölümü bitirdin!`;
     $('win-total').textContent=engine.score;$('win-moves').textContent=engine.movesLeft;$('win-assisted').hidden=learning||!engine.assisted;
-    const nextText=economyView()?.campaignComplete?'Bahçeni gör':active===0?'İkinci öğreticiye geç':active===1?'İlk bölüme başla':`Bölüm ${pad(active-tutorialCount+2)} ile devam et`;
+    const nextText=economyView()?.campaignComplete?'Bahçeni gör':active===0?'Birlikte devam edelim':active===1?'İlk bölüme başla':`Bölüm ${pad(active-tutorialCount+2)} ile devam et`;
     $('next').innerHTML=`${nextText} ${icon('arrow')}`;
     const grant=lastEconomyReward?.attemptId===activeAttempt?.attemptId?lastEconomyReward:null;
     $('win-rewards').hidden=learning||!grant;
@@ -1367,7 +1387,7 @@ window.HexSessionStore.boot(function startApp(session) {
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=32');
+            job.worker=new Worker('./hint-worker.js?v=33');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:activeLevel,snapshot:engine.snapshot()});
@@ -1415,6 +1435,7 @@ window.HexSessionStore.boot(function startApp(session) {
     if(!gameInputAllowed()||guideFeedback()||e.isPrimary===false||(e.button!==0&&e.pointerType!=='touch'))return;
     if(busy){e.preventDefault();finishPresentation(presentation);return;}
     if(engine.status!=='playing'||pointer||outsideViewport(e))return;
+    lessonDemo.stop();
     const downTile=e.target.closest?.('[data-index]');
     const index=downTile&&$('board').contains(downTile)?+downTile.dataset.index:tileAt(e);if(index===null)return;
     if(assistanceMode){e.preventDefault();select(index);return;}
@@ -1452,9 +1473,9 @@ window.HexSessionStore.boot(function startApp(session) {
   const cancelPointer=e=>{if(pointer&&(e.pointerId===undefined||e.pointerId===pointer.id))stopPointer();};
   on($('board'),'lostpointercapture',cancelPointer);
   on(window,'pointercancel',cancelPointer);
-  on(window,'blur',()=>{cancelAssistance();stopPointer();if(presentation)finishPresentation(presentation);pauseGame();});
-  on(document,'visibilitychange',()=>{if(document.hidden)cancelAssistance();stopPointer();if(document.hidden){if(presentation)finishPresentation(presentation);pauseGame();}syncAudio();});
-  on(window,'pagehide',()=>{cancelAssistance();stopPointer();clearInvalidSwap();if(presentation)finishPresentation(presentation);});
+  on(window,'blur',()=>{lessonDemo.stop();cancelAssistance();stopPointer();if(presentation)finishPresentation(presentation);pauseGame();});
+  on(document,'visibilitychange',()=>{if(document.hidden){lessonDemo.stop();cancelAssistance();}stopPointer();if(document.hidden){if(presentation)finishPresentation(presentation);pauseGame();}syncAudio();refreshLessonDemo();});
+  on(window,'pagehide',()=>{lessonDemo.stop();cancelAssistance();stopPointer();clearInvalidSwap();if(presentation)finishPresentation(presentation);});
   on($('board'),'click',e=>{if(e.detail===0){const tile=e.target.closest('[data-index]');if(tile)select(+tile.dataset.index);}});
   on($('board'),'keydown',e=>{
     const tile=e.target.closest('[data-index]');if(!tile||!gameInputAllowed())return;if(guideFeedback()){e.preventDefault();return;}if(busy){e.preventDefault();finishPresentation(presentation);return;}
@@ -1490,7 +1511,7 @@ window.HexSessionStore.boot(function startApp(session) {
     if(event.target.closest('[data-settings]')){event.preventDefault();openSettings();return;}
     const stage=event.target.closest('[data-stage]');if(stage&&!stage.disabled)requestStage(+stage.dataset.stage);
   });
-  on($('home-play'),'click',()=>{unlockAudio();const next=nextStage();if(!next)showScreen('garden');else if(next.rescue)resumeSecondChance(next.index);else if(next.resume)enterGame(next.index);else requestStage(next.index);});
+  on($('home-play'),'click',()=>{unlockAudio();const next=nextStage();if(!next)showScreen('garden');else if(next.rescue)resumeSecondChance(next.index);else if(next.resume||firstOpening&&next.index===0)enterGame(next.index);else requestStage(next.index);});
   on($('home-teach'),'click',()=>enterGame(0,{fresh:true}));
   on($('help-teach'),'click',()=>enterGame(0,{fresh:true}));
   on($('settings'),'click',event=>{event.stopPropagation();openSettings();});
@@ -1562,7 +1583,7 @@ window.HexSessionStore.boot(function startApp(session) {
   });
   on(window,'pagehide',()=>{audio?.stop();if(engine)persist();});
   const motionQuery=window.matchMedia?.('(prefers-reduced-motion: reduce)');
-  motionQuery?.addEventListener?.('change',()=>{if(saved.preferences.motion==='auto'){if(reduceMotion()){clearInvalidSwap();if(presentation)finishPresentation(presentation);}syncAudio();}});
+  motionQuery?.addEventListener?.('change',()=>{if(saved.preferences.motion==='auto'){if(reduceMotion()){clearInvalidSwap();if(presentation)finishPresentation(presentation);}syncAudio();refreshLessonDemo();}});
   function bindPlaytest(){
     if(!playtest)return;
     const toggle=$('setting-playtest');if(toggle){toggle.checked=playtest.snapshot().enabled;toggle.addEventListener('change',()=>{playtest.setEnabled(toggle.checked);syncPlaytestActivity();persistPlaytest();toast(toggle.checked?'Yerel oyuncu testi kaydı açık. Veri gönderilmez.':'Yerel oyuncu testi kaydı kapalı.');});}

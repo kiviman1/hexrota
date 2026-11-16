@@ -199,3 +199,76 @@ body[data-ui-theme="comic"] .home-copy>.home-teach{max-width:100%}
   body[data-ui-theme="comic"][data-screen="home"] .home-copy>.eyebrow,
   body[data-ui-theme="comic"][data-screen="home"] .home-stage-name{display:none}
 }
+
+/* First opening: one invitation before wallets, navigation and campaign choices. */
+body[data-first-opening="true"][data-screen="home"] :is(#home-lives,.campaign-wallet,.home-shortcuts,.home-progress,.home-stage-name,.home-teach,.home-art,.home-copy>.eyebrow,.app-navigation,footer,.header-note,.header-actions){display:none}
+body[data-first-opening="true"][data-screen="home"] .site-shell{max-width:720px;padding-inline:24px}
+body[data-first-opening="true"][data-screen="home"] .site-header{justify-content:center;height:72px;border:0}
+body[data-first-opening="true"][data-screen="home"] .home-hero{display:flex;align-items:center;justify-content:center;min-height:calc(var(--app-height,100dvh) - 100px);padding:20px 0 32px;gap:0}
+body[data-first-opening="true"][data-screen="home"] .home-copy{width:100%;max-width:390px;text-align:center}
+body[data-first-opening="true"][data-screen="home"] .tavik-intro{flex-direction:column-reverse;gap:24px;margin:0 0 16px}
+body[data-first-opening="true"][data-screen="home"] .tavik-portrait{flex:0 0 auto;width:112px}
+body[data-first-opening="true"][data-screen="home"] .home-copy h1{font-size:42px;line-height:1.08}
+body[data-first-opening="true"][data-screen="home"] .home-description{max-width:300px;margin:0 auto 24px;font-size:16px;line-height:1.5}
+body[data-first-opening="true"][data-screen="home"] .home-play{min-height:78px;text-align:left}
+/* Keep the goal, moves and board geometry stable through the lesson. */
+body[data-screen="game"][data-learning="first"] .scoreboard{grid-template-columns:minmax(0,1fr) 74px;gap:10px}
+body[data-screen="game"][data-learning="first"] .goals-panel{display:grid;grid-template-columns:minmax(0,1fr) 75px}
+body[data-screen="game"][data-learning="first"] .coverage.ground-goal{order:-1;border:0;padding:12px 10px;gap:9px;min-height:82px}
+body[data-screen="game"][data-learning="first"] .ground-goal>div:nth-child(2){align-items:flex-start;gap:8px;flex-direction:column}
+body[data-screen="game"][data-learning="first"] .ground-goal #ground-label{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.5px}
+body[data-screen="game"][data-learning="first"] .ground-goal #coverage{font-size:25px;line-height:1}
+body[data-screen="game"][data-learning="first"] .hud-score.metric{border-left:1px solid #bc925e66;border-radius:0;min-height:82px;padding:10px 5px;gap:8px}
+body[data-screen="game"][data-learning="first"] .hud-score #score-goal-label{font-size:9px;letter-spacing:.5px}
+body[data-screen="game"][data-learning="first"] .score-pair #sum{font-size:25px}
+body[data-screen="game"][data-learning="first"] .moves-badge.metric{display:flex;min-height:86px;padding:10px 5px}
+body[data-screen="game"][data-learning="first"] .moves-badge>strong{font-size:36px}
+body[data-screen="game"][data-learning="first"] .moves-badge>span{font-size:10px}
+body[data-screen="game"][data-learning="first"] #score-goal-check{display:none}
+body[data-screen="game"]:is([data-learning="first"],[data-learning="goals"]) .tutorial-coach{height:118px;min-height:118px;grid-template-rows:minmax(0,1fr);row-gap:0;padding:10px 12px;margin-top:10px}
+body[data-screen="game"]:is([data-learning="first"],[data-learning="goals"]) .coach-heading{gap:4px;margin-bottom:5px}
+body[data-screen="game"]:is([data-learning="first"],[data-learning="goals"]) .coach-heading h3{font-size:18px;line-height:1.18}
+body[data-screen="game"]:is([data-learning="first"],[data-learning="goals"]) .coach-copy p{font-size:14px;line-height:1.35}
+body[data-screen="game"]:is([data-learning="first"],[data-learning="goals"]) .coach-next{grid-column:2;grid-row:1;width:78px;min-height:60px;padding:8px 5px;flex-wrap:wrap;gap:5px;font-size:12px;align-self:center}
+body[data-screen="game"]:is([data-learning="first"],[data-learning="goals"]) .coach-skip{grid-column:2;grid-row:1;font-size:10px;align-self:start}
+body[data-screen="game"][data-guide-feedback="true"] .coach-skip{display:none}
+body[data-screen="game"][data-guide-feedback="true"] .tutorial-coach{grid-template-columns:minmax(0,1fr) auto}
+body[data-screen="game"][data-guide-feedback="true"] .coach-copy{grid-column:1;grid-row:1}
+body[data-screen="game"]:is([data-learning="first"],[data-learning="goals"]) :is(#reset,#hint,#game-settings){display:none}
+body[data-screen="game"]:is([data-learning="first"],[data-learning="goals"]) .tool-actions{display:flex;justify-content:space-between;max-width:530px;gap:16px}
+body[data-screen="game"]:is([data-learning="first"],[data-learning="goals"]) .dock-button{flex-direction:row;width:auto;gap:8px;min-height:38px;font-size:11px}
+body[data-screen="game"]:is([data-learning="first"],[data-learning="goals"]) .dock-button>.icon{width:34px;height:34px;min-width:34px;padding:7px;border-radius:12px}
+body[data-screen="game"]:is([data-learning="first"],[data-learning="goals"]) .game-toolbar{padding:6px 14px calc(8px + env(safe-area-inset-bottom,0px))}
+/* The actual move stays separate from this slow, decorative preview. */
+body[data-screen="game"] .tutorial-guide-hand{animation-duration:3.8s}
+@keyframes teaching-swipe{0%,16%{transform:translate(0,0);opacity:1}62%,77%{transform:translate(var(--guide-dx),var(--guide-dy));opacity:1}89%,100%{transform:translate(var(--guide-dx),var(--guide-dy));opacity:0}}
+.tutorial-demo-layer,.tutorial-demo-layer *{pointer-events:none!important}
+.tutorial-demo-stone{opacity:1}
+.tutorial-demo-stone .gem-shape{stroke:#fff4bd;stroke-width:2.2}
+body[data-learning="first"] .tutorial-focus .floor-shape,body[data-learning="goals"] .tutorial-focus .floor-shape{stroke:#efffb6;stroke-width:3.6;stroke-dasharray:none}
+body[data-screen="game"] #win-dialog[data-learning="tutorial"] :is(.win-stats,#review,.result-links){display:none}
+body[data-screen="game"] #win-dialog[data-learning="tutorial"] #next{margin-top:22px}
+@media(max-width:360px){
+ body[data-screen="game"]:is([data-learning="first"],[data-learning="goals"]) .coach-heading h3{font-size:16px}
+ body[data-screen="game"]:is([data-learning="first"],[data-learning="goals"]) .coach-copy p{font-size:13px}
+ body[data-first-opening="true"][data-screen="home"] .site-shell{padding-inline:20px}
+}
+@media(max-height:650px){
+ body[data-first-opening="true"][data-screen="home"] .site-header{height:56px}
+ body[data-first-opening="true"][data-screen="home"] .home-hero{min-height:calc(var(--app-height,100dvh) - 72px);padding:10px 0 22px}
+ body[data-first-opening="true"][data-screen="home"] .tavik-portrait{width:72px}
+ body[data-first-opening="true"][data-screen="home"] .tavik-intro{gap:14px;margin-bottom:12px}
+ body[data-first-opening="true"][data-screen="home"] .home-copy h1{font-size:34px}
+ body[data-first-opening="true"][data-screen="home"] .home-description{font-size:14px;margin-bottom:16px}
+ body[data-first-opening="true"][data-screen="home"] .home-play{min-height:68px}
+}
+@media(max-height:520px) and (min-width:601px){
+ body[data-first-opening="true"][data-screen="home"] .tavik-intro{flex-direction:row;gap:18px;justify-content:center}
+ body[data-first-opening="true"][data-screen="home"] .home-copy h1{flex:0 1 auto;text-align:left}
+ body[data-screen="game"]:is([data-learning="first"],[data-learning="goals"]) .tutorial-coach{height:118px;min-height:118px;margin-top:6px}
+ body[data-screen="game"][data-learning="first"] .scoreboard{grid-template-columns:minmax(0,1fr) 62px;gap:7px}
+ body[data-screen="game"][data-learning="first"] .goals-panel{grid-template-columns:minmax(0,1fr) 58px}
+ body[data-screen="game"][data-learning="first"] .coverage.ground-goal{padding-inline:7px;gap:5px}
+ body[data-screen="game"][data-learning="first"] .mini-progress{display:none}
+ body[data-screen="game"][data-learning="first"] .ground-goal #coverage{font-size:20px}
+}

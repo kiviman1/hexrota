@@ -50,22 +50,22 @@ async function swap(f,pair){const next=f.d.getElementById('coach-next');if(next&
 function boardFingerprint(f){return JSON.stringify(f.save().boards);}
 const tests=[];const test=(name,run)=>tests.push({name,run});
 
-test('landing, stage preview and first play form a real menu flow',async()=>{
+test('first play enters directly and later map previews remain nonmutating',async()=>{
  const f=mount();try{
-  screen(f,'home');assert(node(f,'#home-play-label').textContent.trim());
-  const initial=copy(f.save());click(f,'#home-play');
-  assert(node(f,'#pregame-dialog').open,'new play opens goals first');screen(f,'home');
-  assert.equal(f.save().current,initial.current,'opening a preview does not select another checkpoint');
+  screen(f,'home');assert.equal(node(f,'#home-play-label').textContent.trim(),'Başlayalım');
+  click(f,'#home-play');await settle();screen(f,'game');
+  assert(!node(f,'#pregame-dialog').open,'the first start action opens T1 directly');
   const first=[...f.w.HEX_TUTORIALS,...f.w.HEX_LEVELS][0];
-  assert.equal(+node(f,'#pregame-target').textContent,first.target);
-  assert.equal(+node(f,'#pregame-moves').textContent,first.moves);
-  click(f,'#pregame-start');await settle();screen(f,'game');
-  assert(!node(f,'#pregame-dialog').open);assert.equal(f.save().current,0);
+  assert.equal(f.save().current,0);
   assert.equal(+node(f,'#moves-left').textContent,first.moves);
   click(f,'[data-nav="home"]');screen(f,'home');
   click(f,'[data-nav="journey"]');screen(f,'journey');
   assert.equal(stage(f,0).disabled,false);
   assert.equal(f.d.querySelectorAll('[data-stage]:not(:disabled)').length<=3,true,'there are at most two lessons and one next campaign level to play');
+  const before=boardFingerprint(f);stage(f,0).click();assert(node(f,'#pregame-dialog').open,'map entry retains its explicit preview');screen(f,'journey');
+  assert.equal(+node(f,'#pregame-target').textContent,first.target);
+  assert.equal(+node(f,'#pregame-moves').textContent,first.moves);
+  closeDialog(f,'pregame-dialog');assert.equal(boardFingerprint(f),before,'canceling a preview preserves the untouched lesson');
  }finally{f.close();}
 });
 

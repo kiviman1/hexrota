@@ -114,6 +114,19 @@ jobs:
         run: npm run test:mobile-browser
         env:
           HEXROTA_BROWSER: ${{ matrix.browser }}
+      - name: Verify the first opening, slow demonstration and earned tutorial progress
+        run: npm run test:first-play
+        env:
+          HEXROTA_BROWSER: ${{ matrix.browser }}
+          HEXROTA_FIRST_PLAY_SCREENSHOT_DIR: test-results/first-play-${{ matrix.browser }}
+      - name: Keep first-opening screenshots and browser results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: first-play-${{ matrix.browser }}
+          path: test-results/first-play-${{ matrix.browser }}
+          if-no-files-found: warn
+          retention-days: 7
       - name: Verify both swap stones with actual screenshot pixels
         run: npm run test:swap-visual
         env:
