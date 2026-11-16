@@ -35,12 +35,13 @@ window.HexSessionStore.boot(function startApp(session) {
   let rescueManager=null,pendingRescueProvider=null,pendingRescueReceipt=null,rescueTimeFloor=0;
   const modalStack=[];
   const lessonDemo=window.HexFirstPlay.createDemo({board:$('board'),reducedMotion:reduceMotion});
+  const tavikDialogue=window.HexTavikDialogue?.create({document,window,coach:$('tutorial-coach'),reducedMotion:reduceMotion,paused:()=>paused||document.hidden||!!topDialog()})||null;
   let scenePresentation=null;
   let committedSceneGame=session.current()?.game||null;
   const tutorialBuildCounter=document.createElement('span');
   tutorialBuildCounter.className='tutorial-build-counter';tutorialBuildCounter.hidden=true;
   tutorialBuildCounter.setAttribute('role','status');tutorialBuildCounter.setAttribute('aria-live','polite');tutorialBuildCounter.setAttribute('aria-atomic','true');
-  $('tutorial-coach').insertBefore(tutorialBuildCounter,$('coach-skip'));
+  $('coach-step').after(tutorialBuildCounter);
   function committedTutorialProgress(){
     const game=committedSceneGame,done=game?.done||[],indices=[game?.current,...done,...Object.keys(game?.boards||{}).map(Number),...Object.keys(game?.attempts||{}).map(Number)];
     // Older saves may lack tutorial flags after reaching a later screen. Infer
@@ -62,7 +63,7 @@ window.HexSessionStore.boot(function startApp(session) {
       const progress=committedTutorialProgress(),counter=window.HexScenePresentation?.tutorialCounter(window.HEX_SCENE_CONFIG,activeLevel?.id,progress.tutorialTurn);
       tutorialBuildCounter.hidden=screen!=='game'||!counter;
       if(counter){const text=`${counter.label} ${counter.current}/${counter.target}`;if(tutorialBuildCounter.textContent!==text){tutorialBuildCounter.textContent=text;tutorialBuildCounter.setAttribute('aria-label',`Eğitim yapımı: ${text}`);}}
-      scenePresentation?.update({screen,firstOpening,...progress,levelId:activeLevel?.id,attemptId:activeAttempt?.attemptId||null,turn:engine?.turn||0,status:engine?.status||'playing',busy,feedback:!!guideFeedback(),lessonPair:guidedStep()?.pair||null,paused,hidden:document.hidden,modalOpen:!!topDialog(),reducedMotion:reduceMotion()});
+      scenePresentation?.update({screen,firstOpening,...progress,levelId:activeLevel?.id,attemptId:activeAttempt?.attemptId||null,turn:engine?.turn||0,status:engine?.status||'playing',busy,feedback:!!guideFeedback(),lessonPair:guidedStep()?.pair||null,tutorialPortrait:!!tavikDialogue&&isTutorial(),paused,hidden:document.hidden,modalOpen:!!topDialog(),reducedMotion:reduceMotion()});
     }catch(_){tutorialBuildCounter.hidden=true;}
   }
   function sceneCommitted(profile){committedSceneGame=profile?.game||null;syncScene();}
@@ -1138,7 +1139,7 @@ window.HexSessionStore.boot(function startApp(session) {
     document.body.dataset.guideFeedback=String(!!feedback);
     document.body.dataset.guideStep=tutorial?String(busy?Math.max(0,engine.turn-1):engine.turn):'';
     if($('coach-next')){$('coach-next').hidden=!feedback;$('coach-next').disabled=!feedback;}
-    if(!tutorial)return;
+    if(!tutorial){tavikDialogue?.update({visible:false});return;}
     const steps=activeLevel.steps,index=Math.min(engine.turn,steps.length-1),step=steps[index],previous=steps[Math.max(0,engine.turn-1)],showFeedback=busy||!!feedback;
     $('coach-step').textContent=feedback?'BU HAMLEDE':`${busy?'İZLE · ':''}ADIM ${busy?Math.max(1,engine.turn):Math.min(engine.turn+1,steps.length)} / ${steps.length}`;
     $('coach-title').textContent=showFeedback?(previous.afterTitle||'İşte böyle!'):(step?.title||activeLevel.title||activeLevel.name);
@@ -1149,6 +1150,7 @@ window.HexSessionStore.boot(function startApp(session) {
     if(lessonCopy){$('coach-title').textContent=lessonCopy.title;if(partner===null||showFeedback)$('coach-text').textContent=lessonCopy.text;}
     if($('guide-explanation')){$('guide-explanation').hidden=active!==0||engine.turn>0||busy;$('guide-explanation').textContent='Aynı sayıdan 3 taşı eşleştir. Üç tane 2, toplam 6 puan kazandırır.';}
     $('coach-progress').style.width=`${engine.turn/steps.length*100}%`;
+    tavikDialogue?.update({visible:!coach.hidden,levelId:activeLevel.id,step:engine.turn,feedback:showFeedback,busy,paused:paused||document.hidden||!!topDialog()});
   }
   function renderScore(value){
     $('sum').textContent=value;
@@ -1442,7 +1444,7 @@ window.HexSessionStore.boot(function startApp(session) {
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=37');
+            job.worker=new Worker('./hint-worker.js?v=39');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:activeLevel,snapshot:engine.snapshot()});
@@ -1530,9 +1532,9 @@ window.HexSessionStore.boot(function startApp(session) {
   on(window,'pointercancel',cancelPointer);
   on(window,'blur',()=>{lessonDemo.stop();cancelAssistance();stopPointer();if(presentation)finishPresentation(presentation);pauseGame();});
   on(document,'visibilitychange',()=>{if(document.hidden){lessonDemo.stop();cancelAssistance();}stopPointer();if(document.hidden){if(presentation)finishPresentation(presentation);pauseGame();}syncAudio();refreshLessonDemo();});
-  on(window,'pagehide',()=>{lessonDemo.stop();cancelAssistance();stopPointer();clearInvalidSwap();if(presentation)finishPresentation(presentation);try{scenePresentation?.destroy();}catch(_){}finally{scenePresentation=null;}});
+  on(window,'pagehide',()=>{tavikDialogue?.update({visible:false});lessonDemo.stop();cancelAssistance();stopPointer();clearInvalidSwap();if(presentation)finishPresentation(presentation);try{scenePresentation?.destroy();}catch(_){}finally{scenePresentation=null;}});
   // A BFCache return reuses this host. Recreate only the disposed presentation.
-  on(window,'pageshow',()=>{mountScene();syncScene();});
+  on(window,'pageshow',()=>{mountScene();syncScene();renderCoach();});
   on($('board'),'click',e=>{if(e.detail===0){const tile=e.target.closest('[data-index]');if(tile)select(+tile.dataset.index);}});
   on($('board'),'keydown',e=>{
     const tile=e.target.closest('[data-index]');if(!tile||!gameInputAllowed())return;if(guideFeedback()){e.preventDefault();return;}if(busy){e.preventDefault();finishPresentation(presentation);return;}

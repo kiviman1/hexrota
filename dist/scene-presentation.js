@@ -112,7 +112,7 @@
    }
    hideActor('nospace');
   }
-  function layoutNow(){frame=null;if(!active||disposed||!anchor)return;if(speech)speech.hidden=true;if(paused()){hideActor(view?.modalOpen?'modal':'paused');return;}if(!actorReady&&!fallbackReady){hideActor('loading');return;}if(mode==='game')layoutGame();else layoutHome();}
+  function layoutNow(){frame=null;if(!active||disposed||!anchor)return;if(speech)speech.hidden=true;if(paused()){hideActor(view?.modalOpen?'modal':'paused');return;}if(!actorReady&&!fallbackReady){hideActor('loading');return;}if(mode==='game'&&view?.tutorialPortrait){hideActor('dialogue');return;}if(mode==='game')layoutGame();else layoutHome();}
   function scheduleLayout(){if(frame!==null||!active)return;frame=win.requestAnimationFrame?win.requestAnimationFrame(layoutNow):win.setTimeout(layoutNow,0);}
   function showFallback(){
    if(!anchor||fallback||actorReady)return;const token=generation;fallback=doc.createElement('img');fallback.className='hx-scene-fallback';fallback.alt='Tavik';fallback.width=147;fallback.height=238;fallback.draggable=false;fallback.hidden=true;facing.appendChild(fallback);
@@ -170,7 +170,7 @@
   function update(input){
    if(disposed)return false;if(!input||!integer(input.completedTutorialCount)||input.completedTutorialCount>2||!integer(input.tutorialTurn))throw new TypeError('invalid_scene_view');
    const previous=view,previousStage=stage,wasActive=active;
-   view={screen:input.screen,firstOpening:input.firstOpening,completedTutorialCount:input.completedTutorialCount,tutorialTurn:input.tutorialTurn,levelId:input.levelId,attemptId:input.attemptId,turn:input.turn,status:input.status,busy:input.busy,feedback:input.feedback,paused:input.paused,hidden:input.hidden,modalOpen:input.modalOpen,reducedMotion:input.reducedMotion,lessonPair:Array.isArray(input.lessonPair)?input.lessonPair.slice(0,2):[]};
+   view={screen:input.screen,firstOpening:input.firstOpening,tutorialPortrait:input.tutorialPortrait===true,completedTutorialCount:input.completedTutorialCount,tutorialTurn:input.tutorialTurn,levelId:input.levelId,attemptId:input.attemptId,turn:input.turn,status:input.status,busy:input.busy,feedback:input.feedback,paused:input.paused,hidden:input.hidden,modalOpen:input.modalOpen,reducedMotion:input.reducedMotion,lessonPair:Array.isArray(input.lessonPair)?input.lessonPair.slice(0,2):[]};
    if(!['home','game'].includes(view.screen)){close();mode=null;return true;}
    mode=view.screen==='game'?'game':view.firstOpening?'opening':'home';stage=stageForTutorials(config,view.completedTutorialCount);setBody('sceneMode',mode);setBody('sceneStage',stage);
    if(!active)mount();else{reparent(mode==='game'?gameHost:homeHost);requestBackground();}
