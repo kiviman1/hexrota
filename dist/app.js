@@ -32,6 +32,7 @@ window.HexSessionStore.boot(function startApp(session) {
   const geometryCache=new Map();
   let pendingStage=null,pendingRestart=null,invalidPresentation=null;
   const appState=window.HexAppState.create();
+  appState.dispatch({type:'APP_VISIBILITY_CHANGED',hidden:document.hidden});
   const appScreen=()=>appState.snapshot().navigation.screen;
   const appPaused=()=>window.HexAppState.isPaused(appState.snapshot());
   let navigationEffectGeneration=0;
@@ -54,14 +55,13 @@ window.HexSessionStore.boot(function startApp(session) {
   tutorialBuildCounter.className='tutorial-build-counter';tutorialBuildCounter.hidden=true;
   tutorialBuildCounter.setAttribute('role','status');tutorialBuildCounter.setAttribute('aria-live','polite');tutorialBuildCounter.setAttribute('aria-atomic','true');
   $('coach-step').after(tutorialBuildCounter);
-  function committedTutorialProgress(){
-    const game=committedSceneGame,done=game?.done||[],indices=[game?.current,...done,...Object.keys(game?.boards||{}).map(Number),...Object.keys(game?.attempts||{}).map(Number)];
-    // Older saves may lack tutorial flags after reaching a later screen. Infer
-    // only presentation from that saved reach; never create completion/rewards.
-    const completedTutorialCount=indices.some(index=>Number.isInteger(index)&&index>=tutorialCount)?2:done.includes(1)?2:indices.includes(1)||done.includes(0)?1:0;
-    const checkpoint=game?.boards?.[active],attemptId=game?.attempts?.[active]?.attemptId;
-    const tutorialTurn=active<tutorialCount&&attemptId&&attemptId===activeAttempt?.attemptId?checkpoint?.turn||0:0;
-    return {completedTutorialCount,tutorialTurn};
+  function presentationDomainView(){
+    return {attemptReady:!!engine&&!!activeAttempt&&!attemptPending&&!saveBlocked,
+      engineStatus:engine?.status||'playing',activeIndex:active,tutorialCount,tutorial:isTutorial(),
+      levelId:activeLevel?.id,attemptId:activeAttempt?.attemptId||null,turn:engine?.turn||0,
+      firstOpening,portraitAvailable:!!tavikDialogue,coachVisible:!$('tutorial-coach').hidden,
+      feedback:!!guideFeedback(),lessonPair:guidedStep()?.pair||null,reducedMotion:reduceMotion(),
+      nativeModalOpen:!!topDialog(),committedGame:committedSceneGame};
   }
   // Optional scene art owns no game state. Its failures must not block the board.
   function mountScene(){
@@ -71,12 +71,18 @@ window.HexSessionStore.boot(function startApp(session) {
   mountScene();
   function syncScene(){
     if(fullResetPending)return;
+    let view;
+    try{view=window.HexStateSelectors.projectPresentation(appState.snapshot(),presentationDomainView());}
+    catch(_){tutorialBuildCounter.hidden=true;return;}
     try{
-      const progress=committedTutorialProgress(),counter=window.HexScenePresentation?.tutorialCounter(window.HEX_SCENE_CONFIG,activeLevel?.id,progress.tutorialTurn);
-      tutorialBuildCounter.hidden=appScreen()!=='game'||!counter;
+      const counter=window.HexScenePresentation?.tutorialCounter(window.HEX_SCENE_CONFIG,activeLevel?.id,view.progress.tutorialTurn);
+      tutorialBuildCounter.hidden=view.screen!=='game'||!counter;
       if(counter){const text=`${counter.label} ${counter.current}/${counter.target}`;if(tutorialBuildCounter.textContent!==text){tutorialBuildCounter.textContent=text;tutorialBuildCounter.setAttribute('aria-label',`Eğitim yapımı: ${text}`);}}
-      scenePresentation?.update({screen:appScreen(),firstOpening,...progress,levelId:activeLevel?.id,attemptId:activeAttempt?.attemptId||null,turn:engine?.turn||0,status:engine?.status||'playing',busy,feedback:!!guideFeedback(),lessonPair:guidedStep()?.pair||null,tutorialPortrait:!!tavikDialogue&&isTutorial(),paused:appPaused(),hidden:document.hidden,modalOpen:!!topDialog(),reducedMotion:reduceMotion()});
     }catch(_){tutorialBuildCounter.hidden=true;}
+    // One actor policy reserves the portrait slot even while a terminal coach
+    // is hidden. Optional adapters fail independently after the same projection.
+    try{tavikDialogue?.update(view.portrait);}catch(_){}
+    try{scenePresentation?.update(view.scene);}catch(_){}
   }
   function sceneCommitted(profile){committedSceneGame=profile?.game||null;syncScene();}
   function reactScene(job){
@@ -461,14 +467,15 @@ window.HexSessionStore.boot(function startApp(session) {
     rewardState=null;completionReward=null;completionRewardPlayed=false;
     const stats=activeStats();if(stats)stats.cascades=validCounter(stats.cascades)+Math.max(0,result.frames.length-1);
     const job={token:++epoch,result,controller:new AbortController(),animations:[],watchdog:null,scoreDisplay:before.score,scoreTasks:[],rewardPlan:null,rewardCueIds:new Set(),rewardMilestoneIds:new Set(),rewardNodes:new Set(),rewardHeadlineUsed:false,assistanceItem:pending.itemId,assistanceIndex:pending.index};
-    presentation=job;busy=true;selected=null;hinted=null;comboText='';syncPlaytestActivity();
+    startPresentation(job);selected=null;hinted=null;comboText='';syncPlaytestActivity();
     try{
       markCompleted(true);persist();settleActiveLife();emitEvent('booster_used',{boosterId:pending.itemId});terminalEvent();
       if(!commitSession())return;
       job.committed=true;renderLevels();updateMenus();
-      job.watchdog=setTimeout(()=>finishPresentation(job),motion.budget);await presentSwap(job,null,null,before);
-    }catch(_){if(!job.committed){sessionDirty=false;restoreDurable();toast('Güçlendirici kaydedilemedi. Tahtan ve çantan korundu.');}}
-    finally{finishPresentation(job);}
+      if(!activatePresentation(job))return;
+      job.watchdog=setTimeout(()=>finishPresentation(job,'failed'),motion.budget);await presentSwap(job,null,null,before);
+    }catch(_){job.presentationFailed=job.committed===true;if(!job.committed){sessionDirty=false;restoreDurable();toast('Güçlendirici kaydedilemedi. Tahtan ve çantan korundu.');}}
+    finally{finishPresentation(job,job.presentationFailed?'failed':'succeeded');}
   }
   function purchaseInventory(itemId){
     if(!inventoryPlayable())return;
@@ -1158,7 +1165,7 @@ window.HexSessionStore.boot(function startApp(session) {
     document.body.dataset.guideFeedback=String(!!feedback);
     document.body.dataset.guideStep=tutorial?String(busy?Math.max(0,engine.turn-1):engine.turn):'';
     if($('coach-next')){$('coach-next').hidden=!feedback;$('coach-next').disabled=!feedback;}
-    if(!tutorial){tavikDialogue?.update({visible:false});return;}
+    if(!tutorial)return;
     const steps=activeLevel.steps,index=Math.min(engine.turn,steps.length-1),step=steps[index],previous=steps[Math.max(0,engine.turn-1)],showFeedback=busy||!!feedback;
     $('coach-step').textContent=feedback?'BU HAMLEDE':`${busy?'İZLE · ':''}ADIM ${busy?Math.max(1,engine.turn):Math.min(engine.turn+1,steps.length)} / ${steps.length}`;
     $('coach-title').textContent=showFeedback?(previous.afterTitle||'İşte böyle!'):(step?.title||activeLevel.title||activeLevel.name);
@@ -1169,7 +1176,6 @@ window.HexSessionStore.boot(function startApp(session) {
     if(lessonCopy){$('coach-title').textContent=lessonCopy.title;if(partner===null||showFeedback)$('coach-text').textContent=lessonCopy.text;}
     if($('guide-explanation')){$('guide-explanation').hidden=active!==0||engine.turn>0||busy;$('guide-explanation').textContent='Aynı sayıdan 3 taşı eşleştir. Üç tane 2, toplam 6 puan kazandırır.';}
     $('coach-progress').style.width=`${engine.turn/steps.length*100}%`;
-    tavikDialogue?.update({visible:!coach.hidden,levelId:activeLevel.id,step:engine.turn,feedback:showFeedback,busy,paused:appPaused()||document.hidden||!!topDialog()});
   }
   function renderScore(value){
     $('sum').textContent=value;
@@ -1187,14 +1193,26 @@ window.HexSessionStore.boot(function startApp(session) {
   function clearScoreReceipt(){return scorePresentation.clearScoreReceipt();}
   function flyScore(job,frame,options){return scorePresentation.flyScore(job,frame,options);}
   const canAnimate=()=>!document.hidden&&!reduceMotion()&&typeof window.Element.prototype.animate==='function';
-  function cancelPresentation() {
+  function startPresentation(job){
+    presentation=job;busy=true;
+    // This token coordinates visual lifetime only. Failure to allocate it must
+    // never reject an already valid domain command or its atomic profile write.
+    try{job.uiOperation=appState.beginOperation('presentation',activeAttempt?.attemptId||null);}catch(_){job.uiOperation=null;}
+  }
+  function activatePresentation(job){
+    if(!job.uiOperation)return false;
+    try{return appState.markOperationPending(job.uiOperation).accepted===true&&appState.isCurrentOperation(job.uiOperation);}catch(_){return false;}
+  }
+  function cancelPresentation(outcome='cancelled') {
     clearInvalidSwap();
-    const job=presentation;presentation=null;busy=false;
+    const job=presentation;
+    if(job?.uiOperation)appState.settleOperation(job.uiOperation,outcome);
+    presentation=null;busy=false;
     if(job){clearTimeout(job.watchdog);job.controller.abort();job.swapVisual?.cleanup();for(const a of job.animations)try{a.cancel?.();}catch(_){}for(const node of job.rewardNodes||[])node.classList.remove('reward-goal-hit');clearScoreReceipt();}
   }
-  function finishPresentation(job) {
+  function finishPresentation(job,outcome='succeeded') {
     if(!job||presentation!==job||job.token!==epoch)return;
-    cancelPresentation();
+    cancelPresentation(outcome);
     const result=job.result;
     comboText=job.assistanceItem==='greenBrush'?'Zeminden bir kat azaldı.':job.assistanceItem&&result.scoreGain===0?'Taşın sayısı değişti.':`+${result.scoreGain} puan${result.frames.length>1?` · ${result.frames.length} zincir`:''}`;
     const deferred=job.rewardPlan?.headline;if(deferred&&!deferred.completion&&!job.rewardHeadlineUsed){comboText=rewardLabel(deferred)+' · '+comboText;job.rewardHeadlineUsed=true;}
@@ -1368,20 +1386,21 @@ window.HexSessionStore.boot(function startApp(session) {
     const stats=activeStats();if(stats)stats.cascades=validCounter(stats.cascades)+Math.max(0,result.frames.length-1);
     const rewardPlan=planRewards(checkpoint,result);
     const job={token:++epoch,result,controller:new AbortController(),animations:[],watchdog:null,scoreDisplay:before.score,scoreTasks:[],rewardPlan,rewardCueIds:new Set(),rewardMilestoneIds:new Set(),rewardNodes:new Set(),rewardHeadlineUsed:false};
-    presentation=job;busy=true;selected=null;hinted=null;comboText='';syncPlaytestActivity();
+    startPresentation(job);selected=null;hinted=null;comboText='';syncPlaytestActivity();
     try{
       markCompleted(true);persist();settleActiveLife();terminalEvent();
       // Commit the board, life settlement and permanent reward together before feedback.
       if(!commitSession())return;
       job.committed=true;renderLevels();if(engine.status==='won')updateMenus();
+      if(!activatePresentation(job))return;
       if(!rewardPlan&&saved.preferences.haptics&&typeof navigator.vibrate==='function')try{navigator.vibrate(12);}catch(_){}
       if(rewardPlan&&!canAnimate()&&!rewardPlan.headline?.completion){
         const cue=rewardPlan.headline||rewardPlan.waves.reduce((best,next)=>!best||next.tier>best.tier?next:best,null);rewardFeedback(job,cue);
       }
-      job.watchdog=setTimeout(()=>finishPresentation(job),motion.budget);
+      job.watchdog=setTimeout(()=>finishPresentation(job,'failed'),motion.budget);
       await presentSwap(job,a,b,before);
-    }catch(_){if(!job.committed){sessionDirty=false;restoreDurable();toast('Hamle kaydedilemedi. Son güvenli tahtan korundu.');}}
-    finally{finishPresentation(job);}
+    }catch(_){job.presentationFailed=job.committed===true;if(!job.committed){sessionDirty=false;restoreDurable();toast('Hamle kaydedilemedi. Son güvenli tahtan korundu.');}}
+    finally{finishPresentation(job,job.presentationFailed?'failed':'succeeded');}
   }
   function select(index) {
     if(!gameInputAllowed()||guideFeedback())return;
@@ -1550,10 +1569,11 @@ window.HexSessionStore.boot(function startApp(session) {
   on($('board'),'lostpointercapture',cancelPointer);
   on(window,'pointercancel',cancelPointer);
   on(window,'blur',()=>{lessonDemo.stop();cancelAssistance();stopPointer();if(presentation)finishPresentation(presentation);pauseGame();});
-  on(document,'visibilitychange',()=>{if(document.hidden){lessonDemo.stop();cancelAssistance();}stopPointer();if(document.hidden){if(presentation)finishPresentation(presentation);pauseGame();}syncAudio();refreshLessonDemo();});
-  on(window,'pagehide',()=>{tavikDialogue?.update({visible:false});lessonDemo.stop();cancelAssistance();stopPointer();clearInvalidSwap();if(presentation)finishPresentation(presentation);try{scenePresentation?.destroy();}catch(_){}finally{scenePresentation=null;}});
-  // A BFCache return reuses this host. Recreate only the disposed presentation.
-  on(window,'pageshow',()=>{mountScene();syncScene();renderCoach();});
+  on(document,'visibilitychange',()=>{appState.dispatch({type:'APP_VISIBILITY_CHANGED',hidden:document.hidden});if(document.hidden){lessonDemo.stop();cancelAssistance();}stopPointer();if(document.hidden){if(presentation)finishPresentation(presentation);pauseGame();}syncAudio();refreshLessonDemo();});
+  on(window,'pagehide',()=>{lessonDemo.stop();cancelAssistance();stopPointer();clearInvalidSwap();if(presentation)finishPresentation(presentation);appState.dispatch({type:'APP_SUSPENDED'});syncScene();try{scenePresentation?.destroy();}catch(_){}finally{scenePresentation=null;}});
+  // A BFCache return reuses this host. Recreate only the disposed presentation;
+  // SessionStore retains its existing persisted-pageshow lock/reload policy.
+  on(window,'pageshow',()=>{appState.dispatch({type:'APP_RESUMED'});appState.dispatch({type:'APP_VISIBILITY_CHANGED',hidden:document.hidden});mountScene();renderCoach();syncScene();});
   on($('board'),'click',e=>{if(e.detail===0){const tile=e.target.closest('[data-index]');if(tile)select(+tile.dataset.index);}});
   on($('board'),'keydown',e=>{
     const tile=e.target.closest('[data-index]');if(!tile||!gameInputAllowed())return;if(guideFeedback()){e.preventDefault();return;}if(busy){e.preventDefault();finishPresentation(presentation);return;}
