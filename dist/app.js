@@ -26,6 +26,7 @@ window.HexSessionStore.boot(function startApp(session) {
   // A first visit has one invitation. Existing checkpoints keep the normal menu.
   // Capture this before loadLevel prepares the read-only tutorial preview.
   let firstOpening=!gameLoadIssue&&!saved.done.length&&!Object.keys(saved.boards).length&&!Object.keys(saved.attempts).length&&!saved.variantSelection.serial;
+  let fullResetPending=false;
   let active=saved.current,activeLevel=levels[saved.current],activeAttempt=null,attemptPending=true,saveBlocked=false,loadIssue=null,engine, selected=null, hinted=null, busy=false, focusIndex=0;
   let pointer=null, toastTimer, terminalTimer, epoch=0, comboText='',presentation=null,hintJob=null;
   const geometryCache=new Map();
@@ -504,7 +505,7 @@ window.HexSessionStore.boot(function startApp(session) {
   const createPlaytest=state=>window.HexPlaytest.createTracker({now:()=>Date.now(),monotonic:()=>performance.now(),state});
   if(window.HexPlaytest)try{playtest=createPlaytest(readSave(playtestKey));}catch(_){/* Invalid observation data must not affect play. */}
   function persistPlaytest(){
-    if(!playtest||sessionRestoring)return;
+    if(!playtest||sessionRestoring||fullResetPending)return;
     if(sessionDepth){sessionPlaytestDirty=true;return;}
     sessionPlaytestDirty=false;try{localStorage.setItem(playtestKey,JSON.stringify(playtest.snapshot()));}catch(_){}
   }
@@ -515,7 +516,7 @@ window.HexSessionStore.boot(function startApp(session) {
     if(!playtest)return;try{const{timestamp,...fields}=context||{};playtest.recordEvent(name,fields,{...details,developerBypass:!!lifeFeature?.life?.developerBypass});syncPlaytestActivity();persistPlaytest();}catch(_){}
   }
   function emitEvent(name,details={},entry){
-    if(!eventState)return;
+    if(!eventState||fullResetPending)return;
     const context=eventContext(entry);if(!context)return;
     observePlaytest(name,context,details);
     try{eventState=window.HexEvents.append(eventState,name,context,details);if(!sessionDepth)localStorage.setItem(eventKey,JSON.stringify(eventState));}catch(_){/* Local measurements never affect a game or a save. */}
@@ -530,6 +531,7 @@ window.HexSessionStore.boot(function startApp(session) {
   let sessionDepth=0,sessionDirty=false,sessionRestoring=false,sessionEventBaseline=null,sessionGameBaseline=null,sessionPlaytestBaseline=null,sessionPlaytestDirty=false;
   function on(target,type,callback,options){if(!target)return;if(['pointerdown','pointermove','pointercancel','lostpointercapture','touchstart','touchmove','wheel','gesturestart','gesturechange','gestureend'].includes(type)){target.addEventListener(type,callback,options);return;}target.addEventListener(type,function(...args){return sessionAction(()=>callback.apply(this,args));},options);}
   function sessionAction(callback){
+    if(fullResetPending)return;
     if(!sessionDepth){
       sessionEventBaseline=eventState?lifeClone(eventState):null;sessionGameBaseline=lifeClone(saved);sessionPlaytestBaseline=null;
       if(playtest)try{sessionPlaytestBaseline=playtest.snapshot();}catch(_){}
@@ -550,7 +552,7 @@ window.HexSessionStore.boot(function startApp(session) {
     sessionRestoring=true;try{cancelAssistance();cancelPresentation();cancelHint();selected=null;pendingStage=null;pendingRestart=null;pendingResetLifeCost=null;if(pendingLifeProvider&&!lifeFeature.provider.transactions[pendingLifeProvider]&&!pendingLifeReceipt){pendingLifeProvider=null;if($('life-provider-dialog')?.open)closeModal($('life-provider-dialog'));}if(attemptPending)showScreen('home',{replace:true});restoreRewards();renderLevels();render();renderLives();renderRescue();}catch(_){}finally{sessionRestoring=false;}
   }
   function commitSession(){
-    sessionDirty=false;if(sessionRestoring||!lifeFeature)return true;
+    sessionDirty=false;if(fullResetPending)return false;if(sessionRestoring||!lifeFeature)return true;
     try{captureGame();session.commit(saved,lifeFeature);if(eventState)try{localStorage.setItem(eventKey,JSON.stringify(eventState));}catch(_){}lifeWriteFailed=false;lifeLastPersistUtc=lifeFeature.life.lastSeenUtc;if(pendingLifeReceipt&&lifeFeature.testWallet.processedTransactions[pendingLifeReceipt.receipt.transactionId])pendingLifeReceipt=null;if(sessionPlaytestDirty)persistPlaytest();return true;}
     catch(_){eventState=sessionEventBaseline;
       // Observation events describe committed moves only. Never rewind an already
@@ -558,10 +560,10 @@ window.HexSessionStore.boot(function startApp(session) {
       if(sessionPlaytestDirty&&sessionPlaytestBaseline)try{playtest=createPlaytest(sessionPlaytestBaseline);}catch(_){}
       sessionPlaytestDirty=false;restoreDurable();lifeWriteFailed=true;if(pendingLifeReceipt){pendingLifeProvider=pendingLifeReceipt.receipt.transactionId;$('life-provider-title').textContent='Ödülün kaydedilmeyi bekliyor';$('life-provider-description').textContent='Tamamlanan test işlemi kaydedilemedi. Yeniden denediğinde aynı ödül bir kez kaydedilecek.';openModal('life-provider-dialog');}toast('İşlem kaydedilemedi. Tahtan ve canların son güvenli kayda döndürüldü. Sayfayı yenileyip tekrar dene.');return false;}
   }
-  function stageSession(){sessionDirty=true;return sessionDepth>0?true:commitSession();}
+  function stageSession(){if(fullResetPending)return false;sessionDirty=true;return sessionDepth>0?true:commitSession();}
   function lifeReady(){return !!(lifeFeature&&lifeManager);}
   function lifeCommit(next,{quiet=false}={}){
-    if(sessionRestoring)return false;
+    if(sessionRestoring||fullResetPending)return false;
     const transactions=Object.values(next.provider.transactions).filter(item=>item.status==='cancelled'||item.status==='unavailable'||item.status==='completed'&&Object.prototype.hasOwnProperty.call(next.testWallet.processedTransactions,item.transactionId)).sort((a,b)=>(a.createdAtUtc||0)-(b.createdAtUtc||0));
     if(transactions.length>128&&window.HexLifeProviders.finalize){next=lifeClone(next);for(const item of transactions.slice(0,-128)){next.provider=window.HexLifeProviders.finalize(next.provider,item.transactionId);if(window.HexLifeProviders.isFinalized(next.provider,item.transactionId))delete next.testWallet.processedTransactions[item.transactionId];}}
     lifeFeature=next;return stageSession();
@@ -602,6 +604,10 @@ window.HexSessionStore.boot(function startApp(session) {
     if(!engine||engine.status==='playing'||!activeAttempt||attemptPending||saveBlocked)return;
     lifeSettle({metadata:activeAttempt,level:activeLevel,game:engine},engine.status==='won'?'won':'failed');
   }
+  function freshLifeFeature(manager){
+    let random=0;try{const value=new Uint32Array(1);window.crypto?.getRandomValues(value);random=value[0];}catch(_){}
+    return window.HexLifePrototype.createState(manager.createState(),{providerNamespace:`dev-${lifeClock().toString(36)}-${random.toString(16)}`,gold:window.HEX_LIVES_CONFIG.development.initialTestGold,adAvailable:true});
+  }
   function initializeLives(){
     if(!window.HexLives||!window.HEX_LIVES_CONFIG||!window.HexLifeProviders||!window.HexLifePrototype){lifeIssue='modules';return;}
     try{
@@ -609,8 +615,7 @@ window.HexSessionStore.boot(function startApp(session) {
       const previous=readSave(livesKey),existed=previous!==null||(()=>{try{return localStorage.getItem(livesKey)!==null;}catch(_){return false;}})();
       if(existed){lifeFeature=window.HexLifePrototype.validate(previous,lifeManager);}
       else{
-        let random=0;try{const value=new Uint32Array(1);window.crypto?.getRandomValues(value);random=value[0];}catch(_){}
-        lifeFeature=window.HexLifePrototype.createState(lifeManager.createState(),{providerNamespace:`dev-${lifeClock().toString(36)}-${random.toString(16)}`,gold:window.HEX_LIVES_CONFIG.development.initialTestGold,adAvailable:true});
+        lifeFeature=freshLifeFeature(lifeManager);
         // Only existing pre-feature terminal boards are historical. Later interrupted
         // failure writes are recovered and charged once using their attempt IDs.
         for(let index=0;index<levels.length;index++)try{const entry=restoredStage(index);if(entry&&entry.game.status!=='playing')lifeFeature.life=lifeManager.acknowledgeHistoricalAttempt(lifeFeature.life,lifeContext(entry,entry.game.status==='won'?'won':'failed')).state;}catch(_){}
@@ -744,7 +749,7 @@ window.HexSessionStore.boot(function startApp(session) {
     window.HexLifeTestAdapter=Object.freeze({applyReceipt:receipt=>sessionAction(()=>applyLifeReceipt(receipt))});
   }
   function persist() {
-    if(sessionRestoring)return false;
+    if(sessionRestoring||fullResetPending)return false;
     captureGame();
     // A terminal snapshot and its once-only life result share the same write.
     if(lifeReady()&&engine&&activeAttempt&&!attemptPending&&!saveBlocked&&engine.status!=='playing'){
@@ -805,7 +810,7 @@ window.HexSessionStore.boot(function startApp(session) {
   on(document,'dblclick',preventZoom);
   on(window,'keydown',event=>{if((event.ctrlKey||event.metaKey)&&['+','-','=','0'].includes(event.key))preventZoom(event);});
   function topDialog(){return [...modalStack].reverse().map(id=>$(id)).find(dialog=>dialog.open)||[...document.querySelectorAll('dialog[open]')].at(-1)||null;}
-  const gameInputAllowed=()=>canOpen(active)&&!lifeWriteFailed&&!attemptPending&&!saveBlocked&&screen==='game'&&!paused&&!topDialog()&&!lifeDiscarded();
+  const gameInputAllowed=()=>!fullResetPending&&canOpen(active)&&!lifeWriteFailed&&!attemptPending&&!saveBlocked&&screen==='game'&&!paused&&!topDialog()&&!lifeDiscarded();
   function syncAudio(){document.body.classList.toggle('reduce-motion',reduceMotion());audio?.configure({sfx:saved.sound,music:saved.preferences.music,volume:saved.preferences.volume});audio?.setActive(!document.hidden&&!paused);}
   function unlockAudio(){syncAudio();audio?.unlock().catch(()=>{});}
   function openModal(id){
@@ -992,7 +997,13 @@ window.HexSessionStore.boot(function startApp(session) {
         if(result.applied)lastEconomyReward={...result.reward,attemptId:activeAttempt.attemptId};
       }
       syncCompletedCampaign();
-    }else if(!saved.done.includes(active)){saved.done.push(active);saved.done.sort((a,b)=>a-b);}
+    }else{
+      if(played&&active===tutorialCount-1){
+        const result=economyManager.claimWelcome(saved.economy,{levelId:activeLevel.id,attemptId:activeAttempt?.attemptId,status:'won',verified:true});
+        saved.economy=result.state;
+      }
+      if(!saved.done.includes(active)){saved.done.push(active);saved.done.sort((a,b)=>a-b);}
+    }
     recordWin(active,engine,played);
   }
   function loadLevel(index,fresh=false,{activate=false}={}) {
@@ -1330,10 +1341,17 @@ window.HexSessionStore.boot(function startApp(session) {
   function showVictory(){
     const final=active===levels.length-1,learning=isTutorial();
     $('win-dialog').dataset.learning=learning?'tutorial':'';
+    const welcomeConfig=window.HEX_ECONOMY_CONFIG.welcome||{version:'onboarding-v1',gold:20};
+    const welcomeRow=saved.economy?.transactions?.[`welcome:${window.HEX_ECONOMY_CONFIG.campaignId}:${welcomeConfig.version}`];
+    const welcome=learning&&active===tutorialCount-1&&welcomeRow?.kind==='welcome'&&welcomeRow.source==='onboarding'&&welcomeRow.pricesVersion===welcomeConfig.version&&welcomeRow.attemptId===activeAttempt?.attemptId;
+    $('win-dialog').dataset.welcome=String(!!welcome);
+    $('welcome-reward').hidden=!welcome;
+    $('welcome-gold').textContent=`+${welcomeConfig.gold} Altın`;
     $('win-eyebrow').textContent=final?'YOLCULUK TAMAMLANDI':`${stageLabel(active)} TAMAMLANDI`;
     $('win-title').textContent=learning?(active===0?'İlk alan yeşerdi!':'Hazırsın!'):final?'Usta işi!':'Harika eşleşme!';
     if(completionReward&&!learning)$('win-title').textContent=rewardLabel(completionReward);
     $('win-description').textContent=learning?(active===0?'Aynı sayıları eşleştirdin, altlarındaki yerleri yeşerttin.':'Puanı topladın, her yeri yeşerttin. İlk bölüm seni bekliyor.'):final?'10 bölümün hepsini bitirdin!':`${engine.movesLeft} hamlen kaldı. Bölümü bitirdin!`;
+    if(welcome){$('win-eyebrow').textContent='BAŞLANGIÇ HEDİYEN';$('win-title').textContent='İlk hediyen hazır!';$('win-description').textContent='İki görevi de tamamladın. Bu Altın senin!';}
     $('win-total').textContent=engine.score;$('win-moves').textContent=engine.movesLeft;$('win-assisted').hidden=learning||!engine.assisted;
     const nextText=economyView()?.campaignComplete?'Bahçeni gör':active===0?'Birlikte devam edelim':active===1?'İlk bölüme başla':`Bölüm ${pad(active-tutorialCount+2)} ile devam et`;
     $('next').innerHTML=`${nextText} ${icon('arrow')}`;
@@ -1387,7 +1405,7 @@ window.HexSessionStore.boot(function startApp(session) {
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=33');
+            job.worker=new Worker('./hint-worker.js?v=34');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:activeLevel,snapshot:engine.snapshot()});
@@ -1565,6 +1583,31 @@ window.HexSessionStore.boot(function startApp(session) {
     for(let index=0;index<levels.length;index++){if(campaignCleared(index))continue;discardStage(index,'progress_reset');delete saved.boards[index];delete saved.attempts[index];delete saved.attemptStats[index];delete saved.records[index];}
     cancelPresentation();cancelHint();closeAllDialogs();saved.done=saved.done.filter(index=>campaignCleared(index));saved.guideAcks=[];saved.current=nextCampaignIndex()??0;active=saved.current;engine=null;activeAttempt=null;attemptPending=true;loadLevel(active);showScreen('home',{replace:true});toast('Açık denemeler silindi. Tamamlanan bölümlerin ve bütün ödüllerin korundu.');
   });
+  on($('settings-full-reset'),'click',()=>openModal('full-reset-dialog'));
+  on($('full-reset-confirm'),'click',()=>{
+    if(fullResetPending)return;
+    lessonDemo.stop();cancelPresentation();cancelHint();cancelAssistance();stopPointer();clearTimeout(terminalTimer);epoch++;
+    let reset,freshGame,freshEnergy;
+    try{
+      freshGame=window.HexGameSave.defaults();
+      freshEnergy=freshLifeFeature(window.HexLives.createManager(window.HEX_LIVES_CONFIG,{clock:lifeClock}));
+      reset=session.resetForTesting(freshGame,freshEnergy);
+    }catch(_){toast('Sıfırlama kaydedilemedi. Mevcut verilerin korundu. Tekrar deneyebilirsin.');return;}
+    // The new profile is already durable. Freeze every old callback before
+    // navigation can fire pagehide, blur, provider or observation handlers.
+    fullResetPending=true;sessionDirty=false;sessionPlaytestDirty=false;
+    saved=freshGame;lifeFeature=freshEnergy;engine=null;activeAttempt=null;attemptPending=true;
+    pendingRescueReceipt=null;pendingLifeReceipt=null;eventState=null;playtest=null;
+    try{audio?.stop();}catch(_){} // Optional audio cannot turn a saved reset into a reported failure.
+    $('full-reset-confirm').disabled=true;$('full-reset-confirm').textContent='Yeniden açılıyor…';
+    if(reset.cleanupFailures.length){
+      $('full-reset-description').textContent='Yeni oyuncu profilin kaydedildi. Bazı eski yerel test dosyaları temizlenemedi; bu dosyalar bölüm ilerlemeni geri getiremez. Yeni oyunu açarak devam edebilirsin.';
+      $('full-reset-cancel').hidden=true;$('full-reset-confirm').disabled=false;$('full-reset-confirm').textContent='Yeni oyunu aç';
+      $('full-reset-confirm').onclick=()=>window.location.reload();return;
+    }
+    window.location.reload();
+  });
+  $('full-reset-dialog')?.addEventListener('cancel',event=>{if(fullResetPending)event.preventDefault();});
   on(window,'popstate',event=>{
     if(topDialog()){closeModal(topDialog());try{history.pushState({screen},'','#'+screen);}catch(_){}return;}
     const next=event.state?.screen||location.hash.slice(1)||'home';showScreen(next,{historyChange:false});
@@ -1586,13 +1629,13 @@ window.HexSessionStore.boot(function startApp(session) {
   motionQuery?.addEventListener?.('change',()=>{if(saved.preferences.motion==='auto'){if(reduceMotion()){clearInvalidSwap();if(presentation)finishPresentation(presentation);}syncAudio();refreshLessonDemo();}});
   function bindPlaytest(){
     if(!playtest)return;
-    const toggle=$('setting-playtest');if(toggle){toggle.checked=playtest.snapshot().enabled;toggle.addEventListener('change',()=>{playtest.setEnabled(toggle.checked);syncPlaytestActivity();persistPlaytest();toast(toggle.checked?'Yerel oyuncu testi kaydı açık. Veri gönderilmez.':'Yerel oyuncu testi kaydı kapalı.');});}
-    $('playtest-export')?.addEventListener('click',()=>{const json=JSON.stringify(playtest.exportData(),null,2),blob=new Blob([json],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='hexrota-playtest.json';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);});
-    $('playtest-clear')?.addEventListener('click',()=>{playtest.clear();persistPlaytest();toast('Yalnızca oyuncu testi kaydı temizlendi.');});
-    window.addEventListener('blur',()=>{playtest.setActivity({playing:false,attemptId:activeAttempt?.attemptId||null});persistPlaytest();});
+    const toggle=$('setting-playtest');if(toggle){toggle.checked=playtest.snapshot().enabled;toggle.addEventListener('change',()=>{if(fullResetPending||!playtest)return;playtest.setEnabled(toggle.checked);syncPlaytestActivity();persistPlaytest();toast(toggle.checked?'Yerel oyuncu testi kaydı açık. Veri gönderilmez.':'Yerel oyuncu testi kaydı kapalı.');});}
+    $('playtest-export')?.addEventListener('click',()=>{if(fullResetPending||!playtest)return;const json=JSON.stringify(playtest.exportData(),null,2),blob=new Blob([json],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='hexrota-playtest.json';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+    $('playtest-clear')?.addEventListener('click',()=>{if(fullResetPending||!playtest)return;playtest.clear();persistPlaytest();toast('Yalnızca oyuncu testi kaydı temizlendi.');});
+    window.addEventListener('blur',()=>{if(fullResetPending||!playtest)return;playtest.setActivity({playing:false,attemptId:activeAttempt?.attemptId||null});persistPlaytest();});
     window.addEventListener('focus',syncPlaytestActivity);
     document.addEventListener('visibilitychange',()=>{syncPlaytestActivity();persistPlaytest();});
-    window.addEventListener('pagehide',()=>{playtest.setActivity({playing:false,attemptId:activeAttempt?.attemptId||null});persistPlaytest();});
+    window.addEventListener('pagehide',()=>{if(fullResetPending||!playtest)return;playtest.setActivity({playing:false,attemptId:activeAttempt?.attemptId||null});persistPlaytest();});
   }
   sessionAction(()=>{try{initializeRescue();initializeEconomy();}catch(error){economyIssue='invalid';throw error;}initializeLives();bindLivesUI();bindRescueUI();hydrateRecords();renderSound();loadLevel(active);showScreen('home',{replace:true});bindPlaytest();});
   if(migrated)toast('İlerlemen korundu. Öğreticileri yolculuk menüsünden yeniden oynayabilirsin.');

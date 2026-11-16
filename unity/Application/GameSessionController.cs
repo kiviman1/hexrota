@@ -210,6 +210,11 @@ namespace Hexrota.Application
                 game["economy"] = completion["state"];
                 SyncCompletedCampaign();
             }
+            else if (played && engine.Status == "won" && active == tutorialCount - 1)
+            {
+                var welcome = economy.ClaimWelcome(W.Map(game["economy"]), W.Obj("levelId", activeLevel["id"], "attemptId", metadata["attemptId"], "status", "won", "verified", true));
+                game["economy"] = welcome["state"];
+            }
         }
         private Dictionary<string, object> Context(Entry entry)
         {

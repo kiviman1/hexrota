@@ -12,6 +12,9 @@ namespace Hexrota.Economy
     public sealed class EconomyManager
     {
         private static readonly string[] Items = { "greenBrush", "colorKey" };
+        private const string WelcomeVersion = "onboarding-v1";
+        // A published grant version keeps its historical value when prices change.
+        private const long WelcomeGold = 20;
         private static readonly string[] LegacyKeys = { "hexrota-match-v5", "hexrota-match-v4", "hexrota-match-v3", "hexrota-match-v2" };
         private readonly Dictionary<string, object> configuration;
         private readonly List<object> levels;
@@ -41,7 +44,8 @@ namespace Hexrota.Economy
         public static bool ValidateConfig(object config)
         {
             const string error = "invalid_economy_config";
-            Need(Exact(config, "schemaVersion", "rulesVersion", "pricesVersion", "campaignId", "levelIds", "tutorialIds", "tutorialCount", "reward", "inventory", "rescue", "botanical") && Is(Get(config, "schemaVersion"), 1) && Is(Get(config, "rulesVersion"), "economy-v1") && Token(Get(config, "pricesVersion")) && Token(Get(config, "campaignId")), error);
+            Need((Exact(config, "schemaVersion", "rulesVersion", "pricesVersion", "campaignId", "levelIds", "tutorialIds", "tutorialCount", "reward", "inventory", "rescue", "botanical") || Exact(config, "schemaVersion", "rulesVersion", "pricesVersion", "campaignId", "levelIds", "tutorialIds", "tutorialCount", "reward", "inventory", "rescue", "botanical", "welcome")) && Is(Get(config, "schemaVersion"), 1) && Is(Get(config, "rulesVersion"), "economy-v1") && Token(Get(config, "pricesVersion")) && Token(Get(config, "campaignId")), error);
+            if (W.Has(config, "welcome")) Need(Exact(Get(config, "welcome"), "version", "gold") && Is(Get(Get(config, "welcome"), "version"), WelcomeVersion) && Is(Get(Get(config, "welcome"), "gold"), WelcomeGold), error);
             object levelData = Get(config, "levelIds"), tutorialData = Get(config, "tutorialIds");
             Need(W.IsList(levelData) && Array(levelData).Count > 0 && Array(levelData).Select((id, index) => Int(id) && Number(id) > 0 && (index == 0 || Number(id) > Number(Array(levelData)[index - 1]))).All(value => value) && W.IsList(tutorialData) && Array(tutorialData).Count == 2 && Array(tutorialData).All(Token) && !Is(Array(tutorialData)[0], Array(tutorialData)[1]) && Is(Get(config, "tutorialCount"), 2), error);
             object reward = Get(config, "reward"), inventory = Get(config, "inventory");
@@ -63,6 +67,7 @@ namespace Hexrota.Economy
         private object Next(List<object> cleared) { return levels.FirstOrDefault(id => !Includes(cleared, id)); }
         private string ClearId(object id) { return "clear:" + configuration["campaignId"] + ":" + W.JsString(id); }
         private string GiftId(object id, string item) { return "gift:" + configuration["campaignId"] + ":" + W.JsString(id) + ":" + item; }
+        private string WelcomeId() { return "welcome:" + configuration["campaignId"] + ":" + WelcomeVersion; }
         private Dictionary<string, object> Item(string id) { return Map(Get(configuration["inventory"], id)); }
         private static Dictionary<string, object> EmptyInventory() { return W.Obj("greenBrush", 0, "colorKey", 0); }
         public Dictionary<string, object> Config() { return W.Copy(configuration); }
@@ -89,6 +94,11 @@ namespace Hexrota.Economy
                     Need(Known(level) && Token(attempt) && itemValue == null && cost == 0 && priceVersion == null && id == ClearId(level) && !Includes(claimed, level) && (Is(Get(row, "source"), "gameplay") || Is(Get(row, "source"), "legacy")), "invalid_economy_ledger");
                     Need(Is(Get(row, "source"), "legacy") ? Includes(Array(Get(migration, "verifiedLevelIds")), level) : Is(Next(cleared), level), "invalid_economy_ledger");
                     if (!Includes(cleared, level)) cleared.Add(level); claimed.Add(level); gold += N(configuration["reward"], "gold"); stars += N(configuration["reward"], "stars");
+                }
+                else if (Is(Get(row, "kind"), "welcome"))
+                {
+                    Need(id == WelcomeId() && level == null && Token(attempt) && itemValue == null && Is(Get(row, "source"), "onboarding") && Is(Get(row, "assisted"), false) && cost == 0 && Is(priceVersion, WelcomeVersion), "invalid_economy_ledger");
+                    gold += WelcomeGold;
                 }
                 else if (Is(Get(row, "kind"), "gift"))
                 {
@@ -162,6 +172,21 @@ namespace Hexrota.Economy
             if (Includes(Array(state["clearedLevelIds"]), level)) return Result(state, false, "already_cleared"); if (!Is(level, Next(Array(state["clearedLevelIds"])))) return Result(state, false, "level_locked"); if (!Is(Get(context, "status"), "won")) return Result(state, false, "not_won"); if (!Is(Get(context, "verified"), true)) return Result(state, false, "unverified_win");
             var reward = Grant(state, level, (string)context["attemptId"], "gameplay", Is(Get(context, "assisted"), true)); Validate(state); return Result(state, true, "level_claimed", reward);
         }
+        // The application supplies verified=true only after replay-valid T2 completion.
+        // This is a single welcome grant, separate from repeatable tutorial completion.
+        public Dictionary<string, object> ClaimWelcome(object raw, Dictionary<string, object> context)
+        {
+            var state = Restore(raw);
+            Need(Exact(context, "levelId", "attemptId", "status", "verified") && Token(Get(context, "attemptId")) && new[] { "won", "lost", "playing" }.Any(status => Is(Get(context, "status"), status)) && Get(context, "verified") is bool, "invalid_welcome_context");
+            if (!Is(Get(context, "levelId"), tutorials[1])) return Result(state, false, "welcome_unavailable");
+            object prior = Get(state["transactions"], WelcomeId());
+            if (prior != null) return Result(state, false, Is(Get(prior, "kind"), "welcome") ? "welcome_already_claimed" : "transaction_conflict");
+            if (!Is(Get(context, "status"), "won")) return Result(state, false, "not_won");
+            if (!Is(Get(context, "verified"), true)) return Result(state, false, "unverified_win");
+            var reward = W.Obj("gold", WelcomeGold, "stars", 0, "inventory", EmptyInventory());
+            Append(state, WelcomeId(), Row("welcome", null, context["attemptId"], null, "onboarding", false, 0, WelcomeVersion));
+            Add(state, "gold", WelcomeGold); Validate(state); return Result(state, true, "welcome_claimed", reward);
+        }
         public bool CanEnter(object raw, object level) { var state = Restore(raw); return Includes(tutorials, level) || Known(level) && Is(Next(Array(state["clearedLevelIds"])), level); }
         public object NextLevel(object raw) { return Next(Array(Restore(raw)["clearedLevelIds"])); }
         public Dictionary<string, object> View(object raw)
@@ -174,7 +199,7 @@ namespace Hexrota.Economy
         private Dictionary<string, object> Operation(object raw, Dictionary<string, object> context, string kind)
         {
             var state = Restore(raw); string[] allowed = kind == "purchase" ? new[] { "operationId", "itemId" } : kind == "use" ? new[] { "operationId", "itemId", "attemptId", "levelId" } : new[] { "operationId", "attemptId", "levelId" };
-            Need(Exact(context, allowed) && Token(Get(context, "operationId")) && !((string)Get(context, "operationId")).StartsWith("clear:", StringComparison.Ordinal) && !((string)Get(context, "operationId")).StartsWith("gift:", StringComparison.Ordinal), "invalid_economy_operation"); if (kind != "rescue") Need(Items.Any(item => Is(Get(context, "itemId"), item)), "invalid_economy_item"); if (kind != "purchase") Need(Known(Get(context, "levelId")) && Token(Get(context, "attemptId")), "invalid_economy_context");
+            Need(Exact(context, allowed) && Token(Get(context, "operationId")) && !((string)Get(context, "operationId")).StartsWith("clear:", StringComparison.Ordinal) && !((string)Get(context, "operationId")).StartsWith("gift:", StringComparison.Ordinal) && !((string)Get(context, "operationId")).StartsWith("welcome:", StringComparison.Ordinal), "invalid_economy_operation"); if (kind != "rescue") Need(Items.Any(item => Is(Get(context, "itemId"), item)), "invalid_economy_item"); if (kind != "purchase") Need(Known(Get(context, "levelId")) && Token(Get(context, "attemptId")), "invalid_economy_context");
             string itemId = kind == "rescue" ? "rescue5" : (string)context["itemId"], operationId = (string)context["operationId"]; object level = kind == "purchase" ? null : context["levelId"], attempt = kind == "purchase" ? null : context["attemptId"];
             object prior = Get(state["transactions"], operationId); if (prior != null) return Result(state, false, Is(Get(prior, "kind"), kind) && Is(Get(prior, "itemId"), itemId) && Is(Get(prior, "levelId"), level) && Is(Get(prior, "attemptId"), attempt) ? "duplicate_transaction" : "transaction_conflict");
             if (kind != "purchase" && !Is(Next(Array(state["clearedLevelIds"])), level)) return Result(state, false, Includes(Array(state["clearedLevelIds"]), level) ? "already_cleared" : "level_locked");

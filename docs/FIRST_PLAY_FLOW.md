@@ -1,6 +1,6 @@
 # Hexrota — ilk açılış ve oynayarak öğrenme
 
-Bu değişiklik ilk oynanışı sadeleştirir. `classic-v4`, sabit T1/T2 verileri, bölüm hedefleri, can/ekonomi kuralları ve kayıt sözleşmeleri değişmez.
+İlk oynanış sadeleştirilir; `classic-v4`, sabit T1/T2 verileri, bölüm hedefleri, can ve kampanya ilk-tamamlama kuralları korunur. Son kullanıcı isteğiyle ayrı, tek seferlik başlangıç hediyesi ve açık onaylı prototip veri silme işlemi eklenmiştir. Mevcut snapshot/profil zarfı sürümleri ve geçerli eski kayıtlar korunur.
 
 ## Akış
 
@@ -11,8 +11,8 @@ Bu değişiklik ilk oynanışı sadeleştirir. `classic-v4`, sabit T1/T2 veriler
 | İlk sonuç | Kısa sonuç cümlesi ve **Devam et** | Oyuncu sonucu gördüğünü onaylamadan sonraki zorunlu kaydırma açılmaz. Mevcut `0:1` öğretici onayı korunur. |
 | T1 devamı | Bir eşleşme daha, ardından son iki yer | Yeni taşlar gelirken yeşeren yerlerin kaldığı gösterilir. Yedi yer yeşerince tek devam düğmesi çıkar. |
 | T2 | İki hedef ve 6 hamle; sırayla çift kat, zincir ve hedef puan | İki noktanın iki eşleşme istediği, zincirin ek hamle harcamadığı ve puan ile yeşil alanın birlikte tamamlanması öğretilir. Mevcut `1:1` / `1:3` onayları korunur. |
-| T2 sonrası | **Hazırsın! → İlk bölüme başla** | İlk bağımsız kampanya bölümüne geçilir. |
-| İlk ana bölüm kazanımı | Mevcut gerçek **+20 Altın / +1 yıldız** ödülü | Mevcut atomik, tek seferlik ekonomi işlemi kullanılır. Öğreticiler Altın, yıldız veya güçlendirici vermez. |
+| T2 sonrası | **İlk hediyen hazır!**, açılan sandık ve **+20 Altın → İlk bölüme başla** | İlk gerçek kazanımda ayrı başlangıç hediyesi aynı atomik kayda işlenir. Yıldız verilmez. Öğreticiyi tekrar oynamak ikinci hediye vermez. |
+| İlk ana bölüm kazanımı | Mevcut gerçek **+20 Altın / +1 yıldız** ödülü | Mevcut atomik, tek seferlik ekonomi işlemi kullanılır. Kampanya ödülü başlangıç hediyesinden ayrıdır; öğretici tekrarı yeni ödül vermez. |
 
 İlk davet yalnız yüklenen kayıtta tamamlanma, tahta, deneme metadata'sı ve deneme seri sayacı yoksa gösterilir. Kontrol açılıştaki ön izleme hazırlanmadan yapılır. Mevcut oyuncular normal menüye ve kayıtlarına döner; bozuk kayıt yeni oyuncu sayılmaz. Yeni deneme ancak oyuncu düğmeye bastığında başlatılır.
 
@@ -33,6 +33,10 @@ Bu değişiklik ilk oynanışı sadeleştirir. `classic-v4`, sabit T1/T2 veriler
 
 Yeni tarayıcı testi 320×568, 390×844, 844×390 ve 1280×900 görünümünde ilk açılışı; gerçek dokunuşlarla iki öğreticiyi, ilk kampanya ödülünü ve yavaş gösterimde piksel değişimini kontrol eder. Gösterim öncesi/sonrası motor snapshot'ı karşılaştırılır. Mevcut mobil giriş, takas görünürlüğü, atomik kayıt ve C# karşılaştırmaları ayrıca çalıştırılır.
 
-PWA paketi v33'tür; yeni modül HTML bağımlılık sırasına, çevrimdışı önbelleğe ve test yükleyicisine eklenmiştir. Bu bir kayıt veya oyun kuralı sürümü değildir. Yalnız feature branch / Preview kullanılır; Production dağıtımı değişmez.
+PWA paketi v34'tür; yeni modül HTML bağımlılık sırasına, çevrimdışı önbelleğe ve test yükleyicisine eklenmiştir. Bu bir kayıt veya oyun kuralı sürümü değildir. Dağıtım önce ayrı feature PR / Preview ile doğrulanır; Production yayını için kullanıcı onayı gerekir.
 
 Otomatik WebKit testi fiziksel iPhone Safari testi yerine geçmez. İlk gerçek oyuncu denemesinde açıklama yapmadan şu üç gözlem alınmalı: ilk doğru kaydırma, puan ile yeşil alanın farkını anlatabilme ve ilk ana bölümde bağımsız bir eşleşme. Takılma varsa önce hangi ekrana/dokunuşa takıldıkları kaydedilmeli; bölüm dengesi bu sunum değişikliğinin içinde değiştirilmemelidir.
+
+## Yeniden deneme için tam sıfırlama
+
+Ayarlar → Geliştirme testi → **Test için her şeyi sıfırla**. Ayrı onaydan sonra öğreticiler, bölüm ilerlemesi, Altın, yıldız, çanta, can, TEST cüzdanı ve yerel gözlemler yeni oyuncu durumuna döner; sayfa otomatik yeniden açılır. Normal açık-deneme sıfırlaması ve ödül hakları değişmez. Teknik güvenlik ve testler: `WELCOME_REWARD_AND_TEST_RESET.md`.

@@ -1,6 +1,6 @@
 # Altın, yıldız ve envanter — 9.5
 
-Bağlayıcı ürün kararı [ONE_TIME_PROGRESSION_ECONOMY_9_5.md](ONE_TIME_PROGRESSION_ECONOMY_9_5.md) içindedir. Bu belge önceki başlangıç Altını, öğretici ödülü ve tekrar oynama ödülü önerilerinin yerini alır. Ana kampanya doğrusal ve tek tamamlamalıdır. Bütün mevcut bölümlerin ücretsiz kazanma yolları korunur; yardım satın almak ilerleme şartı değildir.
+Bağlayıcı ürün kararı [ONE_TIME_PROGRESSION_ECONOMY_9_5.md](ONE_TIME_PROGRESSION_ECONOMY_9_5.md) içindedir. 16 Kasım ilk açılış kararıyla tek seferlik 20 Altın başlangıç hediyesi eklenmiştir; tekrar oynama ödülü yoktur. Ana kampanya doğrusal ve tek tamamlamalıdır. Bütün mevcut bölümlerin ücretsiz kazanma yolları korunur; yardım satın almak ilerleme şartı değildir.
 
 ## Uygulama aşamaları
 
@@ -15,7 +15,7 @@ A: kalıcı tamamlama, doğrulanmış ilk kazanma ödülü, migration, bakiye/en
 | 6. bölümün ilk kazanımı | 3 Renk Anahtarı | `gift:main:6:colorKey` |
 | Öğreticiler, kayıp, ipucu, yeniden deneme, reset | Ödül yok | Yeni hak oluşmaz |
 
-Yeni oyun Altını sıfırdır. On bölümün toplam ilk kazanım kaynağı 200 Altın ve 10 yıldızdır. Varyant, deneme veya veri sürümü değişince yeniden hak doğmaz. Yıldız harcanamaz/satılamaz; 2/5/8/10 yıldız çiçek/bitki/ağaç/tam bahçe görünümünü açar. İlk üç ve altıncı bölüm hediyeleri yalnız bir kez verilir. Öğreticiler ücretsiz ve ödülsüz yeniden oynanır; tamamlanmış ana bölüm tekrar oynanamaz. Menü yalnız sıradaki açık ana bölümü sunar. Kampanya sonunda “Bahçeni gör / Yeni bölümler yakında” gösterilir.
+Yeni oyun Altını sıfırdır. On bölümün toplam ilk kazanım kaynağı 200 Altın ve 10 yıldızdır. Varyant, deneme veya veri sürümü değişince yeniden hak doğmaz. Yıldız harcanamaz/satılamaz; 2/5/8/10 yıldız çiçek/bitki/ağaç/tam bahçe görünümünü açar. İlk üç ve altıncı bölüm hediyeleri yalnız bir kez verilir. İlk gerçek T2 kazanımında ayrıca tek sefer 20 Altın verilir; toplam kaynak 220 Altın, yıldız tavanı 10 olur. Öğreticiler ücretsiz ve yeniden ödül vermeden oynanır; tamamlanmış ana bölüm tekrar oynanamaz. Menü yalnız sıradaki açık ana bölümü sunar. Kampanya sonunda “Bahçeni gör / Yeni bölümler yakında” gösterilir.
 
 ## Ayrı TEST cüzdanı
 
@@ -32,7 +32,7 @@ Kanonik kaynak `data/economy-config-9-5.json`; üretilen JS/C# kopyaları `sync-
 | İkinci şans +5 hamle | 140 | Ana bölümün gerçek son takas kaybı; denemede 1 | Aynı Attempt ID ve tahta, tam 5 hamle |
 | Gönüllü TEST kurtarma reklamı | 0 | Ayrı UTC günde 2; aynı denemede 1 başarılı kurtarma | Yalnız doğrulanmış tamamlanmada +5 hamle |
 
-Ekonomide günlük Altın farmı, mağaza zorlaması, gerçek ödeme, canlı reklam, yeni başlangıç güçlendiricisi veya +3 hamle ürünü yoktur. Gelecekte kozmetik ve doğrulanmış gerçek ödeme ancak ayrı ürün/güven sözleşmesiyle eklenebilir. Mevcut 200 Altın toplam kaynağıyla 140 Altınlık kurtarma pahalıdır; hediye stokları dışındaki yardım sıklığı pilotta ölçülmelidir. Bu sınırlılık gizli taş manipülasyonu veya zorunlu ödeme ile çözülmez.
+Ekonomide günlük Altın farmı, mağaza zorlaması, gerçek ödeme, canlı reklam, yeni başlangıç güçlendiricisi veya +3 hamle ürünü yoktur. Gelecekte kozmetik ve doğrulanmış gerçek ödeme ancak ayrı ürün/güven sözleşmesiyle eklenebilir. Başlangıç hediyesi dahil 220 Altın toplam kaynağıyla 140 Altınlık kurtarma pahalıdır; hediye stokları dışındaki yardım sıklığı pilotta ölçülmelidir. Bu sınırlılık gizli taş manipülasyonu veya zorunlu ödeme ile çözülmez.
 
 ## Eski kayıtların tanınması
 
@@ -53,3 +53,5 @@ Yardımlar eski v4 geçmişine gizlenmez: sürümlü `assisted-v1` komut zarfı,
 Ödeme geçmişi, reklam seçimi ve Altın bakiyesi üretim RNG'si veya bölüm varyantını değiştiremez. Yardımlı ve yardımsız denemeler analizde ayrılmalıdır. Ledger ekonomik kanıttır; yerel analitik başarısızlığı oyunu geri alamaz. Hiçbir olay kişisel veri veya otomatik sunucu gönderimi içermez.
 
 Yerel JavaScript/C# ledger doğrulaması gerçek ödeme otoritesi değildir. Cihaz saati, değiştirilmiş uygulama veya tüm tarayıcı verisini elle silme karşısında sunucusuz kalıcı hesap hakkı garanti edilemez. Normal uygulama reseti ve eski UI/API yolları kapalıdır; hesap/cihaz taşıma ve tam veri silme ayrı ürün kararlarıdır. Pilot testte yardım fiyatları, tek kullanım sınırları ve gönüllü reklam sıklığı değerlendirilecek; canlı SDK, makbuz güveni ve uygulama mağazası ürünleri bu aşamada yoktur.
+
+Başlangıç sandığı ve yalnız prototip için tam veri silme sözleşmesi: [WELCOME_REWARD_AND_TEST_RESET.md](WELCOME_REWARD_AND_TEST_RESET.md). Normal “Açık denemeleri sıfırla” kalıcı ödülleri korur; yeni veri-silme işlemiyle karıştırılmaz.

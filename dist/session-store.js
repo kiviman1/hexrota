@@ -4,6 +4,9 @@
 (function(root){
  'use strict';
  const KEY='hexrota-profile-v2',GAME='hexrota-match-v5',ENERGY='hexrota-lives-v1',LOCK='hexrota-profile-writer-v2';
+ // Deliberate full-profile deletion for local prototype testing. Keep this list
+ // explicit: another application's storage and the live writer lock are not ours.
+ const RESET_KEYS=Object.freeze(['hexrota-match-v4','hexrota-match-v3','hexrota-match-v2','hexrota-v1','hexrota-events-v1','hexrota-playtest-v1']);
  const copy=value=>value==null?value:JSON.parse(JSON.stringify(value));
  const isMap=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
  function validateEnvelope(value){
@@ -45,7 +48,23 @@
    for(const [key,value]of [[GAME,game],[ENERGY,energy]])try{storage.setItem(key,JSON.stringify(value));}catch(_){}
    return current();
   }
-  return {read,contains,current,commit,get revision(){return revision;},revoke(){writable=false;}};
+  function resetForTesting(game,energy){
+   // The host supplies fresh, validated game/life defaults. Preserve the existing
+   // CAS and atomic game+energy boundary; never remove the authoritative key.
+   const profile=commit(game,energy);
+   // No stale callback in this document may resurrect the pre-reset game while
+   // the host reloads. The Web Lock itself is released on pagehide as before.
+   writable=false;
+   const cleanupFailures=[];
+   for(const key of RESET_KEYS)try{storage.removeItem(key);}catch(_){cleanupFailures.push(key);}
+   // Mirror writes are optional, but report repair failures for this explicit
+   // data-deletion action instead of suggesting every stored copy was removed.
+   for(const [key,value]of [[GAME,profile.game],[ENERGY,profile.energy]])try{
+    if(storage.getItem(key)!==JSON.stringify(value))cleanupFailures.push(key);
+   }catch(_){cleanupFailures.push(key);}
+   return {profile,cleanupFailures};
+  }
+  return {read,contains,current,commit,resetForTesting,get revision(){return revision;},revoke(){writable=false;}};
  }
  function boot(start){
   const w=root;

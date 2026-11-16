@@ -7,6 +7,7 @@
   "tutorialIds": ["learn-1", "learn-2"],
   "tutorialCount": 2,
   "reward": {"gold": 20, "stars": 1},
+  "welcome": {"version": "onboarding-v1", "gold": 20},
   "inventory": {
     "greenBrush": {"unlockAfterLevelId": 3, "gift": 3, "costGold": 70, "maxPerAttempt": 1},
     "colorKey": {"unlockAfterLevelId": 6, "gift": 3, "costGold": 90, "maxPerAttempt": 1}
