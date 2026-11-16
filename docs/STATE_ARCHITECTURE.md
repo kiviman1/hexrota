@@ -93,6 +93,12 @@ PR #24'ün portresi, üç sütunlu tek coach kartı, 118 px kart ve aynı board/
 
 İki öğretici, 10 ana bölüm, 40 varyant / 80 sertifika; classic-v4 ve yardımlı komut sonuçları; tekil hoş geldin/kampanya ödülleri; can/TEST Altını/envanter/ikinci şans; eski kayıtlar ve çevrimdışı kabuk değişmez. PWA cache kuşağı yeni betikler için güncellenebilir; bu bir oyun/kayıt sürümü değişikliği değildir.
 
+## Runtime değişmeden karakterizasyon kanıtı
+
+`npm test` baseline üzerinde geçti. `check-state-characterization.cjs` 11 gerçek uygulama grubu geçti. `check-state-browser.cjs` hem Chromium hem WebKit üzerinde 19/19 geçti: altı viewport, gerçek T1/T2/tekrar, native focus/Back/Escape, sıfır canla kayıt devamı, aynı denemede kurtarma, kayıt hatası, gerçek iki-sekme kilidi, WAAPI hatası, arka plan, görsel fallback ve gerçekten bağlantısı kesilmiş origin üzerinden çevrimdışı reload. İki tarayıcıda da sıfır pageerror; fiziksel cihaz testi değildir. Baseline çıktıları geçici test artifact'ları olarak ayrı tutulur; son refaktör koşumu bunların yerine eski sonuç diye raporlanmaz.
+
+`check-state-lifecycle.cjs` ayrı bir hedefli kırmızı testtir: baseline'da sentetik suspension sonrası eski win modalının açılması assertion'ında beklendiği gibi başarısız olur; kayıt/enerji/ödül ön koşulları geçer. Bu test Stage E düzeltmesiyle birlikte etkinleştirilecektir.
+
 ## B–F uygulama kaydı
 
 Bu bölüm aşamalar gerçek kod ve testlerle tamamlandıkça güncellenecek. Henüz pure core, yeni runtime veya tamamlanmış migration iddiası yoktur. Kamu API'leri, son sahiplik ve Unity eşlemesi uygulama tamamlandıktan sonra gerçek dosyalara göre yazılacaktır.
