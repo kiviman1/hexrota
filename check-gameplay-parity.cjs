@@ -79,6 +79,20 @@ function expectedCase(entry){
  const output={result:plain(result),after:observed(game)};if(entry.kind==='reshuffle')output.legalMoves=plain(game.legalMoves());return output;
 }
 for(const entry of fixture.cases)request({operation:'case',vector:entry},expectedCase(entry),entry.id);
+// Audit 9.9 adds standalone recovery boundaries without modifying the archived
+// 71 mechanics goldens or the published level/variant identities.
+const recovery=JSON.parse(fs.readFileSync(path.join(root,'fixtures/dead-board-vectors-9-9.json'),'utf8'));
+assert.equal(recovery.schemaVersion,1);assert.equal(recovery.rulesVersion,'classic-v4');assert.equal(recovery.cases.length,4);assert.equal(recovery.failureCases.length,1);
+for(const entry of recovery.cases)request({operation:'case',vector:entry},expectedCase(entry),entry.id);
+const knownGameplay=recovery.diagnosticCases.filter(entry=>entry.gameplayVector);
+for(const entry of knownGameplay)request({operation:'case',vector:entry.gameplayVector},expectedCase(entry.gameplayVector),entry.id+' known-issue parity, NOT a healthy recovery guarantee');
+for(const entry of recovery.failureCases){
+ const game=injected(entry.level,entry.state);
+ assert.throws(()=>game._ensurePlayable(),error=>error.message===entry.expectedError.message);
+ assert.deepEqual(observed(game),entry.afterError,'raw helper failure state is explicitly characterized, not called atomic');
+ request({operation:'case',vector:entry},null,entry.id);outcomes.at(-1).componentError=entry.expectedError;
+}
+
 // Prefix fixtures cover every variant, but phase 1 also runs all 80 complete
 // certified routes to ensure refill/replay agreement through their actual wins.
 for(const group of HEX_VARIANTS.levels)for(const variant of group.variants){
@@ -126,11 +140,13 @@ try{
  const results=text.trim().split(/\r?\n/).filter(Boolean).map(line=>JSON.parse(line));assert.equal(results.length,outcomes.length,'one real C# result for every request');
  for(const [index,expected]of outcomes.entries()){
   const actual=results[index];
-  if(expected.error){assert.equal(actual.error,true,expected.name+' C# must reject malformed/forged snapshot');assert.equal(actual.stateUnchanged,true,expected.name+' rejected restore preserves existing state');}
+  if(expected.componentError){assert.equal(actual.error,true,expected.name+' C# fails within bounded recovery');assert.equal(actual.errorType,expected.componentError.csharpErrorType);assert.equal(actual.message,expected.componentError.message);}
+  else if(expected.error){assert.equal(actual.error,true,expected.name+' C# must reject malformed/forged snapshot');assert.equal(actual.stateUnchanged,true,expected.name+' rejected restore preserves existing state');}
   else{assert(!actual.error,expected.name+': C# result '+(actual.message||''));assert.deepEqual(actual,expected.expected,expected.name+': complete C# JSON matches JavaScript/golden result');}
  }
  const rejects=outcomes.filter(row=>row.error).length;
- console.log(`C# gameplay parity passed: ${fixture.cases.length} shared mechanics cases + ${supplementalRoutes} full certified routes + ${offRouteRuns} off-route legal runs (${offRouteSwaps} swaps); ${swaps} total valid swaps, ${resumes} exact resumes, ${replays} explicit replays, ${cloneChecks} independent clone checks, ${swapCloneChecks} cloned next-swap comparisons, ${rejects} rejected core saves with unchanged prior state. All intermediate matches/refill/falls/RNG/layers/status JSON agrees. C# 7.3 compiled with .NET SDK ${sdk.version}.`);
+ console.log(`C# gameplay parity passed: ${fixture.cases.length} archived mechanics cases + ${recovery.cases.length} recovery cases/${recovery.failureCases.length} bounded component errors + ${supplementalRoutes} full certified routes + ${offRouteRuns} off-route legal runs (${offRouteSwaps} swaps); ${swaps} total valid swaps, ${resumes} exact resumes, ${replays} explicit replays, ${cloneChecks} independent clone checks, ${swapCloneChecks} cloned next-swap comparisons, ${rejects} rejected core saves with unchanged prior state. All intermediate matches/refill/falls/RNG/layers/status JSON agrees. C# 7.3 compiled with .NET SDK ${sdk.version}.`);
+ console.log('Known-issue configuration parity: '+knownGameplay.length+' complete comparisons; JS/C# agreement on unsupported single-palette output is NOT a healthy playable-board guarantee. Run node check-dead-board-recovery.cjs --diagnose for the red safety check.');
  console.log(`Explicit phase-1 scope: ${fixture.selectionCases.length} variant-selector vectors, ${fixture.rejectionCases.length} attempt-envelope rejection vectors and hint recommendations remain JavaScript checks in npm test; they are not claimed as C# ports.`);
 }catch(error){console.error(error.stack||error);process.exitCode=1;}
 finally{if(temp)fs.rmSync(temp,{recursive:true,force:true});}
