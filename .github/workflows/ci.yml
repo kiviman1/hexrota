@@ -433,11 +433,24 @@ jobs:
         env:
           HEXROTA_BROWSER: ${{ matrix.browser }}
           HEXROTA_STATE_SCREENSHOT_DIR: test-results/state-${{ matrix.browser }}
+      - name: Verify F-01 commits once and presentation cannot roll back durable commands
+        run: npm run test:f01-browser
+        env:
+          HEXROTA_BROWSER: ${{ matrix.browser }}
+          HEXROTA_F01_SCREENSHOT_DIR: test-results/f01-browser-${{ matrix.browser }}
       - name: Keep application state transition evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: application-state-${{ matrix.browser }}
           path: test-results/state-${{ matrix.browser }}
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Keep F-01 native input, write-count and rendering evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: f01-presentation-${{ matrix.browser }}
+          path: test-results/f01-browser-${{ matrix.browser }}
           if-no-files-found: warn
           retention-days: 7
