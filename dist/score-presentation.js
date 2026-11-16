@@ -19,7 +19,7 @@
     const receipt=$('score-receipt');if(receipt)receipt.textContent='';
     $('sum')?.closest('.hud-score')?.classList.remove('score-arrival');
   }
-  function countScore(job,target){
+  function countScore(job,target,duration=motion.count){
     const from=job.scoreDisplay;
     if(job.controller.signal.aborted||getPresentation()!==job)return Promise.resolve();
     if(typeof requestAnimationFrame!=='function'){job.scoreDisplay=target;renderScore(target);return Promise.resolve();}
@@ -28,14 +28,14 @@
       const done=()=>{cancelAnimationFrame(frame);job.controller.signal.removeEventListener('abort',done);resolve();};
       const step=now=>{
         if(job.controller.signal.aborted||getPresentation()!==job){done();return;}
-        const progress=Math.min(1,(now-start)/motion.count),value=Math.round(from+(target-from)*(1-Math.pow(1-progress,3)));
+        const progress=Math.min(1,(now-start)/duration),value=Math.round(from+(target-from)*(1-Math.pow(1-progress,3)));
         job.scoreDisplay=value;renderScore(value);
         if(progress<1)frame=requestAnimationFrame(step);else done();
       };
       job.controller.signal.addEventListener('abort',done,{once:true});frame=requestAnimationFrame(step);
     });
   }
-  async function flyScore(job,frame,{wave,gain,destination,extra=0,totalWaves=1}){
+  async function flyScore(job,frame,{wave,gain,destination,extra=0,totalWaves=1,timing=motion}){
     const signal=job.controller.signal,nodes=new Set();
     const remove=()=>{for(const node of nodes)node.remove();};
     const current=()=>!signal.aborted&&getPresentation()===job&&canAnimate();
@@ -73,12 +73,12 @@
       if(extra)sources.push({index:null,value:extra,point:{x:start.x+35,y:Math.min(viewportHeight-24,start.y+42)}});
       const batches=new Map();
       for(const [order,source]of sources.entries()){
-        const delay=sources.length>1?Math.round(order/(sources.length-1)*6)*(motion.spread/6):0,at=motion.digit+delay;
+        const delay=sources.length>1?Math.round(order/(sources.length-1)*6)*(timing.spread/6):0,at=timing.digit+delay;
         const digit=add('score-digit'+(source.index===null?' score-digit-extra':''),source.point);digit.style.zIndex='3';digit.dataset.value=String(source.value);
         if(source.index===null){digit.dataset.source='chains';digit.textContent=`+${source.value}`;}
         else{digit.dataset.index=String(source.index);digit.textContent=String(source.value);const original=board.querySelector(`[data-index="${source.index}"] .hex-number`);if(original)original.style.opacity='0';}
         const dx=start.x-source.point.x,dy=start.y-source.point.y;
-        animateElement(job,digit,[{transform:'translate(0px,0px) scale(1)',opacity:1},{transform:`translate(${dx*.25}px,${dy*.25-12}px) scale(1.2)`,opacity:1,offset:.3},{transform:`translate(${dx}px,${dy}px) scale(.5)`,opacity:0}],{duration:motion.digit,delay,easing:'cubic-bezier(.35,.02,.68,1)',fill:'both'});
+        animateElement(job,digit,[{transform:'translate(0px,0px) scale(1)',opacity:1},{transform:`translate(${dx*.25}px,${dy*.25-12}px) scale(1.2)`,opacity:1,offset:.3},{transform:`translate(${dx}px,${dy}px) scale(.5)`,opacity:0}],{duration:timing.digit,delay,easing:'cubic-bezier(.35,.02,.68,1)',fill:'both'});
         if(!batches.has(at))batches.set(at,[]);batches.get(at).push({value:source.value,digit});
       }
       let elapsed=0,collected=0;
@@ -86,28 +86,28 @@
         await pause(at-elapsed,job);if(!current())return;elapsed=at;
         for(const source of batch){collected+=source.value;source.digit.remove();}
         amount.style.opacity='1';amount.textContent=`+${collected}`;packet.dataset.collected=String(collected);
-        animateElement(job,amount,[{transform:'scale(.8)'},{transform:'scale(1.08)',offset:.45},{transform:'scale(1)'}],{duration:motion.collectPulse,easing:'ease-out'});
+        animateElement(job,amount,[{transform:'scale(.8)'},{transform:'scale(1.08)',offset:.45},{transform:'scale(1)'}],{duration:timing.collectPulse,easing:'ease-out'});
       }
       amount.textContent=`+${gain}`;packet.dataset.phase='pop';
-      animateElement(job,packet,[{transform:'scale(.75)',opacity:1},{transform:`scale(${(cue?.scalePermille||1300)/1000})`,opacity:1,offset:.42},{transform:'scale(1)',opacity:1}],{duration:motion.pop,easing:'cubic-bezier(.2,.9,.35,1)',fill:'forwards'});
+      animateElement(job,packet,[{transform:'scale(.75)',opacity:1},{transform:`scale(${(cue?.scalePermille||1300)/1000})`,opacity:1,offset:.42},{transform:'scale(1)',opacity:1}],{duration:timing.pop,easing:'cubic-bezier(.2,.9,.35,1)',fill:'forwards'});
       rewardFeedback(job,cue);
       for(let n=0;n<(cue?.rings||1);n++){
         const ring=add('score-burst-ring',start);
-        animateElement(job,ring,[{transform:`scale(${.3+n*.15})`,opacity:.95},{transform:`scale(${1.65+n*.4})`,opacity:0}],{duration:motion.pop+motion.hold,easing:'ease-out',fill:'forwards'});
+        animateElement(job,ring,[{transform:`scale(${.3+n*.15})`,opacity:.95},{transform:`scale(${1.65+n*.4})`,opacity:0}],{duration:timing.pop+timing.hold,easing:'ease-out',fill:'forwards'});
       }
       const sparkCount=cue?.sparks??10;
       for(let i=0;i<sparkCount;i++){
         const spark=add('score-burst-spark',start),angle=i*Math.PI*2/sparkCount,distance=42+(i%3)*12+(cue?.tier||0)*4;
-        animateElement(job,spark,[{transform:'translate(0px,0px) scale(1)',opacity:1},{transform:`translate(${Math.cos(angle)*distance}px,${Math.sin(angle)*distance}px) scale(.15) rotate(100deg)`,opacity:0}],{duration:motion.pop+motion.hold,easing:'ease-out',fill:'forwards'});
+        animateElement(job,spark,[{transform:'translate(0px,0px) scale(1)',opacity:1},{transform:`translate(${Math.cos(angle)*distance}px,${Math.sin(angle)*distance}px) scale(.15) rotate(100deg)`,opacity:0}],{duration:timing.pop+timing.hold,easing:'ease-out',fill:'forwards'});
       }
-      await pause(motion.pop+motion.hold,job);if(!current())return;
+      await pause(timing.pop+timing.hold,job);if(!current())return;
       packet.dataset.phase='fly';chain.style.opacity='0';const dx=end.x-start.x,dy=end.y-start.y;
-      animateElement(job,packet,[{transform:'translate(0px,0px) scale(1)',opacity:1},{transform:`translate(${dx*.38-14}px,${dy*.6-16}px) scale(.8)`,opacity:1,offset:.6},{transform:`translate(${dx}px,${dy}px) scale(.18)`,opacity:0}],{duration:motion.flight,easing:'cubic-bezier(.3,.1,.5,1)',fill:'forwards'});
-      await pause(motion.flight,job);if(!current())return;
+      animateElement(job,packet,[{transform:'translate(0px,0px) scale(1)',opacity:1},{transform:`translate(${dx*.38-14}px,${dy*.6-16}px) scale(.8)`,opacity:1,offset:.6},{transform:`translate(${dx}px,${dy}px) scale(.18)`,opacity:0}],{duration:timing.flight,easing:'cubic-bezier(.3,.1,.5,1)',fill:'forwards'});
+      await pause(timing.flight,job);if(!current())return;
       packet.dataset.phase='arrived';packet.dataset.arrived='true';hud?.classList.add('score-arrival');rewardMilestones(job,wave,'score');
       const receipt=$('score-receipt');if(receipt)receipt.textContent=`+${gain}`;
-      animateElement(job,hud,[{transform:'scale(1)'},{transform:'scale(1.065)',offset:.4},{transform:'scale(1)'}],{duration:motion.arrival,easing:'ease-out'});
-      await countScore(job,destination);
+      animateElement(job,hud,[{transform:'scale(1)'},{transform:'scale(1.065)',offset:.4},{transform:'scale(1)'}],{duration:timing.arrival,easing:'ease-out'});
+      await countScore(job,destination,timing.count);
     }finally{signal.removeEventListener('abort',remove);remove();}
   }
 

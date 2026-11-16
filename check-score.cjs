@@ -124,23 +124,38 @@ test('matched digits merge into a popped total before the total flies to the HUD
  }finally{f.close();}
 });
 
-test('long chains account for every point exactly once without introducing a multiplier',async()=>{
+test('long chains account for every resolved wave and point exactly once without introducing a multiplier',async()=>{
  const f=mount({which:chain});try{
   assert.equal(chain.result.frames.length,4);assert.equal(chain.result.scoreGain,40);f.move();await f.idle();f.exact();f.clean();
-  assert.equal(f.packets.length,2,'the bounded presentation combines unseen waves into a receipt');
-  assert(f.packets.every(packet=>f.phases.some(event=>event.node===packet.node&&event.phase==='arrived')),'the safety deadline cannot truncate either visible receipt');
-  const firstArrival=f.phases.findIndex(event=>event.node===f.packets[0].node&&event.phase==='arrived'),secondCollect=f.phases.findIndex(event=>event.node===f.packets[1].node&&event.phase==='collect');
-  assert(secondCollect>firstArrival,'each chain remains readable until its total reaches the HUD');
-  assert.deepEqual(f.packets.map(packet=>packet.gain),[5,35],'the second packet includes all remaining waves');
+  const gains=chain.result.frames.map(frame=>frame.scoreGain);
+  assert.deepEqual(gains,[5,6,20,9],'the unchanged real engine still resolves the authored four-wave fixture');
+  assert.equal(f.packets.length,chain.result.frames.length,'every actual engine wave has its own visible receipt');
+  assert(f.packets.every(packet=>f.phases.some(event=>event.node===packet.node&&event.phase==='arrived')),'the unchanged safety deadline cannot truncate any visible receipt');
+  for(let index=1;index<f.packets.length;index++){
+   const priorArrival=f.phases.findIndex(event=>event.node===f.packets[index-1].node&&event.phase==='arrived');
+   const nextCollect=f.phases.findIndex(event=>event.node===f.packets[index].node&&event.phase==='collect');
+   assert(nextCollect>priorArrival,'each real cascade remains readable until its own total reaches the HUD');
+  }
+  assert.deepEqual(f.packets.map(packet=>packet.gain),gains,'receipts never aggregate later unseen waves');
+  assert.deepEqual(f.packets.map(packet=>Number(packet.wave)),[1,2,3,4],'receipts retain actual engine-wave ordering');
+  let cumulative=chain.checkpoint.score;
+  assert.deepEqual(f.packets.map(packet=>packet.destination),gains.map(gain=>cumulative+=gain),'each destination is its exact engine-score prefix');
   assert.equal(f.packets.reduce((total,packet)=>total+packet.gain,0),40);
-  assert.equal(f.packets.at(-1).destination,59,'the destination is the actual engine score');
+  assert.equal(f.packets.at(-1).destination,59,'the final destination is the actual engine score');
   const displayed=f.samples.filter(value=>value>=19);assert(displayed.every((value,index)=>value<=59&&(!index||value>=displayed[index-1])),'HUD count-up never regresses or overshoots the committed total');
-  assert(f.packets[1].chain.includes('2')&&f.packets[1].chain.includes('4'),'chain range identifies combined waves');
-  assert(!/[×x]\s*\d/i.test(f.packets[1].chain),'the chain caption does not imply a score multiplier');
+  for(const packet of f.packets.slice(1)){
+   assert(packet.chain.includes(String(packet.wave)),'each caption identifies its real cascade');
+   assert(!/[×x]\s*\d/i.test(packet.chain),'the chain caption does not imply a score multiplier');
+  }
   const groups=f.packets.map(packet=>f.digits.filter(d=>d.wave===packet.wave));
-  assert.deepEqual(groups.map(group=>group.reduce((total,digit)=>total+digit.value,0)),[5,35],'every visible merge adds up to its actual earned total');
-  const extra=groups[1].filter(d=>d.source==='chains');assert.deepEqual(extra.map(d=>d.value),[29],'the remaining 20+9 points have an explicit collected component');
-  for(const [index,group]of groups.entries()){const expected=chain.result.frames[index].matched.map(i=>chain.result.frames[index].before[i]).sort((a,b)=>a-b);assert.deepEqual(group.filter(d=>d.source!=='chains').map(d=>d.value).sort((a,b)=>a-b),expected,'individual stones contribute exactly once before chain aggregation');}
+  assert.deepEqual(groups.map(group=>group.reduce((total,digit)=>total+digit.value,0)),gains,'every visible merge adds up to its actual earned wave total');
+  assert.equal(f.digits.filter(d=>d.source==='chains').length,0,'no synthetic extra component substitutes for actual later matched stones');
+  for(const [index,group]of groups.entries()){
+   const frame=chain.result.frames[index],expected=frame.matched.map(i=>frame.before[i]).sort((a,b)=>a-b);
+   assert.deepEqual(group.map(d=>d.value).sort((a,b)=>a-b),expected,'each actual matched stone contributes its own number exactly once');
+   assert.deepEqual(group.map(d=>Number(d.index)).sort((a,b)=>a-b),frame.matched.slice().sort((a,b)=>a-b),'all and only actual matched indices supply digits');
+   assert.equal(new Set(group.map(d=>d.index)).size,frame.matched.length,'a wave never counts a stone twice');
+  }
  }finally{f.close();}
 });
 

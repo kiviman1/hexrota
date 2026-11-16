@@ -54,10 +54,10 @@ test('skip settles the committed result once and cancelled swap callbacks cannot
 
 test('rapid reveal followed by a new swap leaves the new presentation owned by the new move',async()=>{
  const f=await fixture();try{
-  const first=firstMove(f);f.begin(first.pair);const old=f.layer();assert(old);
+  const first=firstMove(f);f.begin(first.pair);const old=f.layer()?.querySelector('.swap-pair');assert(old);
   f.click(`#board [data-index="${first.pair[0]}"]`);f.clean();f.exact(first.model);
-  const next=firstMove(f);f.begin(next.pair);const current=f.layer();assert(current&&current!==old);
-  await wait(35);assert.equal(f.layer(),current,'old aborted promise cannot remove the new moving layer');assert.equal(current.isConnected,true);
+  const next=firstMove(f);f.begin(next.pair);const current=f.layer()?.querySelector('.swap-pair');assert(current&&current!==old);
+  await wait(35);assert.equal(f.layer()?.querySelector('.swap-pair'),current,'old aborted promise cannot remove the new moving pair in the retained static layer');assert.equal(current.isConnected,true);
   f.click('#skip-animation');f.clean();f.exact(next.model);assert.equal(next.model.turn,2);
  }finally{f.close();}
 });

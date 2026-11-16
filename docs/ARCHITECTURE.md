@@ -16,6 +16,7 @@ index.html (sıralı defer bağımlılıkları)
           ├─ attempts + engine/commands: deneme ve deterministik oyun
           ├─ economy + lives + rescue: saf iş kuralları
           ├─ atomik profil commit'i
+          ├─ move-presentation: çözülmüş, salt-okuma dalgaların görsel sırası
           ├─ board-view / board-input / score-presentation / garden / audio
           └─ syncScene: tek salt-okuma projectPresentation sonucu
               ├─ scene-presentation: kesinleşmiş öğretici ilerlemesi ve dünya aktörü
@@ -34,7 +35,8 @@ Görsel olaylar oyun kuralı değildir. Hamlenin kanonik sonucu önce kesinleşi
 | `dist/state-effects.js` | Kabul edilmiş modal etkilerini native dialog'lara uygulamak; açılış kimliğine bağlı kapanış, odak, üstten kapatma ve kabul edilmiş ekranın DOM/history görünümü | İşlem/makbuz doğrulamak; engine yüklemek; profile veya localStorage'a erişmek |
 | `dist/game-save.js` | Kayıt varlığı, v5 normalizasyonu, eski v4/v3/v2 indeks geçişi | Profil yazmak, bozuk kaydı yeni oyuncu saymak |
 | `dist/session-store.js` | Profil zarfı, revision, tek başarılı kanonik yazım, uyumluluk aynaları, tarayıcı kilidi | Ödül/hamle üretmek veya hatada kaydı silmek |
-| `dist/board-view.js` | Altıgen geometri, SVG işaretlemesi, iki yönlü taş animasyon yolu | DOM, motor, cüzdan, saat veya RNG'ye erişmek |
+| `dist/board-view.js` | Saf geometri/SVG/yol projeksiyonları; ayrıca enjekte edilen SVG üzerinde kaynak→hedef taş kimliğini koruyan `reconcile` adaptörü | Motor, cüzdan, saat veya RNG'ye erişmek; eşleşme/düşüş hesaplamak |
+| `dist/move-presentation.js` | Kopyalanıp dondurulmuş motor dalgalarından görsel plan, sıralama ve iptal; yalnız görsel sonuç döndürür | DOM, profil, state store, engine, ekonomi veya kayıt servisi tutmak |
 | `dist/board-input.js` | Yerel koordinatla hücre ve altı yönlü kaydırma sınıflaması | Takas yapmak veya taş sonucunu tahmin etmek |
 | `dist/first-play.js` | Kısa öğretici sunumu ve durumsuz, yavaş SVG kaydırma gösterimi | Gerçek takas, kayıt, can veya ödül üretmek |
 | `dist/scene-presentation.js` | Projeksiyondan üç öğretici sahnesi, saf Tahta/Çivi sayaç biçimi, dekoratif Tavik, yerleşim ve yaşam döngüsü | Motor/kayıt/cüzdan sahibi olmak, kampanya yıldızı okumak veya ödül kanıtı üretmek |
@@ -64,6 +66,8 @@ DOM/focus/history adaptörü profil yazmaz. `onClose` host'un mevcut `sessionAct
 
 Navigasyon/modal, merkezi Tavik projeksiyonu, board/inventory selector'ları ve presentation/hint operation yaşam döngüsü bağlandı. `startPresentation` görsel owner'ı rezerve eder; başarılı atomik commit sonrasında `activatePresentation` pending'e geçirir. UI token tahsisi başarısızsa geçerli komut/ödül kaydı engellenmez; gerçek committed sonuç hızlı gösterilir. Mevcut epoch, job/engine referansları ve AbortController korumaları tutulur. Invalid-swap feedback yerel görsel iş olarak kalır.
 
+`HexMovePresentation.plan/play` yalnız commit sonrasında çağrılır. Gerçek motor sonucu, Core operasyon durumu ve yedi görsel faz ayrıdır; her motor dalgası gösterilir. Host start/activate/finish/cancel ve terminal modal uygunluğunun sahibidir. `finishPresentation` ikinci profil yazmaz (PR #27/F-01). `HexBoardView.reconcile`, geçerli swap/fall haritasından gerçek `.gem` düğümlerini taşır, zemin/hücre/SVG katmanlarını korur; yeni taş yalnız motorun spawn verisinden alınır. Ayrıntı: `ANIMATION_PIPELINE.md`; ölçüm ve gerçek koşumlar: `ANIMATION_PIPELINE_TEST_REPORT.md`.
+
 Pagehide committed sunumu güvenle bitirir, hint/terminal timer'ı temizler, epoch'u artırıp `APP_SUSPENDED` ile UI neslini emekli eder; sahne host'unu kaldırır. Pageshow `APP_RESUMED` ve mevcut görünürlükle yalnız sunumu yeniden kurar. Gerçek persisted dönüşte SessionStore'un reload/yazıcı kilidini tekrar alma politikası değişmez. Sonuç timer'ı ayrıca suspension guard'ı taşır; kapanmış belgeye geç win/lose diyaloğu açamaz.
 
 Başarılı `resetForTesting` sonrasında full-reset bariyeri önce etkinleşir, sahiplenilmiş iki life/rescue recurring timer durur, StateEffects/Core/Tavik/sahne kaynakları destroy edilir. Başarısız reset eski writer/session'ı kullanılabilir bırakır. Existing provider/receipt/commit kuralları yeni store'a taşınmaz. Bu kod sözleşmesi uzak test başarısı iddiası değildir; güncel gerçek browser/CI/Preview sonuçları `STATE_REFACTOR_REPORT.md` içinde kaydedilir.
@@ -90,7 +94,7 @@ Başarılı `resetForTesting` sonrasında full-reset bariyeri önce etkinleşir,
 
 `src/styles/manifest.json` kaynak bölümlerinin sırasını belirler. `npm run styles:sync`, bunları **aynı sırada tek `dist/style.css`** dosyasına birleştirir. Tarayıcıda `@import` zinciri veya ek CSS isteği yoktur. Mevcut çizgi roman temasından sonra hazır `dist/assets/scenes/coop-v1/tavik-motion.css`, `src/styles/07-coop-scene.css` ve son olarak `src/styles/08-tavik-dialogue.css` gelir. Hazır hareket CSS'i varlık hash sözleşmesinin parçasıdır; değiştirilmez. Yeni sahne yerleşimi `07-coop-scene.css`, koç içi portre yerleşimi `08-tavik-dialogue.css` içinde düzenlenir; üretilmiş çıktı da commit edilir.
 
-`dist/index.html` bağımlılıkları `defer` sırasıyla yükler. Yeni runtime betiği eklenince `dist/sw.js` allowlist/önbellek listesi, HTML, Worker query ve `qa-fixtures.cjs` birlikte güncellenir. Güncel uygulama **PWA v41** kullanır; `app-state.js`, `state-selectors.js`, `state-effects.js` de app boot öncesi yüklenip aynı çevrimdışı kabuğa alınır. Bu yalnız runtime/CSS önbellek kuşağıdır; kayıt formatının veya oyun kurallarının sürümünü değiştirmez. Hareket adaptörü, yapılandırma ve sahne modülü çevrimdışı kabuğa dahildir. Üç yeni JPEG ihtiyaçla yüklenir; ilk çevrimdışı fallback için `foundation.jpg` ve mevcut `idle.webp` ayrıca ısıtılır: toplam 276.693 byte. Hazır eski varlıklar korunur; yeni akış eski yatay arka planları istemez. Kaynak PNG'ler ve bağımsız prova sayfası bu kapsamda değildir. JPEG/WebP içerik türü doğrulanır; görsel hatası oyunu veya kayıtları engellemez.
+`dist/index.html` bağımlılıkları `defer` sırasıyla yükler. Yeni runtime betiği eklenince `dist/sw.js` allowlist/önbellek listesi, HTML, Worker query ve `qa-fixtures.cjs` birlikte güncellenir. Güncel uygulama **PWA v42** kullanır; `app-state.js`, `state-selectors.js`, `state-effects.js`, `move-presentation.js` de app boot öncesi yüklenip aynı çevrimdışı kabuğa alınır. Bu yalnız runtime/CSS önbellek kuşağıdır; kayıt formatının veya oyun kurallarının sürümünü değiştirmez. Hareket adaptörü, yapılandırma ve sahne modülü çevrimdışı kabuğa dahildir. Üç yeni JPEG ihtiyaçla yüklenir; ilk çevrimdışı fallback için `foundation.jpg` ve mevcut `idle.webp` ayrıca ısıtılır: toplam 276.693 byte. Hazır eski varlıklar korunur; yeni akış eski yatay arka planları istemez. Kaynak PNG'ler ve bağımsız prova sayfası bu kapsamda değildir. JPEG/WebP içerik türü doğrulanır; görsel hatası oyunu veya kayıtları engellemez.
 
 ## Tavik sahnesinin sunum sözleşmesi
 
