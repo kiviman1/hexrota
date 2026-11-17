@@ -1,0 +1,52 @@
+{
+  "baseline": "f8d6b454f3989dc25921e5eee968a983fd3a762a",
+  "scope": "Canonical classic-v6/materials-v1/objectives-v1, versioned isolated alpha catalog, committed-event presentation and passive hint integration. Existing authored v4/v5 data, teaching counters, numerical/hex visuals, geometry goldens, audit metrics and all previous source fixtures/acceptance thresholds stay protected.",
+  "addedIds": [
+    "material-goals",
+    "material-effects",
+    "win-coverage",
+    "win-materials",
+    "lose-materials",
+    "pregame-materials"
+  ],
+  "sha256": {
+    "dist/engine.js": "54b041f27ebc51ddf47df1e195fb25efc296723da18ff39cd87ebce020f63135",
+    "dist/app.js": "ca486391dc32cac1739012ac4d6e329ced0bf6b50c42627996f1d26d99fd1ecc",
+    "dist/board-view.js": "ba088535652bcc643d74674a4e922859d122635f3795e977fc69890f7458d543",
+    "dist/move-presentation.js": "bce6b9dfb3b4f295ae1649a242a506b675893e75f59c796d763eee1da656bf4e",
+    "dist/session-store.js": "1d7547edc6fbb7726704be0de80d95b4f6ff3922b6bcdee97abb238ed905d2b6",
+    "dist/idle-hints.js": "ddef5d6fcb143d8d2d6343aaffd3cb5f75c7b05f2f49291d739dd6137bdfc660",
+    "dist/idle-hint-view.js": "5289c60018989d8f726e3775df22d7146ab188efe1321d2938bf40d76bee3525",
+    "dist/index.html": "8ef6d9e378bda75ddf956492e88473636e2abe2ed93ed89986aa7d0b9611cc05",
+    "dist/style.css": "56e4beca1184636185eec788e5f02aff28b2ccee1ffcc2a3a08a9beee03cb98d",
+    "dist/sw.js": "97a1665002117eccd4728f0a8fb8066c1607a43dd2cd4e99626086a88e4c03c3",
+    "dist/hint-worker.js": "2dc9886fa6173cdb2d24b247402b86f6be555ecbb003f5d9e660133998f868e8",
+    "dist/obstacles.html": "f3c23aa87e8fa1c4dd889319e883c473671104fb98e1913a62ed73ceb1e97176",
+    "dist/ui-kit.html": "c4939fb80bd5aaeafc3552b3c5e78df115201e9ee8546df469e3e5207b3f32c2",
+    "src/styles/manifest.json": "7ed3f1758ce808cd648943bc51758387493f72751d04d4b22945538a8bd1c5ec",
+    "src/styles/11-material-objectives.css": "da4fda95edd05ee0d14db5305d34684a08e8536902b4387d9c9f7258a08baa0b",
+    "dist/material-view.js": "e4bea7e189e6fdee6744ca0a8113ba6ce310da9304e5722c8507db0a5b605052",
+    "dist/material-alpha.js": "a9e65147dfbb50afb0ea233710a787e1deb1983eeee2221eeac90e1a82aa4ffd",
+    "dist/material-alpha-levels.js": "160324eb5c1224e3237e732f80592e5e023787ef292656d767496f8075cef36a",
+    "data/material-alpha-levels-v1.json": "e36e951bff147d3fdb34e97daff0d0348c444f42dbb49634ea651c456a87c78f",
+    "scripts/generate-material-alpha.cjs": "846d7b5315aaeb8625fdb04462844ca269fb2493cc65ba30244cbe112108cd40",
+    "unity/Gameplay/GameplayTypes.cs": "216c4b59d12851af1d7f34ca647c8f050d85a80cf6e7688ad8e67a75fe57e298",
+    "unity/Gameplay/HexMatch.cs": "bb47fc06349fdf4fc3742646612e63fcafbeb24b06cf2ee7d601229f207ee184",
+    "unity/Gameplay/HexMatch.Obstacles.cs": "2ce3d0f918c8a63193fbeb3b317c9335492aaee0bbb282fee1fe07caeac8e5e0",
+    "unity/Gameplay/HexMatch.Materials.cs": "4d7f1bfc67430231f24a0b476331863e275de914247f8b6d301678dc288714a7",
+    "unity/Catalog/CatalogWire.cs": "364b482e6f03160fc78d4fc181adb64e379a335e087c1c9d24050435b367c99f",
+    "unity/Catalog/MaterialAlphaCatalog.cs": "9ed8918191dd60e89901f0eb01a3f33af964394ba84f4964cfd2a126e8c0604a",
+    "unity/Hints/HintSolver.cs": "683b15d72a95f61980db5b5b9bc59e1dc250cbfc7f8b658622e2036428c7b486",
+    "unity/GameplayParityHarness/Program.cs": "d8006aebbbd54d7f857296dde05a42586cb73b0b9c3163a7e2be9ba9966e63dd",
+    "unity/HintParityHarness/Program.cs": "1d752b81a2bc87a824a5b7e5bfafc3a86088b2a0a78c0a7e7317ac02f158527f",
+    "unity/RewardAdapterParityHarness/Program.cs": "7a251ba2e7bf895c9a0df41cf4986192b1794815d4c68aa00c38f49de02ce518"
+  },
+  "reportSourceHashes": {
+    "reports/observable-difficulty.json": "f503b6388b4b5e7be675a23372a0dee7183d7a7c1a504dda88d7eb9a0da0b1f0",
+    "reports/solvability-9-9.json": "8f020610f17e2e0e353a14f25a330d890c6abbe3a8835b4e8e9fa22ae8d0c38d"
+  },
+  "reportNormalizedSha256": {
+    "reports/observable-difficulty.json": "db01f99b63db19bc46fc1e59c43a780992a5dc103cb3755c4e0dc8c3f728e535",
+    "reports/solvability-9-9.json": "e1bd4364a683437e920688af251c6dab201305d6d767e3f5dad70fd1a57a22f8"
+  }
+}

@@ -33,7 +33,7 @@
       return{x:ux*DISTANCE/scale,y:uy*DISTANCE/scale};
     }
 
-    function show({pair,matched=[],matchingSources=[],blockers=[],focusMatched,focusSources,movingSource,movingTarget,layout,duration=DURATION}={}) {
+    function show({pair,matched=[],matchingSources=[],blockers=[],focusMatched,focusSources,movingSource,movingTarget,layout,duration=DURATION,preserveMaterialMarkers=false}={}) {
       if(!Number.isSafeInteger(duration)||duration<0)throw new TypeError('invalid_idle_hint_duration');
       if(destroyed)return()=>{};
       const indices=(items,label)=>{
@@ -125,6 +125,19 @@
             copy.insertBefore(source.sheen,copy.querySelector('.hex-number'));copy.appendChild(outline());wrapper.appendChild(copy);
             source.style=source.node.getAttribute('style');source.opacity=source.node.style.getPropertyValue('opacity');source.priority=source.node.style.getPropertyPriority('opacity');
             hidden.push(source);source.node.style.setProperty('opacity','0','important');source.hiddenStyle=source.node.getAttribute('style');source.copy=copy;
+          }
+          if(preserveMaterialMarkers&&!staticCue){
+            // v6 cell tokens stay fixed above a moving hint clone. Duplicate
+            // decorative paint only; real markers and source identities stay
+            // with their original cells and never enter the animation set.
+            for(const marker of source.tile.querySelectorAll(':scope > .material-marker')){
+              const copy=marker.cloneNode(true),originals=[marker,...marker.querySelectorAll('*')],copies=[copy,...copy.querySelectorAll('*')];
+              originals.forEach((node,index)=>{
+                const style=win.getComputedStyle(node);for(const property of PAINT){const value=style.getPropertyValue(property);if(value)copies[index].style.setProperty(property,value);}
+                for(const attribute of Array.from(copies[index].attributes))if(['id','tabindex','data-index'].includes(attribute.name)||attribute.name.startsWith('data-material-'))copies[index].removeAttribute(attribute.name);
+              });
+              copy.classList.add('idle-hint-material-copy');copy.setAttribute('aria-hidden','true');copy.setAttribute('pointer-events','none');wrapper.appendChild(copy);
+            }
           }
           layer.appendChild(wrapper);
         }

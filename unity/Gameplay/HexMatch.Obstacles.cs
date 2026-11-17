@@ -114,7 +114,8 @@ namespace Hexrota.Gameplay
             }
             return segments.ToArray();
         }
-        private WaveFrame DamageBlockers(int[] matched)
+        private WaveFrame DamageBlockers(int[] matched) { return DamageBlockersWithBreak(matched, null); }
+        private WaveFrame DamageBlockersWithBreak(int[] matched, Action<string[]> onBreak)
         {
             var frame = new WaveFrame(); if (!HasObstacles) return frame;
             var hits = new List<BlockerHit>(); var broken = new List<string>(); var opened = new List<string>();
@@ -131,6 +132,7 @@ namespace Hexrota.Gameplay
                 hits.Add(new BlockerHit { id = box.id, cell = box.cell, beforeHp = before, hp = blockerHp[b] });
                 if (blockerHp[b] == 0) broken.Add(box.id);
             }
+            if (onBreak != null) onBreak(broken.ToArray());
             if (HasColumnFlow)
             {
                 bool[] previousCells = Duplicate(cellOpen), previousRegions = Duplicate(regionOpen);

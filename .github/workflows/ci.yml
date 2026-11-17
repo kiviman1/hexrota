@@ -591,3 +591,35 @@ jobs:
           name: idle-hints-9-12-${{ matrix.browser }}
           path: test-results/idle-hints-9-12-${{ matrix.browser }}
           if-no-files-found: warn
+
+  material-objectives-9-14:
+    name: Material objectives 9.14 / ${{ matrix.browser }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.2'
+          cache: npm
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: npm ci
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - run: npm run test:materials
+      - run: npm run test:unity-materials
+      - run: npm run test:materials-browser
+        env:
+          HEXROTA_BROWSER: ${{ matrix.browser }}
+          HEXROTA_MATERIAL_SCREENSHOT_DIR: test-results/materials-9-14-${{ matrix.browser }}
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: materials-9-14-${{ matrix.browser }}
+          path: test-results/materials-9-14-${{ matrix.browser }}
+          if-no-files-found: warn

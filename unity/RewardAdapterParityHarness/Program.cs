@@ -15,7 +15,7 @@ internal static class Program
         resolver.Modifiers.Add(info => {
             if (info.Type == typeof(GameSnapshot) || info.Type == typeof(WaveFrame) || info.Type == typeof(LevelConfig))
                 foreach (var property in info.Properties)
-                    if (property.Name == "cellOpen" || property.Name == "openedCells" || property.Name == "obstacles" || property.Name == "obstacleVersion" || property.Name == "blockerHp" || property.Name == "regionOpen" || property.Name == "blockerHits" || property.Name == "brokenBlockers" || property.Name == "openedRegions")
+                    if (property.Name == "materials" || property.Name == "objectives" || property.Name == "materialVersion" || property.Name == "objectiveVersion" || property.Name == "materialCounts" || property.Name == "collectedSources" || property.Name == "materialEvents" || property.Name == "status" || property.Name == "cellOpen" || property.Name == "openedCells" || property.Name == "obstacles" || property.Name == "obstacleVersion" || property.Name == "blockerHp" || property.Name == "regionOpen" || property.Name == "blockerHits" || property.Name == "brokenBlockers" || property.Name == "openedRegions")
                         property.ShouldSerialize = (instance, value) => value != null;
         });
         Json.TypeInfoResolver = resolver;

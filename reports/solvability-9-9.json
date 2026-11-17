@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "levelDataVersion": "variants-v1",
   "rulesVersion": "classic-v4",
-  "sourceHash": "91a777ecbd3557b0cbd9a57844543ccf40b11adfd5c84d59018dfaeb9311d200",
+  "sourceHash": "8f020610f17e2e0e353a14f25a330d890c6abbe3a8835b4e8e9fa22ae8d0c38d",
   "method": {
     "trialsPerVariantPolicy": 8,
     "decisionSeed": 1831565813,
@@ -38734,7 +38734,7 @@
   ],
   "terminalZeroLegalWitnesses": [],
   "historicalObservableReference": {
-    "sourceHash": "986358880507e3393813b610083ea9b88be28f3ca6576c18a40e5b7c592e7373",
+    "sourceHash": "f503b6388b4b5e7be675a23372a0dee7183d7a7c1a504dda88d7eb9a0da0b1f0",
     "trialsPerVariantPolicy": 64,
     "notReproducedByThisTool": true,
     "warning": "Simulation policy rates are not human win rates. Failure of bounded recovery search does not prove a state unsolvable. Alternative openings are plausible visible deviations, not objectively proven mistakes.",

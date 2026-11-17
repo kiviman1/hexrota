@@ -5,7 +5,8 @@
   const directions = [[1,0],[0,1],[1,-1]];
   const int32=value=>Number.isInteger(value)&&value>=-2147483648&&value<=2147483647;
   const dense=value=>{if(!Array.isArray(value))return false;for(let i=0;i<value.length;i++)if(!Object.prototype.hasOwnProperty.call(value,i))return false;return true;};
-  const obstacleRules=level=>level.rulesVersion==='classic-v5';
+  const materialRules=level=>level.rulesVersion==='classic-v6';
+  const obstacleRules=level=>level.rulesVersion==='classic-v5'||materialRules(level);
   const groundLayers=(level,cell)=>obstacleRules(level)?(cell.layers==null?1:cell.layers):(cell.layers==null||cell.layers===0?1:cell.layers);
   const columnFlow=level=>obstacleRules(level)&&level.obstacles.activation==='column-flow-v1';
   function flowCells(level,hp){
@@ -65,6 +66,25 @@
     }
     if(removed.size!==boxes.size||opened.size!==regions.size)invalid();
   }
+  function validateMaterials(level,invalid){
+    const own=(value,keys)=>value&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).length===keys.length&&keys.every(key=>Object.prototype.hasOwnProperty.call(value,key));
+    const id=value=>typeof value==='string'&&/^[A-Za-z0-9_.-]{1,80}$/.test(value),data=level.materials,goals=level.objectives;
+    if(!own(data,['version','definitions','sources'])||data.version!=='materials-v1'||!dense(data.definitions)||!dense(data.sources)||!own(goals,['version','score','ground','materials'])||goals.version!=='objectives-v1'||typeof goals.score!=='boolean'||typeof goals.ground!=='boolean'||!dense(goals.materials)||!goals.score&&!goals.ground&&!goals.materials.length)invalid();
+    const definitions=new Map(),supply=data.definitions.map(()=>0),sources=new Set(),goalIds=new Set(),crates=new Map(level.obstacles.blockers.map(box=>[box.id,box])),boxCells=new Set(level.obstacles.blockers.map(box=>box.cell));
+    const coordinates=new Set(level.cells.map(cell=>cell.q+','+cell.r));
+    const canMatch=cell=>directions.some(([dq,dr])=>[-2,-1,0].some(start=>[0,1,2].every(step=>coordinates.has((cell.q+(start+step)*dq)+','+(cell.r+(start+step)*dr)))));
+    data.definitions.forEach((definition,index)=>{if(!own(definition,['id'])||!id(definition.id)||definitions.has(definition.id))invalid();definitions.set(definition.id,index);});
+    for(const source of data.sources){
+      if(!own(source,source?.kind==='crate-break'?['id','kind','materialId','quantity','cell','blockerId']:['id','kind','materialId','quantity','cell'])||!id(source.id)||sources.has(source.id)||!definitions.has(source.materialId)||!int32(source.quantity)||source.quantity<=0||!Number.isInteger(source.cell)||source.cell<0||source.cell>=level.cells.length)invalid();
+      sources.add(source.id);
+      if(source.kind==='crate-break'){if(!crates.has(source.blockerId)||crates.get(source.blockerId).cell!==source.cell)invalid();}
+      else if(source.kind!=='matched-cell'||boxCells.has(source.cell)||!canMatch(level.cells[source.cell]))invalid();
+      const index=definitions.get(source.materialId);supply[index]+=source.quantity;if(supply[index]>2147483647)invalid();
+    }
+    for(const goal of goals.materials){
+      if(!own(goal,['materialId','quantity'])||!definitions.has(goal.materialId)||goalIds.has(goal.materialId)||!int32(goal.quantity)||goal.quantity<=0||goal.quantity>supply[definitions.get(goal.materialId)])invalid();goalIds.add(goal.materialId);
+    }
+  }
   function validateLevel(level){
     const invalid=()=>{throw new Error('Invalid match-three level');};
     if(!level||typeof level!=='object'||!dense(level.cells)||!level.cells.length||!dense(level.palette)||!level.palette.length||!dense(level.initial)||level.initial.length!==level.cells.length||!Number.isInteger(level.seed)||level.seed<0||level.seed>0xffffffff||!int32(level.moves)||level.moves<0||!int32(level.target)||level.target<0)invalid();
@@ -78,6 +98,8 @@
     }
     if(obstacleRules(level))validateObstacles(level,invalid);
     else{if(level.obstacles!==undefined||![undefined,null,'classic-v4'].includes(level.rulesVersion))invalid();for(const value of level.initial)if(!int32(value)||!palette.has(value))invalid();}
+    if(materialRules(level))validateMaterials(level,invalid);
+    else if(level.materials!==undefined||level.objectives!==undefined)invalid();
     return true;
   }
   function topology(level) {
@@ -109,21 +131,24 @@
       validateLevel(level);
       this.level=level; this.topology=topology(level); this.neighbors=this.topology.neighbors;
       this.reset();
-      if (snapshot) this._restore(snapshot);
+      if (snapshot||materialRules(level)&&snapshot!==null) this._restore(snapshot);
     }
     reset() {
       validateLevel(this.level);
       this.values=this.level.initial.slice();this.layers=this.level.cells.map(c=>groundLayers(this.level,c));
       this.score=0;this.movesLeft=this.level.moves;this.turn=0;this.rngState=(this.level.seed>>>0)||0x9e3779b9;this.history=[];
       if(obstacleRules(this.level)){this.blockerHp=this.level.obstacles.blockers.map(b=>b.hp);this.regionOpen=this.level.obstacles.regions.map(()=>false);if(columnFlow(this.level)){this.cellOpen=flowCells(this.level,this.blockerHp);this.regionOpen=this.level.obstacles.regions.map(r=>r.cells.every(i=>this.cellOpen[i]));}}
+      if(materialRules(this.level)){this.materialCounts=this.level.materials.definitions.map(()=>0);this.collectedSources=this.level.materials.sources.map(()=>false);}
     }
     get total(){return this.values.length;}
     get covered(){return this.layers.reduce((n,v)=>n+Number(v===0),0);}
     get remainingLayers(){return this.layers.reduce((a,b)=>a+b,0);}
     get status(){
       const scoreMet=this.level.targetMode==='exact'?this.score===this.level.target:this.score>=this.level.target;
-      if(this.covered===this.total && scoreMet && (!obstacleRules(this.level)||(this.level.obstacles.blockers.every((b,i)=>b.required===false||this.blockerHp[i]===0)&&this.level.obstacles.regions.every((r,i)=>r.required===false||this.regionOpen[i]))))return 'won';
-      if(this.movesLeft<=0 || (this.level.targetMode==='exact' && this.score>this.level.target))return 'lost';
+      const goals=materialRules(this.level)?this.level.objectives:null;
+      const complete=goals?(!goals.score||scoreMet)&&(!goals.ground||this.covered===this.total)&&goals.materials.every(goal=>this.materialCounts[this.level.materials.definitions.findIndex(definition=>definition.id===goal.materialId)]>=goal.quantity):this.covered===this.total&&scoreMet;
+      if(complete && (!obstacleRules(this.level)||(this.level.obstacles.blockers.every((b,i)=>b.required===false||this.blockerHp[i]===0)&&this.level.obstacles.regions.every((r,i)=>r.required===false||this.regionOpen[i]))))return 'won';
+      if(this.movesLeft<=0 || ((!goals||goals.score)&&this.level.targetMode==='exact' && this.score>this.level.target))return 'lost';
       return 'playing';
     }
     isPlayable(index){
@@ -132,7 +157,19 @@
       if(columnFlow(this.level))return this.cellOpen[index];
       return !this.level.obstacles.blockers.some((b,i)=>b.cell===index&&this.blockerHp[i]>0)&&!this.level.obstacles.regions.some((r,i)=>!this.regionOpen[i]&&r.cells.includes(index));
     }
-    _damageBlockers(matched){
+    _collectMaterials(kind,origins){
+      const originSet=new Set(origins),events=[];
+      this.level.materials.sources.forEach((source,index)=>{
+        if(this.collectedSources[index]||source.kind!==kind)return;
+        const eligible=kind==='matched-cell'?originSet.has(source.cell)&&this.isPlayable(source.cell):originSet.has(source.blockerId);
+        if(!eligible)return;
+        const material=this.level.materials.definitions.findIndex(definition=>definition.id===source.materialId);
+        this.materialCounts[material]+=source.quantity;this.collectedSources[index]=true;
+        events.push({sourceId:source.id,materialId:source.materialId,quantity:source.quantity,cell:source.cell,kind:source.kind});
+      });
+      return events;
+    }
+    _damageBlockers(matched,onBreak=null){
       const blockerHits=[],brokenBlockers=[],openedRegions=[],previousOpen=columnFlow(this.level)?this.cellOpen.slice():null;
       this.level.obstacles.blockers.forEach((box,i)=>{
         if(this.blockerHp[i]>0&&(columnFlow(this.level)||this.level.obstacles.regions.every((r,j)=>this.regionOpen[j]||!r.cells.includes(box.cell)))&&matched.some(index=>this.adjacent(index,box.cell))){
@@ -141,6 +178,7 @@
           if(!this.blockerHp[i])brokenBlockers.push(box.id);
         }
       });
+      if(onBreak)onBreak(brokenBlockers);
       if(columnFlow(this.level))this.cellOpen=flowCells(this.level,this.blockerHp);
       this.level.obstacles.regions.forEach((region,i)=>{
         if(columnFlow(this.level)){const open=region.cells.every(index=>this.cellOpen[index]);if(open&&!this.regionOpen[i])openedRegions.push(region.id);this.regionOpen[i]=open;return;}
@@ -287,23 +325,27 @@
       while(matched.length){
         const before=this.values.slice(),scoreGain=matched.reduce((n,i)=>n+this.values[i],0);
         matched.forEach(i=>{this.layers[i]=Math.max(0,this.layers[i]-1);});
-        this.score+=scoreGain;totalGain+=scoreGain;const obstacles=obstacleRules(this.level)?this._damageBlockers(matched):{};const refill=this._gravity(matched);
-        frames.push({matched:matched.slice(),before,after:this.values.slice(),layers:this.layers.slice(),scoreGain,...refill,...obstacles});
+        this.score+=scoreGain;totalGain+=scoreGain;
+        const materialEvents=materialRules(this.level)?this._collectMaterials('matched-cell',matched):null;
+        const obstacles=obstacleRules(this.level)?this._damageBlockers(matched,materialEvents?broken=>materialEvents.push(...this._collectMaterials('crate-break',broken)):null):{};const refill=this._gravity(matched);
+        frames.push({matched:matched.slice(),before,after:this.values.slice(),layers:this.layers.slice(),scoreGain,...refill,...obstacles,...(materialEvents?{materialEvents,materialCounts:this.materialCounts.slice(),collectedSources:this.collectedSources.slice()}:{} )});
         matched=this.findMatches();
         if(frames.length>=32 && matched.length){this._stableBoard();safetyReset=true;break;}
       }
       const reshuffled=(this.status==='playing'?this._ensurePlayable():false)||safetyReset;
       return {ok:true,reason:null,frames,scoreGain:totalGain,reshuffled};
     }
-    snapshot(){return {version:obstacleRules(this.level)?5:4,rulesVersion:obstacleRules(this.level)?'classic-v5':'classic-v4',...(obstacleRules(this.level)?{obstacleVersion:'obstacles-v1',blockerHp:this.blockerHp.slice(),regionOpen:this.regionOpen.slice(),...(columnFlow(this.level)?{cellOpen:this.cellOpen.slice()}:{} )}:{}),values:this.values.slice(),layers:this.layers.slice(),score:this.score,movesLeft:this.movesLeft,turn:this.turn,rngState:this.rngState,history:this.history.map(p=>p.slice())};}
+    snapshot(){return {version:materialRules(this.level)?6:obstacleRules(this.level)?5:4,rulesVersion:materialRules(this.level)?'classic-v6':obstacleRules(this.level)?'classic-v5':'classic-v4',...(obstacleRules(this.level)?{obstacleVersion:'obstacles-v1',blockerHp:this.blockerHp.slice(),regionOpen:this.regionOpen.slice(),...(columnFlow(this.level)?{cellOpen:this.cellOpen.slice()}:{} )}:{}),...(materialRules(this.level)?{materialVersion:'materials-v1',objectiveVersion:'objectives-v1',materialCounts:this.materialCounts.slice(),collectedSources:this.collectedSources.slice(),status:this.status}:{}),values:this.values.slice(),layers:this.layers.slice(),score:this.score,movesLeft:this.movesLeft,turn:this.turn,rngState:this.rngState,history:this.history.map(p=>p.slice())};}
     clone(){
       const copy=Object.create(HexMatch.prototype);
       copy.level=this.level;copy.topology=this.topology;copy.neighbors=this.neighbors;
       copy.values=this.values.slice();copy.layers=this.layers.slice();copy.score=this.score;copy.movesLeft=this.movesLeft;copy.turn=this.turn;copy.rngState=this.rngState;copy.history=this.history.map(p=>p.slice());
       if(obstacleRules(this.level)){copy.blockerHp=this.blockerHp.slice();copy.regionOpen=this.regionOpen.slice();if(columnFlow(this.level))copy.cellOpen=this.cellOpen.slice();}
+      if(materialRules(this.level)){copy.materialCounts=this.materialCounts.slice();copy.collectedSources=this.collectedSources.slice();}
       return copy;
     }
     _restore(s){
+      if(materialRules(this.level))return this._restoreMaterials(s);
       if(obstacleRules(this.level))return this._restoreObstacles(s);
       const n=this.total;
       if(s.version!==4||s.rulesVersion!=='classic-v4'||!Array.isArray(s.values)||s.values.length!==n||s.values.some(v=>!this.level.palette.includes(v))||!Array.isArray(s.layers)||s.layers.length!==n||s.layers.some((v,i)=>!Number.isInteger(v)||v<0||v>(this.level.cells[i].layers||1))||!Number.isInteger(s.score)||s.score<0||!Number.isInteger(s.movesLeft)||s.movesLeft<0||s.movesLeft>this.level.moves||!Number.isInteger(s.turn)||s.turn!==this.level.moves-s.movesLeft||!Number.isInteger(s.rngState)||s.rngState<=0||s.rngState>0xffffffff||!Array.isArray(s.history)||s.history.length!==s.turn||s.history.some(p=>!Array.isArray(p)||p.length!==2||!this.adjacent(p[0],p[1]))||this.findMatches(s.values).length)throw new Error('Invalid match-three checkpoint');
@@ -311,6 +353,16 @@
       for(const pair of s.history)if(!replay.swap(...pair).ok)throw new Error('Invalid checkpoint history');
       if(replay.score!==s.score||replay.movesLeft!==s.movesLeft||replay.turn!==s.turn||replay.rngState!==s.rngState||replay.values.some((v,i)=>v!==s.values[i])||replay.layers.some((v,i)=>v!==s.layers[i]))throw new Error('Checkpoint does not match its history');
       Object.assign(this,{values:replay.values,layers:replay.layers,score:replay.score,movesLeft:replay.movesLeft,turn:replay.turn,rngState:replay.rngState,history:replay.history});
+    }
+    _restoreMaterials(s){
+      const invalid=()=>{throw new Error('Invalid match-three checkpoint');};
+      if(!s||typeof s!=='object'||Array.isArray(s)||s.version!==6||s.rulesVersion!=='classic-v6'||s.obstacleVersion!=='obstacles-v1'||s.materialVersion!=='materials-v1'||s.objectiveVersion!=='objectives-v1'||!dense(s.values)||s.values.length!==this.total||!dense(s.layers)||s.layers.length!==this.total||!dense(s.blockerHp)||s.blockerHp.length!==this.blockerHp.length||s.blockerHp.some((hp,i)=>!Number.isInteger(hp)||hp<0||hp>this.level.obstacles.blockers[i].hp)||!dense(s.regionOpen)||s.regionOpen.length!==this.regionOpen.length||s.regionOpen.some(v=>typeof v!=='boolean')||!dense(s.materialCounts)||s.materialCounts.length!==this.materialCounts.length||s.materialCounts.some(v=>!int32(v)||v<0)||!dense(s.collectedSources)||s.collectedSources.length!==this.collectedSources.length||s.collectedSources.some(v=>typeof v!=='boolean')||!['playing','won','lost'].includes(s.status)||!int32(s.score)||s.score<0||!int32(s.movesLeft)||s.movesLeft<0||s.movesLeft>this.level.moves||!int32(s.turn)||s.turn!==this.level.moves-s.movesLeft||!Number.isInteger(s.rngState)||s.rngState<=0||s.rngState>0xffffffff||!dense(s.history)||s.history.length!==s.turn||s.history.some(pair=>!dense(pair)||pair.length!==2||!this.adjacent(pair[0],pair[1])))invalid();
+      if(columnFlow(this.level)&&(!dense(s.cellOpen)||s.cellOpen.length!==this.total||s.cellOpen.some(v=>typeof v!=='boolean')))invalid();
+      const replay=new HexMatch(this.level);
+      for(const pair of s.history)if(!replay.swap(...pair).ok)invalid();
+      const expected=replay.snapshot(),keys=Object.keys(expected);
+      if(Object.keys(s).length!==keys.length||keys.some(key=>!Object.prototype.hasOwnProperty.call(s,key)||JSON.stringify(expected[key])!==JSON.stringify(s[key]))||!replay._validRecoveryValues()||replay.findMatches().length)invalid();
+      Object.assign(this,{values:replay.values,layers:replay.layers,score:replay.score,movesLeft:replay.movesLeft,turn:replay.turn,rngState:replay.rngState,history:replay.history,blockerHp:replay.blockerHp,regionOpen:replay.regionOpen,materialCounts:replay.materialCounts,collectedSources:replay.collectedSources,...(columnFlow(this.level)?{cellOpen:replay.cellOpen}:{} )});
     }
     _restoreObstacles(s){
       const invalid=()=>{throw new Error('Invalid match-three checkpoint');};
@@ -382,7 +434,7 @@
             if(child.status==='won')return reply('search_win',item,false);
             if(child.status==='lost'){if(!bestLost||item.rank>bestLost.rank)bestLost=item;continue;}
             if(!bestPlaying||item.rank>bestPlaying.rank)bestPlaying=item;
-            const state=child.values.join(',')+'/'+child.layers.join(',')+'/'+child.score+'/'+child.movesLeft+'/'+child.rngState+(obstacleRules(this.level)?'/'+child.blockerHp.join(',')+'/'+child.regionOpen.join(','):'');
+            const state=child.values.join(',')+'/'+child.layers.join(',')+'/'+child.score+'/'+child.movesLeft+'/'+child.rngState+(obstacleRules(this.level)?'/'+child.blockerHp.join(',')+'/'+child.regionOpen.join(','):'')+(materialRules(this.level)?'/'+child.materialCounts.join(',')+'/'+child.collectedSources.join(','):'');
             if(visited.has(state))continue;visited.add(state);next.push(item);
           }
         }

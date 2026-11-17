@@ -1,0 +1,2580 @@
+{
+  "browser": "chromium",
+  "checks": 18,
+  "results": [
+    "fresh isolated alpha namespace exposes all ten campaign choices without fabricated completion",
+    "320x568 alpha1 native touch/drag wins, exact reload, once-only collection and fitted HUD",
+    "320x568 alpha2 native touch/drag wins, exact reload, once-only collection and fitted HUD",
+    "320x568 alpha3 native touch/drag wins, exact reload, once-only collection and fitted HUD",
+    "390x844 alpha1 native touch/drag wins, exact reload, once-only collection and fitted HUD",
+    "390x844 alpha2 native touch/drag wins, exact reload, once-only collection and fitted HUD",
+    "390x844 alpha3 native touch/drag wins, exact reload, once-only collection and fitted HUD",
+    "430x932 alpha1 native touch/drag wins, exact reload, once-only collection and fitted HUD",
+    "430x932 alpha2 native touch/drag wins, exact reload, once-only collection and fitted HUD",
+    "430x932 alpha3 native touch/drag wins, exact reload, once-only collection and fitted HUD",
+    "HP2 damage has no wood; only the second real break grants its cell-bound wood source",
+    "nail binds to matched cell and grants on its first layer hit, then cannot duplicate after reload",
+    "normal mixed animation uses canonical counters before every phase and owns exactly one packet per grant",
+    "quota failure rolls back all material flags/counters and creates no collection visual",
+    "cancelling a live token flight redraws committed state, cleans packets and never reapplies grants",
+    "resize and Home cancel a live material job without changing its already committed collection",
+    "both historical tutorials retain v4 scores, layer progress and teaching counters with no material authority",
+    "native-clock v6 passive hints repeat frozen focus without grants and keep cell tokens above matching-gem clones"
+  ],
+  "routes": [
+    {
+      "id": 6,
+      "scenario": "A",
+      "width": 320,
+      "height": 568,
+      "moves": 4,
+      "routeIndex": 0,
+      "won": true,
+      "sources": 7
+    },
+    {
+      "id": 7,
+      "scenario": "B",
+      "width": 320,
+      "height": 568,
+      "moves": 4,
+      "routeIndex": 0,
+      "won": true,
+      "sources": 5
+    },
+    {
+      "id": 8,
+      "scenario": "C",
+      "width": 320,
+      "height": 568,
+      "moves": 16,
+      "routeIndex": 0,
+      "won": true,
+      "sources": 13
+    },
+    {
+      "id": 6,
+      "scenario": "A",
+      "width": 390,
+      "height": 844,
+      "moves": 4,
+      "routeIndex": 0,
+      "won": true,
+      "sources": 7
+    },
+    {
+      "id": 7,
+      "scenario": "B",
+      "width": 390,
+      "height": 844,
+      "moves": 4,
+      "routeIndex": 0,
+      "won": true,
+      "sources": 5
+    },
+    {
+      "id": 8,
+      "scenario": "C",
+      "width": 390,
+      "height": 844,
+      "moves": 16,
+      "routeIndex": 0,
+      "won": true,
+      "sources": 13
+    },
+    {
+      "id": 6,
+      "scenario": "A",
+      "width": 430,
+      "height": 932,
+      "moves": 4,
+      "routeIndex": 0,
+      "won": true,
+      "sources": 7
+    },
+    {
+      "id": 7,
+      "scenario": "B",
+      "width": 430,
+      "height": 932,
+      "moves": 4,
+      "routeIndex": 0,
+      "won": true,
+      "sources": 5
+    },
+    {
+      "id": 8,
+      "scenario": "C",
+      "width": 430,
+      "height": 932,
+      "moves": 16,
+      "routeIndex": 0,
+      "won": true,
+      "sources": 13
+    }
+  ],
+  "measurements": [
+    {
+      "id": 6,
+      "width": 320,
+      "height": 568,
+      "overflow": false,
+      "board": {
+        "x": 4,
+        "y": 170.890625,
+        "width": 312,
+        "height": 329.109375,
+        "top": 170.890625,
+        "right": 316,
+        "bottom": 500,
+        "left": 4
+      },
+      "hud": {
+        "x": 10,
+        "y": 132.890625,
+        "width": 300,
+        "height": 25,
+        "top": 132.890625,
+        "right": 310,
+        "bottom": 157.890625,
+        "left": 10
+      },
+      "cells": [
+        {
+          "index": 0,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 1,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 2,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 3,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 4,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 5,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 6,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 7,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 8,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 9,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 10,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 11,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 12,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 13,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 14,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 15,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 16,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 17,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 18,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 19,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 20,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 21,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 22,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 23,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 24,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 25,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 26,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 27,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 28,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 29,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 30,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 31,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 32,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 33,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 34,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 35,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 36,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 37,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 38,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 39,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 40,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 41,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 42,
+          "reachable": true,
+          "whole": true
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "width": 320,
+      "height": 568,
+      "overflow": false,
+      "board": {
+        "x": 4,
+        "y": 170.890625,
+        "width": 312,
+        "height": 329.109375,
+        "top": 170.890625,
+        "right": 316,
+        "bottom": 500,
+        "left": 4
+      },
+      "hud": {
+        "x": 10,
+        "y": 132.890625,
+        "width": 300,
+        "height": 25,
+        "top": 132.890625,
+        "right": 310,
+        "bottom": 157.890625,
+        "left": 10
+      },
+      "cells": [
+        {
+          "index": 0,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 1,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 2,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 3,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 4,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 5,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 6,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 7,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 8,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 9,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 10,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 11,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 12,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 13,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 14,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 15,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 16,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 17,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 18,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 19,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 20,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 21,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 22,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 23,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 24,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 25,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 26,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 27,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 28,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 29,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 30,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 31,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 32,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 33,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 34,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 35,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 36,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 37,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 38,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 39,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 40,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 41,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 42,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 43,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 44,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 45,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 46,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 47,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 48,
+          "reachable": true,
+          "whole": true
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "width": 320,
+      "height": 568,
+      "overflow": false,
+      "board": {
+        "x": 4,
+        "y": 170.890625,
+        "width": 312,
+        "height": 329.109375,
+        "top": 170.890625,
+        "right": 316,
+        "bottom": 500,
+        "left": 4
+      },
+      "hud": {
+        "x": 10,
+        "y": 132.890625,
+        "width": 300,
+        "height": 25,
+        "top": 132.890625,
+        "right": 310,
+        "bottom": 157.890625,
+        "left": 10
+      },
+      "cells": [
+        {
+          "index": 0,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 1,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 2,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 3,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 4,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 5,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 6,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 7,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 8,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 9,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 10,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 11,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 12,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 13,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 14,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 15,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 16,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 17,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 18,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 19,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 20,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 21,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 22,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 23,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 24,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 25,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 26,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 27,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 28,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 29,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 30,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 31,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 32,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 33,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 34,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 35,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 36,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 37,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 38,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 39,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 40,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 41,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 42,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 43,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 44,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 45,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 46,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 47,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 48,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 49,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 50,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 51,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 52,
+          "reachable": true,
+          "whole": true
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "board": {
+        "x": 4,
+        "y": 206.796875,
+        "width": 382,
+        "height": 546.203125,
+        "top": 206.796875,
+        "right": 386,
+        "bottom": 753,
+        "left": 4
+      },
+      "hud": {
+        "x": 18,
+        "y": 151.796875,
+        "width": 354,
+        "height": 31,
+        "top": 151.796875,
+        "right": 372,
+        "bottom": 182.796875,
+        "left": 18
+      },
+      "cells": [
+        {
+          "index": 0,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 1,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 2,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 3,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 4,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 5,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 6,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 7,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 8,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 9,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 10,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 11,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 12,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 13,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 14,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 15,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 16,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 17,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 18,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 19,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 20,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 21,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 22,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 23,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 24,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 25,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 26,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 27,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 28,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 29,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 30,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 31,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 32,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 33,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 34,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 35,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 36,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 37,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 38,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 39,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 40,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 41,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 42,
+          "reachable": true,
+          "whole": true
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "board": {
+        "x": 4,
+        "y": 206.796875,
+        "width": 382,
+        "height": 546.203125,
+        "top": 206.796875,
+        "right": 386,
+        "bottom": 753,
+        "left": 4
+      },
+      "hud": {
+        "x": 18,
+        "y": 151.796875,
+        "width": 354,
+        "height": 31,
+        "top": 151.796875,
+        "right": 372,
+        "bottom": 182.796875,
+        "left": 18
+      },
+      "cells": [
+        {
+          "index": 0,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 1,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 2,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 3,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 4,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 5,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 6,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 7,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 8,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 9,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 10,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 11,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 12,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 13,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 14,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 15,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 16,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 17,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 18,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 19,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 20,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 21,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 22,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 23,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 24,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 25,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 26,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 27,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 28,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 29,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 30,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 31,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 32,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 33,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 34,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 35,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 36,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 37,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 38,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 39,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 40,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 41,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 42,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 43,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 44,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 45,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 46,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 47,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 48,
+          "reachable": true,
+          "whole": true
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "board": {
+        "x": 4,
+        "y": 209.796875,
+        "width": 382,
+        "height": 543.203125,
+        "top": 209.796875,
+        "right": 386,
+        "bottom": 753,
+        "left": 4
+      },
+      "hud": {
+        "x": 18,
+        "y": 154.796875,
+        "width": 354,
+        "height": 31,
+        "top": 154.796875,
+        "right": 372,
+        "bottom": 185.796875,
+        "left": 18
+      },
+      "cells": [
+        {
+          "index": 0,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 1,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 2,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 3,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 4,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 5,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 6,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 7,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 8,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 9,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 10,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 11,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 12,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 13,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 14,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 15,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 16,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 17,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 18,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 19,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 20,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 21,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 22,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 23,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 24,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 25,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 26,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 27,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 28,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 29,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 30,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 31,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 32,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 33,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 34,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 35,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 36,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 37,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 38,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 39,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 40,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 41,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 42,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 43,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 44,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 45,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 46,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 47,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 48,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 49,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 50,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 51,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 52,
+          "reachable": true,
+          "whole": true
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "width": 430,
+      "height": 932,
+      "overflow": false,
+      "board": {
+        "x": 4,
+        "y": 206.796875,
+        "width": 422,
+        "height": 634.203125,
+        "top": 206.796875,
+        "right": 426,
+        "bottom": 841,
+        "left": 4
+      },
+      "hud": {
+        "x": 18,
+        "y": 151.796875,
+        "width": 394,
+        "height": 31,
+        "top": 151.796875,
+        "right": 412,
+        "bottom": 182.796875,
+        "left": 18
+      },
+      "cells": [
+        {
+          "index": 0,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 1,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 2,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 3,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 4,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 5,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 6,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 7,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 8,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 9,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 10,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 11,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 12,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 13,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 14,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 15,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 16,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 17,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 18,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 19,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 20,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 21,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 22,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 23,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 24,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 25,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 26,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 27,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 28,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 29,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 30,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 31,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 32,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 33,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 34,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 35,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 36,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 37,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 38,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 39,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 40,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 41,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 42,
+          "reachable": true,
+          "whole": true
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "width": 430,
+      "height": 932,
+      "overflow": false,
+      "board": {
+        "x": 4,
+        "y": 206.796875,
+        "width": 422,
+        "height": 634.203125,
+        "top": 206.796875,
+        "right": 426,
+        "bottom": 841,
+        "left": 4
+      },
+      "hud": {
+        "x": 18,
+        "y": 151.796875,
+        "width": 394,
+        "height": 31,
+        "top": 151.796875,
+        "right": 412,
+        "bottom": 182.796875,
+        "left": 18
+      },
+      "cells": [
+        {
+          "index": 0,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 1,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 2,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 3,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 4,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 5,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 6,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 7,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 8,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 9,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 10,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 11,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 12,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 13,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 14,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 15,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 16,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 17,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 18,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 19,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 20,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 21,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 22,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 23,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 24,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 25,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 26,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 27,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 28,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 29,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 30,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 31,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 32,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 33,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 34,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 35,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 36,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 37,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 38,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 39,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 40,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 41,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 42,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 43,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 44,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 45,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 46,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 47,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 48,
+          "reachable": true,
+          "whole": true
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "width": 430,
+      "height": 932,
+      "overflow": false,
+      "board": {
+        "x": 4,
+        "y": 209.796875,
+        "width": 422,
+        "height": 631.203125,
+        "top": 209.796875,
+        "right": 426,
+        "bottom": 841,
+        "left": 4
+      },
+      "hud": {
+        "x": 18,
+        "y": 154.796875,
+        "width": 394,
+        "height": 31,
+        "top": 154.796875,
+        "right": 412,
+        "bottom": 185.796875,
+        "left": 18
+      },
+      "cells": [
+        {
+          "index": 0,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 1,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 2,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 3,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 4,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 5,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 6,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 7,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 8,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 9,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 10,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 11,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 12,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 13,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 14,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 15,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 16,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 17,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 18,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 19,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 20,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 21,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 22,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 23,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 24,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 25,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 26,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 27,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 28,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 29,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 30,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 31,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 32,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 33,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 34,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 35,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 36,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 37,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 38,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 39,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 40,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 41,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 42,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 43,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 44,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 45,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 46,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 47,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 48,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 49,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 50,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 51,
+          "reachable": true,
+          "whole": true
+        },
+        {
+          "index": 52,
+          "reachable": true,
+          "whole": true
+        }
+      ]
+    }
+  ],
+  "phaseProofs": [
+    {
+      "phases": [
+        "SWAP",
+        "MATCH",
+        "TOKEN_COLLECT",
+        "BLOCKER_HIT",
+        "BLOCKER_BREAK",
+        "CRATE_COLLECT",
+        "REGION_UNLOCK",
+        "CLEAR",
+        "FALL",
+        "REFILL",
+        "SETTLE"
+      ],
+      "ids": [
+        "alpha-8-nail-8",
+        "alpha-8-wood-l8-crate-5",
+        "alpha-8-wood-l8-crate-6"
+      ],
+      "counters": [
+        2,
+        1
+      ],
+      "budget": 4680,
+      "status": "succeeded"
+    }
+  ],
+  "errors": [],
+  "physicalIPhone": false,
+  "unityEditor": false,
+  "input": {
+    "tap": "native touchscreen",
+    "drag": "CDP native touch"
+  }
+}

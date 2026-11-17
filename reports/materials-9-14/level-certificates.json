@@ -1,0 +1,1734 @@
+{
+  "schemaVersion": 1,
+  "rulesVersion": "classic-v6",
+  "levelDataVersion": "material-alpha-v1",
+  "materialVersion": "materials-v1",
+  "objectiveVersion": "objectives-v1",
+  "levels": [
+    {
+      "id": 6,
+      "scenario": "A",
+      "cells": 43,
+      "materials": {
+        "version": "materials-v1",
+        "definitions": [
+          {
+            "id": "wood"
+          }
+        ],
+        "sources": [
+          {
+            "id": "alpha-6-wood-l6-crate-1",
+            "kind": "crate-break",
+            "materialId": "wood",
+            "quantity": 1,
+            "cell": 19,
+            "blockerId": "l6-crate-1"
+          },
+          {
+            "id": "alpha-6-wood-l6-crate-2",
+            "kind": "crate-break",
+            "materialId": "wood",
+            "quantity": 1,
+            "cell": 20,
+            "blockerId": "l6-crate-2"
+          },
+          {
+            "id": "alpha-6-wood-l6-crate-3",
+            "kind": "crate-break",
+            "materialId": "wood",
+            "quantity": 1,
+            "cell": 21,
+            "blockerId": "l6-crate-3"
+          },
+          {
+            "id": "alpha-6-wood-l6-crate-4",
+            "kind": "crate-break",
+            "materialId": "wood",
+            "quantity": 1,
+            "cell": 22,
+            "blockerId": "l6-crate-4"
+          },
+          {
+            "id": "alpha-6-wood-l6-crate-5",
+            "kind": "crate-break",
+            "materialId": "wood",
+            "quantity": 1,
+            "cell": 23,
+            "blockerId": "l6-crate-5"
+          },
+          {
+            "id": "alpha-6-wood-l6-crate-6",
+            "kind": "crate-break",
+            "materialId": "wood",
+            "quantity": 1,
+            "cell": 24,
+            "blockerId": "l6-crate-6"
+          },
+          {
+            "id": "alpha-6-wood-l6-crate-7",
+            "kind": "crate-break",
+            "materialId": "wood",
+            "quantity": 1,
+            "cell": 25,
+            "blockerId": "l6-crate-7"
+          }
+        ]
+      },
+      "objectives": {
+        "version": "objectives-v1",
+        "score": false,
+        "ground": false,
+        "materials": [
+          {
+            "materialId": "wood",
+            "quantity": 7
+          }
+        ]
+      },
+      "routes": [
+        {
+          "path": [
+            [
+              1,
+              7
+            ],
+            [
+              7,
+              15
+            ],
+            [
+              28,
+              35
+            ],
+            [
+              22,
+              23
+            ]
+          ],
+          "steps": [
+            {
+              "pair": [
+                1,
+                7
+              ],
+              "waves": 1,
+              "materialEvents": [
+                {
+                  "sourceId": "alpha-6-wood-l6-crate-5",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 23,
+                  "kind": "crate-break",
+                  "wave": 0
+                },
+                {
+                  "sourceId": "alpha-6-wood-l6-crate-6",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 24,
+                  "kind": "crate-break",
+                  "wave": 0
+                }
+              ],
+              "materialCounts": [
+                2
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                7,
+                15
+              ],
+              "waves": 1,
+              "materialEvents": [
+                {
+                  "sourceId": "alpha-6-wood-l6-crate-2",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 20,
+                  "kind": "crate-break",
+                  "wave": 0
+                },
+                {
+                  "sourceId": "alpha-6-wood-l6-crate-3",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 21,
+                  "kind": "crate-break",
+                  "wave": 0
+                },
+                {
+                  "sourceId": "alpha-6-wood-l6-crate-4",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 22,
+                  "kind": "crate-break",
+                  "wave": 0
+                }
+              ],
+              "materialCounts": [
+                5
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                28,
+                35
+              ],
+              "waves": 3,
+              "materialEvents": [],
+              "materialCounts": [
+                5
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                22,
+                23
+              ],
+              "waves": 13,
+              "materialEvents": [
+                {
+                  "sourceId": "alpha-6-wood-l6-crate-1",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 19,
+                  "kind": "crate-break",
+                  "wave": 1
+                },
+                {
+                  "sourceId": "alpha-6-wood-l6-crate-7",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 25,
+                  "kind": "crate-break",
+                  "wave": 3
+                }
+              ],
+              "materialCounts": [
+                7
+              ],
+              "status": "won"
+            }
+          ],
+          "status": "won",
+          "score": 223,
+          "movesUsed": 4,
+          "movesLeft": 12,
+          "rngState": 2957634497,
+          "covered": 36,
+          "materialCounts": [
+            7
+          ],
+          "collectedSources": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "path": [
+            [
+              5,
+              13
+            ],
+            [
+              3,
+              4
+            ],
+            [
+              20,
+              27
+            ]
+          ],
+          "steps": [
+            {
+              "pair": [
+                5,
+                13
+              ],
+              "waves": 2,
+              "materialEvents": [
+                {
+                  "sourceId": "alpha-6-wood-l6-crate-1",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 19,
+                  "kind": "crate-break",
+                  "wave": 0
+                },
+                {
+                  "sourceId": "alpha-6-wood-l6-crate-2",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 20,
+                  "kind": "crate-break",
+                  "wave": 0
+                },
+                {
+                  "sourceId": "alpha-6-wood-l6-crate-5",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 23,
+                  "kind": "crate-break",
+                  "wave": 1
+                },
+                {
+                  "sourceId": "alpha-6-wood-l6-crate-6",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 24,
+                  "kind": "crate-break",
+                  "wave": 1
+                }
+              ],
+              "materialCounts": [
+                4
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                3,
+                4
+              ],
+              "waves": 1,
+              "materialEvents": [
+                {
+                  "sourceId": "alpha-6-wood-l6-crate-4",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 22,
+                  "kind": "crate-break",
+                  "wave": 0
+                }
+              ],
+              "materialCounts": [
+                5
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                20,
+                27
+              ],
+              "waves": 13,
+              "materialEvents": [
+                {
+                  "sourceId": "alpha-6-wood-l6-crate-3",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 21,
+                  "kind": "crate-break",
+                  "wave": 0
+                },
+                {
+                  "sourceId": "alpha-6-wood-l6-crate-7",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 25,
+                  "kind": "crate-break",
+                  "wave": 6
+                }
+              ],
+              "materialCounts": [
+                7
+              ],
+              "status": "won"
+            }
+          ],
+          "status": "won",
+          "score": 146,
+          "movesUsed": 3,
+          "movesLeft": 13,
+          "rngState": 4209898609,
+          "covered": 31,
+          "materialCounts": [
+            7
+          ],
+          "collectedSources": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "scenario": "B",
+      "cells": 49,
+      "materials": {
+        "version": "materials-v1",
+        "definitions": [
+          {
+            "id": "nail"
+          }
+        ],
+        "sources": [
+          {
+            "id": "alpha-7-nail-2",
+            "kind": "matched-cell",
+            "materialId": "nail",
+            "quantity": 1,
+            "cell": 2
+          },
+          {
+            "id": "alpha-7-nail-28",
+            "kind": "matched-cell",
+            "materialId": "nail",
+            "quantity": 1,
+            "cell": 28
+          },
+          {
+            "id": "alpha-7-nail-34",
+            "kind": "matched-cell",
+            "materialId": "nail",
+            "quantity": 1,
+            "cell": 34
+          },
+          {
+            "id": "alpha-7-nail-42",
+            "kind": "matched-cell",
+            "materialId": "nail",
+            "quantity": 1,
+            "cell": 42
+          },
+          {
+            "id": "alpha-7-nail-48",
+            "kind": "matched-cell",
+            "materialId": "nail",
+            "quantity": 1,
+            "cell": 48
+          }
+        ]
+      },
+      "objectives": {
+        "version": "objectives-v1",
+        "score": false,
+        "ground": false,
+        "materials": [
+          {
+            "materialId": "nail",
+            "quantity": 5
+          }
+        ]
+      },
+      "routes": [
+        {
+          "path": [
+            [
+              2,
+              10
+            ],
+            [
+              8,
+              9
+            ],
+            [
+              31,
+              25
+            ],
+            [
+              26,
+              20
+            ]
+          ],
+          "steps": [
+            {
+              "pair": [
+                2,
+                10
+              ],
+              "waves": 1,
+              "materialEvents": [
+                {
+                  "sourceId": "alpha-7-nail-2",
+                  "materialId": "nail",
+                  "quantity": 1,
+                  "cell": 2,
+                  "kind": "matched-cell",
+                  "wave": 0
+                }
+              ],
+              "materialCounts": [
+                1
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                8,
+                9
+              ],
+              "waves": 8,
+              "materialEvents": [
+                {
+                  "sourceId": "alpha-7-nail-28",
+                  "materialId": "nail",
+                  "quantity": 1,
+                  "cell": 28,
+                  "kind": "matched-cell",
+                  "wave": 5
+                }
+              ],
+              "materialCounts": [
+                2
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                31,
+                25
+              ],
+              "waves": 6,
+              "materialEvents": [
+                {
+                  "sourceId": "alpha-7-nail-48",
+                  "materialId": "nail",
+                  "quantity": 1,
+                  "cell": 48,
+                  "kind": "matched-cell",
+                  "wave": 1
+                }
+              ],
+              "materialCounts": [
+                3
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                26,
+                20
+              ],
+              "waves": 16,
+              "materialEvents": [
+                {
+                  "sourceId": "alpha-7-nail-42",
+                  "materialId": "nail",
+                  "quantity": 1,
+                  "cell": 42,
+                  "kind": "matched-cell",
+                  "wave": 8
+                },
+                {
+                  "sourceId": "alpha-7-nail-34",
+                  "materialId": "nail",
+                  "quantity": 1,
+                  "cell": 34,
+                  "kind": "matched-cell",
+                  "wave": 15
+                }
+              ],
+              "materialCounts": [
+                5
+              ],
+              "status": "won"
+            }
+          ],
+          "status": "won",
+          "score": 395,
+          "movesUsed": 4,
+          "movesLeft": 14,
+          "rngState": 1195706719,
+          "covered": 43,
+          "materialCounts": [
+            5
+          ],
+          "collectedSources": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "path": [
+            [
+              2,
+              9
+            ],
+            [
+              11,
+              19
+            ],
+            [
+              1,
+              8
+            ],
+            [
+              31,
+              25
+            ],
+            [
+              33,
+              40
+            ],
+            [
+              36,
+              43
+            ],
+            [
+              0,
+              8
+            ],
+            [
+              12,
+              19
+            ],
+            [
+              29,
+              30
+            ]
+          ],
+          "steps": [
+            {
+              "pair": [
+                2,
+                9
+              ],
+              "waves": 1,
+              "materialEvents": [],
+              "materialCounts": [
+                0
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                11,
+                19
+              ],
+              "waves": 1,
+              "materialEvents": [],
+              "materialCounts": [
+                0
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                1,
+                8
+              ],
+              "waves": 6,
+              "materialEvents": [
+                {
+                  "sourceId": "alpha-7-nail-2",
+                  "materialId": "nail",
+                  "quantity": 1,
+                  "cell": 2,
+                  "kind": "matched-cell",
+                  "wave": 0
+                },
+                {
+                  "sourceId": "alpha-7-nail-34",
+                  "materialId": "nail",
+                  "quantity": 1,
+                  "cell": 34,
+                  "kind": "matched-cell",
+                  "wave": 5
+                }
+              ],
+              "materialCounts": [
+                2
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                31,
+                25
+              ],
+              "waves": 6,
+              "materialEvents": [],
+              "materialCounts": [
+                2
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                33,
+                40
+              ],
+              "waves": 7,
+              "materialEvents": [
+                {
+                  "sourceId": "alpha-7-nail-28",
+                  "materialId": "nail",
+                  "quantity": 1,
+                  "cell": 28,
+                  "kind": "matched-cell",
+                  "wave": 4
+                },
+                {
+                  "sourceId": "alpha-7-nail-48",
+                  "materialId": "nail",
+                  "quantity": 1,
+                  "cell": 48,
+                  "kind": "matched-cell",
+                  "wave": 4
+                }
+              ],
+              "materialCounts": [
+                4
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                36,
+                43
+              ],
+              "waves": 10,
+              "materialEvents": [],
+              "materialCounts": [
+                4
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                0,
+                8
+              ],
+              "waves": 6,
+              "materialEvents": [],
+              "materialCounts": [
+                4
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                12,
+                19
+              ],
+              "waves": 1,
+              "materialEvents": [],
+              "materialCounts": [
+                4
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                29,
+                30
+              ],
+              "waves": 7,
+              "materialEvents": [
+                {
+                  "sourceId": "alpha-7-nail-42",
+                  "materialId": "nail",
+                  "quantity": 1,
+                  "cell": 42,
+                  "kind": "matched-cell",
+                  "wave": 3
+                }
+              ],
+              "materialCounts": [
+                5
+              ],
+              "status": "won"
+            }
+          ],
+          "status": "won",
+          "score": 536,
+          "movesUsed": 9,
+          "movesLeft": 9,
+          "rngState": 2706852677,
+          "covered": 48,
+          "materialCounts": [
+            5
+          ],
+          "collectedSources": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "scenario": "C",
+      "cells": 53,
+      "materials": {
+        "version": "materials-v1",
+        "definitions": [
+          {
+            "id": "wood"
+          },
+          {
+            "id": "nail"
+          }
+        ],
+        "sources": [
+          {
+            "id": "alpha-8-wood-l8-crate-0",
+            "kind": "crate-break",
+            "materialId": "wood",
+            "quantity": 1,
+            "cell": 22,
+            "blockerId": "l8-crate-0"
+          },
+          {
+            "id": "alpha-8-wood-l8-crate-1",
+            "kind": "crate-break",
+            "materialId": "wood",
+            "quantity": 1,
+            "cell": 23,
+            "blockerId": "l8-crate-1"
+          },
+          {
+            "id": "alpha-8-wood-l8-crate-2",
+            "kind": "crate-break",
+            "materialId": "wood",
+            "quantity": 1,
+            "cell": 24,
+            "blockerId": "l8-crate-2"
+          },
+          {
+            "id": "alpha-8-wood-l8-crate-3",
+            "kind": "crate-break",
+            "materialId": "wood",
+            "quantity": 1,
+            "cell": 25,
+            "blockerId": "l8-crate-3"
+          },
+          {
+            "id": "alpha-8-wood-l8-crate-4",
+            "kind": "crate-break",
+            "materialId": "wood",
+            "quantity": 1,
+            "cell": 26,
+            "blockerId": "l8-crate-4"
+          },
+          {
+            "id": "alpha-8-wood-l8-crate-5",
+            "kind": "crate-break",
+            "materialId": "wood",
+            "quantity": 1,
+            "cell": 27,
+            "blockerId": "l8-crate-5"
+          },
+          {
+            "id": "alpha-8-wood-l8-crate-6",
+            "kind": "crate-break",
+            "materialId": "wood",
+            "quantity": 1,
+            "cell": 28,
+            "blockerId": "l8-crate-6"
+          },
+          {
+            "id": "alpha-8-wood-l8-crate-7",
+            "kind": "crate-break",
+            "materialId": "wood",
+            "quantity": 1,
+            "cell": 29,
+            "blockerId": "l8-crate-7"
+          },
+          {
+            "id": "alpha-8-wood-l8-crate-8",
+            "kind": "crate-break",
+            "materialId": "wood",
+            "quantity": 1,
+            "cell": 30,
+            "blockerId": "l8-crate-8"
+          },
+          {
+            "id": "alpha-8-nail-8",
+            "kind": "matched-cell",
+            "materialId": "nail",
+            "quantity": 1,
+            "cell": 8
+          },
+          {
+            "id": "alpha-8-nail-31",
+            "kind": "matched-cell",
+            "materialId": "nail",
+            "quantity": 1,
+            "cell": 31
+          },
+          {
+            "id": "alpha-8-nail-41",
+            "kind": "matched-cell",
+            "materialId": "nail",
+            "quantity": 1,
+            "cell": 41
+          },
+          {
+            "id": "alpha-8-nail-52",
+            "kind": "matched-cell",
+            "materialId": "nail",
+            "quantity": 1,
+            "cell": 52
+          }
+        ]
+      },
+      "objectives": {
+        "version": "objectives-v1",
+        "score": true,
+        "ground": true,
+        "materials": [
+          {
+            "materialId": "wood",
+            "quantity": 9
+          },
+          {
+            "materialId": "nail",
+            "quantity": 4
+          }
+        ]
+      },
+      "routes": [
+        {
+          "path": [
+            [
+              8,
+              16
+            ],
+            [
+              18,
+              28
+            ],
+            [
+              7,
+              15
+            ],
+            [
+              49,
+              50
+            ],
+            [
+              40,
+              41
+            ],
+            [
+              44,
+              50
+            ],
+            [
+              36,
+              45
+            ],
+            [
+              13,
+              6
+            ],
+            [
+              6,
+              15
+            ],
+            [
+              19,
+              12
+            ],
+            [
+              35,
+              27
+            ],
+            [
+              19,
+              12
+            ],
+            [
+              2,
+              9
+            ],
+            [
+              9,
+              10
+            ],
+            [
+              20,
+              30
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "steps": [
+            {
+              "pair": [
+                8,
+                16
+              ],
+              "waves": 1,
+              "materialEvents": [
+                {
+                  "sourceId": "alpha-8-nail-8",
+                  "materialId": "nail",
+                  "quantity": 1,
+                  "cell": 8,
+                  "kind": "matched-cell",
+                  "wave": 0
+                },
+                {
+                  "sourceId": "alpha-8-wood-l8-crate-5",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 27,
+                  "kind": "crate-break",
+                  "wave": 0
+                },
+                {
+                  "sourceId": "alpha-8-wood-l8-crate-6",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 28,
+                  "kind": "crate-break",
+                  "wave": 0
+                }
+              ],
+              "materialCounts": [
+                2,
+                1
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                18,
+                28
+              ],
+              "waves": 2,
+              "materialEvents": [
+                {
+                  "sourceId": "alpha-8-wood-l8-crate-4",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 26,
+                  "kind": "crate-break",
+                  "wave": 0
+                },
+                {
+                  "sourceId": "alpha-8-wood-l8-crate-8",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 30,
+                  "kind": "crate-break",
+                  "wave": 0
+                },
+                {
+                  "sourceId": "alpha-8-wood-l8-crate-7",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 29,
+                  "kind": "crate-break",
+                  "wave": 1
+                }
+              ],
+              "materialCounts": [
+                5,
+                1
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                7,
+                15
+              ],
+              "waves": 1,
+              "materialEvents": [
+                {
+                  "sourceId": "alpha-8-wood-l8-crate-2",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 24,
+                  "kind": "crate-break",
+                  "wave": 0
+                },
+                {
+                  "sourceId": "alpha-8-wood-l8-crate-3",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 25,
+                  "kind": "crate-break",
+                  "wave": 0
+                }
+              ],
+              "materialCounts": [
+                7,
+                1
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                49,
+                50
+              ],
+              "waves": 4,
+              "materialEvents": [
+                {
+                  "sourceId": "alpha-8-wood-l8-crate-0",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 22,
+                  "kind": "crate-break",
+                  "wave": 1
+                },
+                {
+                  "sourceId": "alpha-8-wood-l8-crate-1",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 23,
+                  "kind": "crate-break",
+                  "wave": 2
+                },
+                {
+                  "sourceId": "alpha-8-nail-41",
+                  "materialId": "nail",
+                  "quantity": 1,
+                  "cell": 41,
+                  "kind": "matched-cell",
+                  "wave": 3
+                }
+              ],
+              "materialCounts": [
+                9,
+                2
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                40,
+                41
+              ],
+              "waves": 6,
+              "materialEvents": [],
+              "materialCounts": [
+                9,
+                2
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                44,
+                50
+              ],
+              "waves": 3,
+              "materialEvents": [
+                {
+                  "sourceId": "alpha-8-nail-52",
+                  "materialId": "nail",
+                  "quantity": 1,
+                  "cell": 52,
+                  "kind": "matched-cell",
+                  "wave": 0
+                }
+              ],
+              "materialCounts": [
+                9,
+                3
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                36,
+                45
+              ],
+              "waves": 5,
+              "materialEvents": [],
+              "materialCounts": [
+                9,
+                3
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                13,
+                6
+              ],
+              "waves": 3,
+              "materialEvents": [],
+              "materialCounts": [
+                9,
+                3
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                6,
+                15
+              ],
+              "waves": 4,
+              "materialEvents": [
+                {
+                  "sourceId": "alpha-8-nail-31",
+                  "materialId": "nail",
+                  "quantity": 1,
+                  "cell": 31,
+                  "kind": "matched-cell",
+                  "wave": 2
+                }
+              ],
+              "materialCounts": [
+                9,
+                4
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                19,
+                12
+              ],
+              "waves": 1,
+              "materialEvents": [],
+              "materialCounts": [
+                9,
+                4
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                35,
+                27
+              ],
+              "waves": 6,
+              "materialEvents": [],
+              "materialCounts": [
+                9,
+                4
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                19,
+                12
+              ],
+              "waves": 3,
+              "materialEvents": [],
+              "materialCounts": [
+                9,
+                4
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                2,
+                9
+              ],
+              "waves": 1,
+              "materialEvents": [],
+              "materialCounts": [
+                9,
+                4
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                9,
+                10
+              ],
+              "waves": 1,
+              "materialEvents": [],
+              "materialCounts": [
+                9,
+                4
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                20,
+                30
+              ],
+              "waves": 1,
+              "materialEvents": [],
+              "materialCounts": [
+                9,
+                4
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                4,
+                5
+              ],
+              "waves": 1,
+              "materialEvents": [],
+              "materialCounts": [
+                9,
+                4
+              ],
+              "status": "won"
+            }
+          ],
+          "status": "won",
+          "score": 562,
+          "movesUsed": 16,
+          "movesLeft": 4,
+          "rngState": 3224360922,
+          "covered": 53,
+          "materialCounts": [
+            9,
+            4
+          ],
+          "collectedSources": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "path": [
+            [
+              8,
+              9
+            ],
+            [
+              17,
+              18
+            ],
+            [
+              28,
+              20
+            ],
+            [
+              34,
+              43
+            ],
+            [
+              36,
+              45
+            ],
+            [
+              44,
+              51
+            ],
+            [
+              7,
+              8
+            ],
+            [
+              47,
+              48
+            ],
+            [
+              16,
+              25
+            ],
+            [
+              41,
+              34
+            ],
+            [
+              18,
+              19
+            ],
+            [
+              31,
+              23
+            ],
+            [
+              3,
+              4
+            ],
+            [
+              19,
+              20
+            ],
+            [
+              10,
+              19
+            ],
+            [
+              8,
+              9
+            ]
+          ],
+          "steps": [
+            {
+              "pair": [
+                8,
+                9
+              ],
+              "waves": 1,
+              "materialEvents": [
+                {
+                  "sourceId": "alpha-8-nail-8",
+                  "materialId": "nail",
+                  "quantity": 1,
+                  "cell": 8,
+                  "kind": "matched-cell",
+                  "wave": 0
+                },
+                {
+                  "sourceId": "alpha-8-wood-l8-crate-5",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 27,
+                  "kind": "crate-break",
+                  "wave": 0
+                },
+                {
+                  "sourceId": "alpha-8-wood-l8-crate-6",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 28,
+                  "kind": "crate-break",
+                  "wave": 0
+                }
+              ],
+              "materialCounts": [
+                2,
+                1
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                17,
+                18
+              ],
+              "waves": 1,
+              "materialEvents": [
+                {
+                  "sourceId": "alpha-8-wood-l8-crate-4",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 26,
+                  "kind": "crate-break",
+                  "wave": 0
+                }
+              ],
+              "materialCounts": [
+                3,
+                1
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                28,
+                20
+              ],
+              "waves": 2,
+              "materialEvents": [
+                {
+                  "sourceId": "alpha-8-wood-l8-crate-3",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 25,
+                  "kind": "crate-break",
+                  "wave": 0
+                },
+                {
+                  "sourceId": "alpha-8-wood-l8-crate-7",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 29,
+                  "kind": "crate-break",
+                  "wave": 1
+                }
+              ],
+              "materialCounts": [
+                5,
+                1
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                34,
+                43
+              ],
+              "waves": 9,
+              "materialEvents": [
+                {
+                  "sourceId": "alpha-8-nail-52",
+                  "materialId": "nail",
+                  "quantity": 1,
+                  "cell": 52,
+                  "kind": "matched-cell",
+                  "wave": 0
+                },
+                {
+                  "sourceId": "alpha-8-wood-l8-crate-2",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 24,
+                  "kind": "crate-break",
+                  "wave": 4
+                },
+                {
+                  "sourceId": "alpha-8-wood-l8-crate-8",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 30,
+                  "kind": "crate-break",
+                  "wave": 5
+                }
+              ],
+              "materialCounts": [
+                7,
+                2
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                36,
+                45
+              ],
+              "waves": 7,
+              "materialEvents": [],
+              "materialCounts": [
+                7,
+                2
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                44,
+                51
+              ],
+              "waves": 8,
+              "materialEvents": [
+                {
+                  "sourceId": "alpha-8-wood-l8-crate-1",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 23,
+                  "kind": "crate-break",
+                  "wave": 1
+                },
+                {
+                  "sourceId": "alpha-8-nail-41",
+                  "materialId": "nail",
+                  "quantity": 1,
+                  "cell": 41,
+                  "kind": "matched-cell",
+                  "wave": 2
+                },
+                {
+                  "sourceId": "alpha-8-wood-l8-crate-0",
+                  "materialId": "wood",
+                  "quantity": 1,
+                  "cell": 22,
+                  "kind": "crate-break",
+                  "wave": 7
+                }
+              ],
+              "materialCounts": [
+                9,
+                3
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                7,
+                8
+              ],
+              "waves": 1,
+              "materialEvents": [],
+              "materialCounts": [
+                9,
+                3
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                47,
+                48
+              ],
+              "waves": 2,
+              "materialEvents": [
+                {
+                  "sourceId": "alpha-8-nail-31",
+                  "materialId": "nail",
+                  "quantity": 1,
+                  "cell": 31,
+                  "kind": "matched-cell",
+                  "wave": 1
+                }
+              ],
+              "materialCounts": [
+                9,
+                4
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                16,
+                25
+              ],
+              "waves": 4,
+              "materialEvents": [],
+              "materialCounts": [
+                9,
+                4
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                41,
+                34
+              ],
+              "waves": 5,
+              "materialEvents": [],
+              "materialCounts": [
+                9,
+                4
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                18,
+                19
+              ],
+              "waves": 1,
+              "materialEvents": [],
+              "materialCounts": [
+                9,
+                4
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                31,
+                23
+              ],
+              "waves": 1,
+              "materialEvents": [],
+              "materialCounts": [
+                9,
+                4
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                3,
+                4
+              ],
+              "waves": 2,
+              "materialEvents": [],
+              "materialCounts": [
+                9,
+                4
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                19,
+                20
+              ],
+              "waves": 2,
+              "materialEvents": [],
+              "materialCounts": [
+                9,
+                4
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                10,
+                19
+              ],
+              "waves": 4,
+              "materialEvents": [],
+              "materialCounts": [
+                9,
+                4
+              ],
+              "status": "playing"
+            },
+            {
+              "pair": [
+                8,
+                9
+              ],
+              "waves": 1,
+              "materialEvents": [],
+              "materialCounts": [
+                9,
+                4
+              ],
+              "status": "won"
+            }
+          ],
+          "status": "won",
+          "score": 612,
+          "movesUsed": 16,
+          "movesLeft": 4,
+          "rngState": 2478916816,
+          "covered": 53,
+          "materialCounts": [
+            9,
+            4
+          ],
+          "collectedSources": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        }
+      ]
+    }
+  ]
+}

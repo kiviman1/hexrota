@@ -1,0 +1,170 @@
+{
+  "date": "2026-11-17",
+  "baseline": "f8d6b454f3989dc25921e5eee968a983fd3a762a",
+  "branch": "feature/hexrota-material-objectives-9-14",
+  "scope": "Real once-only crate-break and matched-cell sources, explicit versioned AND objectives, canonical v6 JS/C# gameplay and isolated normal-app alpha. No difficulty balancing.",
+  "contracts": {
+    "rules": "classic-v6",
+    "snapshot": 6,
+    "materials": "materials-v1",
+    "objectives": "objectives-v1",
+    "catalog": "material-alpha-v1",
+    "attemptEnvelope": 1,
+    "storagePrefix": "hexrota-material-9-14:",
+    "reviewQuery": "?dev=materials-9-14",
+    "pwaCacheGeneration": 54
+  },
+  "npmTest": {
+    "command": "npm test",
+    "exitCode": 0,
+    "logSha256": "7481b295d2d981e54c4babe39d09303f973e464d966d608978f352a377dd173d",
+    "priorChecksGoldensAndThresholdsRetained": true
+  },
+  "newJavaScriptGroups": {
+    "engine": 20,
+    "catalog": 11,
+    "visibleHints": 16,
+    "materialViewAndPresentation": 16,
+    "mountedApplication": 10,
+    "total": 73
+  },
+  "alphaExamples": [
+    {
+      "scenario": "A",
+      "id": 6,
+      "objectives": {
+        "wood": 7,
+        "score": false,
+        "ground": false
+      },
+      "winningRouteLengths": [
+        4,
+        3
+      ]
+    },
+    {
+      "scenario": "B",
+      "id": 7,
+      "objectives": {
+        "nail": 5,
+        "score": false,
+        "ground": false
+      },
+      "winningRouteLengths": [
+        4,
+        9
+      ]
+    },
+    {
+      "scenario": "C",
+      "id": 8,
+      "objectives": {
+        "wood": 9,
+        "nail": 4,
+        "score": true,
+        "ground": true
+      },
+      "winningRouteLengths": [
+        16,
+        16
+      ]
+    }
+  ],
+  "nativeParity": "native-parity.json",
+  "browser": {
+    "chromium": {
+      "checks": 18,
+      "errors": [],
+      "viewports": [
+        [
+          320,
+          568
+        ],
+        [
+          390,
+          844
+        ],
+        [
+          430,
+          932
+        ]
+      ],
+      "fullWins": 9,
+      "routeMoves": 72,
+      "screenshots": 33,
+      "nativeClockPassiveHintCases": true
+    },
+    "webkit": {
+      "checks": 18,
+      "errors": [],
+      "viewports": [
+        [
+          320,
+          568
+        ],
+        [
+          390,
+          844
+        ],
+        [
+          430,
+          932
+        ]
+      ],
+      "fullWins": 9,
+      "routeMoves": 72,
+      "screenshots": 33,
+      "nativeClockPassiveHintCases": true
+    }
+  },
+  "browserLimits": {
+    "touchTaps": "native touchscreen input in both browsers",
+    "chromiumDrag": "CDP native touch",
+    "webkitDrag": "native mouse/pointer fallback",
+    "nativeClocks": "No production code, Date/timer, rAF or CONFIG override in browser acceptance. Mounted harness keeps its existing fixed life UTC and injects only idle controller dependencies for its hint test.",
+    "physicalIPhone": false,
+    "unityEditor": false
+  },
+  "legacyRegressions": {
+    "nativeCommandsPassed": 14,
+    "pinnedLabChromium": 6,
+    "pinnedLabWebKit": 6,
+    "classicV5IdleChromium": 20,
+    "classicV5IdleWebKit": 20,
+    "oldSvgGeometryGoldens": 52,
+    "classicVariants": 40,
+    "classicWinningCertificates": 80,
+    "observableAudit": {
+      "command": "HEXROTA_AUDIT_WORKERS=2 node audit-observable.cjs --check --quiet",
+      "exitCode": 0,
+      "unchangedMetrics": true
+    },
+    "solvabilityAudit": {
+      "command": "node audit-solvability-9-9.cjs --check",
+      "exitCode": 0,
+      "unchangedMetrics": true
+    },
+    "historicalReportChanges": "Only source fingerprint provenance fields changed (3 lines across the two historical reports); every metric remains byte-protected."
+  },
+  "transactionAndLifecycle": [
+    "per-source dedup across waves/reload",
+    "HP2 damage zero versus actual break drop",
+    "closed cells yield no token",
+    "real first-wave hints award nothing",
+    "one canonical game+energy commit per accepted move",
+    "quota failure rolls back material counts/flags with board/RNG/history",
+    "normal mixed phase finishes succeeded; v6 watchdog includes every added phase wait",
+    "pause/background/Home/resize/late callbacks retain committed state",
+    "reduced motion static feedback",
+    "full T1/T2 routes retain v4 state and historical teaching counters"
+  ],
+  "alphaBoundaries": [
+    "Per-attempt level materials, no global inventory or new economy.",
+    "Out-of-order alpha wins save real records/terminal snapshots; existing sequential campaign economy and done flags are not bypassed.",
+    "Reward-v1 presentation is skipped when material-only goals omit score/ground; no synthetic completion facts are created."
+  ],
+  "sourceProtection": "../../fixtures/material-objectives-9-14-protected.json",
+  "mainOrProductionChanged": false,
+  "physicalIPhoneTested": false,
+  "unityEditorTested": false
+}

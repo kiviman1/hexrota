@@ -47,6 +47,52 @@ namespace Hexrota.Gameplay
     }
 
     [Serializable]
+    public sealed class MaterialDefinition
+    {
+        public string id;
+    }
+    [Serializable]
+    public sealed class MaterialSource
+    {
+        public string id;
+        public string kind;
+        public string materialId;
+        public int quantity;
+        public int cell;
+        public string blockerId;
+    }
+    [Serializable]
+    public sealed class MaterialConfig
+    {
+        public string version;
+        public MaterialDefinition[] definitions;
+        public MaterialSource[] sources;
+    }
+    [Serializable]
+    public sealed class MaterialGoal
+    {
+        public string materialId;
+        public int quantity;
+    }
+    [Serializable]
+    public sealed class ObjectiveConfig
+    {
+        public string version;
+        public bool? score;
+        public bool? ground;
+        public MaterialGoal[] materials;
+    }
+    [Serializable]
+    public sealed class MaterialEvent
+    {
+        public string sourceId;
+        public string materialId;
+        public int quantity;
+        public int cell;
+        public string kind;
+    }
+
+    [Serializable]
     public sealed class LevelConfig
     {
         // Campaign IDs are numbers; tutorial IDs are strings. The host JSON adapter
@@ -61,6 +107,8 @@ namespace Hexrota.Gameplay
         public int target;
         public string targetMode;
         public ObstaclesConfig obstacles;
+        public MaterialConfig materials;
+        public ObjectiveConfig objectives;
     }
 
     [Serializable]
@@ -79,6 +127,11 @@ namespace Hexrota.Gameplay
         public int[] blockerHp;
         public bool[] regionOpen;
         public bool[] cellOpen;
+        public string materialVersion;
+        public string objectiveVersion;
+        public int[] materialCounts;
+        public bool[] collectedSources;
+        public string status;
     }
 
     [Serializable]
@@ -113,6 +166,9 @@ namespace Hexrota.Gameplay
     [Serializable]
     public sealed class WaveFrame
     {
+        public MaterialEvent[] materialEvents;
+        public int[] materialCounts;
+        public bool[] collectedSources;
         public BlockerHit[] blockerHits;
         public string[] brokenBlockers;
         public string[] openedRegions;
