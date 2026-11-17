@@ -1,0 +1,297 @@
+{
+  "schemaVersion": 1,
+  "benchmarkScriptSha256": "10153b1118967a483cd9788ce3e6f2d5d6c824e3434c46255dc9b519a51e7881",
+  "inputSha256": "27daa973ff819c801212a7fce87cbb3910914bf7bbd5875597fcd815d2a35917",
+  "baselineCommit": "11b0161e913904199198ca61f477f47bb11ad390",
+  "environment": {
+    "node": "v24.22.1",
+    "platform": "linux",
+    "arch": "x64",
+    "kernel": "6.18.57",
+    "machine": "x86_64",
+    "modelName": "INTEL(R) XEON(R) PLATINUM 8573C",
+    "logicalCpuCount": 5
+  },
+  "invariants": {
+    "identicalFrozenInputs": true,
+    "allRepeatedSolveRoutesAndWorkIdentical": true,
+    "allRepeatedAnalysisMetricsAndWorkIdentical": true,
+    "beforeAfterSolveRoutesIdentical": true,
+    "beforeAfterAnalysisMetricsIdentical": true,
+    "beforeAfterHintRepliesIdentical": true
+  },
+  "baseline": {
+    "sourceHashes": {
+      "dist/engine.js": "e34ae85de659e4053a65af17f751b0add08a1b54878a1174d2ad316dc655f58f",
+      "dist/levels.js": "912d974e9fbcabf77036b0fb1d3e1cc25962049cb598707241fcdb9cc6795bd4",
+      "dist/variants.json": "087caa9349785ad3cd2cea6ae01e38968307205cba0dad530110b9e78a657f7d",
+      "lib/level-analysis.cjs": "963622fa0be571bc2d074716587d002dca917fdffbedb143a4557d938a3435fe"
+    },
+    "hint": {
+      "certified_start": {
+        "timing": {
+          "samples": 200,
+          "minMs": 0.02690899999998919,
+          "medianMs": 0.051367000000027474,
+          "p95Ms": 0.33061200000003055,
+          "maxMs": 3.4814970000000045,
+          "totalMs": 21.295910000000376
+        },
+        "cloneCallsPerPass": 0,
+        "swapCallsPerPass": 0,
+        "searchedNodesPerPass": 0,
+        "guaranteedPerPass": 40
+      },
+      "off_certificate": {
+        "timing": {
+          "samples": 200,
+          "minMs": 12.989720000000034,
+          "medianMs": 27.072140999999647,
+          "p95Ms": 54.212885999999344,
+          "maxMs": 170.57747100000006,
+          "totalMs": 6204.087322000002
+        },
+        "cloneCallsPerPass": 5100,
+        "swapCallsPerPass": 5100,
+        "searchedNodesPerPass": 5100,
+        "guaranteedPerPass": 0
+      }
+    },
+    "solve": {
+      "passes": [
+        {
+          "elapsedMs": 9381.886958,
+          "actualSearchExpansions": 50111,
+          "cloneCalls": 50111,
+          "swapCalls": 50151,
+          "provenWins": 38,
+          "budgetExceeded": 0
+        },
+        {
+          "elapsedMs": 11621.240472999998,
+          "actualSearchExpansions": 50111,
+          "cloneCalls": 50111,
+          "swapCalls": 50151,
+          "provenWins": 38,
+          "budgetExceeded": 0
+        },
+        {
+          "elapsedMs": 10078.070506,
+          "actualSearchExpansions": 50111,
+          "cloneCalls": 50111,
+          "swapCalls": 50151,
+          "provenWins": 38,
+          "budgetExceeded": 0
+        }
+      ],
+      "measuredCallTimesMs": [
+        9337.193343000006,
+        11560.474840999985,
+        10028.169140000002
+      ],
+      "medianMeasuredCallTimeMs": 10028.169140000002,
+      "validationPassWallTimesMs": [
+        9381.886958,
+        11621.240472999998,
+        10078.070506
+      ],
+      "medianValidationPassWallTimeMs": 10078.070506
+    },
+    "analysis": {
+      "passes": [
+        {
+          "elapsedMs": 10925.698923000004,
+          "cloneCalls": 57368,
+          "swapCalls": 60166,
+          "episodes": 320
+        },
+        {
+          "elapsedMs": 10884.690612999999,
+          "cloneCalls": 57368,
+          "swapCalls": 60166,
+          "episodes": 320
+        },
+        {
+          "elapsedMs": 10747.396093999996,
+          "cloneCalls": 57368,
+          "swapCalls": 60166,
+          "episodes": 320
+        }
+      ],
+      "measuredCallTimesMs": [
+        10919.861263000013,
+        10879.637528000021,
+        10741.792602999965
+      ],
+      "medianMeasuredCallTimeMs": 10879.637528000021,
+      "validationPassWallTimesMs": [
+        10925.698923000004,
+        10884.690612999999,
+        10747.396093999996
+      ],
+      "medianValidationPassWallTimeMs": 10884.690612999999
+    },
+    "memory": {
+      "start": {
+        "rssBytes": 33693696,
+        "heapUsedBytes": 6345272,
+        "heapTotalBytes": 8364032
+      },
+      "end": {
+        "rssBytes": 190119936,
+        "heapUsedBytes": 61214808,
+        "heapTotalBytes": 149737472
+      },
+      "betweenOperationSampledMax": {
+        "rssBytes": 191168512,
+        "heapUsedBytes": 77118048,
+        "heapTotalBytes": 149737472
+      },
+      "processMaxRssBytes": 191750144
+    },
+    "elapsedMs": 71475.197347
+  },
+  "after": {
+    "sourceHashes": {
+      "dist/engine.js": "fbf8b8918abaef6d3104507e1832e7ca9458e09c69ce0258bf20a6010fb9a06c",
+      "dist/levels.js": "912d974e9fbcabf77036b0fb1d3e1cc25962049cb598707241fcdb9cc6795bd4",
+      "dist/variants.json": "087caa9349785ad3cd2cea6ae01e38968307205cba0dad530110b9e78a657f7d",
+      "lib/level-analysis.cjs": "472982b6fb999ff84db712c5993d63f78c9e3f7ae1100e92f24c453d17a4e621"
+    },
+    "hint": {
+      "certified_start": {
+        "timing": {
+          "samples": 200,
+          "minMs": 0.39346599999998944,
+          "medianMs": 1.0108060000000023,
+          "p95Ms": 2.7628740000000107,
+          "maxMs": 5.000314000000003,
+          "totalMs": 256.52388499999995
+        },
+        "cloneCallsPerPass": 40,
+        "swapCallsPerPass": 278,
+        "searchedNodesPerPass": 0,
+        "guaranteedPerPass": 40
+      },
+      "off_certificate": {
+        "timing": {
+          "samples": 200,
+          "minMs": 10.979319000000032,
+          "medianMs": 18.382048999999824,
+          "p95Ms": 31.763785000000098,
+          "maxMs": 41.386348,
+          "totalMs": 4014.8179800000044
+        },
+        "cloneCallsPerPass": 5100,
+        "swapCallsPerPass": 5100,
+        "searchedNodesPerPass": 5100,
+        "guaranteedPerPass": 0
+      }
+    },
+    "solve": {
+      "passes": [
+        {
+          "elapsedMs": 9492.723676999998,
+          "actualSearchExpansions": 50111,
+          "cloneCalls": 50111,
+          "swapCalls": 50151,
+          "provenWins": 38,
+          "budgetExceeded": 0
+        },
+        {
+          "elapsedMs": 9631.995538999998,
+          "actualSearchExpansions": 50111,
+          "cloneCalls": 50111,
+          "swapCalls": 50151,
+          "provenWins": 38,
+          "budgetExceeded": 0
+        },
+        {
+          "elapsedMs": 8920.958966000002,
+          "actualSearchExpansions": 50111,
+          "cloneCalls": 50111,
+          "swapCalls": 50151,
+          "provenWins": 38,
+          "budgetExceeded": 0
+        }
+      ],
+      "measuredCallTimesMs": [
+        9442.593795000004,
+        9578.935384999995,
+        8879.675081000005
+      ],
+      "medianMeasuredCallTimeMs": 9442.593795000004,
+      "validationPassWallTimesMs": [
+        9492.723676999998,
+        9631.995538999998,
+        8920.958966000002
+      ],
+      "medianValidationPassWallTimeMs": 9492.723676999998
+    },
+    "analysis": {
+      "passes": [
+        {
+          "elapsedMs": 9217.885257000002,
+          "cloneCalls": 57368,
+          "swapCalls": 60166,
+          "episodes": 320
+        },
+        {
+          "elapsedMs": 9311.746333000003,
+          "cloneCalls": 57368,
+          "swapCalls": 60166,
+          "episodes": 320
+        },
+        {
+          "elapsedMs": 9246.555105000007,
+          "cloneCalls": 57368,
+          "swapCalls": 60166,
+          "episodes": 320
+        }
+      ],
+      "measuredCallTimesMs": [
+        9211.053235,
+        9306.629244999975,
+        9241.223341000019
+      ],
+      "medianMeasuredCallTimeMs": 9241.223341000019,
+      "validationPassWallTimesMs": [
+        9217.885257000002,
+        9311.746333000003,
+        9246.555105000007
+      ],
+      "medianValidationPassWallTimeMs": 9246.555105000007
+    },
+    "memory": {
+      "start": {
+        "rssBytes": 33615872,
+        "heapUsedBytes": 6346128,
+        "heapTotalBytes": 8888320
+      },
+      "end": {
+        "rssBytes": 190697472,
+        "heapUsedBytes": 51364104,
+        "heapTotalBytes": 149737472
+      },
+      "betweenOperationSampledMax": {
+        "rssBytes": 191782912,
+        "heapUsedBytes": 78706856,
+        "heapTotalBytes": 149737472
+      },
+      "processMaxRssBytes": 192307200
+    },
+    "elapsedMs": 61381.166351
+  },
+  "interpretation": {
+    "certifiedRouteProofWorkAddedPer40Starts": {
+      "cloneCalls": 40,
+      "swapCalls": 278
+    },
+    "offCertificateWorkUnchanged": true,
+    "publishedSolveWorkAndOutcomesUnchanged": true,
+    "full40PolicyAnalysisWorkAndMetricsUnchanged": true,
+    "timingScope": "measuredCallTimesMs sums only measured actual solver/analyse calls; validationPassWallTimesMs also includes independent route proof replay and bookkeeping. Hint timing excludes restoration/warmup/independent proof checks but includes actual hint-internal route replay.",
+    "limits": "Environment-specific sequential process measurements with pooled heterogeneous hints, not statistical speedup evidence. Memory is absolute RSS/heap sampled between operations, with separate OS process-lifetime RSS high-water mark; no transient heap peak, browser FPS, physical mobile, or thermal claim.",
+    "workerAndFallback": "Worker search maxMs90, app fallback maxMs12/maxDepth1 remain soft search budgets. Snapshot restore and route verification occur outside hint search clock. App600ms timeout resolves null and fallback then runs synchronously; worker is terminated in finally after fallback."
+  }
+}

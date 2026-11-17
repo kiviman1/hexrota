@@ -32,18 +32,13 @@ namespace Hexrota.Hints
     {
         private readonly int[][][] routes;
         private HintRoutes(int[][][] routes) { this.routes = routes; }
-        internal int[][][] Certified
+        internal int CandidateCount { get { return routes.Length; } }
+        internal int CandidateLength(int index) { return routes[index] == null ? 0 : routes[index].Length; }
+        internal int[][] CopyCandidate(int index)
         {
-            get
-            {
-                var copy = new int[routes.Length][][];
-                for (int i = 0; i < routes.Length; i++)
-                {
-                    copy[i] = new int[routes[i].Length][];
-                    for (int j = 0; j < routes[i].Length; j++) copy[i][j] = (int[])routes[i][j].Clone();
-                }
-                return copy;
-            }
+            var copy = new int[routes[index].Length][];
+            for (int i = 0; i < copy.Length; i++) copy[i] = (int[])routes[index][i].Clone();
+            return copy;
         }
 
         public static HintRoutes Create(LevelConfig level, int[][][] solutions = null,
@@ -51,15 +46,17 @@ namespace Hexrota.Hints
         {
             if (level == null) throw new ArgumentNullException("level");
             var data = new List<int[][]>();
-            if (solutions != null) foreach (int[][] route in solutions) Add(level, route, data);
-            Add(level, solution, data);
-            if (alternativeSolutions != null) foreach (int[][] route in alternativeSolutions) Add(level, route, data);
+            if (solutions != null) foreach (int[][] route in solutions) Add(level, route, data, true);
+            Add(level, solution, data, false);
+            if (alternativeSolutions != null) foreach (int[][] route in alternativeSolutions) Add(level, route, data, true);
             return new HintRoutes(data.ToArray());
         }
 
-        private static void Add(LevelConfig level, int[][] route, List<int[][]> target)
+        private static void Add(LevelConfig level, int[][] route, List<int[][]> target, bool candidateSlot)
         {
-            if (route == null || route.Length == 0) return;
+            // Preserve array entry slots for Find's bounded scan, without changing
+            // the accepted/ignored null and empty route binding contract.
+            if (route == null || route.Length == 0) { if (candidateSlot) target.Add(null); return; }
             if (route.Length > level.moves) throw new ArgumentException("Invalid certified hint route");
             var copy = new int[route.Length][];
             for (int i = 0; i < route.Length; i++)
@@ -77,6 +74,8 @@ namespace Hexrota.Hints
 
     public static class HintSolver
     {
+        private const int MaxRouteCandidates = 64, MaxRoutePairs = 512;
+
         private sealed class Node
         {
             public HexMatch game;
@@ -137,9 +136,15 @@ namespace Hexrota.Hints
             if (game == null) throw new ArgumentNullException("game");
             if (game.Status != "playing") return null;
             List<int[]> legal = game.LegalMoves(); if (legal.Count == 0) return null;
-            if (routes != null) foreach (int[][] route in routes.Certified)
+            // Keep metadata work separate from search counters and truncated.
+            // Copied route pairs bound all current-state proof swap attempts too.
+            int routePairs = 0;
+            if (routes != null) for (int candidate = 0; candidate < Math.Min(MaxRouteCandidates, routes.CandidateCount); candidate++)
             {
-                if (game.history.Count >= route.Length) continue;
+                int length = routes.CandidateLength(candidate);
+                if (game.history.Count >= length || length > game.history.Count + game.movesLeft || length > MaxRoutePairs - routePairs) continue;
+                routePairs += length;
+                int[][] route = routes.CopyCandidate(candidate);
                 bool prefix = true;
                 for (int i = 0; i < game.history.Count; i++) if (!Same(game.history[i], route[i])) { prefix = false; break; }
                 if (!prefix) continue;
@@ -147,8 +152,8 @@ namespace Hexrota.Hints
                 foreach (int[] move in legal) if (Same(move, pair)) { available = true; break; }
                 if (!available) continue;
                 int[][] continuation = CopyRoute(route, game.history.Count);
-                // Published JS data assumes certified paths. The C# binding checks
-                // them, and the current-state clone verifies every guarantee again.
+                // Binding checks origin certification; both runtimes verify the
+                // current-state continuation again before publishing a guarantee.
                 if (!Wins(game, continuation)) continue;
                 return new HintResult { pair = (int[])pair.Clone(), source = "proven_route", guaranteed = true,
                     continuation = continuation, searchedNodes = 0, depth = 0, truncated = false };
