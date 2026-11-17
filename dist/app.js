@@ -31,6 +31,8 @@ window.HexSessionStore.boot(function startApp(session) {
   let active=saved.current,activeLevel=levels[saved.current],activeAttempt=null,attemptPending=true,saveBlocked=false,loadIssue=null,engine, selected=null, hinted=null, focusIndex=0;
   let pointer=null, toastTimer, terminalTimer, epoch=0, comboText='',presentation=null,hintJob=null;
   let boardRenderIdentity=null; // Disposable SVG scope; never an attempt or save authority.
+  let idleHints=null,idleHintView=null,idleUnfocused=false,idlePageHidden=false,renderedIdleBoardKey=null;
+  const idleHintListeners=[];
   const geometryCache=new Map();
   let pendingStage=null,pendingRestart=null,invalidPresentation=null;
   const appState=window.HexAppState.create();
@@ -65,6 +67,59 @@ window.HexSessionStore.boot(function startApp(session) {
       engineStatus:engine?.status||null,canOpen:canOpen(active),writeBlocked:lifeWriteFailed||saveBlocked,
       lifeDiscarded:lifeDiscarded(),resetPending:fullResetPending,nativeModalOpen:!!modal,nativeModalId:modal?.id||null,
       tutorial:isTutorial(),activeIndex:active,tutorialCount,feedback:!!guideFeedback()};
+  }
+  // Idle hints own transient timing and decorative SVG only. The engine and
+  // existing selectors remain the authority for rules, input and lifecycle.
+  const idleBoardKey=state=>JSON.stringify([activeLevel.id,state.values,state.layers,state.score,state.movesLeft]);
+  function idleHintFacts(){
+    const attemptId=activeAttempt?.attemptId||null;
+    if(!engine||!activeLevel||!attemptId)return {eligible:false,attemptId,generation:epoch,boardKey:null};
+    const state=appState.snapshot(),domain=inputDomainView(),boardKey=idleBoardKey(engine);
+    const eligible=window.HexStateSelectors.canStartMove(state,domain)&&active>=tutorialCount&&
+      document.body.dataset.screen==='game'&&!document.hidden&&!idleUnfocused&&!idlePageHidden&&
+      selected===null&&hinted===null&&!pointer&&!presentation&&!assistanceMode&&!pendingAssistance&&!appHintPending()&&
+      renderedIdleBoardKey===boardKey&&boardRenderIdentity===attemptId&&
+      pendingStage===null&&!pendingRestart&&!pendingRescueProvider&&!pendingRescueReceipt&&!pendingLifeProvider&&!pendingLifeReceipt&&
+      $('tutorial-coach').hidden===true&&!guideFeedback()&&!invalidPresentation&&!fullResetPending;
+    return {eligible,attemptId,generation:epoch,boardKey};
+  }
+  function clearIdleHintVisual(){try{idleHintView?.hide();}catch(_){}}
+  function syncIdleHints(){try{idleHints?.sync();}catch(_){clearIdleHintVisual();}}
+  function idleHintInteraction(){try{idleHints?.interaction();}catch(_){}try{idleHintView?.hide();}catch(_){}}
+  function mountIdleHints(){
+    if(fullResetPending||!window.HexIdleHints||!window.HexIdleHintView)return;
+    try{
+      if(!idleHintView)idleHintView=window.HexIdleHintView.create({board:$('board'),reducedMotion:reduceMotion});
+      if(!idleHints)idleHints=window.HexIdleHints.create({
+        read:idleHintFacts,now:()=>window.performance.now(),setTimeout:window.setTimeout.bind(window),clearTimeout:window.clearTimeout.bind(window),
+        choosePair:context=>{
+          const model=engine;
+          return window.HexIdleHints.chooseVisiblePair({values:model.values,layers:model.layers,score:model.score,target:activeLevel.target,targetMode:activeLevel.targetMode,movesLeft:model.movesLeft},model.legalMoves(),values=>model.findMatches(values),context.previousPair);
+        },
+        onShow:cue=>{const current=idleHintFacts();if(current.eligible&&current.attemptId===cue.attemptId&&current.generation===cue.generation&&current.boardKey===cue.boardKey)idleHintView?.show({pair:cue.pair,layout:geometry(),duration:cue.duration});},
+        onHide:()=>idleHintView?.hide(),subscribe:sync=>appState.subscribe(()=>sync())
+      });
+      syncIdleHints();
+    }catch(_){try{idleHintView?.hide();}catch(_){}}
+  }
+  function disposeIdleHints(){
+    try{idleHints?.dispose();}catch(_){}idleHints=null;
+    try{idleHintView?.destroy();}catch(_){}idleHintView=null;
+    for(const remove of idleHintListeners.splice(0))remove();
+  }
+  function bindIdleHintLifecycle(){
+    const listen=(target,type,callback,options)=>{target.addEventListener(type,callback,options);idleHintListeners.push(()=>target.removeEventListener(type,callback,options));};
+    // Capture retires decoration before native gestures or toolbar actions.
+    for(const type of ['pointerdown','click','keydown'])listen(document,type,idleHintInteraction,{capture:true,passive:true});
+    const afterInput=()=>window.queueMicrotask(syncIdleHints);
+    for(const type of ['pointerup','pointercancel','lostpointercapture'])listen(window,type,afterInput,true);
+    listen(window,'blur',event=>{if(event.target===window){idleUnfocused=true;idleHintInteraction();}},true);
+    listen(window,'focus',event=>{if(event.target===window){idleUnfocused=false;syncIdleHints();}},true);
+    listen(document,'visibilitychange',idleHintInteraction,true);
+    for(const type of ['resize','orientationchange'])listen(window,type,idleHintInteraction,{capture:true,passive:true});
+    if(window.visualViewport)listen(window.visualViewport,'resize',idleHintInteraction,{passive:true});
+    listen(window,'pagehide',()=>{idlePageHidden=true;idleHintInteraction();},true);
+    listen(window,'pageshow',()=>{idlePageHidden=false;syncIdleHints();},true);
   }
   function presentationDomainView(){
     return {attemptReady:!!engine&&!!activeAttempt&&!attemptPending&&!saveBlocked,
@@ -478,7 +533,7 @@ window.HexSessionStore.boot(function startApp(session) {
       $('buy-'+suffix).textContent=`${config.costGold} Altınla +1 al`;
     }
   }
-  function cancelAssistance(){assistanceMode=null;pendingAssistance=null;if($('assistance-target-prompt'))$('assistance-target-prompt').hidden=true;if($('assistance-confirm'))$('assistance-confirm').disabled=true;}
+  function cancelAssistance(){assistanceMode=null;pendingAssistance=null;if($('assistance-target-prompt'))$('assistance-target-prompt').hidden=true;if($('assistance-confirm'))$('assistance-confirm').disabled=true;syncIdleHints();}
   function beginAssistance(itemId){
     if(!inventoryPlayable())return;
     const view=economyView(),config=window.HEX_ECONOMY_CONFIG.inventory[itemId];
@@ -895,7 +950,7 @@ window.HexSessionStore.boot(function startApp(session) {
     clearTimeout(toastTimer); toastTimer=setTimeout(()=>$('toast').classList.remove('show'),3300);
   }
   function stopPointer() {
-    const old=pointer;pointer=null;
+    const old=pointer;pointer=null;syncIdleHints();
     if(old)try{if($('board').hasPointerCapture?.(old.id))$('board').releasePointerCapture(old.id);}catch(_){}
   }
   // Keep the game canvas tied to the visible viewport without rebuilding its state.
@@ -926,7 +981,7 @@ window.HexSessionStore.boot(function startApp(session) {
   function unlockAudio(){syncAudio();audio?.unlock().catch(()=>{});}
   function openModal(id){
     if(!stateEffects.canOpen(id,modalFacts(id)))return false;
-    lessonDemo.stop();stopPointer();cancelHint();clearInvalidSwap();if(id!=='assistance-dialog')cancelAssistance();
+    idleHintInteraction();lessonDemo.stop();stopPointer();cancelHint();clearInvalidSwap();if(id!=='assistance-dialog')cancelAssistance();
     if(presentation)finishPresentation(presentation);
     clearTimeout(terminalTimer);
     const change=stateEffects.open(id,modalFacts(id));
@@ -947,6 +1002,7 @@ window.HexSessionStore.boot(function startApp(session) {
     syncPlaytestActivity();refreshLessonDemo();syncScene();
     if(id==='rescue-provider-dialog')cancelRescueProvider();
     if(id==='life-provider-dialog')cancelLifeProvider();
+    syncIdleHints();
   }
   document.querySelectorAll('dialog').forEach(dialog=>{
     on(dialog,'click',e=>{
@@ -1018,7 +1074,7 @@ window.HexSessionStore.boot(function startApp(session) {
   function showScreen(next,{replace=false,historyChange=true}={}){
     const event={type:'NAVIGATE',screen:next};
     if(!appState.preview(event,modalFacts()).accepted)return false;
-    cancelAssistance();
+    idleHintInteraction();cancelAssistance();
     if(presentation)finishPresentation(presentation);
     if(next!=='game')clearScoreReceipt();
     lessonDemo.stop();cancelPresentation();cancelHint();stopPointer();clearTimeout(terminalTimer);epoch++;
@@ -1027,7 +1083,7 @@ window.HexSessionStore.boot(function startApp(session) {
     const apply=()=>{
       if(fullResetPending||appState.snapshot().lifecycle.suspended||generation!==navigationEffectGeneration||appScreen()!==next)return false;
       if(!stateEffects.renderScreen(next,{replace,historyChange}).accepted)return false;
-      updateMenus();syncAudio();syncPlaytestActivity();renderLives();refreshLessonDemo();syncScene();return true;
+      updateMenus();syncAudio();syncPlaytestActivity();renderLives();refreshLessonDemo();syncScene();syncIdleHints();return true;
     };
     // A provider close may synchronously recover a failed write. Its navigation
     // can queue behind a modal effect; only render the latest accepted screen.
@@ -1128,7 +1184,7 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   function loadLevel(index,fresh=false,{activate=false}={}) {
     if(activate&&!campaignEntryAllowed(index))return false;
-    clearScoreReceipt();cancelAssistance();
+    idleHintInteraction();clearScoreReceipt();cancelAssistance();
     cancelPresentation();cancelHint();epoch++;appState.invalidateOperations();clearTimeout(terminalTimer);stopPointer();
     active=canOpen(index)?index:nextCampaignIndex()??0;lastEconomyReward=null;activeLevel=levels[active];activeAttempt=null;attemptPending=true;saveBlocked=false;loadIssue=null;
     if(fresh)saved.guideAcks=saved.guideAcks.filter(id=>!id.startsWith(`${active}:`));
@@ -1177,7 +1233,7 @@ window.HexSessionStore.boot(function startApp(session) {
     });
   }
   function render(state=null,options={}) {
-    lessonDemo.stop();clearInvalidSwap();
+    renderedIdleBoardKey=null;clearIdleHintVisual();lessonDemo.stop();clearInvalidSwap();
     const display=state||{values:engine.values,layers:engine.layers,score:engine.score,movesLeft:engine.movesLeft};
     const focused=document.activeElement?.closest?.('[data-index]')?.dataset.index;
     const visualIdentity=activeAttempt?.attemptId||`preview:${active}`;
@@ -1191,8 +1247,6 @@ window.HexSessionStore.boot(function startApp(session) {
     $('move-counter').textContent=`${engine.turn} / ${activeLevel.moves+(engine.bonusMoves||0)} HAMLE`;
     $('coverage').textContent=`${covered} / ${total}`;
     $('coverage-ring').style.strokeDashoffset=String(87.965*(1-covered/total));
-    $('hint').disabled=appBusy()||appHintPending()||!!guideFeedback()||engine.status!=='playing';
-    $('hint').querySelector('span').textContent=appHintPending()?'Aranıyor…':'İpucu';
     $('reset').disabled=false;
     $('open-inventory').hidden=isTutorial();$('open-inventory').disabled=appBusy()||engine.status!=='playing'||attemptPending||saveBlocked;
     $('skip-animation').hidden=true; // Permanent animation-skip control is intentionally hidden; board remains full-size.
@@ -1216,6 +1270,9 @@ window.HexSessionStore.boot(function startApp(session) {
     if($('ground-label'))$('ground-label').textContent=isTutorial()?'Yeşert':'Yeşil alan';
     if($('game-goal-title'))$('game-goal-title').textContent=active===0?'Her yeri yeşert':isTutorial()?'İki hedefi tamamla':'Puanı topla, alanı boya';
     renderCoach();syncPlaytestActivity();refreshLessonDemo();syncScene();
+    // A disposable projection fingerprint, never authoritative gameplay. A
+    // failed/intermediate redraw cannot cue a pair on a stale visual board.
+    renderedIdleBoardKey=idleBoardKey(display);syncIdleHints();
   }
   function renderCoach(){
     const coach=$('tutorial-coach'),tutorial=isTutorial(),feedback=guideFeedback();coach.hidden=!tutorial||(engine.status!=='playing'&&!appBusy());
@@ -1253,7 +1310,7 @@ window.HexSessionStore.boot(function startApp(session) {
   function flyScore(job,frame,options){return scorePresentation.flyScore(job,frame,options);}
   const canAnimate=()=>!document.hidden&&!reduceMotion()&&typeof window.Element.prototype.animate==='function';
   function startPresentation(job){
-    presentation=job;job.attemptId=activeAttempt?.attemptId||null;
+    idleHintInteraction();presentation=job;job.attemptId=activeAttempt?.attemptId||null;
     // This token coordinates visual lifetime only. Failure to allocate it must
     // never reject an already valid domain command or its atomic profile write.
     try{job.uiOperation=appState.beginOperation('presentation',activeAttempt?.attemptId||null);}catch(_){job.uiOperation=null;}
@@ -1282,7 +1339,7 @@ window.HexSessionStore.boot(function startApp(session) {
     try{renderLevels();render();}
     catch(_){/* Keep committed results eligible even if the redraw fails. */}
     finally{
-      $('board').setAttribute('aria-busy','false');$('board-stage').classList.remove('busy');$('reset').disabled=false;$('skip-animation').hidden=true;
+      $('board').setAttribute('aria-busy','false');$('board-stage').classList.remove('busy');$('reset').disabled=false;$('skip-animation').hidden=true;syncIdleHints();
     }
     const receipt=$('score-receipt');if(receipt)receipt.textContent=result.scoreGain?`+${result.scoreGain}`:'';
     syncScene();reactScene(job);
@@ -1353,6 +1410,7 @@ window.HexSessionStore.boot(function startApp(session) {
     const job=invalidPresentation;invalidPresentation=null;if(!job)return;
     clearTimeout(job.timer);job.controller.abort();job.swapVisual?.cleanup();
     for(const animation of job.animations)try{animation.cancel?.();}catch(_){}
+    syncIdleHints();
   }
   function matchEffects(job,frame,timing=motion){
     const layer=$('board').querySelector('.fx-layer'),positions=geometry().positions;
@@ -1438,7 +1496,7 @@ window.HexSessionStore.boot(function startApp(session) {
   function invalidSwap(a,b){
     clearInvalidSwap();
     if(!canAnimate())return;
-    const job={controller:new AbortController(),animations:[],timer:null};invalidPresentation=job;
+    const job={controller:new AbortController(),animations:[],timer:null};invalidPresentation=job;syncIdleHints();
     try{
       const visual=swapVisual(job,a,b,'invalid'),positions=geometry().positions;
       for(const [index,[from,to]]of[[a,b],[b,a]].entries()){
@@ -1449,6 +1507,7 @@ window.HexSessionStore.boot(function startApp(session) {
     }catch(_){clearInvalidSwap();}
   }
   async function performSwap(a,b) {
+    idleHintInteraction();
     if(!gameInputAllowed()||guideFeedback())return;
     lessonDemo.stop();
     if(assistanceMode){chooseAssistanceTarget(a);return;}
@@ -1478,7 +1537,7 @@ window.HexSessionStore.boot(function startApp(session) {
       markCompleted(true);persist();settleActiveLife();terminalEvent();
       // Commit the board, life settlement and permanent reward together before feedback.
       if(!commitSession())return;
-      job.committed=true;renderLevels();if(engine.status==='won')updateMenus();
+      job.committed=true;try{idleHints?.playerMoveSucceeded();}catch(_){}renderLevels();if(engine.status==='won')updateMenus();
       if(!activatePresentation(job))return;
       if(!rewardPlan&&saved.preferences.haptics&&typeof navigator.vibrate==='function')try{navigator.vibrate(12);}catch(_){}
       if(rewardPlan&&!canAnimate()&&!rewardPlan.headline?.completion){
@@ -1489,6 +1548,7 @@ window.HexSessionStore.boot(function startApp(session) {
     finally{finishPresentation(job,job.presentationFailed?'failed':'succeeded');}
   }
   function select(index) {
+    idleHintInteraction();
     if(!gameInputAllowed()||guideFeedback())return;
     lessonDemo.stop();
     if(assistanceMode){chooseAssistanceTarget(index);return;}
@@ -1575,7 +1635,7 @@ window.HexSessionStore.boot(function startApp(session) {
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=45');
+            job.worker=new Worker('./hint-worker.js?v=48');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:activeLevel,snapshot:engine.snapshot()});
@@ -1635,7 +1695,7 @@ window.HexSessionStore.boot(function startApp(session) {
       return {index,dx,dy,distance:Math.hypot(dx,dy),screenDistance:Math.hypot(matrix.a*dx+matrix.c*dy,matrix.b*dx+matrix.d*dy)};
     }).filter(neighbor=>neighbor.screenDistance>0):[];
     e.preventDefault();pointer={id:e.pointerId,index,x:e.clientX,y:e.clientY,local,inverse,neighbors,target:null,maxDistance:0,conflicted:false,invalid:false,epoch,game:engine};
-    try{$('board').setPointerCapture?.(e.pointerId);}catch(_){}
+    try{$('board').setPointerCapture?.(e.pointerId);}catch(_){}syncIdleHints();
   });
   // A second contact anywhere cancels rather than committing a half-finished pinch.
   window.addEventListener('pointerdown',e=>{if(pointer&&e.pointerType==='touch'&&e.pointerId!==pointer.id)stopPointer();});
@@ -1668,12 +1728,12 @@ window.HexSessionStore.boot(function startApp(session) {
     lessonDemo.stop();cancelAssistance();stopPointer();clearInvalidSwap();
     if(presentation)finishPresentation(presentation);
     cancelHint();clearTimeout(terminalTimer);terminalTimer=null;epoch++;
-    appState.dispatch({type:'APP_SUSPENDED'});syncScene();
+    appState.dispatch({type:'APP_SUSPENDED'});syncScene();syncIdleHints();try{idleHintView?.destroy();}catch(_){}finally{idleHintView=null;}
     try{scenePresentation?.destroy();}catch(_){}finally{scenePresentation=null;}
   });
   // A BFCache return reuses this host. Recreate only the disposed presentation;
   // SessionStore retains its existing persisted-pageshow lock/reload policy.
-  on(window,'pageshow',()=>{appState.dispatch({type:'APP_RESUMED'});appState.dispatch({type:'APP_VISIBILITY_CHANGED',hidden:document.hidden});mountScene();renderCoach();syncScene();});
+  on(window,'pageshow',()=>{appState.dispatch({type:'APP_RESUMED'});appState.dispatch({type:'APP_VISIBILITY_CHANGED',hidden:document.hidden});mountScene();renderCoach();syncScene();mountIdleHints();});
   on($('board'),'click',e=>{if(e.detail===0){const tile=e.target.closest('[data-index]');if(tile)select(+tile.dataset.index);}});
   on($('board'),'keydown',e=>{
     const tile=e.target.closest('[data-index]');if(!tile||!gameInputAllowed())return;if(guideFeedback()){e.preventDefault();return;}if(appBusy()){e.preventDefault();finishPresentation(presentation);return;}
@@ -1698,7 +1758,7 @@ window.HexSessionStore.boot(function startApp(session) {
   on($('assistance-target-cancel'),'click',()=>{cancelAssistance();render();});
   on($('tutorial-replay'),'click',()=>enterGame(0,{fresh:true}));
   on($('skip-animation'),'click',()=>finishPresentation(presentation));
-  on($('reset'),'click',restart);on($('retry'),'click',restart);on($('hint'),'click',hint);
+  on($('reset'),'click',restart);on($('retry'),'click',restart);
   on($('help'),'click',()=>openModal('help-dialog'));
   on($('sound'),'click',()=>{saved.sound=!saved.sound;renderSound();persist();unlockAudio();if(saved.sound)tone(3);});
   on($('continue'),'click',showResult);
@@ -1777,7 +1837,7 @@ window.HexSessionStore.boot(function startApp(session) {
     // navigation can fire pagehide, blur, provider or observation handlers.
     fullResetPending=true;sessionDirty=false;sessionPlaytestDirty=false;
     for(const timer of recurringTimers.splice(0))window.clearInterval(timer);
-    stateEffects.destroy();appState.destroy();try{tavikDialogue?.destroy();}catch(_){}
+    disposeIdleHints();stateEffects.destroy();appState.destroy();try{tavikDialogue?.destroy();}catch(_){}
     try{scenePresentation?.destroy();}catch(_){}
     saved=freshGame;lifeFeature=freshEnergy;engine=null;activeAttempt=null;attemptPending=true;
     pendingRescueReceipt=null;pendingLifeReceipt=null;eventState=null;playtest=null;
@@ -1805,7 +1865,6 @@ window.HexSessionStore.boot(function startApp(session) {
     }
     if(!gameInputAllowed()||['INPUT','TEXTAREA','SELECT'].includes(event.target.tagName))return;
     if(event.key.toLowerCase()==='r'){event.preventDefault();restart();}
-    if(event.key.toLowerCase()==='h'){event.preventDefault();hint();}
   });
   on(window,'pagehide',()=>{audio?.stop();if(engine)persist();});
   const motionQuery=window.matchMedia?.('(prefers-reduced-motion: reduce)');
@@ -1821,5 +1880,9 @@ window.HexSessionStore.boot(function startApp(session) {
     window.addEventListener('pagehide',()=>{if(fullResetPending||!playtest)return;playtest.setActivity({playing:false,attemptId:activeAttempt?.attemptId||null});persistPlaytest();});
   }
   sessionAction(()=>{try{initializeRescue();initializeEconomy();}catch(error){economyIssue='invalid';throw error;}initializeLives();bindLivesUI();bindRescueUI();hydrateRecords();renderSound();loadLevel(active);showScreen('home',{replace:true});bindPlaytest();});
+  bindIdleHintLifecycle();mountIdleHints();
+  // Explicit pre-boot diagnostic harness only; ordinary gameplay has no manual
+  // button, shortcut or exported hint request. Pure solver APIs stay available.
+  if(window.HexHintTestMode?.enabled===true)Object.defineProperty(window,'HexHintTestAdapter',{value:Object.freeze({request:()=>hint(),isPending:()=>appHintPending()}),enumerable:false});
   if(migrated)toast('İlerlemen korundu. Öğreticileri yolculuk menüsünden yeniden oynayabilirsin.');
 });

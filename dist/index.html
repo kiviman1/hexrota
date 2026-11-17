@@ -14,42 +14,44 @@
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="./style.css?v=45">
-  <script src="./engine.js?v=45" defer></script>
-  <script src="./levels.js?v=45" defer></script>
-  <script src="./tutorials.js?v=45" defer></script>
-  <script src="./variants-data.js?v=45" defer></script>
-  <script src="./attempts.js?v=45" defer></script>
-  <script src="./events.js?v=45" defer></script>
-  <script src="./lives-config.js?v=45" defer></script>
-  <script src="./lives.js?v=45" defer></script>
-  <script src="./life-providers.js?v=45" defer></script>
-  <script src="./playtest.js?v=45" defer></script>
-  <script src="./reward-rules.js?v=45" defer></script>
-  <script src="./rewards.js?v=45" defer></script>
-  <script src="./reward-adapter.js?v=45" defer></script>
-  <script src="./audio.js?v=45" defer></script>
-  <script src="./session-store.js?v=45" defer></script>
-  <script src="./economy-config.js?v=45" defer></script>
-  <script src="./economy.js?v=45" defer></script>
-  <script src="./commands.js?v=45" defer></script>
-  <script src="./rescue.js?v=45" defer></script>
-  <script src="./garden.js?v=45" defer></script>
-  <script src="./game-save.js?v=45" defer></script>
-  <script src="./board-view.js?v=45" defer></script>
-  <script src="./board-input.js?v=45" defer></script>
-  <script src="./score-presentation.js?v=45" defer></script>
-  <script src="./move-presentation.js?v=45" defer></script>
-  <script src="./first-play.js?v=45" defer></script>
-  <script src="./assets/scenes/coop-v1/tavik-motion.js?v=45" defer></script>
-  <script src="./scene-config.js?v=45" defer></script>
-  <script src="./scene-presentation.js?v=45" defer></script>
-  <script src="./tavik-dialogue.js?v=45" defer></script>
-  <script src="./app-state.js?v=45" defer></script>
-  <script src="./state-selectors.js?v=45" defer></script>
-  <script src="./state-effects.js?v=45" defer></script>
-  <script src="./app.js?v=45" defer></script>
-  <script src="./pwa.js?v=45" defer></script>
+  <link rel="stylesheet" href="./style.css?v=48">
+  <script src="./engine.js?v=48" defer></script>
+  <script src="./levels.js?v=48" defer></script>
+  <script src="./tutorials.js?v=48" defer></script>
+  <script src="./variants-data.js?v=48" defer></script>
+  <script src="./attempts.js?v=48" defer></script>
+  <script src="./events.js?v=48" defer></script>
+  <script src="./lives-config.js?v=48" defer></script>
+  <script src="./lives.js?v=48" defer></script>
+  <script src="./life-providers.js?v=48" defer></script>
+  <script src="./playtest.js?v=48" defer></script>
+  <script src="./reward-rules.js?v=48" defer></script>
+  <script src="./rewards.js?v=48" defer></script>
+  <script src="./reward-adapter.js?v=48" defer></script>
+  <script src="./audio.js?v=48" defer></script>
+  <script src="./session-store.js?v=48" defer></script>
+  <script src="./economy-config.js?v=48" defer></script>
+  <script src="./economy.js?v=48" defer></script>
+  <script src="./commands.js?v=48" defer></script>
+  <script src="./rescue.js?v=48" defer></script>
+  <script src="./garden.js?v=48" defer></script>
+  <script src="./game-save.js?v=48" defer></script>
+  <script src="./board-view.js?v=48" defer></script>
+  <script src="./board-input.js?v=48" defer></script>
+  <script src="./score-presentation.js?v=48" defer></script>
+  <script src="./move-presentation.js?v=48" defer></script>
+  <script src="./first-play.js?v=48" defer></script>
+  <script src="./assets/scenes/coop-v1/tavik-motion.js?v=48" defer></script>
+  <script src="./scene-config.js?v=48" defer></script>
+  <script src="./scene-presentation.js?v=48" defer></script>
+  <script src="./tavik-dialogue.js?v=48" defer></script>
+  <script src="./app-state.js?v=48" defer></script>
+  <script src="./state-selectors.js?v=48" defer></script>
+  <script src="./state-effects.js?v=48" defer></script>
+  <script src="./idle-hints.js?v=48" defer></script>
+  <script src="./idle-hint-view.js?v=48" defer></script>
+  <script src="./app.js?v=48" defer></script>
+  <script src="./pwa.js?v=48" defer></script>
 </head>
 <body data-ui-theme="comic">
   <svg class="icon-library" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -143,7 +145,6 @@
             <nav class="tool-actions" aria-label="Oyun kontrolleri">
               <button id="game-home" class="dock-button" type="button" data-nav="home" aria-label="Ana menüye dön"><svg class="icon" aria-hidden="true"><use href="#i-home"/></svg><span>Menü</span></button>
               <button id="reset" class="tool-button dock-button" type="button" title="Aynı bölümü yeniden başlat (R)"><svg class="icon" aria-hidden="true"><use href="#i-reset"/></svg><span>Yeniden</span></button>
-              <button id="hint" class="hint-button dock-button" type="button" title="Bir eşleşme öner (H)"><svg class="icon" aria-hidden="true"><use href="#i-bulb"/></svg><span>İpucu</span></button>
               <button id="open-inventory" class="dock-button" type="button" aria-label="Güçlendirici çantanı aç"><svg class="icon" aria-hidden="true"><use href="#i-leaf"/></svg><span>Çanta</span></button>
               <button id="pause" class="dock-button" type="button" aria-label="Oyunu duraklat"><svg class="icon" aria-hidden="true"><use href="#i-pause"/></svg><span>Mola</span></button>
               <button id="game-settings" class="dock-button" type="button" data-settings aria-label="Ayarlar"><svg class="icon" aria-hidden="true"><use href="#i-settings"/></svg><span>Ayarlar</span></button>
@@ -167,7 +168,7 @@
       <li><span>2</span><div><strong>Eşleştir, puan kazan.</strong><p>Üç tane 3 eşleşirse 9 puan kazanırsın. Eşleşen taşların altı yeşil olur, yerlerine yeni taşlar gelir.</p></div></li>
       <li><span>3</span><div><strong>Puanı topla, her yeri boya.</strong><p>Hedef puana ulaş ve her yeri yeşile boya. İki noktalı yerler iki eşleşmede yeşil olur.</p></div></li>
     </ol>
-    <div class="help-shortcuts"><span><kbd>R</kbd> Yeniden</span><span><kbd>H</kbd> İpucu</span><span><kbd>↵</kbd> Taş seç</span></div><button id="help-teach" class="primary-button" type="button">Birlikte deneyelim <svg class="icon"><use href="#i-arrow"/></svg></button><button class="text-button" type="button" data-close>Kapat</button>
+    <div class="help-shortcuts"><span><kbd>R</kbd> Yeniden</span><span><kbd>↵</kbd> Taş seç</span></div><button id="help-teach" class="primary-button" type="button">Birlikte deneyelim <svg class="icon"><use href="#i-arrow"/></svg></button><button class="text-button" type="button" data-close>Kapat</button>
   </dialog>
   <dialog id="win-dialog" class="modal win-modal">
     <div id="confetti" aria-hidden="true"></div><div class="victory-mark"><svg viewBox="0 0 86 94" aria-hidden="true"><path d="m43 3 39 22v44L43 91 4 69V25Z"/><path d="m26 47 12 12 24-27"/></svg></div><span class="eyebrow" id="win-eyebrow">BÖLÜM TAMAMLANDI</span><h2 id="win-title">Güzel bir hamleydi.</h2><p id="win-description">Hedef tamam. Her yer yeşil.</p><p id="win-assisted" class="assisted-label" hidden>Güçlendirici kullanarak tamamladın.</p><div class="win-stats"><div><span>TOPLAM PUAN</span><strong id="win-total"></strong></div><div><span>KALAN HAMLE</span><strong id="win-moves"></strong></div><div><span>YEŞİL ALAN</span><strong>%100</strong></div></div><div id="win-rewards" class="win-rewards" aria-label="Bu bölümün kalıcı ödülü" hidden><strong><span id="win-gold">+20 Altın</span><span id="win-star">+1 yıldız</span></strong><p id="win-inventory" hidden></p><p>Bu bölüm tamamlandı. Ödülün ve ilerlemen kaydedildi.</p></div><section id="welcome-reward" class="welcome-reward" aria-label="Tek seferlik başlangıç hediyesi" hidden>

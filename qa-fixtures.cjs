@@ -3,9 +3,10 @@
 const assert=require('node:assert/strict');
 const key='hexrota-match-v5',lifeKey='hexrota-lives-v1',catalogs=new WeakMap();
 // Regression/balance fixtures explicitly opt out of energy waits. Production defaults stay on.
-function prepareLifeBypass(window,read){
+function prepareLifeBypass(window,read,{hintDiagnostics=false}={}){
+ if(hintDiagnostics)window.HexHintTestMode={enabled:true};
  window.HexSessionTestMode={isolated:true};if(!window.HexSessionStore)window.eval(read('session-store.js'));
- for(const [file,name] of [['app-state.js','HexAppState'],['state-selectors.js','HexStateSelectors'],['state-effects.js','HexStateEffects'],['game-save.js','HexGameSave'],['board-view.js','HexBoardView'],['board-input.js','HexBoardInput'],['score-presentation.js','HexScorePresentation'],['move-presentation.js','HexMovePresentation'],['first-play.js','HexFirstPlay'],['assets/scenes/coop-v1/tavik-motion.js','HexTavikMotion'],['scene-config.js','HEX_SCENE_CONFIG'],['scene-presentation.js','HexScenePresentation'],['tavik-dialogue.js','HexTavikDialogue']]) if(!window[name]) window.eval(read(file));
+ for(const [file,name] of [['app-state.js','HexAppState'],['state-selectors.js','HexStateSelectors'],['state-effects.js','HexStateEffects'],['game-save.js','HexGameSave'],['board-view.js','HexBoardView'],['board-input.js','HexBoardInput'],['score-presentation.js','HexScorePresentation'],['move-presentation.js','HexMovePresentation'],['first-play.js','HexFirstPlay'],['idle-hints.js','HexIdleHints'],['idle-hint-view.js','HexIdleHintView'],['assets/scenes/coop-v1/tavik-motion.js','HexTavikMotion'],['scene-config.js','HEX_SCENE_CONFIG'],['scene-presentation.js','HexScenePresentation'],['tavik-dialogue.js','HexTavikDialogue']]) if(!window[name]) window.eval(read(file));
  // App integration fixtures use the same production economy modules as index.html; the life TEST wallet stays separate.
  for(const [file,globalName]of [['economy-config.js','HEX_ECONOMY_CONFIG'],['economy.js','HexEconomy'],['commands.js','HexCommands'],['rescue.js','HexRescue'],['garden.js','HexGarden']])if(!window[globalName])window.eval(read(file));
  const dependencies=[['lives-config.js','HEX_LIVES_CONFIG'],['lives.js','HexLives'],['life-providers.js','HexLifePrototype']];
@@ -19,14 +20,14 @@ function prepareLifeBypass(window,read){
  }
 }
 
-function loadGame(window,files,read,{originalBoards=[]}={}){
+function loadGame(window,files,read,{originalBoards=[],hintDiagnostics=false}={}){
  const modules=[];
  for(const file of files){
   if(file==='app.js')for(const dependency of ['variants-data.js','attempts.js','events.js'])if(!modules.includes(dependency))modules.push(dependency);
   modules.push(file);
  }
  for(const file of modules){
-  if(file==='app.js')prepareLifeBypass(window,read);
+  if(file==='app.js')prepareLifeBypass(window,read,{hintDiagnostics});
   if(file==='app.js'&&originalBoards.length){
    const saved=JSON.parse(window.localStorage.getItem(key)||'null')||{current:0,done:[],boards:{},sound:false};
    saved.boards=saved.boards||{};

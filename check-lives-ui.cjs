@@ -31,12 +31,12 @@ function existing(stage=2,{turns=1,lost=false,legacy=false}={}){
  if(entry){saved.attempts={[stage]:plain(entry.metadata)};saved.attemptStats={[stage]:{attemptId:entry.metadata.attemptId,attemptNumber:1,started:true,terminalEvent:lost?'level_failed':null,hintsUsed:0,cascades}};saved.variantSelection.serial=7;saved.variantSelection.counts[base.id]=1;saved.variantSelection.recent[base.id]=[entry.metadata.variantId];}
  return {saved,game,metadata:entry?.metadata};
 }
-function mount({saved=fresh(),life,now=NOW,oldV4,profile,events,writeFailure=false,beforeApp=null}={}){
+function mount({saved=fresh(),life,now=NOW,oldV4,profile,events,writeFailure=false,beforeApp=null,hintDiagnostics=false}={}){
  if(beforeApp!==null&&typeof beforeApp!=='function')throw new TypeError('beforeApp must be a function');
  const vc=new VirtualConsole();vc.on('jsdomError',error=>errors.push(error.message));
  const dom=new JSDOM(read('index.html'),{url:'https://hexrota-lives.example/',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});
  try{
- const w=dom.window,d=w.document,network=[];let utc=now;w.HexSessionTestMode={isolated:true};
+ const w=dom.window,d=w.document,network=[];let utc=now;w.HexSessionTestMode={isolated:true};if(hintDiagnostics)w.HexHintTestMode={enabled:true};
  w.Date.now=()=>utc;w.matchMedia=()=>({matches:true,addEventListener(){},removeEventListener(){}});
  w.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};w.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');this.dispatchEvent(new w.Event('close'));};
  w.HTMLElement.prototype.scrollIntoView=function(){};w.scrollTo=()=>{};

@@ -25,7 +25,8 @@ function snap(f){
  const engine=snapshot?(snapshot.rulesVersion==='assisted-v1'?new f.w.HexAssistedGame(level,{attemptId:metadata.attemptId,limits:{greenBrush:1,colorKey:1,rescue:1}},snapshot):new f.w.HexMatch(level,snapshot)):null;
  return {game,energy,events:plain(f.events()),view:{stage:index,pending:!snapshot,metadata,snapshot,status:engine?.status??null,life:plain(f.w.HexLives.createManager(f.w.HEX_LIVES_CONFIG,{clock:()=>f.now}).view(energy.life))},rewards:engine&&!engine.assisted?plain(f.w.HexRewardAdapter.restore(engine.level,engine.snapshot(),f.w.HEX_REWARD_RULES,f.w.HexMatch,f.w.HexRewards,metadata?.attemptId||String(engine.level.id)).state):null};
 }
-async function flow(label,options,steps){const f=mount(options),commands=[{op:'boot'}],gold=[snap(f)];const input={...config,storage:{[GK]:plain(options.saved||fresh()),...(options.life!==undefined?{[LK]:plain(options.life)}:{}),...(options.profile?{[PK]:plain(options.profile)}:{}),...(options.oldV4?{'hexrota-match-v4':plain(options.oldV4)}:{})}};if(options.oldV4)delete input.storage[GK];input.providerNamespace=f.life().provider.namespace;input.selectionSeed=f.save().variantSelection.seed;input.rescueProviderNamespace=f.save().rescue?.provider.namespace;try{for(const step of steps){commands.push(step.command);await step.run(f);gold.push(snap(f));}add(label,{...input,commands},{flow:gold});flowCount++;}finally{f.close();}}
+async function flow(label,options,steps){const f=mount({...options,hintDiagnostics:steps.some(step=>step.command.op==='hint')}),commands=[{op:'boot'}],gold=[snap(f)];const input={...config,storage:{[GK]:plain(options.saved||fresh()),...(options.life!==undefined?{[LK]:plain(options.life)}:{}),...(options.profile?{[PK]:plain(options.profile)}:{}),...(options.oldV4?{'hexrota-match-v4':plain(options.oldV4)}:{})}};if(options.oldV4)delete input.storage[GK];input.providerNamespace=f.life().provider.namespace;input.selectionSeed=f.save().variantSelection.seed;input.rescueProviderNamespace=f.save().rescue?.provider.namespace;try{for(const step of steps){commands.push(step.command);await step.run(f);gold.push(snap(f));}add(label,{...input,commands},{flow:gold});flowCount++;}finally{f.close();}}
+function requestHint(f){assert.equal(f.d.querySelector('#hint'),null,'parity diagnostics add no manual hint control');f.w.HexHintTestAdapter.request();}
 const op=(command,run)=>({command,run});
 function stageEntry(stage,reason='stage_entry',freshValue=true){return op({op:'enter',stage,fresh:freshValue,reason},async f=>{f.click(`[data-stage="${stage}"]`);f.click('#pregame-start');await wait(1);});}
 function restartStep(confirmed=true){return op({op:'restart',confirmed},async f=>{f.click('#reset');if(f.node('#restart-dialog').open)f.click(confirmed?'#restart-confirm':'#restart-cancel');await wait(1);});}
@@ -68,7 +69,7 @@ function writeFailure(f,flags){if(!f._nativeSetItem){f._nativeSetItem=f.w.Storag
  await flow('fresh start, preview, valid swap, hint, cancel restart, restart', {saved:fresh(),life:lifePool(5)},[
   op({op:'preview',stage:2},f=>{f.click('[data-stage="2"]');f.click('#pregame-dialog [data-close]');}),
   op({op:'enter',stage:2,fresh:true,reason:'stage_entry'},enter),
-  op({op:'hint'},async f=>{f.click('#hint');await until(()=>f.events().events.some(e=>e.name==='hint_used'),'real app hint');}),
+  op({op:'hint'},async f=>{requestHint(f);await until(()=>f.events().events.some(e=>e.name==='hint_used'),'real app hint');}),
   op({op:'swap',pair:plain(R.HexAttempts.createCatalog(R.HEX_LEVELS,R.HEX_VARIANTS,R.HexMatch).start(1,{attemptSerial:1,selectionSeed:0x41abca}).level.solution[0])},async f=>move(f,plain(f.game().level.solution[0]))),
   restartStep(false),restartStep(true)
  ]);
@@ -81,7 +82,7 @@ function writeFailure(f,flags){if(!f._nativeSetItem){f._nativeSetItem=f.w.Storag
  await flow('zero life blocks main and tutorial stays free',{saved:fresh(),life:lifePool(0)},[
   op({op:'enter',stage:2,fresh:true,reason:'stage_entry'},enter),
   op({op:'enter',stage:0,fresh:true,reason:'free_tutorial'},f=>f.click('#lives-teach')),
-  op({op:'hint'},f=>f.click('#hint')),
+  op({op:'hint'},requestHint),
   op({op:'swap',pair:[4,3]},f=>move(f,[4,3])),
   op({op:'ack'},f=>f.click('#coach-next'))
  ]);
@@ -133,7 +134,7 @@ function writeFailure(f,flags){if(!f._nativeSetItem){f._nativeSetItem=f.w.Storag
  for(const count of [0,1])await flow('confirmed played restart at '+count+' life is discarded and cannot move',{saved:resumed.saved,life:lifePool(count)},[
   op({op:'enter',stage:2},enter),restartStep(true),
   op({op:'swap',pair:plain(resumed.game.level.solution[1])},f=>move(f,plain(resumed.game.level.solution[1]))),
-  op({op:'hint'},f=>f.click('#hint'))
+  op({op:'hint'},requestHint)
  ]);
  // A real move which would win must not survive a failed canonical write, debit
  // a life, unlock a stage, or leave a durable terminal analytics event.
@@ -144,7 +145,7 @@ function writeFailure(f,flags){if(!f._nativeSetItem){f._nativeSetItem=f.w.Storag
  ]);
  await flow('analytics write failure does not undo a committed move',{saved:resumed.saved,life:lifePool(5)},[
   op({op:'enter',stage:2},enter),op({op:'fail',events:true},f=>writeFailure(f,{events:true})),
-  op({op:'hint'},async f=>{f.click('#hint');await wait(5);}),op({op:'fail'},f=>writeFailure(f,{})),op({op:'menu'},f=>{f.click('#pause');f.click('#pause-home');})
+  op({op:'hint'},async f=>{requestHint(f);await wait(5);}),op({op:'fail'},f=>writeFailure(f,{})),op({op:'menu'},f=>{f.click('#pause');f.click('#pause-home');})
  ]);
  await flow('TEST purchase and unlimited attempt protection after expiry',{saved:fresh(),life:lifePool(3)},[
   op({op:'begin',product:'unlimited_lives_30m'},f=>{f.click('#home-lives');f.click('#lives-buy-unlimited');}),
@@ -207,7 +208,7 @@ function writeFailure(f,flags){if(!f._nativeSetItem){f._nativeSetItem=f.w.Storag
   op({op:'useBooster',quoteFromPreview:true,itemId:'colorKey',index:keyChoice.index,value:keyChoice.value,operationId:keyId},confirmBooster),
   op({op:'purchaseInventory',itemId:'greenBrush',operationId:'purchase:greenBrush:11'},f=>{f.click('#open-inventory');f.click('#buy-green-brush');f.click('#inventory-dialog [data-close]');}),
   op({op:'swap',pair:assistedSwap},f=>move(f,assistedSwap)),
-  op({op:'hint',maxDepth:1},async f=>{f.click('#hint');await until(()=>f.events().events.some(event=>event.name==='hint_used'),'assisted real hint');}),
+  op({op:'hint',maxDepth:1},async f=>{requestHint(f);await until(()=>f.events().events.some(event=>event.name==='hint_used'),'assisted real hint');}),
   op({op:'close'},f=>f.w.dispatchEvent(new f.w.Event('pagehide'))),op({op:'boot'},()=>{})
  ]);
  await flow('brush canonical write failure rolls back stock, board and event together',{saved:inventorySave,life:lifePool(5)},[

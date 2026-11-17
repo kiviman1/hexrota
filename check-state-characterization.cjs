@@ -140,15 +140,15 @@ test('an animation API failure cannot undo a committed move or leave gameplay bu
   await enter(f);f.w.Element.prototype.animate=()=>{throw new Error('characterization animation failure');};
   const pair=playingPair(f),expected=f.game().clone();assert(expected.swap(...pair).ok);await move(f,pair);
   assert.deepEqual(plain(f.game().snapshot()),plain(expected.snapshot()));assert.equal(f.node('#board').getAttribute('aria-busy'),'false');
-  assert.equal(f.node('#pause-dialog').open,false);assert.equal(f.node('#hint').disabled,false);assert.deepEqual(dialogs(f),[]);
+  assert.equal(f.node('#pause-dialog').open,false);assert.equal(f.d.querySelector('#hint'),null);assert.equal(f.node('#open-inventory').disabled,false);assert.deepEqual(dialogs(f),[]);
  }finally{f.close();}
 });
 
 test('a cancelled hint worker cannot write into a later tutorial screen or attempt',async()=>{
- const f=observed({saved:existing(2,{turns:1}).saved}),workers=[];try{
+ const f=observed({saved:existing(2,{turns:1}).saved,hintDiagnostics:true}),workers=[];try{
   await enter(f);const oldPair=playingPair(f);
   f.w.Worker=class{constructor(){workers.push(this);}postMessage(payload){this.payload=payload;}terminate(){this.terminated=true;}};
-  f.click('#hint');await until(()=>workers.length===1,'the actual hint path starts a worker');
+  assert.equal(f.d.querySelector('#hint'),null,'developer worker coverage adds no manual control');f.w.HexHintTestAdapter.request();await until(()=>workers.length===1,'the actual hint path starts a worker');
   f.click('#game-home');f.click('#home-teach');await until(()=>f.save().current===0&&f.d.body.dataset.screen==='game','a new tutorial is active');
   assert.equal(workers[0].terminated,true);const before=authority(f),events=plain(f.events());
   workers[0].onmessage({data:{hint:{pair:oldPair,source:'heuristic',guaranteed:false}}});await wait(5);

@@ -68,7 +68,7 @@ test('game mode hides website chrome while menu navigation remains available',()
   }
   assert.equal(f.w.getComputedStyle(f.d.body).overflow,'hidden','game document cannot scroll');
   assert.notEqual(f.w.getComputedStyle(f.node('board')).display,'none','board remains visible');
-  for(const id of ['sum','target','moves-left','pause','hint','reset'])assert(f.node(id),'HUD and core controls remain reachable');
+  for(const id of ['sum','target','moves-left','pause','reset'])assert(f.node(id),'HUD and core controls remain reachable');assert.equal(f.d.getElementById('hint'),null,'manual hint has no layout slot');
   f.click('game-home');assert.equal(f.d.body.dataset.screen,'home');
   assert.notEqual(f.w.getComputedStyle(header).display,'none','home chrome returns after leaving game');
  }finally{f.close();}

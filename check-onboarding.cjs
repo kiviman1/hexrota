@@ -52,7 +52,7 @@ function feedback(f,pending=true){
  assert.equal(f.node('#coach-next').hidden,!pending,'only a pending explanation has an acknowledgement');
  if(pending){
   assert.equal(f.d.querySelectorAll('#board .tutorial-focus,#board .tutorial-support,#board .tutorial-gesture').length,0,'next move is not prompted while explaining the result');
-  assert.equal(f.node('#hint').disabled,true,'hint is unavailable while explaining');
+  assert.equal(f.d.querySelector('#hint'),null,'manual hint control is absent while tutorial guidance remains');
  }
 }
 function focus(f,step){
@@ -133,7 +133,7 @@ test('the first result stays explained until acknowledged, with safe controls st
   const before=f.board(),text=f.node('#coach-text').textContent;
   tapPair(f,level.solution[1]);
   for(const index of level.solution[1])keypress(f,'Enter',tile(f,index));
-  keypress(f,'h');f.click('#hint');
+  keypress(f,'h');assert.equal(f.d.querySelector('#hint'),null,'H cannot invoke an absent manual control');
   f.w.dispatchEvent(new f.w.Event('resize'));await wait(60);
   assert.deepEqual(f.board(),before,'tap, Enter, hint and resize cannot play through the explanation');
   assert.equal(f.d.querySelectorAll('#board .selected,#board .hinted').length,0,'blocked input does not expose a different prompt');

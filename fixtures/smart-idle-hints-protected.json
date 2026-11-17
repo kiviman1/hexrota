@@ -1,0 +1,10 @@
+{
+  "baseline": "616c66389d1aca7c225b56641f27bc901e5a9012",
+  "scope": "Only add the two passive presentation modules to the reviewed offline shell; remove the single manual Hint DOM hook. All old gameplay/data/parity hash fixtures remain unchanged.",
+  "sha256": {
+    "dist/sw.js": "200fc3c90deeb86ca12aa60630ac5b56028cdf87adcfe54f03b1182ee7f33974"
+  },
+  "removedIds": [
+    "hint"
+  ]
+}

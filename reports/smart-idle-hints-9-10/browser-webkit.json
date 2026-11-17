@@ -1,0 +1,1062 @@
+{
+  "browser": "webkit",
+  "success": true,
+  "passed": 30,
+  "results": [
+    {
+      "name": "320x568 baseline board geometry, native cue and reachable toolbar",
+      "passed": true,
+      "viewport": {
+        "width": 320,
+        "height": 568
+      },
+      "baselineRef": "616c66389d1aca7c225b56641f27bc901e5a9012",
+      "baselineBoard": {
+        "x": 6,
+        "y": 154.1875,
+        "width": 308,
+        "height": 339.8125,
+        "top": 154.1875,
+        "right": 314,
+        "bottom": 494,
+        "left": 6
+      },
+      "afterBoard": {
+        "x": 6,
+        "y": 154.1875,
+        "width": 308,
+        "height": 339.8125,
+        "top": 154.1875,
+        "right": 314,
+        "bottom": 494,
+        "left": 6
+      },
+      "pair": [
+        4,
+        7
+      ],
+      "shifts": [
+        {
+          "dx": 2.165069580078125,
+          "dy": 1.25,
+          "first": 2.5000052573104057,
+          "rest": 0,
+          "second": 2.5000052573104057
+        },
+        {
+          "dx": -2.1650543212890625,
+          "dy": -1.25,
+          "first": 2.499992042813825,
+          "rest": 0,
+          "second": 2.499992042813825
+        }
+      ],
+      "changedPixels": 1922,
+      "repeat": {
+        "at": 14900,
+        "pair": [
+          4,
+          7
+        ],
+        "ordinal": 1,
+        "shifts": [
+          {
+            "dx": 2.165069580078125,
+            "dy": 1.25
+          },
+          {
+            "dx": -2.1650543212890625,
+            "dy": -1.25
+          }
+        ],
+        "changedPixels": 1922
+      },
+      "controls": [
+        {
+          "id": "game-home",
+          "rect": {
+            "x": 14,
+            "y": 501,
+            "width": 54.390625,
+            "height": 59,
+            "top": 501,
+            "right": 68.390625,
+            "bottom": 560,
+            "left": 14
+          }
+        },
+        {
+          "id": "reset",
+          "rect": {
+            "x": 73.390625,
+            "y": 501,
+            "width": 54.40625,
+            "height": 59,
+            "top": 501,
+            "right": 127.796875,
+            "bottom": 560,
+            "left": 73.390625
+          }
+        },
+        {
+          "id": "open-inventory",
+          "rect": {
+            "x": 132.796875,
+            "y": 501,
+            "width": 54.390625,
+            "height": 59,
+            "top": 501,
+            "right": 187.1875,
+            "bottom": 560,
+            "left": 132.796875
+          }
+        },
+        {
+          "id": "pause",
+          "rect": {
+            "x": 192.1875,
+            "y": 501,
+            "width": 54.40625,
+            "height": 59,
+            "top": 501,
+            "right": 246.59375,
+            "bottom": 560,
+            "left": 192.1875
+          }
+        },
+        {
+          "id": "game-settings",
+          "rect": {
+            "x": 251.59375,
+            "y": 501,
+            "width": 54.390625,
+            "height": 59,
+            "top": 501,
+            "right": 305.984375,
+            "bottom": 560,
+            "left": 251.59375
+          }
+        }
+      ]
+    },
+    {
+      "name": "390x844 baseline board geometry, native cue and reachable toolbar",
+      "passed": true,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "baselineRef": "616c66389d1aca7c225b56641f27bc901e5a9012",
+      "baselineBoard": {
+        "x": 6,
+        "y": 170.796875,
+        "width": 378,
+        "height": 582.203125,
+        "top": 170.796875,
+        "right": 384,
+        "bottom": 753,
+        "left": 6
+      },
+      "afterBoard": {
+        "x": 6,
+        "y": 170.796875,
+        "width": 378,
+        "height": 582.203125,
+        "top": 170.796875,
+        "right": 384,
+        "bottom": 753,
+        "left": 6
+      },
+      "pair": [
+        4,
+        7
+      ],
+      "shifts": [
+        {
+          "dx": 2.1650543212890625,
+          "dy": 1.25,
+          "first": 2.499992042813825,
+          "rest": 0,
+          "second": 2.499992042813825
+        },
+        {
+          "dx": -2.165069580078125,
+          "dy": -1.25,
+          "first": 2.5000052573104057,
+          "rest": 0,
+          "second": 2.5000052573104057
+        }
+      ],
+      "changedPixels": 2559,
+      "repeat": {
+        "at": 14900,
+        "pair": [
+          4,
+          7
+        ],
+        "ordinal": 1,
+        "shifts": [
+          {
+            "dx": 2.1650543212890625,
+            "dy": 1.25
+          },
+          {
+            "dx": -2.165069580078125,
+            "dy": -1.25
+          }
+        ],
+        "changedPixels": 2559
+      },
+      "controls": [
+        {
+          "id": "game-home",
+          "rect": {
+            "x": 14,
+            "y": 764,
+            "width": 68.390625,
+            "height": 68,
+            "top": 764,
+            "right": 82.390625,
+            "bottom": 832,
+            "left": 14
+          }
+        },
+        {
+          "id": "reset",
+          "rect": {
+            "x": 87.390625,
+            "y": 764,
+            "width": 68.40625,
+            "height": 68,
+            "top": 764,
+            "right": 155.796875,
+            "bottom": 832,
+            "left": 87.390625
+          }
+        },
+        {
+          "id": "open-inventory",
+          "rect": {
+            "x": 160.796875,
+            "y": 764,
+            "width": 68.390625,
+            "height": 68,
+            "top": 764,
+            "right": 229.1875,
+            "bottom": 832,
+            "left": 160.796875
+          }
+        },
+        {
+          "id": "pause",
+          "rect": {
+            "x": 234.1875,
+            "y": 764,
+            "width": 68.40625,
+            "height": 68,
+            "top": 764,
+            "right": 302.59375,
+            "bottom": 832,
+            "left": 234.1875
+          }
+        },
+        {
+          "id": "game-settings",
+          "rect": {
+            "x": 307.59375,
+            "y": 764,
+            "width": 68.40625,
+            "height": 68,
+            "top": 764,
+            "right": 376,
+            "bottom": 832,
+            "left": 307.59375
+          }
+        }
+      ]
+    },
+    {
+      "name": "430x932 baseline board geometry, native cue and reachable toolbar",
+      "passed": true,
+      "viewport": {
+        "width": 430,
+        "height": 932
+      },
+      "baselineRef": "616c66389d1aca7c225b56641f27bc901e5a9012",
+      "baselineBoard": {
+        "x": 6,
+        "y": 170.796875,
+        "width": 418,
+        "height": 670.203125,
+        "top": 170.796875,
+        "right": 424,
+        "bottom": 841,
+        "left": 6
+      },
+      "afterBoard": {
+        "x": 6,
+        "y": 170.796875,
+        "width": 418,
+        "height": 670.203125,
+        "top": 170.796875,
+        "right": 424,
+        "bottom": 841,
+        "left": 6
+      },
+      "pair": [
+        4,
+        7
+      ],
+      "shifts": [
+        {
+          "dx": 2.165069580078125,
+          "dy": 1.25,
+          "first": 2.5000052573104057,
+          "rest": 0,
+          "second": 2.5000052573104057
+        },
+        {
+          "dx": -2.1650543212890625,
+          "dy": -1.25,
+          "first": 2.499992042813825,
+          "rest": 0,
+          "second": 2.499992042813825
+        }
+      ],
+      "changedPixels": 2973,
+      "repeat": {
+        "at": 14900,
+        "pair": [
+          4,
+          7
+        ],
+        "ordinal": 1,
+        "shifts": [
+          {
+            "dx": 2.165069580078125,
+            "dy": 1.25
+          },
+          {
+            "dx": -2.1650543212890625,
+            "dy": -1.25
+          }
+        ],
+        "changedPixels": 2973
+      },
+      "controls": [
+        {
+          "id": "game-home",
+          "rect": {
+            "x": 14,
+            "y": 852,
+            "width": 76.390625,
+            "height": 68,
+            "top": 852,
+            "right": 90.390625,
+            "bottom": 920,
+            "left": 14
+          }
+        },
+        {
+          "id": "reset",
+          "rect": {
+            "x": 95.390625,
+            "y": 852,
+            "width": 76.40625,
+            "height": 68,
+            "top": 852,
+            "right": 171.796875,
+            "bottom": 920,
+            "left": 95.390625
+          }
+        },
+        {
+          "id": "open-inventory",
+          "rect": {
+            "x": 176.796875,
+            "y": 852,
+            "width": 76.390625,
+            "height": 68,
+            "top": 852,
+            "right": 253.1875,
+            "bottom": 920,
+            "left": 176.796875
+          }
+        },
+        {
+          "id": "pause",
+          "rect": {
+            "x": 258.1875,
+            "y": 852,
+            "width": 76.40625,
+            "height": 68,
+            "top": 852,
+            "right": 334.59375,
+            "bottom": 920,
+            "left": 258.1875
+          }
+        },
+        {
+          "id": "game-settings",
+          "rect": {
+            "x": 339.59375,
+            "y": 852,
+            "width": 76.40625,
+            "height": 68,
+            "top": 852,
+            "right": 416,
+            "bottom": 920,
+            "left": 339.59375
+          }
+        }
+      ]
+    },
+    {
+      "name": "844x390 baseline board geometry, native cue and reachable toolbar",
+      "passed": true,
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "baselineRef": "616c66389d1aca7c225b56641f27bc901e5a9012",
+      "baselineBoard": {
+        "x": 148,
+        "y": 4,
+        "width": 607,
+        "height": 386,
+        "top": 4,
+        "right": 755,
+        "bottom": 390,
+        "left": 148
+      },
+      "afterBoard": {
+        "x": 148,
+        "y": 4,
+        "width": 607,
+        "height": 386,
+        "top": 4,
+        "right": 755,
+        "bottom": 390,
+        "left": 148
+      },
+      "pair": [
+        4,
+        7
+      ],
+      "shifts": [
+        {
+          "dx": 2.165069580078125,
+          "dy": 1.25,
+          "first": 2.5000052573104057,
+          "rest": 0,
+          "second": 2.5000052573104057
+        },
+        {
+          "dx": -2.165069580078125,
+          "dy": -1.25,
+          "first": 2.5000052573104057,
+          "rest": 0,
+          "second": 2.5000052573104057
+        }
+      ],
+      "changedPixels": 2375,
+      "repeat": {
+        "at": 14900,
+        "pair": [
+          4,
+          7
+        ],
+        "ordinal": 1,
+        "shifts": [
+          {
+            "dx": 2.165069580078125,
+            "dy": 1.25
+          },
+          {
+            "dx": -2.165069580078125,
+            "dy": -1.25
+          }
+        ],
+        "changedPixels": 2375
+      },
+      "controls": [
+        {
+          "id": "game-home",
+          "rect": {
+            "x": 765,
+            "y": 75.5,
+            "width": 73,
+            "height": 44,
+            "top": 75.5,
+            "right": 838,
+            "bottom": 119.5,
+            "left": 765
+          }
+        },
+        {
+          "id": "reset",
+          "rect": {
+            "x": 765,
+            "y": 124.5,
+            "width": 73,
+            "height": 44,
+            "top": 124.5,
+            "right": 838,
+            "bottom": 168.5,
+            "left": 765
+          }
+        },
+        {
+          "id": "open-inventory",
+          "rect": {
+            "x": 765,
+            "y": 173.5,
+            "width": 73,
+            "height": 44,
+            "top": 173.5,
+            "right": 838,
+            "bottom": 217.5,
+            "left": 765
+          }
+        },
+        {
+          "id": "pause",
+          "rect": {
+            "x": 765,
+            "y": 222.5,
+            "width": 73,
+            "height": 44,
+            "top": 222.5,
+            "right": 838,
+            "bottom": 266.5,
+            "left": 765
+          }
+        },
+        {
+          "id": "game-settings",
+          "rect": {
+            "x": 765,
+            "y": 271.5,
+            "width": 73,
+            "height": 44,
+            "top": 271.5,
+            "right": 838,
+            "bottom": 315.5,
+            "left": 765
+          }
+        }
+      ]
+    },
+    {
+      "name": "932x430 baseline board geometry, native cue and reachable toolbar",
+      "passed": true,
+      "viewport": {
+        "width": 932,
+        "height": 430
+      },
+      "baselineRef": "616c66389d1aca7c225b56641f27bc901e5a9012",
+      "baselineBoard": {
+        "x": 148,
+        "y": 4,
+        "width": 695,
+        "height": 426,
+        "top": 4,
+        "right": 843,
+        "bottom": 430,
+        "left": 148
+      },
+      "afterBoard": {
+        "x": 148,
+        "y": 4,
+        "width": 695,
+        "height": 426,
+        "top": 4,
+        "right": 843,
+        "bottom": 430,
+        "left": 148
+      },
+      "pair": [
+        4,
+        7
+      ],
+      "shifts": [
+        {
+          "dx": 2.1650390625,
+          "dy": 1.25,
+          "first": 2.4999788283405278,
+          "rest": 0,
+          "second": 2.4999788283405278
+        },
+        {
+          "dx": -2.1650390625,
+          "dy": -1.25,
+          "first": 2.4999788283405278,
+          "rest": 0,
+          "second": 2.4999788283405278
+        }
+      ],
+      "changedPixels": 2735,
+      "repeat": {
+        "at": 14900,
+        "pair": [
+          4,
+          7
+        ],
+        "ordinal": 1,
+        "shifts": [
+          {
+            "dx": 2.1650390625,
+            "dy": 1.25
+          },
+          {
+            "dx": -2.1650390625,
+            "dy": -1.25
+          }
+        ],
+        "changedPixels": 2735
+      },
+      "controls": [
+        {
+          "id": "game-home",
+          "rect": {
+            "x": 853,
+            "y": 95.5,
+            "width": 73,
+            "height": 44,
+            "top": 95.5,
+            "right": 926,
+            "bottom": 139.5,
+            "left": 853
+          }
+        },
+        {
+          "id": "reset",
+          "rect": {
+            "x": 853,
+            "y": 144.5,
+            "width": 73,
+            "height": 44,
+            "top": 144.5,
+            "right": 926,
+            "bottom": 188.5,
+            "left": 853
+          }
+        },
+        {
+          "id": "open-inventory",
+          "rect": {
+            "x": 853,
+            "y": 193.5,
+            "width": 73,
+            "height": 44,
+            "top": 193.5,
+            "right": 926,
+            "bottom": 237.5,
+            "left": 853
+          }
+        },
+        {
+          "id": "pause",
+          "rect": {
+            "x": 853,
+            "y": 242.5,
+            "width": 73,
+            "height": 44,
+            "top": 242.5,
+            "right": 926,
+            "bottom": 286.5,
+            "left": 853
+          }
+        },
+        {
+          "id": "game-settings",
+          "rect": {
+            "x": 853,
+            "y": 291.5,
+            "width": 73,
+            "height": 44,
+            "top": 291.5,
+            "right": 926,
+            "bottom": 335.5,
+            "left": 853
+          }
+        }
+      ]
+    },
+    {
+      "name": "1280x720 baseline board geometry, native cue and reachable toolbar",
+      "passed": true,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "baselineRef": "616c66389d1aca7c225b56641f27bc901e5a9012",
+      "baselineBoard": {
+        "x": 250,
+        "y": 170.796875,
+        "width": 780,
+        "height": 458.203125,
+        "top": 170.796875,
+        "right": 1030,
+        "bottom": 629,
+        "left": 250
+      },
+      "afterBoard": {
+        "x": 250,
+        "y": 170.796875,
+        "width": 780,
+        "height": 458.203125,
+        "top": 170.796875,
+        "right": 1030,
+        "bottom": 629,
+        "left": 250
+      },
+      "pair": [
+        4,
+        7
+      ],
+      "shifts": [
+        {
+          "dx": 2.16510009765625,
+          "dy": 1.25,
+          "first": 2.5000316863734153,
+          "rest": 0,
+          "second": 2.5000316863734153
+        },
+        {
+          "dx": -2.16510009765625,
+          "dy": -1.25,
+          "first": 2.5000316863734153,
+          "rest": 0,
+          "second": 2.5000316863734153
+        }
+      ],
+      "changedPixels": 3034,
+      "repeat": {
+        "at": 14900,
+        "pair": [
+          4,
+          7
+        ],
+        "ordinal": 1,
+        "shifts": [
+          {
+            "dx": 2.16510009765625,
+            "dy": 1.25
+          },
+          {
+            "dx": -2.16510009765625,
+            "dy": -1.25
+          }
+        ],
+        "changedPixels": 3034
+      },
+      "controls": [
+        {
+          "id": "game-home",
+          "rect": {
+            "x": 430,
+            "y": 640,
+            "width": 80,
+            "height": 68,
+            "top": 640,
+            "right": 510,
+            "bottom": 708,
+            "left": 430
+          }
+        },
+        {
+          "id": "reset",
+          "rect": {
+            "x": 515,
+            "y": 640,
+            "width": 80,
+            "height": 68,
+            "top": 640,
+            "right": 595,
+            "bottom": 708,
+            "left": 515
+          }
+        },
+        {
+          "id": "open-inventory",
+          "rect": {
+            "x": 600,
+            "y": 640,
+            "width": 80,
+            "height": 68,
+            "top": 640,
+            "right": 680,
+            "bottom": 708,
+            "left": 600
+          }
+        },
+        {
+          "id": "pause",
+          "rect": {
+            "x": 685,
+            "y": 640,
+            "width": 80,
+            "height": 68,
+            "top": 640,
+            "right": 765,
+            "bottom": 708,
+            "left": 685
+          }
+        },
+        {
+          "id": "game-settings",
+          "rect": {
+            "x": 770,
+            "y": 640,
+            "width": 80,
+            "height": 68,
+            "top": 640,
+            "right": 850,
+            "bottom": 708,
+            "left": 770
+          }
+        }
+      ]
+    },
+    {
+      "name": "same-pair repetitions retain one cycle, next35/60 and maximum two distinct cycles",
+      "passed": true,
+      "cycles": [
+        {
+          "at": 10000,
+          "payload": {
+            "pair": [
+              4,
+              7
+            ],
+            "attemptId": "a-1-7-0041abca",
+            "generation": 4,
+            "boardKey": "[1,[1,4,3,3,2,3,3,3,3,2,1,2,1,1,4,2,3,3,2],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],0,10]",
+            "duration": 900,
+            "ordinal": 1,
+            "repeated": false
+          }
+        },
+        {
+          "at": 285900,
+          "payload": {
+            "pair": [
+              9,
+              14
+            ],
+            "attemptId": "a-1-7-0041abca",
+            "generation": 5,
+            "boardKey": "[1,[2,3,4,3,2,3,3,3,3,1,1,4,1,1,4,2,3,3,2],[1,1,0,1,0,1,0,0,0,0,1,0,1,1,1,1,1,1,1],18,9]",
+            "duration": 900,
+            "ordinal": 2,
+            "repeated": false
+          }
+        }
+      ],
+      "repeatedAppearances": 24
+    },
+    {
+      "name": "a quick successful move cannot bypass the 60 second minimum interval",
+      "passed": true,
+      "shows": [
+        {
+          "at": 10000,
+          "payload": {
+            "pair": [
+              4,
+              7
+            ],
+            "attemptId": "a-1-7-0041abca",
+            "generation": 4,
+            "boardKey": "[1,[1,4,3,3,2,3,3,3,3,2,1,2,1,1,4,2,3,3,2],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],0,10]",
+            "duration": 900,
+            "ordinal": 1,
+            "repeated": false
+          }
+        },
+        {
+          "at": 70000,
+          "payload": {
+            "pair": [
+              9,
+              14
+            ],
+            "attemptId": "a-1-7-0041abca",
+            "generation": 5,
+            "boardKey": "[1,[2,3,4,3,2,3,3,3,3,1,1,4,1,1,4,2,3,3,2],[1,1,0,1,0,1,0,0,0,0,1,0,1,1,1,1,1,1,1],18,9]",
+            "duration": 900,
+            "ordinal": 2,
+            "repeated": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "quiet-gap native keyboard interaction cancels repetition and rejects stale callbacks",
+      "passed": true
+    },
+    {
+      "name": "successful native swap stops a visible repeat without moving the global60 anchor",
+      "passed": true,
+      "shows": [
+        {
+          "at": 10000,
+          "payload": {
+            "pair": [
+              4,
+              7
+            ],
+            "attemptId": "a-1-7-0041abca",
+            "generation": 4,
+            "boardKey": "[1,[1,4,3,3,2,3,3,3,3,2,1,2,1,1,4,2,3,3,2],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],0,10]",
+            "duration": 900,
+            "ordinal": 1,
+            "repeated": false
+          }
+        },
+        {
+          "at": 14900,
+          "payload": {
+            "pair": [
+              4,
+              7
+            ],
+            "attemptId": "a-1-7-0041abca",
+            "generation": 4,
+            "boardKey": "[1,[1,4,3,3,2,3,3,3,3,2,1,2,1,1,4,2,3,3,2],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],0,10]",
+            "duration": 900,
+            "ordinal": 1,
+            "repeated": true
+          }
+        },
+        {
+          "at": 70000,
+          "payload": {
+            "pair": [
+              9,
+              14
+            ],
+            "attemptId": "a-1-7-0041abca",
+            "generation": 5,
+            "boardKey": "[1,[2,3,4,3,2,3,3,3,3,1,1,4,1,1,4,2,3,3,2],[1,1,0,1,0,1,0,0,0,0,1,0,1,1,1,1,1,1,1],18,9]",
+            "duration": 900,
+            "ordinal": 2,
+            "repeated": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "repeated cue pause cleanup cancels quiet-gap deadlines and stale delivery",
+      "passed": true,
+      "action": "pause",
+      "appearances": 2,
+      "cycles": 1
+    },
+    {
+      "name": "repeated cue hidden cleanup cancels quiet-gap deadlines and stale delivery",
+      "passed": true,
+      "action": "hidden",
+      "appearances": 2,
+      "cycles": 1
+    },
+    {
+      "name": "repeated cue Home cleanup cancels quiet-gap deadlines and stale delivery",
+      "passed": true,
+      "action": "Home",
+      "appearances": 2,
+      "cycles": 1
+    },
+    {
+      "name": "repeated cue pagehide cleanup cancels quiet-gap deadlines and stale delivery",
+      "passed": true,
+      "action": "pagehide",
+      "appearances": 2,
+      "cycles": 1
+    },
+    {
+      "name": "repeated cue attempt cleanup cancels quiet-gap deadlines and stale delivery",
+      "passed": true,
+      "action": "attempt",
+      "oldAppearances": 2,
+      "newCycleAt": 70000
+    },
+    {
+      "name": "an actual resolving move cancels visible paint and cannot show during native animation",
+      "passed": true
+    },
+    {
+      "name": "native invalid bounce suppresses first cue and its natural end starts a full10 seconds",
+      "passed": true
+    },
+    {
+      "name": "failed final renderer cannot decorate a stale board and a real redraw restores eligibility",
+      "passed": true
+    },
+    {
+      "name": "native selection and held pointer suppress idle and interaction cancels visible paint",
+      "passed": true
+    },
+    {
+      "name": "pause cancels a pending cue and resumes a complete 10 second delay",
+      "passed": true
+    },
+    {
+      "name": "inventory cancels a pending cue and resumes a complete 10 second delay",
+      "passed": true
+    },
+    {
+      "name": "settings cancels a pending cue and resumes a complete 10 second delay",
+      "passed": true
+    },
+    {
+      "name": "Home and reload retire old work and require 10 seconds in an eligible decision",
+      "passed": true
+    },
+    {
+      "name": "new attempt rejects stale delivery and retains the global60 second interval",
+      "passed": true
+    },
+    {
+      "name": "synthetic hidden and pagehide states prevent late guidance",
+      "passed": true,
+      "visibility": "synthetic document.hidden + visibilitychange",
+      "pagehide": "synthetic persisted PageTransitionEvent; no native BFCache claim"
+    },
+    {
+      "name": "a real inventory booster changes the board without rearming passive hints",
+      "passed": true
+    },
+    {
+      "name": "committed won board suppresses pending and late hints",
+      "passed": true,
+      "status": "won",
+      "turn": 5
+    },
+    {
+      "name": "committed lost board suppresses pending and late hints",
+      "passed": true,
+      "status": "lost",
+      "turn": 10
+    },
+    {
+      "name": "tutorial guidance remains separate, H and injected manual hint have no production action",
+      "passed": true
+    },
+    {
+      "name": "reduced motion paints a static small cue and native animation cancellation cleans once",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "failure": null,
+  "failedCase": null,
+  "physicalDeviceTested": false,
+  "baselineRef": "616c66389d1aca7c225b56641f27bc901e5a9012",
+  "clockScope": "only HexIdleHints.create now/setTimeout/clearTimeout dependencies; global Date/timers/rAF are untouched",
+  "visualScope": "actual native cue WAAPI paused and searched at 0/225/450/675ms; PNG pixel evidence and real screen-CTM displacement",
+  "lifecycleScope": "synthetic visibilitychange and persisted pagehide, not native BFCache",
+  "filter": null
+}

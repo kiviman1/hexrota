@@ -103,7 +103,7 @@ test('null or throwing visual-token allocation fast-reveals actual playing and w
     await until(()=>f.node('#win-dialog').open,'a verified terminal result is revealed despite presentation allocation failure');
     assert.equal(f.game().status,'won');assert.equal(Object.values(f.save().economy.transactions).filter(row=>row.kind==='clear'&&row.levelId===1).length,1);
     for(let n=0;n<5;n++)f.click('#continue');assert.equal(f.save().economy.gold,20);assert.equal(f.save().economy.stars,1);
-   }else{assert.equal(f.game().status,'playing');assert.equal(f.node('#hint').disabled,false);}
+   }else{assert.equal(f.game().status,'playing');assert.equal(f.d.querySelector('#hint'),null,'normal campaign has no manual hint');assert.equal(f.node('#board').getAttribute('aria-busy'),'false');}
    assert.deepEqual(f.operations.errors,[]);
   }finally{f.close();}
  }

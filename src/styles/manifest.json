@@ -9,6 +9,7 @@
     "src/styles/06-comic-adventure.css",
     "dist/assets/scenes/coop-v1/tavik-motion.css",
     "src/styles/07-coop-scene.css",
-    "src/styles/08-tavik-dialogue.css"
+    "src/styles/08-tavik-dialogue.css",
+    "src/styles/09-idle-hints.css"
   ]
 }

@@ -68,7 +68,7 @@ function rewardObservation(f){return plain({creates:f.observed.rewardCreates,eva
 function capture(f){return {canonical:f.w.localStorage.getItem(PROFILE),events:f.w.localStorage.getItem(EVENTS),playtest:f.w.localStorage.getItem(PLAYTEST),game:f.w.localStorage.getItem(GAME),snapshot:plain(f.game().snapshot()),rewards:rewardObservation(f),operations:plain(f.observed.store.snapshot().operations),operationEvents:plain(f.observed.operationEvents)};}
 function assertClean(f){
  assert.equal(f.node('#board').getAttribute('aria-busy'),'false');assert.equal(f.node('#board-stage').classList.contains('busy'),false);
- for(const id of ['#hint','#reset','#open-inventory'])assert.equal(f.node(id).disabled,false,id+' is available after failure');
+ assert.equal(f.d.querySelector('#hint'),null,'manual hint remains removed after command failure');for(const id of ['#reset','#open-inventory'])assert.equal(f.node(id).disabled,false,id+' is available after failure');
  assert.equal(f.d.querySelectorAll('dialog[open]').length,0,'a failed command creates no result or provider dialog');
  assert.equal(f.d.querySelectorAll('.swap-pair,.swap-stone,.score-packet').length,0,'a failed command creates no move presentation');
 }
