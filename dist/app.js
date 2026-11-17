@@ -267,7 +267,7 @@ window.HexSessionStore.boot(function startApp(session) {
     }
     const serial=onboardingSerial;onboardingIdleTimer=setTimeout(()=>{if(serial===onboardingSerial&&key===onboardingToken())refreshOnboardingGuide();},Math.max(0,onboardingDue-performance.now()));
   }
-  function clearOnboardingReceipt(){if(!onboardingReceipt)return;clearTimeout(onboardingReceiptTimer);onboardingReceiptTimer=null;onboardingReceipt=null;onboardingGuide?.stop();renderCoach();syncScene();}
+  function clearOnboardingReceipt(){if(!onboardingReceipt)return;clearTimeout(onboardingReceiptTimer);onboardingReceiptTimer=null;onboardingReceipt=null;onboardingGuide?.stop();renderCoach();syncScene();onboardingDue=performance.now()+4000;}
   function onboardingInteraction(){
     if(!onboardingCurrent())return;clearOnboardingReceipt();clearTimeout(onboardingGuideTimer);clearTimeout(onboardingIdleTimer);onboardingGuide?.stop();document.body.dataset.firstPlayGuideVisible='false';onboardingKey=onboardingToken();onboardingDue=performance.now()+4000;
     window.queueMicrotask(()=>{if(!fullResetPending)refreshOnboardingGuide();});

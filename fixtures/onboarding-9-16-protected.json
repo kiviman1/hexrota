@@ -5,7 +5,7 @@
     "first-play-skip"
   ],
   "sha256": {
-    "dist/app.js": "66d745b92821bc85d624fe38a099d344bc898bcf29ce29194379a89010d198c7",
+    "dist/app.js": "221cf75ddceb28772d6fa9846f47894cdf5ba26fe010336313ce9e296e01f6f5",
     "dist/first-play.js": "6dedc2e75676643a948c5e65753024f6549cae4a5fe9a24e9cc047fb985e9fca",
     "dist/game-save.js": "62cc8f6cf77f9fe26cce268663fd1360dab5761c59baa3a631f4e7766dec9d8a",
     "dist/session-store.js": "a144268dc783b7908528bb3612d4d8bac9e86ada726b0f7c8b5ef340def767b1",
