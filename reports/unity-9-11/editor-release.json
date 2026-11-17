@@ -1,0 +1,46 @@
+{
+  "checkedAtUtc": "2026-11-17",
+  "source": "https://services.api.unity.com/unity/editor/release/v1/releases?version=6000.6.9f1",
+  "version": "6000.6.9f1",
+  "releaseDate": "2026-11-12T08:20:35.078Z",
+  "shortRevision": "8c45277fb9c5",
+  "linuxEditor": {
+    "url": "https://download.unity3d.com/download_unity/8c45277fb9c5/LinuxEditorInstaller/Unity-6000.6.9f1.tar.xz",
+    "downloadSize": {
+      "value": 4132655564,
+      "unit": "BYTE"
+    },
+    "installedSize": {
+      "value": 9129297920,
+      "unit": "BYTE"
+    },
+    "integrity": "md5-u3rdQD8w8zqg0auGjfKKVA=="
+  },
+  "webBuildSupport": {
+    "id": "webgl",
+    "slug": "6000.6.9f1-linux-x86_64-webgl",
+    "name": "Web Build Support",
+    "description": "Allows building your Unity projects for the Web platform",
+    "category": "PLATFORM",
+    "url": "https://download.unity3d.com/download_unity/8c45277fb9c5/LinuxEditorTargetInstaller/UnitySetup-WebGL-Support-for-Editor-6000.6.9f1.tar.xz",
+    "type": "TAR_XZ",
+    "downloadSize": {
+      "value": 1624585716,
+      "unit": "BYTE"
+    },
+    "installedSize": {
+      "value": 7390105600,
+      "unit": "BYTE"
+    },
+    "required": false,
+    "hidden": false,
+    "preSelected": false,
+    "noHeadlessEditorSupport": false,
+    "integrity": "md5-nJHArbDujpyqxO7b7jHxMg==",
+    "subModules": [],
+    "destination": "{UNITY_PATH}/Editor/Data/PlaybackEngines/WebGLSupport"
+  },
+  "installedEditor": false,
+  "unityTestsExecuted": false,
+  "webBuildProduced": false
+}

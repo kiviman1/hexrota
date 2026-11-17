@@ -1,0 +1,7 @@
+PASS exact engine/data synchronization; runtime allowlist excludes harnesses
+PASS every asset/folder has stable metadata; GUIDs are unique
+PASS serialized local references resolve to committed assets
+PASS Unity Hub project pins the requested Editor and usable build scenes
+PASS runtime and Editor/test assemblies have separate compilation boundaries
+PASS real reusable prefabs and canonical level data exist
+Unity client structure: 6 checks passed. Unity Editor/PlayMode/WebGL execution is a separate required validation.

@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ad42b26e8ec7f68603282712622a9dd, type: 3}
+  m_Name: HexrotaAssets_PLACEHOLDER
+  m_EditorClassIdentifier:
+  usesPlaceholderArt: 1
+  cell: {fileID: 100000, guid: 534197335e364a2591c83710f94648d0, type: 3}
+  ground: {fileID: 100000, guid: 3817805e8720d5d7e97f1b40fa460653, type: 3}
+  stone: {fileID: 100000, guid: 9350bef630b9803c22b76f83f7f3e43e, type: 3}
+  selectionEffect: {fileID: 100000, guid: 4999dfeeca0070d06d49d00d194f3117, type: 3}
+  matchEffect: {fileID: 100000, guid: 5d4b3b62db4777772ff7d615c7f54cd0, type: 3}
+  fallEffect: {fileID: 100000, guid: 569508d2344d1cfc902b56893d9e440e, type: 3}
+  clearEffect: {fileID: 100000, guid: d506c7d2d4f9ce07ef90fe505febf590, type: 3}
+  tavik: {fileID: 100000, guid: 0362aa2e46635b8ed89224f2fedda86a, type: 3}
+  environment: {fileID: 100000, guid: 7c5672b71684b7227190dbc3cace4109, type: 3}
+  gardenObject: {fileID: 100000, guid: 4ad9a6df73aae9f2a356fa51983e7d86, type: 3}
+  menuVisual: {fileID: 100000, guid: 6deea2092e113381503785e4ceb7a582, type: 3}
+  uiVisual: {fileID: 100000, guid: 3eca3be8793030e65603af905a76d233, type: 3}

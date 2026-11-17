@@ -1,0 +1,16 @@
+{
+  "name": "Hexrota.UnityClient.EditMode",
+  "references": [
+    "Hexrota.Core",
+    "Hexrota.UnityClient.Runtime",
+    "Unity.Newtonsoft.Json",
+    "Hexrota.UnityClient.Presentation"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "autoReferenced": false
+}

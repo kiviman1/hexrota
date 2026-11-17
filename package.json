@@ -72,7 +72,13 @@
     "test:hint-integrity-browser": "node check-hint-integrity-browser.cjs",
     "measure:solver-integrity": "node scripts/measure-solver-integrity.cjs",
     "test:idle-hints": "node check-idle-hints.cjs && node check-idle-hint-view.cjs",
-    "test:idle-hints-browser": "node check-idle-hints-browser.cjs"
+    "test:idle-hints-browser": "node check-idle-hints-browser.cjs",
+    "unity:sync": "node scripts/sync-unity-client.cjs",
+    "test:unity-client-structure": "node scripts/check-unity-client.cjs",
+    "test:unity-client-storage": "node scripts/check-unity-web-storage.cjs",
+    "test:unity-client-host": "node scripts/check-unity-runtime.cjs",
+    "test:unity-editor": "bash scripts/run-unity-client.sh tests",
+    "build:unity-web": "bash scripts/run-unity-client.sh web"
   },
   "devDependencies": {
     "jsdom": "31.0.1",

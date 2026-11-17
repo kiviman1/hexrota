@@ -1,5 +1,9 @@
 # Hexrota — Unity aktarım planı
 
+## 9.11 Unity istemci temeli
+
+Gerçek Unity Hub projesi artık `unity-client/` altındadır; hedef tam **6000.6.9f1** sürümüdür. Mevcut 25 saf C# kaynak deterministik kaynak köprüsüyle bağlanır; gerçek serialized sahne, prefab kataloğu, girdi/sunum, kayıt adaptörleri ve build/test altyapısı eklendi. Bu ortamda Editor bulunmadığından Unity import/PlayMode/WebGL doğrulanmadı. Güncel kapsam, gerçek testler ve 9.12 açık işleri: [UNITY_FOUNDATION_9_11.md](UNITY_FOUNDATION_9_11.md). Aşağıdaki tarihsel 9.3 durumları o fazın kaydıdır.
+
 ## Mevcut durum ve aktarım hedefi — 9.3
 
 Oynanışın referansı saf JavaScript motoru, sürümlü bölüm verileri ve kayıtlı test çıktılarıdır. Unity aktarımında önce aynı girdiden aynı oyun sonucunu üreten C# çekirdeği kurulmalı; çizim, ses, titreşim, dokunma ve cihaz servisleri bunun dışına bağlanmalıdır.

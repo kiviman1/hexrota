@@ -1,0 +1,30 @@
+RUN rewards
+
+Reward parity checks passed: 104 shared vectors and createState factory (98 valid, 7 rejected); JS and C# outputs agree. C# 7.3 compiled with .NET SDK 8.0.428.
+RUN gameplay
+Structural input parity: 74 shared JSON inputs (12 exact accepted states, 62 native typed/parser/core rejections). JavaScript-only undefined/sparse inputs are tested separately.
+Explicit phase-1 scope: 80 variant-selector vectors, 9 attempt-envelope rejection vectors and hint recommendations remain JavaScript checks in npm test; they are not claimed as C# ports.
+RUN catalog
+
+C# catalog parity passed: 2107 complete JSON comparisons; 725 exact selections, 610 exact resumes, 90 checkpoint envelopes, 80 full certified routes/600 replayed swaps, 38 tutorial ID/metadata/restores, 21 archived-version checks, 546 rejected catalog/identity/replay inputs. .NET SDK 8.0.428, C#7.3; numeric/string IDs, publication ordering, isolated RNG and copy boundaries preserved.
+RUN hints
+C# hint parity passed: {"publishedRouteStates":680,"certifiedRoutes":80,"originalLevels":10,"originalRoutes":20,"originalRouteStates":162,"searchStates":280,"clockPolicyCases":11,"continuedGames":265,"rejectedSnapshots":13,"rejectedUntrustedRoutes":22,"returnedOutputMutation":191,"inputRouteMutation":100,"auditBudgetTransitionCases":3,"rawRouteFallbacks":14,"mixedRouteCandidates":3,"routeWorkCapCases":14,"depthLimitedUncertainty":40,"assistedStates":20,"terminalStates":2,"guaranteesReplayed":815,"comparisons":1274,"sources":{"proven_route":759,"search_win":56,"heuristic":319,"null":105},"dotnetSdk":"8.0.428","languageVersion":"7.3"}
+Every guarantee was independently replayed to a win; source routes, gameplay, assisted commands and RNG are unchanged. Raw JS bad imports safely fall back; the separate strict native binding (JSON shape parsing plus Create validation) rejects them, then compiled Find with null routes produces the same fallback. Valid over-cap bindings exercise compiled Find directly. Depth/beam uncertainty is separate from node/time exhaustion.
+RUN reward-adapter
+
+C# reward adapter parity passed: 175 routes (80 complete certified + 80 off-route), 1456 turns, 2928 waves, 1564 replay/restore checks, 16 component/status cases, 86 invalid routes and 12 nonmutating hint boundaries. Full RewardInput/evaluated plans/nextState/restore JSON agrees. C# 7.3 compiled with .NET SDK 8.0.428.
+RUN lives
+
+C# life parity passed: 19 shared scenarios plus1long-run stress/460 transitions, 152 frozen v1 migrations, 172 extra strict/error/archive/receipt probes (102 rejections, 6 verified callback inspections). Every state, view, nullable time, result, ledger and waiver agrees; 344 compiled requests keep inputs unchanged. C#7.3/.NET8.0.428.
+RUN session
+C# event parity passed: 580 complete JSON comparisons (29 create, 423 validate, 58 state validation, 70 append), 462 exact rejection messages; input immutability for every success/rejection. Covers bounded buffer/order, duplicate terminal callbacks, typed IDs, token boundaries, PII/unknown fields and deterministic wire fuzz. C# 7.3 compiled with .NET SDK 8.0.428.
+C# session parity passed: 1362 full JSON comparisons; 36 real app.js flows; 63 native fault/guard scenarios; canonical profile/revision, provider receipts, migration and atomic rollback covered. Physical Unity/iOS/Android tests remain outside this harness.
+RUN economy
+
+Real .NET 8 / C# 7.3 economy parity: 125 flows, 579 complete result+state comparisons passed. No web-engine replacement or SDK fallback.
+RUN commands
+Rescue safety parity: 22 current-policy/historical-v1 cases; original R-01 requests now reject no_legal_swaps while old successful checkpoints restore verbatim. R-02 recovery safety is checked independently by the standalone --diagnose command and gameplay parity; this historical rescue comparison does not claim recovery safety.
+Real C# command parity passed: {"certifiedRoutes":80,"legacyPrefixes":680,"colorChanges":1032,"brushTargets":1032,"malformedCases":56,"rescueCases":40,"comparisons":2952,"recoverySupplemental":1,"currentAuditComparisons":1,"rescueSafetyComparisons":22,"steps":16051,"waves":3332,"dotnetSdk":"8.0.428","languageVersion":"7.3","expectedSha256":"5f9650ace1553ab24dff9511c212d4bb533c75792d52dced4c4d46bb9f9be99f"}
+RUN rescue
+
+Rescue parity: 376 real C# comparisons passed (.NET 8.0.428, C#7.3); 293 unchanged original comparisons, 83 retained-receipt comparisons in 10 groups; 12 frozen cases + 600 compiled lifecycle transitions. No Unity/IL2CPP/device claim.

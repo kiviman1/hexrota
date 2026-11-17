@@ -1,0 +1,19 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Hexrota.UnityClient.HostTests -> /tmp/hexrota-unity-host-IwSbmF/Hexrota.UnityClient.HostTests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.95
+PASS canonical resource load, numeric/string IDs, codec boundaries
+PASS 40 real variants and every authored winning route replay and restore
+PASS input rejection, durable move, animation lock, cancellation, resume
+PASS failed canonical storage transaction rolls back complete game and economy
+PASS winning transaction failure cannot persist terminal state or reward
+PASS file compare/exchange, crash-window failure and corrupt-save preservation
+PASS file-backed session survives cancellation and reconstructs exact snapshot
+PASS one-time campaign completion rejects duplicate settlement and replay
+PASS real losing game reaches terminal result and retries with new identity
+HOST_RESULT {"groups":9,"assertions":943,"variants":40,"winningRoutes":80,"scope":"Real .NET runtime/core/file-storage execution; Unity resource seams only. No Unity Editor, PlayMode, IL2CPP, WebGL or device execution."}

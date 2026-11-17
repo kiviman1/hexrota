@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "command": "node scripts/check-unity-runtime.cjs --report",
+  "startedAt": "2026-11-17T11:54:43.861Z",
+  "finishedAt": "2026-11-17T11:54:47.756Z",
+  "sdkVersion": "8.0.428",
+  "compiler": "C# 7.3 with warnings as errors",
+  "result": {
+    "groups": 9,
+    "assertions": 943,
+    "variants": 40,
+    "winningRoutes": 80,
+    "scope": "Real .NET runtime/core/file-storage execution; Unity resource seams only. No Unity Editor, PlayMode, IL2CPP, WebGL or device execution."
+  }
+}
