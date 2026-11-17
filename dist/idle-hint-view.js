@@ -33,7 +33,7 @@
       return{x:ux*DISTANCE/scale,y:uy*DISTANCE/scale};
     }
 
-    function show({pair,matched=[],matchingSources=[],blockers=[],layout,duration=DURATION}={}) {
+    function show({pair,matched=[],matchingSources=[],blockers=[],focusMatched,focusSources,movingSource,movingTarget,layout,duration=DURATION}={}) {
       if(!Number.isSafeInteger(duration)||duration<0)throw new TypeError('invalid_idle_hint_duration');
       if(destroyed)return()=>{};
       const indices=(items,label)=>{
@@ -44,23 +44,20 @@
       };
       if(!Array.isArray(layout?.positions)||!Array.isArray(pair)||pair.length!==2)throw new TypeError('invalid_idle_hint_pair');
       const pairIndices=indices(pair,'pair');if(pairIndices.length!==2)throw new TypeError('invalid_idle_hint_pair');
-      // Descriptors identify visible sources; post-swap destinations are only
-      // validated data. The view never derives matches or blocker adjacency.
-      indices(matched,'matches');
-      const matchIndices=indices(matchingSources,'matches').filter(index=>!pairIndices.includes(index)),blockerIndices=indices(blockers,'blockers');
+      // Full-wave metadata is validated but never painted. Only the explicit
+      // chosen matching group can own a cue; the other swap endpoint and every
+      // crate remain completely untouched, even when the wave would hit them.
+      indices(matched,'matches');indices(matchingSources,'matches');indices(blockers,'blockers');
+      const focused=indices(focusSources,'focus'),destinations=indices(focusMatched,'focus');
+      if(focused.length<3||destinations.length!==focused.length||!pairIndices.includes(movingSource)||!pairIndices.includes(movingTarget)||movingSource===movingTarget||!focused.includes(movingSource)||focused.includes(movingTarget)||!destinations.includes(movingTarget))throw new TypeError('invalid_idle_hint_focus');
       const tiles=new Map(Array.from(board.children).filter(node=>node.hasAttribute('data-index')).map(node=>[Number(node.getAttribute('data-index')),node]));
       const source=(index,role)=>{
         const tile=tiles.get(index),node=tile?.querySelector(':scope > .gem'),shape=node?.querySelector('.gem-shape'),position=layout.positions[index];
         if(!node||!shape||!position||![position.x,position.y].every(Number.isFinite))throw new TypeError('invalid_idle_hint_'+role);
         return{index,role,tile,node,shape,position};
       };
-      const pairSources=pairIndices.map(index=>source(index,'pair')),matchSources=matchIndices.map(index=>source(index,'match')),sources=pairSources.concat(matchSources);
-      const boxSources=blockerIndices.map(index=>{
-        const shape=tiles.get(index)?.querySelector(':scope > .blocker-visual .crate-body'),position=layout.positions[index];
-        if(!shape||!position||![position.x,position.y].every(Number.isFinite))throw new TypeError('invalid_idle_hint_blocker');
-        return{index,shape,position};
-      });
-      if(!Math.hypot(pairSources[0].position.x-pairSources[1].position.x,pairSources[0].position.y-pairSources[1].position.y))throw new TypeError('invalid_idle_hint_pair');
+      const moving=source(movingSource,'moving'),target=source(movingTarget,'target'),sources=[moving,...focused.filter(index=>index!==movingSource).map(index=>source(index,'match'))];
+      if(!Math.hypot(moving.position.x-target.position.x,moving.position.y-target.position.y))throw new TypeError('invalid_idle_hint_pair');
       hide();
       // A zero-duration configuration retires the previous cue immediately;
       // it never creates a zero-duration repeating animation or hidden gem.
@@ -107,8 +104,8 @@
         const staticCue=reduced()||sources.some(source=>typeof source.node.animate!=='function');
         layer.setAttribute('data-idle-hint-mode',staticCue?'static':'motion');
         for(const source of sources){
-          const wrapper=svg('g',{class:source.role==='pair'?'idle-hint-stone idle-hint-pair':'idle-hint-match','data-idle-hint-source':source.index,'data-idle-hint-role':source.role,transform:`translate(${source.position.x},${source.position.y})`});
-          const outline=()=>svg('polygon',{class:'idle-hint-outline '+(source.role==='pair'?'idle-hint-pair-outline':'idle-hint-match-outline'),points:source.shape.getAttribute('points')||'','vector-effect':'non-scaling-stroke'});
+          const wrapper=svg('g',{class:source.role==='moving'?'idle-hint-stone idle-hint-moving':'idle-hint-match','data-idle-hint-source':source.index,'data-idle-hint-role':source.role,transform:`translate(${source.position.x},${source.position.y})`});
+          const outline=()=>svg('polygon',{class:'idle-hint-outline '+(source.role==='moving'?'idle-hint-moving-outline':'idle-hint-match-outline'),points:source.shape.getAttribute('points')||'','vector-effect':'non-scaling-stroke'});
           if(staticCue)wrapper.appendChild(outline());
           else{
             const copy=source.node.cloneNode(true),originals=[source.node,...source.node.querySelectorAll('*')],copies=[copy,...copy.querySelectorAll('*')];
@@ -131,15 +128,11 @@
           }
           layer.appendChild(wrapper);
         }
-        for(const source of boxSources){
-          const wrapper=svg('g',{class:'idle-hint-blocker','data-idle-hint-source':source.index,'data-idle-hint-role':'blocker',transform:`translate(${source.position.x},${source.position.y})`});
-          wrapper.appendChild(svg('polygon',{class:'idle-hint-blocker-outline',points:source.shape.getAttribute('points')||'','vector-effect':'non-scaling-stroke'}));layer.appendChild(wrapper);
-        }
         board.appendChild(layer);
         if(!staticCue){
           for(const source of sources){
-            const pairIndex=pairSources.indexOf(source),delta=pairIndex<0?{x:0,y:0}:displacement(source.position,pairSources[1-pairIndex].position,layout);
-            const frames=source.role==='pair'?[{transform:'translate(0px,0px) scale(1)'},{transform:`translate(${delta.x}px,${delta.y}px) scale(1.07)`,offset:.5},{transform:'translate(0px,0px) scale(1)'}]:[{transform:'scale(1)'},{transform:'scale(1.05)',offset:.5},{transform:'scale(1)'}];
+            const delta=source.role==='moving'?displacement(source.position,target.position,layout):{x:0,y:0};
+            const frames=source.role==='moving'?[{transform:'translate(0px,0px) scale(1)'},{transform:`translate(${delta.x}px,${delta.y}px) scale(1.07)`,offset:.5},{transform:'translate(0px,0px) scale(1)'}]:[{transform:'scale(1)'},{transform:'scale(1.05)',offset:.5},{transform:'scale(1)'}];
             const timing={duration,iterations:1,easing:'ease-in-out',fill:'none'};
             const start=(node,keyframes)=>{
               const animation=node.animate(keyframes,timing);animations.push(animation);
@@ -147,7 +140,7 @@
               if(animation.finished&&typeof animation.finished.then==='function')Promise.resolve(animation.finished).catch(cleanup);
             };
             start(source.copy,frames);
-            start(source.sheen,[{opacity:0},{opacity:source.role==='pair'?.08:.05,offset:.5},{opacity:0}]);
+            start(source.sheen,[{opacity:0},{opacity:source.role==='moving'?.08:.05,offset:.5},{opacity:0}]);
           }
         }
         doc.addEventListener('visibilitychange',onVisibility);win.addEventListener('pagehide',cleanup);win.addEventListener('resize',cleanup);win.addEventListener('orientationchange',cleanup);win.addEventListener('blur',cleanup);

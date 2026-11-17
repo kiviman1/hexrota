@@ -112,7 +112,7 @@ window.HexSessionStore.boot(function startApp(session) {
           Object.defineProperty(probe,'values',{value:core.values.slice(),writable:true});
           return window.HexIdleHints.chooseVisibleHint(visible,core.legalMoves.call(probe),values=>model.findMatches(values),context.previousPair);
         },
-        onShow:cue=>{const current=idleHintFacts();if(current.eligible&&current.attemptId===cue.attemptId&&current.generation===cue.generation&&current.boardKey===cue.boardKey)idleHintView?.show({pair:cue.pair,matched:cue.matched,matchingSources:cue.matchingSources,blockers:cue.blockers,layout:geometry(),duration:cue.duration});},
+        onShow:cue=>{const current=idleHintFacts();if(current.eligible&&current.attemptId===cue.attemptId&&current.generation===cue.generation&&current.boardKey===cue.boardKey)idleHintView?.show({pair:cue.pair,matched:cue.matched,matchingSources:cue.matchingSources,focusMatched:cue.focusMatched,focusSources:cue.focusSources,movingSource:cue.movingSource,movingTarget:cue.movingTarget,layout:geometry(),duration:cue.duration});},
         onHide:()=>idleHintView?.hide(),subscribe:sync=>appState.subscribe(()=>sync())
       });
       syncIdleHints();
@@ -1695,7 +1695,7 @@ window.HexSessionStore.boot(function startApp(session) {
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=52');
+            job.worker=new Worker('./hint-worker.js?v=53');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:activeLevel,snapshot:engine.snapshot()});

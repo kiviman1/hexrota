@@ -259,26 +259,40 @@ test('default cue starts occur at 10 seconds 11.8 seconds and 13.6 seconds witho
   assert.deepEqual(times,[10000,11800,13600]);assert.equal(f.cycles.length,1);assert.equal(f.repeats.length,2);assert.equal(f.chosen,1);assert(f.shown.every(e=>e.ordinal===1));f.policy.dispose();assert.equal(f.timer.count(),0);
 });
 test('a descriptor is copied and frozen once and repeated cues reuse every preview array',()=>{
-  const selected={pair:[0,1],matched:[0,2,3],matchingSources:[1,2,3],blockers:[4]},f=fixture({choose:()=>selected});showFirst(f);const cue=f.shown[0];
-  for(const key of ['pair','matched','matchingSources','blockers']){assert(Object.isFrozen(cue[key]));assert.notEqual(cue[key],selected[key]);}
-  selected.pair[0]=9;selected.matched[0]=9;selected.matchingSources[0]=9;selected.blockers.push(8);
+  const selected={pair:[0,1],matched:[0,2,3],matchingSources:[1,2,3],blockers:[4],focusMatched:[0,2,3],focusSources:[1,2,3],movingSource:1,movingTarget:0},f=fixture({choose:()=>selected});showFirst(f);const cue=f.shown[0];
+  for(const key of ['pair','matched','matchingSources','blockers','focusMatched','focusSources']){assert(Object.isFrozen(cue[key]));assert.notEqual(cue[key],selected[key]);}
+  selected.pair[0]=9;selected.matched[0]=9;selected.matchingSources[0]=9;selected.blockers.push(8);selected.focusMatched[0]=9;selected.focusSources[0]=9;selected.movingSource=9;selected.movingTarget=9;
   f.timer.advance(3600);assert.equal(f.shown.length,3);assert.equal(f.chosen,1);
-  for(const repeated of f.repeats){for(const key of ['pair','matched','matchingSources','blockers'])assert.equal(repeated[key],cue[key]);assert.equal(repeated.ordinal,1);}
-  assert.deepEqual(cue,{pair:[0,1],matched:[0,2,3],matchingSources:[1,2,3],blockers:[4],attemptId:'a',generation:0,boardKey:'board-0',duration:900,ordinal:1,repeated:false});f.policy.dispose();
+  for(const repeated of f.repeats){for(const key of ['pair','matched','matchingSources','blockers','focusMatched','focusSources'])assert.equal(repeated[key],cue[key]);assert.equal(repeated.ordinal,1);}
+  assert.deepEqual(cue,{pair:[0,1],matched:[0,2,3],matchingSources:[1,2,3],blockers:[4],focusMatched:[0,2,3],focusSources:[1,2,3],movingSource:1,movingTarget:0,attemptId:'a',generation:0,boardKey:'board-0',duration:900,ordinal:1,repeated:false});f.policy.dispose();
 });
 test('descriptor repeats end immediately on interaction and stale callbacks cannot revive any preview',()=>{
-  const selected={pair:[0,1],matched:[1,2],matchingSources:[0,2],blockers:[3]},f=fixture({choose:()=>selected});showFirst(f);f.timer.advance(900);const oldRepeat=f.timer.ids()[0];f.timer.advance(900);const oldHide=f.timer.ids()[0];
+  const selected={pair:[0,1],matched:[1,2,4],matchingSources:[0,2,4],blockers:[3],focusMatched:[1,2,4],focusSources:[0,2,4],movingSource:0,movingTarget:1},f=fixture({choose:()=>selected});showFirst(f);f.timer.advance(900);const oldRepeat=f.timer.ids()[0];f.timer.advance(900);const oldHide=f.timer.ids()[0];
   assert.equal(f.repeats.length,1);f.policy.interaction();assert.equal(f.timer.count(),0);const shown=f.shown.length,hidden=f.hidden.length;f.timer.run(oldRepeat);f.timer.run(oldHide);f.timer.advance(100000);assert.equal(f.shown.length,shown);assert.equal(f.hidden.length,hidden);f.policy.dispose();
 });
 test('malformed preview descriptors consume no quota and schedule no repeated retry',()=>{
-  const valid={pair:[0,1],matched:[1,2],matchingSources:[0,2],blockers:[3]};
+  const valid={pair:[0,1],matched:[1,2,4],matchingSources:[0,2,4],blockers:[3],focusMatched:[1,2,4],focusSources:[0,2,4],movingSource:0,movingTarget:1};
   for(const change of [v=>delete v.pair,v=>v.matched=[],v=>v.matchingSources=[1,2],v=>v.matchingSources=[0],v=>v.blockers=[3,3],v=>v.blockers=[-1],v=>v.matched=new Array(1),v=>v.pair=new Array(2)]){
     const bad=plain(valid);change(bad);const f=fixture({choose:()=>bad});f.timer.advance(100000);assert.equal(f.cycles.length,0);assert.equal(f.chosen,1);assert.equal(f.timer.count(),0);f.policy.dispose();
   }
 });
 test('identity is checked again after copying an external preview descriptor',()=>{
-  let f;const value={pair:[0,1],matchingSources:[0,2],blockers:[3]};Object.defineProperty(value,'matched',{get(){f.set({generation:1},false);return [1,2];}});
+  let f;const value={pair:[0,1],matchingSources:[0,2,4],blockers:[3],focusMatched:[1,2,4],focusSources:[0,2,4],movingSource:0,movingTarget:1};Object.defineProperty(value,'matched',{get(){f.set({generation:1},false);return [1,2,4];}});
   f=fixture({choose:()=>value});f.timer.advance(10000);assert.equal(f.cycles.length,0);assert.equal(f.chosen,1);assert.equal(f.timer.count(),1);f.policy.dispose();
+});
+
+
+test('canonical three-fours focus repeats unchanged without advising the other stone or crate',()=>{
+  const entry=require('./fixtures/idle-focus-v1.json').cases[0],g=new HexMatch(entry.level),snapshot=plain(g.snapshot()),input={rulesVersion:g.level.rulesVersion,values:g.values.slice(),layers:g.layers.slice(),score:g.score,target:g.level.target,movesLeft:g.movesLeft,cells:g.level.cells.map(({q,r})=>({q,r})),obstacles:g.level.obstacles,blockerHp:g.blockerHp.slice(),regionOpen:g.regionOpen.slice()},selected=Idle.chooseVisibleHint(input,[entry.pair],values=>g.findMatches(values));
+  const f=fixture({choose:()=>selected});f.timer.advance(13600);assert.equal(f.shown.length,3);assert.equal(f.chosen,1);assert.equal(f.cycles.length,1);
+  for(const cue of f.shown){assert.deepEqual(cue.focusSources,[0,1,5]);assert.deepEqual(cue.focusMatched,[0,1,2]);assert.equal(cue.movingSource,5);assert.equal(cue.movingTarget,2);assert(!cue.focusSources.includes(2));assert(!cue.focusSources.includes(9));assert.equal(cue.focusSources,f.shown[0].focusSources);assert.equal(cue.focusMatched,f.shown[0].focusMatched);}
+  assert.deepEqual(plain(g.snapshot()),snapshot);f.policy.interaction();assert.equal(f.timer.count(),0);f.timer.advance(100000);assert.equal(f.shown.length,3);f.policy.dispose();
+});
+test('missing partial invalid or unmapped focus fails closed without quota or repeating effects',()=>{
+  const valid={pair:[0,1],matched:[1,2,4],matchingSources:[0,2,4],blockers:[3],focusMatched:[1,2,4],focusSources:[0,2,4],movingSource:0,movingTarget:1};
+  for(const change of [v=>delete v.focusMatched,v=>delete v.focusSources,v=>delete v.movingSource,v=>delete v.movingTarget,v=>v.focusMatched=[1,2],v=>v.focusSources=[0,2],v=>v.focusMatched=[1,2,99],v=>v.focusSources=[0,2,99],v=>v.focusMatched=[1,2,2],v=>v.focusSources=[0,2,2],v=>v.focusSources=new Array(3),v=>v.movingSource=1,v=>v.movingTarget=0,v=>v.movingSource=4,v=>v.movingTarget=99,v=>v.movingTarget=v.movingSource]){
+    const bad=plain(valid);change(bad);const f=fixture({choose:()=>bad});f.timer.advance(100000);assert.equal(f.shown.length,0);assert.equal(f.chosen,1);assert.equal(f.timer.count(),0);f.policy.dispose();
+  }
 });
 
 let passed=0;for(const item of tests){try{item.run();passed++;}catch(error){console.error('FAIL: '+item.name);throw error;}}

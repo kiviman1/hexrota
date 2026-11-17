@@ -236,15 +236,17 @@ body.reduce-motion .score-packet,body.reduce-motion .score-digit,body.reduce-mot
 .reward-goal-hit{filter:drop-shadow(0 0 8px #d8f69666)}
 body.reduce-motion .reward-goal-hit{filter:none}
 
-/* Teach the action first. Numerals identify stones; soil and pips describe the floor. */
-.hex-tile.value-1{--gem:#cab3ee;--gem-edge:#9e7bc6;--gem-back:#74569c;--number:#432d65}
-.hex-tile.value-2{--gem:#f6d37b;--gem-edge:#cda147;--gem-back:#9d7935;--number:#624713}
-.hex-tile.value-3{--gem:#f2ada1;--gem-edge:#cb7c70;--gem-back:#a8584c;--number:#6e332b}
-.hex-tile.value-4{--gem:#9ecfe9;--gem-edge:#6fabc9;--gem-back:#4d849d;--number:#244d66}
-.hex-tile.value-5{--gem:#e4a7d0;--gem-edge:#bb78ab;--gem-back:#91527f;--number:#612a54}
+/* Saturated faces keep the established value hues; dark ink keeps numerals legible.
+   Numerals identify stones; soil and pips describe the floor. */
+.hex-tile.value-1{--gem:#b365f2;--gem-edge:#d7a3ff;--gem-back:#7032a4;--number:#2c0e43}
+.hex-tile.value-2{--gem:#ffcf28;--gem-edge:#ffe995;--gem-back:#b77809;--number:#583300}
+.hex-tile.value-3{--gem:#ff6851;--gem-edge:#ffb39a;--gem-back:#b43127;--number:#551b10}
+.hex-tile.value-4{--gem:#279fed;--gem-edge:#8fddff;--gem-back:#1268af;--number:#092f53}
+.hex-tile.value-5{--gem:#f15cbd;--gem-edge:#ffb0df;--gem-back:#a32f80;--number:#4a133d}
 .hex-number{font-size:30px;font-weight:750}
 .floor-shape{fill:#534b3c;stroke:#8d7b5a}
 .floor-partial .floor-shape{fill:#867748;stroke:#dfc47f}
+.floor-green .floor-shape{fill:#76d943;stroke:#b7fa7e}
 .layered.floor-untouched .floor-shape{stroke:#d7bc7e}
 .layer-pips{pointer-events:none}
 .layer-pip{fill:#fff3c9;stroke:#615233;stroke-width:.65}
@@ -315,7 +317,7 @@ body[data-guide-feedback="true"] .tutorial-coach{border-color:#c3df8a;background
 body[data-screen="game"] .board-legend{font-size:10px;color:#b0c59b}
 .pregame-lesson{padding:18px 15px;margin:20px 0 12px;border:1px solid #d4dfbe;border-radius:15px;background:#f1f5e5}
 .lesson-example{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:15px}
-.demo-stone{display:grid;place-items:center;width:46px;height:43px;clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);background:#f6d37b;color:#624713;font-size:26px;font-weight:750}
+.demo-stone{display:grid;place-items:center;width:46px;height:43px;clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);background:#ffcf28;color:#583300;font-size:26px;font-weight:750}
 .demo-arrow{font-size:24px;color:#718c50;padding:0 3px}
 .lesson-example>strong{font-size:30px;line-height:1;color:#365e32;white-space:nowrap}
 .lesson-example small{display:block;font-size:12px;font-weight:500;margin-top:4px}
@@ -934,15 +936,14 @@ body[data-screen="game"] .tutorial-coach[data-tavik-dialogue="true"]>.hx-tavik-d
 body.reduce-motion .hx-tavik-dialogue,body.reduce-motion .hx-tavik-dialogue *,
 body[data-scene-paused="true"] .hx-tavik-dialogue,body[data-scene-paused="true"] .hx-tavik-dialogue *{animation:none!important;transition:none!important}
 @media(prefers-reduced-motion:reduce){.hx-tavik-dialogue,.hx-tavik-dialogue *{animation:none!important;transition:none!important}}
-/* Disposable group guidance keeps all real coordinates, paint and hit targets.
+/* Disposable matching-group guidance keeps all real coordinates, paint and hit targets.
    WAAPI animates clone transforms and face opacity; no SVG filter or recolouring. */
 .idle-hint-layer,.idle-hint-layer *{pointer-events:none!important}
 .idle-hint-stone>.gem,.idle-hint-match>.gem{transform-box:view-box;transform-origin:0 0}
-.idle-hint-outline,.idle-hint-blocker-outline{fill:none;stroke:#e3e8be;stroke-width:1.4;opacity:.7;stroke-linejoin:round;stroke-linecap:round}
+.idle-hint-outline{fill:none;stroke:#e3e8be;stroke-width:1.4;opacity:.7;stroke-linejoin:round;stroke-linecap:round}
 .idle-hint-sheen{fill:#fff;stroke:none;opacity:0}
-.idle-hint-pair-outline{stroke:#f1e6b2;opacity:.76}
+.idle-hint-moving-outline{stroke:#f1e6b2;opacity:.76}
 .idle-hint-match-outline{stroke:#d6e7b5;stroke-width:1.15;opacity:.64}
-.idle-hint-blocker-outline{stroke:#ebdbb5;stroke-width:1.25;opacity:.72}
 @media(prefers-reduced-motion:reduce){
   .idle-hint-layer *{animation:none!important;transition:none!important}
 }
@@ -951,18 +952,18 @@ body[data-scene-paused="true"] .hx-tavik-dialogue,body[data-scene-paused="true"]
 body[data-obstacles="true"] .obstacle-cell{cursor:default}
 body[data-obstacles="true"] .obstacle-closed>.floor-shape{fill:#68756a;stroke:#4b5b4b;opacity:1}
 body[data-obstacles="true"] .obstacle-empty>.floor-shape{opacity:.8}
-body[data-obstacles="true"] .crate-body{fill:#b77b40;stroke:#654024;stroke-width:3;stroke-linejoin:round}
-body[data-obstacles="true"] .crate-grain{stroke:#88552c;stroke-width:1.5;fill:none;opacity:.8}
-body[data-obstacles="true"] .crate-brace{stroke:#e0b072;stroke-width:6;fill:none;stroke-linecap:round}
+body[data-obstacles="true"] .crate-body{fill:#dc9230;stroke:#7b451c;stroke-width:3;stroke-linejoin:round}
+body[data-obstacles="true"] .crate-grain{stroke:#ad641d;stroke-width:1.5;fill:none;opacity:.8}
+body[data-obstacles="true"] .crate-brace{stroke:#ffd17a;stroke-width:6;fill:none;stroke-linecap:round}
 body[data-obstacles="true"] .crate-crack{stroke:#432e23;stroke-width:3;fill:none}
-body[data-obstacles="true"] .crate-hp-badge{fill:#583d29;stroke:#f3cf8a;stroke-width:1.2}
+body[data-obstacles="true"] .crate-hp-badge{fill:#60381b;stroke:#ffe0a0;stroke-width:1.2}
 body[data-obstacles="true"] .crate-hp{fill:#fff0c6;stroke:none;font:bold 17px Arial,sans-serif}
-body[data-obstacles="true"] .blocker-reinforced .crate-body{fill:#b28b5a;stroke:#736958;stroke-width:4}
-body[data-obstacles="true"] .blocker-reinforced .crate-brace{stroke:#d1c5a2}
+body[data-obstacles="true"] .blocker-reinforced .crate-body{fill:#ce8b2b;stroke:#8f641d;stroke-width:4}
+body[data-obstacles="true"] .blocker-reinforced .crate-brace{stroke:#ffe39b}
 body[data-obstacles="true"] .region-cover>polygon{fill:#b8d3d0;stroke:#e2efdf;stroke-width:1.5;opacity:.45}
 body[data-obstacles="true"] .region-cover>path{fill:#9ab8ad;stroke:#dce9d8;stroke-width:2;stroke-linejoin:round}
 body[data-obstacles="true"] .region-cover>circle{fill:#dce9d8}
-body[data-obstacles="true"] .crate-fragment{fill:#c18b4e;stroke:#79522e;stroke-width:1;pointer-events:none}
+body[data-obstacles="true"] .crate-fragment{fill:#e5a346;stroke:#98581e;stroke-width:1;pointer-events:none}
 /* Source-connected terrain is opaque and unnumbered until the engine opens it.
    A continuous earth/grass cover takes the place of generic gate/padlock icons. */
 body[data-obstacle-flow="true"] .flow-terrain>polygon{fill:#52633c;stroke:#52633c;stroke-width:1;opacity:1}

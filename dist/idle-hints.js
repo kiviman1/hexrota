@@ -16,10 +16,23 @@
   const coordinate=cell=>cell.q+','+cell.r;
   const adjacent=(a,b)=>{const dq=a.q-b.q,dr=a.r-b.r;return Math.max(Math.abs(dq),Math.abs(dr),Math.abs(dq+dr))===1;};
   const frozenList=values=>Object.freeze(values.slice());
-  function descriptor(selected,matched,blockers){
+  function descriptor(selected,matched,blockers,focus=null){
     const selectedPair=selected.slice().sort((a,b)=>a-b),[a,b]=selectedPair,destinations=matched.slice().sort((a,b)=>a-b);
-    return Object.freeze({pair:frozenList(selectedPair),matched:frozenList(destinations),matchingSources:frozenList(destinations.map(i=>i===a?b:i===b?a:i).sort((a,b)=>a-b)),blockers:frozenList(blockers.slice().sort((a,b)=>a-b))});
+    const result={pair:frozenList(selectedPair),matched:frozenList(destinations),matchingSources:frozenList(destinations.map(i=>i===a?b:i===b?a:i).sort((a,b)=>a-b)),blockers:frozenList(blockers.slice().sort((a,b)=>a-b))};
+    if(focus)Object.assign(result,{focusMatched:frozenList(focus.focusMatched.slice().sort((a,b)=>a-b)),focusSources:frozenList(focus.focusMatched.map(i=>i===a?b:i===b?a:i).sort((a,b)=>a-b)),movingSource:focus.movingSource,movingTarget:focus.movingTarget});
+    return Object.freeze(result);
   }
+  function focusGroup(selected,matched,swapped){
+    const [a,b]=selected,groups=[];
+    for(const destination of selected){
+      if(!matched.includes(destination))continue;
+      const source=destination===a?b:a,value=swapped[destination],focused=matched.filter(i=>swapped[i]===value);
+      if(focused.length>=3)groups.push({focusMatched:focused,movingSource:source,movingTarget:destination,value});
+    }
+    groups.sort((a,b)=>b.focusMatched.length-a.focusMatched.length||b.value-a.value||a.movingSource-b.movingSource);
+    return groups[0]||null;
+  }
+
   function visibleObstacles(input){
     const {cells,obstacles:data,blockerHp:hp,regionOpen:opened}=input,n=input.values.length,index=i=>integer(i)&&i<n,id=s=>typeof s==='string'&&/^[A-Za-z0-9_.-]{1,80}$/.test(s);
     if(!dense(cells)||cells.length!==n||cells.some(c=>!c||Array.isArray(c)||!int32(c.q)||!int32(c.r))||new Set(cells.map(coordinate)).size!==n||!data||Array.isArray(data)||data.version!=='obstacles-v1'||!dense(data.blockers)||!dense(data.regions)||!dense(hp)||hp.length!==data.blockers.length||!dense(opened)||opened.length!==data.regions.length||opened.some(v=>typeof v!=='boolean'))return null;
@@ -73,7 +86,7 @@
   function chooseVisibleHint(input,legalPairs,findMatches,avoidPair=null){
     try{return selectVisible(input,legalPairs,findMatches,avoidPair);}catch(_){return null;}
   }
-  function selectVisible(input,legalPairs,findMatches,avoidPair){
+  function selectVisible(input,legalPairs,findMatches,avoidPair,requireFocus=true){
     if(!input||typeof input!=='object'||!dense(input.values)||!dense(input.layers)||!input.values.length||input.layers.length!==input.values.length||!input.layers.every(integer)||!integer(input.score)||!integer(input.target)||!integer(input.movesLeft)||!Array.isArray(legalPairs)||typeof findMatches!=='function')return null;
     const v5=input.rulesVersion==='classic-v5';
     if(!v5&&(![undefined,null,'classic-v4'].includes(input.rulesVersion)||!input.values.every(Number.isInteger)))return null;
@@ -91,19 +104,22 @@
       const scoreGain=matched.reduce((sum,index)=>sum+swapped[index],0),layerGain=matched.filter(index=>layers[index]>0).length,greenGain=matched.filter(index=>layers[index]===1).length;
       const preview=v5?obstacle.preview(matched):{blockers:[],opened:0};
       const rank=layerGain*100+greenGain*35+Math.min(scoreGain,Math.max(0,target-score))*.1+preview.blockers.length*120+preview.opened*25;
-      choices.push({hint:descriptor([a,b],matched,preview.blockers),rank});
+      const focus=focusGroup([a,b],matched,swapped);if(requireFocus&&!focus)continue;
+      choices.push({hint:descriptor([a,b],matched,preview.blockers,focus),rank});
     }
     const previous=pair(avoidPair)?avoidPair.slice().sort((a,b)=>a-b).join(':'):null;
     const alternatives=previous===null?choices:choices.filter(choice=>choice.hint.pair.join(':')!==previous),ranked=alternatives.length?alternatives:choices;
     ranked.sort((a,b)=>b.rank-a.rank||a.hint.pair[0]-b.hint.pair[0]||a.hint.pair[1]-b.hint.pair[1]);
     return ranked.length?ranked[0].hint:null;
   }
-  function chooseVisiblePair(input,legalPairs,findMatches,avoidPair=null){return chooseVisibleHint(input,legalPairs,findMatches,avoidPair)?.pair||null;}
+  function chooseVisiblePair(input,legalPairs,findMatches,avoidPair=null){try{return selectVisible(input,legalPairs,findMatches,avoidPair,false)?.pair||null;}catch(_){return null;}}
   function copyPreview(value){
     if(Array.isArray(value))return pair(value)?Object.freeze({pair:frozenList(value)}):null;
-    if(!value||typeof value!=='object'||!pair(value.pair)||!['matched','matchingSources','blockers'].every(key=>dense(value[key])&&value[key].every(integer)&&new Set(value[key]).size===value[key].length)||!value.matched.length||value.matched.length!==value.matchingSources.length)return null;
-    const [a,b]=value.pair,expected=value.matched.map(i=>i===a?b:i===b?a:i).sort((a,b)=>a-b),actual=value.matchingSources.slice().sort((a,b)=>a-b);if(expected.some((i,j)=>actual[j]!==i))return null;
-    return descriptor(value.pair,value.matched,value.blockers);
+    if(!value||typeof value!=='object'||!pair(value.pair)||!['matched','matchingSources','blockers','focusMatched','focusSources'].every(key=>dense(value[key])&&value[key].every(integer)&&new Set(value[key]).size===value[key].length)||!value.matched.length||value.matched.length!==value.matchingSources.length||value.focusMatched.length<3||value.focusMatched.length!==value.focusSources.length)return null;
+    const [a,b]=value.pair,mapped=indices=>indices.map(i=>i===a?b:i===b?a:i).sort((a,b)=>a-b),equal=(left,right)=>left.length===right.length&&left.every((i,j)=>i===right[j]);
+    if(!equal(mapped(value.matched),value.matchingSources.slice().sort((a,b)=>a-b))||!equal(mapped(value.focusMatched),value.focusSources.slice().sort((a,b)=>a-b))||value.focusMatched.some(i=>!value.matched.includes(i))||value.focusSources.some(i=>!value.matchingSources.includes(i)))return null;
+    if(!integer(value.movingSource)||!integer(value.movingTarget)||!value.pair.includes(value.movingSource)||!value.pair.includes(value.movingTarget)||value.movingSource===value.movingTarget||!value.focusSources.includes(value.movingSource)||value.focusSources.includes(value.movingTarget)||!value.focusMatched.includes(value.movingTarget)||value.focusMatched.includes(value.movingSource))return null;
+    return descriptor(value.pair,value.matched,value.blockers,{focusMatched:value.focusMatched,movingSource:value.movingSource,movingTarget:value.movingTarget});
   }
 
   // read(): {eligible,attemptId,generation,boardKey}. The board key is derived

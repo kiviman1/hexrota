@@ -3,18 +3,18 @@
 body[data-obstacles="true"] .obstacle-cell{cursor:default}
 body[data-obstacles="true"] .obstacle-closed>.floor-shape{fill:#68756a;stroke:#4b5b4b;opacity:1}
 body[data-obstacles="true"] .obstacle-empty>.floor-shape{opacity:.8}
-body[data-obstacles="true"] .crate-body{fill:#b77b40;stroke:#654024;stroke-width:3;stroke-linejoin:round}
-body[data-obstacles="true"] .crate-grain{stroke:#88552c;stroke-width:1.5;fill:none;opacity:.8}
-body[data-obstacles="true"] .crate-brace{stroke:#e0b072;stroke-width:6;fill:none;stroke-linecap:round}
+body[data-obstacles="true"] .crate-body{fill:#dc9230;stroke:#7b451c;stroke-width:3;stroke-linejoin:round}
+body[data-obstacles="true"] .crate-grain{stroke:#ad641d;stroke-width:1.5;fill:none;opacity:.8}
+body[data-obstacles="true"] .crate-brace{stroke:#ffd17a;stroke-width:6;fill:none;stroke-linecap:round}
 body[data-obstacles="true"] .crate-crack{stroke:#432e23;stroke-width:3;fill:none}
-body[data-obstacles="true"] .crate-hp-badge{fill:#583d29;stroke:#f3cf8a;stroke-width:1.2}
+body[data-obstacles="true"] .crate-hp-badge{fill:#60381b;stroke:#ffe0a0;stroke-width:1.2}
 body[data-obstacles="true"] .crate-hp{fill:#fff0c6;stroke:none;font:bold 17px Arial,sans-serif}
-body[data-obstacles="true"] .blocker-reinforced .crate-body{fill:#b28b5a;stroke:#736958;stroke-width:4}
-body[data-obstacles="true"] .blocker-reinforced .crate-brace{stroke:#d1c5a2}
+body[data-obstacles="true"] .blocker-reinforced .crate-body{fill:#ce8b2b;stroke:#8f641d;stroke-width:4}
+body[data-obstacles="true"] .blocker-reinforced .crate-brace{stroke:#ffe39b}
 body[data-obstacles="true"] .region-cover>polygon{fill:#b8d3d0;stroke:#e2efdf;stroke-width:1.5;opacity:.45}
 body[data-obstacles="true"] .region-cover>path{fill:#9ab8ad;stroke:#dce9d8;stroke-width:2;stroke-linejoin:round}
 body[data-obstacles="true"] .region-cover>circle{fill:#dce9d8}
-body[data-obstacles="true"] .crate-fragment{fill:#c18b4e;stroke:#79522e;stroke-width:1;pointer-events:none}
+body[data-obstacles="true"] .crate-fragment{fill:#e5a346;stroke:#98581e;stroke-width:1;pointer-events:none}
 /* Source-connected terrain is opaque and unnumbered until the engine opens it.
    A continuous earth/grass cover takes the place of generic gate/padlock icons. */
 body[data-obstacle-flow="true"] .flow-terrain>polygon{fill:#52633c;stroke:#52633c;stroke-width:1;opacity:1}
