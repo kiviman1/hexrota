@@ -1,0 +1,94 @@
+{
+  "success": true,
+  "completedAtUtc": "2026-11-17T21:35:20.214595+00:00",
+  "baseline": "b078da49a0a1c9632195f13aefefad812e7f92ab",
+  "featureHeadAtCompletion": "448b3e8a93b04b19ae31c9ad6f2527de07039b34",
+  "executions": 6,
+  "results": [
+    {
+      "suite": "state",
+      "browser": "chromium",
+      "command": "HEXROTA_BROWSER=chromium node check-state-browser.cjs",
+      "exitCode": 0,
+      "passed": 25,
+      "errors": 0,
+      "evidence": "reports/onboarding-9-16-legacy-browser/state-chromium.json",
+      "evidenceSha256": "8b0bac198c58503fcbec08e57ee5856dba55c16bea4c957e536d50afad5d6789",
+      "artifactDirectory": "test-results/onboarding-legacy-state-chromium"
+    },
+    {
+      "suite": "scene",
+      "browser": "chromium",
+      "command": "HEXROTA_BROWSER=chromium node check-scene-browser.cjs",
+      "exitCode": 0,
+      "passed": 38,
+      "errors": 0,
+      "evidence": "reports/onboarding-9-16-legacy-browser/scene-chromium.json",
+      "evidenceSha256": "6e471123c9f30b4f0fe6471a23fd91e38e274b47bc6c949d4fa6d8bcae11c738",
+      "artifactDirectory": "test-results/onboarding-legacy-scene-chromium"
+    },
+    {
+      "suite": "welcome",
+      "browser": "chromium",
+      "command": "HEXROTA_BROWSER=chromium node check-welcome-reset-browser.cjs",
+      "exitCode": 0,
+      "passed": 8,
+      "errors": 0,
+      "evidence": "reports/onboarding-9-16-legacy-browser/welcome-chromium.json",
+      "evidenceSha256": "9661e3d395e3ec191450ca28b8d436539dbae44b2a57b1701456de249097300b",
+      "artifactDirectory": "test-results/onboarding-legacy-welcome-chromium"
+    },
+    {
+      "suite": "state",
+      "browser": "webkit",
+      "command": "HEXROTA_BROWSER=webkit node check-state-browser.cjs",
+      "exitCode": 0,
+      "passed": 25,
+      "errors": 0,
+      "evidence": "reports/onboarding-9-16-legacy-browser/state-webkit.json",
+      "evidenceSha256": "cdb5f58860efb451aafd4051fb74fd3e45ddf617b826a6b0f1637ab37265fffc",
+      "artifactDirectory": "test-results/onboarding-legacy-state-webkit"
+    },
+    {
+      "suite": "scene",
+      "browser": "webkit",
+      "command": "HEXROTA_BROWSER=webkit node check-scene-browser.cjs",
+      "exitCode": 0,
+      "passed": 38,
+      "errors": 0,
+      "evidence": "reports/onboarding-9-16-legacy-browser/scene-webkit.json",
+      "evidenceSha256": "397455305a1c7cd364b1cf7795bad1038184eed22093aebe7cd42772ed7fd07e",
+      "artifactDirectory": "test-results/onboarding-legacy-scene-webkit"
+    },
+    {
+      "suite": "welcome",
+      "browser": "webkit",
+      "command": "HEXROTA_BROWSER=webkit node check-welcome-reset-browser.cjs",
+      "exitCode": 0,
+      "passed": 8,
+      "errors": 0,
+      "evidence": "reports/onboarding-9-16-legacy-browser/welcome-webkit.json",
+      "evidenceSha256": "0818cb404af56b24ed0e497c18028dde8e2065395a5f7abe812f5ee183d2cd20",
+      "artifactDirectory": "test-results/onboarding-legacy-welcome-webkit"
+    }
+  ],
+  "sourceSha256": {
+    "check-state-browser.cjs": "6b9071f4d3132bbc74a5833748abe2e75825ddcf3a494021ebc3463255b1373e",
+    "check-scene-browser.cjs": "aadd053201bc7d6fec15da9fddfc882d813d05d5b76575642b274cf475c6612c",
+    "check-welcome-reset-browser.cjs": "64047877b9ef31166f2cfb6d7e2e6005ac1a4b651113f9ce20a3ad30b78b868c"
+  },
+  "runtime": {
+    "playwright": "1.62.1",
+    "chromium": "156.0.8078.79 (Debian system executable)",
+    "webkit": "actual Playwright WebKit build 2336",
+    "webkitLocalDependencies": "Existing extracted native libraries were supplied through LD_LIBRARY_PATH; host preflight was skipped because local library paths are not in its system search list. All browser checks executed against the native WebKit process."
+  },
+  "compatibility": {
+    "legacyFixturePolicy": "Existing raw {} absent-policy records are seeded only for historical scene/state characterization. Genuine missing profiles are independently tested by the new v2 suite.",
+    "fullResetPolicy": "Welcome-reset keeps all old reset/economy assertions and additionally verifies onboarding-v2 plus no fabricated guideAcks after an actual reset.",
+    "orientationTest": "The strict original dialog bounds remain unchanged; the rotation case now waits two real paint frames before measuring. Final Chromium and WebKit state executions both include this settle step.",
+    "thresholds": "All historical geometry, pixel, motion, reward and state assertions remain intact."
+  },
+  "physicalIPhoneTested": false,
+  "unityEditorTested": false
+}

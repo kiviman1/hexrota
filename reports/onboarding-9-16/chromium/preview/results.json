@@ -1,0 +1,1441 @@
+{
+  "success": true,
+  "browser": "chromium",
+  "checks": 1,
+  "results": [
+    "390x844 genuinely fresh v2 plays seven native steps with earned once-only welcome"
+  ],
+  "moves": [
+    {
+      "stage": 0,
+      "turn": 1,
+      "pair": [
+        4,
+        3
+      ],
+      "drag": true,
+      "score": 6,
+      "covered": 3,
+      "status": "playing"
+    },
+    {
+      "stage": 0,
+      "turn": 2,
+      "pair": [
+        0,
+        3
+      ],
+      "drag": false,
+      "score": 9,
+      "covered": 5,
+      "status": "playing"
+    },
+    {
+      "stage": 0,
+      "turn": 3,
+      "pair": [
+        3,
+        5
+      ],
+      "drag": false,
+      "score": 18,
+      "covered": 7,
+      "status": "won"
+    },
+    {
+      "stage": 1,
+      "turn": 1,
+      "pair": [
+        2,
+        1
+      ],
+      "drag": true,
+      "score": 3,
+      "covered": 2,
+      "status": "playing"
+    },
+    {
+      "stage": 1,
+      "turn": 2,
+      "pair": [
+        5,
+        7
+      ],
+      "drag": false,
+      "score": 18,
+      "covered": 7,
+      "status": "playing"
+    },
+    {
+      "stage": 1,
+      "turn": 3,
+      "pair": [
+        2,
+        1
+      ],
+      "drag": false,
+      "score": 27,
+      "covered": 8,
+      "status": "playing"
+    },
+    {
+      "stage": 1,
+      "turn": 4,
+      "pair": [
+        2,
+        1
+      ],
+      "drag": false,
+      "score": 30,
+      "covered": 9,
+      "status": "won"
+    }
+  ],
+  "timingProofs": [],
+  "layouts": [
+    {
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "board": {
+        "x": 6,
+        "y": 281.796875,
+        "width": 378,
+        "height": 503.203125,
+        "top": 281.796875,
+        "right": 384,
+        "bottom": 785,
+        "left": 6
+      },
+      "coach": {
+        "x": 12,
+        "y": 153.796875,
+        "width": 366,
+        "height": 118,
+        "top": 153.796875,
+        "right": 378,
+        "bottom": 271.796875,
+        "left": 12
+      },
+      "portrait": {
+        "x": 29,
+        "y": 177.796875,
+        "width": 70,
+        "height": 70,
+        "top": 177.796875,
+        "right": 99,
+        "bottom": 247.796875,
+        "left": 29
+      },
+      "hand": {
+        "x": 321,
+        "y": 182.796875,
+        "width": 44,
+        "height": 60,
+        "top": 182.796875,
+        "right": 365,
+        "bottom": 242.796875,
+        "left": 321
+      },
+      "cells": [
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 7.523420964604129,
+          "role": "button",
+          "name": "2 sayısı, 1 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 7.523420964604129,
+          "role": "button",
+          "name": "2 sayısı, 1 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.740970324533846,
+          "role": "button",
+          "name": "3 sayısı, 1 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23123168945312,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.844581688530366,
+          "role": "button",
+          "name": "1 sayısı, 1 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 7.523420964604129,
+          "role": "button",
+          "name": "2 sayısı, 1 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 7.523420964604129,
+          "role": "button",
+          "name": "2 sayısı, 1 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.740970324533846,
+          "role": "button",
+          "name": "3 sayısı, 1 eşleşme gerekiyor"
+        }
+      ],
+      "buttons": [
+        {
+          "id": "game-home",
+          "width": 69.53125,
+          "height": 44,
+          "name": "Ana menüye dön"
+        },
+        {
+          "id": "pause",
+          "width": 65.84375,
+          "height": 44,
+          "name": "Oyunu duraklat"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "board": {
+        "x": 6,
+        "y": 281.796875,
+        "width": 378,
+        "height": 503.203125,
+        "top": 281.796875,
+        "right": 384,
+        "bottom": 785,
+        "left": 6
+      },
+      "coach": {
+        "x": 12,
+        "y": 153.796875,
+        "width": 366,
+        "height": 118,
+        "top": 153.796875,
+        "right": 378,
+        "bottom": 271.796875,
+        "left": 12
+      },
+      "portrait": {
+        "x": 29,
+        "y": 177.796875,
+        "width": 70,
+        "height": 70,
+        "top": 177.796875,
+        "right": 99,
+        "bottom": 247.796875,
+        "left": 29
+      },
+      "hand": null,
+      "cells": [
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.844581688530366,
+          "role": "button",
+          "name": "1 sayısı, 1 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.740970324533846,
+          "role": "button",
+          "name": "3 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.844581688530366,
+          "role": "button",
+          "name": "1 sayısı, 1 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23123168945312,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 7.523420964604129,
+          "role": "button",
+          "name": "2 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.844581688530366,
+          "role": "button",
+          "name": "1 sayısı, 1 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.740970324533846,
+          "role": "button",
+          "name": "3 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.740970324533846,
+          "role": "button",
+          "name": "3 sayısı, 1 eşleşme gerekiyor"
+        }
+      ],
+      "buttons": [
+        {
+          "id": "game-home",
+          "width": 69.53125,
+          "height": 44,
+          "name": "Ana menüye dön"
+        },
+        {
+          "id": "pause",
+          "width": 65.84375,
+          "height": 44,
+          "name": "Oyunu duraklat"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "board": {
+        "x": 6,
+        "y": 281.796875,
+        "width": 378,
+        "height": 503.203125,
+        "top": 281.796875,
+        "right": 384,
+        "bottom": 785,
+        "left": 6
+      },
+      "coach": {
+        "x": 12,
+        "y": 153.796875,
+        "width": 366,
+        "height": 118,
+        "top": 153.796875,
+        "right": 378,
+        "bottom": 271.796875,
+        "left": 12
+      },
+      "portrait": {
+        "x": 29,
+        "y": 177.796875,
+        "width": 70,
+        "height": 70,
+        "top": 177.796875,
+        "right": 99,
+        "bottom": 247.796875,
+        "left": 29
+      },
+      "hand": null,
+      "cells": [
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.740970324533846,
+          "role": "button",
+          "name": "3 sayısı, 1 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.844581688530366,
+          "role": "button",
+          "name": "1 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.844581688530366,
+          "role": "button",
+          "name": "1 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23123168945312,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 7.523420964604129,
+          "role": "button",
+          "name": "2 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.740970324533846,
+          "role": "button",
+          "name": "3 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.740970324533846,
+          "role": "button",
+          "name": "3 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.740970324533846,
+          "role": "button",
+          "name": "3 sayısı, 1 eşleşme gerekiyor"
+        }
+      ],
+      "buttons": [
+        {
+          "id": "game-home",
+          "width": 69.53125,
+          "height": 44,
+          "name": "Ana menüye dön"
+        },
+        {
+          "id": "pause",
+          "width": 65.84375,
+          "height": 44,
+          "name": "Oyunu duraklat"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "board": {
+        "x": 6,
+        "y": 281.796875,
+        "width": 378,
+        "height": 503.203125,
+        "top": 281.796875,
+        "right": 384,
+        "bottom": 785,
+        "left": 6
+      },
+      "coach": {
+        "x": 12,
+        "y": 153.796875,
+        "width": 366,
+        "height": 118,
+        "top": 153.796875,
+        "right": 378,
+        "bottom": 271.796875,
+        "left": 12
+      },
+      "portrait": null,
+      "hand": null,
+      "cells": [
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.740970324533846,
+          "role": "button",
+          "name": "3 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.844581688530366,
+          "role": "button",
+          "name": "1 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.844581688530366,
+          "role": "button",
+          "name": "1 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23123168945312,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 7.523420964604129,
+          "role": "button",
+          "name": "2 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.740970324533846,
+          "role": "button",
+          "name": "3 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 7.523420964604129,
+          "role": "button",
+          "name": "2 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.844581688530366,
+          "role": "button",
+          "name": "1 sayısı, altı yeşil"
+        }
+      ],
+      "buttons": [
+        {
+          "id": "game-home",
+          "width": 69.53125,
+          "height": 44,
+          "name": "Ana menüye dön"
+        },
+        {
+          "id": "pause",
+          "width": 65.84375,
+          "height": 44,
+          "name": "Oyunu duraklat"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "board": {
+        "x": 6,
+        "y": 281.796875,
+        "width": 378,
+        "height": 503.203125,
+        "top": 281.796875,
+        "right": 384,
+        "bottom": 785,
+        "left": 6
+      },
+      "coach": {
+        "x": 12,
+        "y": 153.796875,
+        "width": 366,
+        "height": 118,
+        "top": 153.796875,
+        "right": 378,
+        "bottom": 271.796875,
+        "left": 12
+      },
+      "portrait": {
+        "x": 29,
+        "y": 177.796875,
+        "width": 70,
+        "height": 70,
+        "top": 177.796875,
+        "right": 99,
+        "bottom": 247.796875,
+        "left": 29
+      },
+      "hand": null,
+      "cells": [
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 7.523420964604129,
+          "role": "button",
+          "name": "2 sayısı, 2 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.844581688530366,
+          "role": "button",
+          "name": "1 sayısı, 1 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.740970324533846,
+          "role": "button",
+          "name": "3 sayısı, 1 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 7.523420964604129,
+          "role": "button",
+          "name": "2 sayısı, 1 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23123168945312,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.844581688530366,
+          "role": "button",
+          "name": "1 sayısı, 2 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 7.523420964604129,
+          "role": "button",
+          "name": "2 sayısı, 1 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.844581688530366,
+          "role": "button",
+          "name": "1 sayısı, 1 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.740970324533846,
+          "role": "button",
+          "name": "3 sayısı, 1 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.2313232421875,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 7.523420964604129,
+          "role": "button",
+          "name": "2 sayısı, 1 eşleşme gerekiyor"
+        }
+      ],
+      "buttons": [
+        {
+          "id": "game-home",
+          "width": 69.53125,
+          "height": 44,
+          "name": "Ana menüye dön"
+        },
+        {
+          "id": "pause",
+          "width": 65.84375,
+          "height": 44,
+          "name": "Oyunu duraklat"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "board": {
+        "x": 6,
+        "y": 281.796875,
+        "width": 378,
+        "height": 503.203125,
+        "top": 281.796875,
+        "right": 384,
+        "bottom": 785,
+        "left": 6
+      },
+      "coach": {
+        "x": 12,
+        "y": 153.796875,
+        "width": 366,
+        "height": 118,
+        "top": 153.796875,
+        "right": 378,
+        "bottom": 271.796875,
+        "left": 12
+      },
+      "portrait": {
+        "x": 29,
+        "y": 177.796875,
+        "width": 70,
+        "height": 70,
+        "top": 177.796875,
+        "right": 99,
+        "bottom": 247.796875,
+        "left": 29
+      },
+      "hand": null,
+      "cells": [
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.844581688530366,
+          "role": "button",
+          "name": "1 sayısı, 2 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.844581688530366,
+          "role": "button",
+          "name": "1 sayısı, 1 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 7.523420964604129,
+          "role": "button",
+          "name": "2 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.740970324533846,
+          "role": "button",
+          "name": "3 sayısı, 1 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23123168945312,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.740970324533846,
+          "role": "button",
+          "name": "3 sayısı, 1 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 7.523420964604129,
+          "role": "button",
+          "name": "2 sayısı, 1 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 7.523420964604129,
+          "role": "button",
+          "name": "2 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.740970324533846,
+          "role": "button",
+          "name": "3 sayısı, 1 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.2313232421875,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 7.523420964604129,
+          "role": "button",
+          "name": "2 sayısı, 1 eşleşme gerekiyor"
+        }
+      ],
+      "buttons": [
+        {
+          "id": "game-home",
+          "width": 69.53125,
+          "height": 44,
+          "name": "Ana menüye dön"
+        },
+        {
+          "id": "pause",
+          "width": 65.84375,
+          "height": 44,
+          "name": "Oyunu duraklat"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "board": {
+        "x": 6,
+        "y": 281.796875,
+        "width": 378,
+        "height": 503.203125,
+        "top": 281.796875,
+        "right": 384,
+        "bottom": 785,
+        "left": 6
+      },
+      "coach": {
+        "x": 12,
+        "y": 153.796875,
+        "width": 366,
+        "height": 118,
+        "top": 153.796875,
+        "right": 378,
+        "bottom": 271.796875,
+        "left": 12
+      },
+      "portrait": {
+        "x": 29,
+        "y": 177.796875,
+        "width": 70,
+        "height": 70,
+        "top": 177.796875,
+        "right": 99,
+        "bottom": 247.796875,
+        "left": 29
+      },
+      "hand": null,
+      "cells": [
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.740970324533846,
+          "role": "button",
+          "name": "3 sayısı, 2 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 7.523420964604129,
+          "role": "button",
+          "name": "2 sayısı, 1 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.740970324533846,
+          "role": "button",
+          "name": "3 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.740970324533846,
+          "role": "button",
+          "name": "3 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23123168945312,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 7.523420964604129,
+          "role": "button",
+          "name": "2 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.844581688530366,
+          "role": "button",
+          "name": "1 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.740970324533846,
+          "role": "button",
+          "name": "3 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.844581688530366,
+          "role": "button",
+          "name": "1 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.2313232421875,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 7.523420964604129,
+          "role": "button",
+          "name": "2 sayısı, altı yeşil"
+        }
+      ],
+      "buttons": [
+        {
+          "id": "game-home",
+          "width": 69.53125,
+          "height": 44,
+          "name": "Ana menüye dön"
+        },
+        {
+          "id": "pause",
+          "width": 65.84375,
+          "height": 44,
+          "name": "Oyunu duraklat"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "board": {
+        "x": 6,
+        "y": 281.796875,
+        "width": 378,
+        "height": 503.203125,
+        "top": 281.796875,
+        "right": 384,
+        "bottom": 785,
+        "left": 6
+      },
+      "coach": {
+        "x": 12,
+        "y": 153.796875,
+        "width": 366,
+        "height": 118,
+        "top": 153.796875,
+        "right": 378,
+        "bottom": 271.796875,
+        "left": 12
+      },
+      "portrait": {
+        "x": 29,
+        "y": 177.796875,
+        "width": 70,
+        "height": 70,
+        "top": 177.796875,
+        "right": 99,
+        "bottom": 247.796875,
+        "left": 29
+      },
+      "hand": null,
+      "cells": [
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.844581688530366,
+          "role": "button",
+          "name": "1 sayısı, 1 eşleşme gerekiyor"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.844581688530366,
+          "role": "button",
+          "name": "1 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 7.523420964604129,
+          "role": "button",
+          "name": "2 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.740970324533846,
+          "role": "button",
+          "name": "3 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23123168945312,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 7.523420964604129,
+          "role": "button",
+          "name": "2 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.844581688530366,
+          "role": "button",
+          "name": "1 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.740970324533846,
+          "role": "button",
+          "name": "3 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.844581688530366,
+          "role": "button",
+          "name": "1 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.2313232421875,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 7.523420964604129,
+          "role": "button",
+          "name": "2 sayısı, altı yeşil"
+        }
+      ],
+      "buttons": [
+        {
+          "id": "game-home",
+          "width": 69.53125,
+          "height": 44,
+          "name": "Ana menüye dön"
+        },
+        {
+          "id": "pause",
+          "width": 65.84375,
+          "height": 44,
+          "name": "Oyunu duraklat"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "board": {
+        "x": 6,
+        "y": 281.796875,
+        "width": 378,
+        "height": 503.203125,
+        "top": 281.796875,
+        "right": 384,
+        "bottom": 785,
+        "left": 6
+      },
+      "coach": {
+        "x": 12,
+        "y": 153.796875,
+        "width": 366,
+        "height": 118,
+        "top": 153.796875,
+        "right": 378,
+        "bottom": 271.796875,
+        "left": 12
+      },
+      "portrait": null,
+      "hand": null,
+      "cells": [
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.844581688530366,
+          "role": "button",
+          "name": "1 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 7.523420964604129,
+          "role": "button",
+          "name": "2 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.740970324533846,
+          "role": "button",
+          "name": "3 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.740970324533846,
+          "role": "button",
+          "name": "3 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23123168945312,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 7.523420964604129,
+          "role": "button",
+          "name": "2 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.844581688530366,
+          "role": "button",
+          "name": "1 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.740970324533846,
+          "role": "button",
+          "name": "3 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.963623046875,
+          "height": 95.23126220703125,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 4.844581688530366,
+          "role": "button",
+          "name": "1 sayısı, altı yeşil"
+        },
+        {
+          "hittable": true,
+          "whole": true,
+          "width": 109.96363830566406,
+          "height": 95.2313232421875,
+          "obscured": false,
+          "font": 30,
+          "visible": true,
+          "contrast": 7.523420964604129,
+          "role": "button",
+          "name": "2 sayısı, altı yeşil"
+        }
+      ],
+      "buttons": [
+        {
+          "id": "game-home",
+          "width": 69.53125,
+          "height": 44,
+          "name": "Ana menüye dön"
+        },
+        {
+          "id": "pause",
+          "width": 65.84375,
+          "height": 44,
+          "name": "Oyunu duraklat"
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "physicalIPhone": false,
+  "unityEditor": false,
+  "input": {
+    "tap": "native touchscreen, physical floor centers remeasured per contact",
+    "drag": "compositor-native touch drag with preventFling"
+  },
+  "clocks": "production clocks and timing constants unchanged",
+  "targetUrl": "https://hexrota-72q0b1f91-kivanc-tascioglu-s-projects.vercel.app/?dev=first-play-9-16"
+}

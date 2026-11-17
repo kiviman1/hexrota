@@ -1,0 +1,973 @@
+{
+  "browser": "chromium",
+  "success": true,
+  "passed": 25,
+  "results": [
+    "320×568 first dialogue, committed move and acknowledgement retain board geometry",
+    "390×844 first dialogue, committed move and acknowledgement retain board geometry",
+    "430×932 first dialogue, committed move and acknowledgement retain board geometry",
+    "844×390 first dialogue, committed move and acknowledgement retain board geometry",
+    "932×430 first dialogue, committed move and acknowledgement retain board geometry",
+    "1280×720 first dialogue, committed move and acknowledgement retain board geometry",
+    "two real tutorials complete coop and replay cannot award the welcome twice",
+    "pause settings Escape and browser Back preserve nested context and authority",
+    "home resumes a genuine saved campaign at zero lives with the exact attempt",
+    "verified win result proceeds only to the next unopened campaign level",
+    "second chance closes provider after one grant and preserves the same failed attempt",
+    "failed authoritative move write rolls back and leaves an interactable safe board",
+    "two actual tabs keep one writer and hand off the same saved attempt",
+    "background during a committed animation cannot spend another move or leave busy locked",
+    "a crashed swap animation preserves its committed result and releases input",
+    "rapid duplicate coach controls grant no extra move or welcome reward",
+    "missing scene and character assets keep one fallback portrait and the real playable board",
+    "reduced motion and rotated open settings preserve authority and reachable controls",
+    "malformed navigation commands leave the active nested screen and profile untouched",
+    "raw game navigation cannot promote a read-only home preview into an attempt",
+    "incompatible modal commands cannot leak a pending stage or hidden start",
+    "native parent close is repaired in top-layer order without losing focus or progress",
+    "queued native preview close cannot clear a newer reopened stage request",
+    "synthetic persisted pagehide retires a committed terminal presentation without visibilitychange",
+    "real offline PWA reload resumes authoritative data with the state runtime cached"
+  ],
+  "measurements": [
+    {
+      "label": "instruction",
+      "viewport": {
+        "width": 320,
+        "height": 568
+      },
+      "coach": {
+        "x": 12,
+        "y": 143.1875,
+        "width": 296,
+        "height": 118,
+        "top": 143.1875,
+        "right": 308,
+        "bottom": 261.1875,
+        "left": 12
+      },
+      "portrait": {
+        "x": 29,
+        "y": 177.1875,
+        "width": 50,
+        "height": 50,
+        "top": 177.1875,
+        "right": 79,
+        "bottom": 227.1875,
+        "left": 29
+      },
+      "board": {
+        "x": 6,
+        "y": 265.1875,
+        "width": 308,
+        "height": 249.8125,
+        "top": 265.1875,
+        "right": 314,
+        "bottom": 515,
+        "left": 6
+      },
+      "glyphs": [
+        {
+          "x": 178,
+          "y": 162.84375,
+          "width": 49,
+          "height": 12,
+          "top": 162.84375,
+          "right": 227,
+          "bottom": 174.84375,
+          "left": 178
+        },
+        {
+          "x": 105,
+          "y": 182.484375,
+          "width": 91.453125,
+          "height": 15,
+          "top": 182.484375,
+          "right": 196.453125,
+          "bottom": 197.484375,
+          "left": 105
+        },
+        {
+          "x": 105,
+          "y": 198,
+          "width": 39.1875,
+          "height": 15,
+          "top": 198,
+          "right": 144.1875,
+          "bottom": 213,
+          "left": 105
+        },
+        {
+          "x": 105,
+          "y": 217.515625,
+          "width": 119.25,
+          "height": 12,
+          "top": 217.515625,
+          "right": 224.25,
+          "bottom": 229.515625,
+          "left": 105
+        },
+        {
+          "x": 105,
+          "y": 231.015625,
+          "width": 60.046875,
+          "height": 12,
+          "top": 231.015625,
+          "right": 165.046875,
+          "bottom": 243.015625,
+          "left": 105
+        }
+      ],
+      "bodyVisible": false,
+      "overflow": false
+    },
+    {
+      "label": "feedback",
+      "viewport": {
+        "width": 320,
+        "height": 568
+      },
+      "coach": {
+        "x": 12,
+        "y": 143.1875,
+        "width": 296,
+        "height": 118,
+        "top": 143.1875,
+        "right": 308,
+        "bottom": 261.1875,
+        "left": 12
+      },
+      "portrait": {
+        "x": 29,
+        "y": 177.1875,
+        "width": 50,
+        "height": 50,
+        "top": 177.1875,
+        "right": 79,
+        "bottom": 227.1875,
+        "left": 29
+      },
+      "board": {
+        "x": 6,
+        "y": 265.1875,
+        "width": 308,
+        "height": 249.8125,
+        "top": 265.1875,
+        "right": 314,
+        "bottom": 515,
+        "left": 6
+      },
+      "glyphs": [
+        {
+          "x": 178,
+          "y": 170.609375,
+          "width": 49,
+          "height": 12,
+          "top": 170.609375,
+          "right": 227,
+          "bottom": 182.609375,
+          "left": 178
+        },
+        {
+          "x": 105,
+          "y": 190.25,
+          "width": 83.5,
+          "height": 15,
+          "top": 190.25,
+          "right": 188.5,
+          "bottom": 205.25,
+          "left": 105
+        },
+        {
+          "x": 105,
+          "y": 209.765625,
+          "width": 111.65625,
+          "height": 12,
+          "top": 209.765625,
+          "right": 216.65625,
+          "bottom": 221.765625,
+          "left": 105
+        },
+        {
+          "x": 105,
+          "y": 223.265625,
+          "width": 85.046875,
+          "height": 12,
+          "top": 223.265625,
+          "right": 190.046875,
+          "bottom": 235.265625,
+          "left": 105
+        }
+      ],
+      "bodyVisible": false,
+      "overflow": false
+    },
+    {
+      "label": "instruction",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "coach": {
+        "x": 12,
+        "y": 153.796875,
+        "width": 366,
+        "height": 118,
+        "top": 153.796875,
+        "right": 378,
+        "bottom": 271.796875,
+        "left": 12
+      },
+      "portrait": {
+        "x": 29,
+        "y": 177.796875,
+        "width": 70,
+        "height": 70,
+        "top": 177.796875,
+        "right": 99,
+        "bottom": 247.796875,
+        "left": 29
+      },
+      "board": {
+        "x": 6,
+        "y": 281.796875,
+        "width": 378,
+        "height": 509.203125,
+        "top": 281.796875,
+        "right": 384,
+        "bottom": 791,
+        "left": 6
+      },
+      "glyphs": [
+        {
+          "x": 232,
+          "y": 168.546875,
+          "width": 49,
+          "height": 12,
+          "top": 168.546875,
+          "right": 281,
+          "bottom": 180.546875,
+          "left": 232
+        },
+        {
+          "x": 129,
+          "y": 188.1875,
+          "width": 108.6875,
+          "height": 17,
+          "top": 188.1875,
+          "right": 237.6875,
+          "bottom": 205.1875,
+          "left": 129
+        },
+        {
+          "x": 129,
+          "y": 206.734375,
+          "width": 46.546875,
+          "height": 17,
+          "top": 206.734375,
+          "right": 175.546875,
+          "bottom": 223.734375,
+          "left": 129
+        },
+        {
+          "x": 129,
+          "y": 229.28125,
+          "width": 132.5,
+          "height": 14,
+          "top": 229.28125,
+          "right": 261.5,
+          "bottom": 243.28125,
+          "left": 129
+        },
+        {
+          "x": 129,
+          "y": 244.65625,
+          "width": 66.71875,
+          "height": 14,
+          "top": 244.65625,
+          "right": 195.71875,
+          "bottom": 258.65625,
+          "left": 129
+        }
+      ],
+      "bodyVisible": false,
+      "overflow": false
+    },
+    {
+      "label": "feedback",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "coach": {
+        "x": 12,
+        "y": 153.796875,
+        "width": 366,
+        "height": 118,
+        "top": 153.796875,
+        "right": 378,
+        "bottom": 271.796875,
+        "left": 12
+      },
+      "portrait": {
+        "x": 29,
+        "y": 177.796875,
+        "width": 70,
+        "height": 70,
+        "top": 177.796875,
+        "right": 99,
+        "bottom": 247.796875,
+        "left": 29
+      },
+      "board": {
+        "x": 6,
+        "y": 281.796875,
+        "width": 378,
+        "height": 509.203125,
+        "top": 281.796875,
+        "right": 384,
+        "bottom": 791,
+        "left": 6
+      },
+      "glyphs": [
+        {
+          "x": 232,
+          "y": 177.828125,
+          "width": 49,
+          "height": 12,
+          "top": 177.828125,
+          "right": 281,
+          "bottom": 189.828125,
+          "left": 232
+        },
+        {
+          "x": 129,
+          "y": 197.46875,
+          "width": 99.203125,
+          "height": 17,
+          "top": 197.46875,
+          "right": 228.203125,
+          "bottom": 214.46875,
+          "left": 129
+        },
+        {
+          "x": 129,
+          "y": 220.015625,
+          "width": 154.625,
+          "height": 14,
+          "top": 220.015625,
+          "right": 283.625,
+          "bottom": 234.015625,
+          "left": 129
+        },
+        {
+          "x": 129,
+          "y": 235.390625,
+          "width": 63.921875,
+          "height": 14,
+          "top": 235.390625,
+          "right": 192.921875,
+          "bottom": 249.390625,
+          "left": 129
+        }
+      ],
+      "bodyVisible": false,
+      "overflow": false
+    },
+    {
+      "label": "instruction",
+      "viewport": {
+        "width": 430,
+        "height": 932
+      },
+      "coach": {
+        "x": 12,
+        "y": 153.796875,
+        "width": 406,
+        "height": 118,
+        "top": 153.796875,
+        "right": 418,
+        "bottom": 271.796875,
+        "left": 12
+      },
+      "portrait": {
+        "x": 29,
+        "y": 177.796875,
+        "width": 70,
+        "height": 70,
+        "top": 177.796875,
+        "right": 99,
+        "bottom": 247.796875,
+        "left": 29
+      },
+      "board": {
+        "x": 6,
+        "y": 281.796875,
+        "width": 418,
+        "height": 597.203125,
+        "top": 281.796875,
+        "right": 424,
+        "bottom": 879,
+        "left": 6
+      },
+      "glyphs": [
+        {
+          "x": 272,
+          "y": 177.828125,
+          "width": 49,
+          "height": 12,
+          "top": 177.828125,
+          "right": 321,
+          "bottom": 189.828125,
+          "left": 272
+        },
+        {
+          "x": 129,
+          "y": 197.46875,
+          "width": 159.578125,
+          "height": 17,
+          "top": 197.46875,
+          "right": 288.578125,
+          "bottom": 214.46875,
+          "left": 129
+        },
+        {
+          "x": 129,
+          "y": 220.015625,
+          "width": 163.078125,
+          "height": 14,
+          "top": 220.015625,
+          "right": 292.078125,
+          "bottom": 234.015625,
+          "left": 129
+        },
+        {
+          "x": 129,
+          "y": 235.390625,
+          "width": 36.140625,
+          "height": 14,
+          "top": 235.390625,
+          "right": 165.140625,
+          "bottom": 249.390625,
+          "left": 129
+        }
+      ],
+      "bodyVisible": false,
+      "overflow": false
+    },
+    {
+      "label": "feedback",
+      "viewport": {
+        "width": 430,
+        "height": 932
+      },
+      "coach": {
+        "x": 12,
+        "y": 153.796875,
+        "width": 406,
+        "height": 118,
+        "top": 153.796875,
+        "right": 418,
+        "bottom": 271.796875,
+        "left": 12
+      },
+      "portrait": {
+        "x": 29,
+        "y": 177.796875,
+        "width": 70,
+        "height": 70,
+        "top": 177.796875,
+        "right": 99,
+        "bottom": 247.796875,
+        "left": 29
+      },
+      "board": {
+        "x": 6,
+        "y": 281.796875,
+        "width": 418,
+        "height": 597.203125,
+        "top": 281.796875,
+        "right": 424,
+        "bottom": 879,
+        "left": 6
+      },
+      "glyphs": [
+        {
+          "x": 272,
+          "y": 177.828125,
+          "width": 49,
+          "height": 12,
+          "top": 177.828125,
+          "right": 321,
+          "bottom": 189.828125,
+          "left": 272
+        },
+        {
+          "x": 129,
+          "y": 197.46875,
+          "width": 99.203125,
+          "height": 17,
+          "top": 197.46875,
+          "right": 228.203125,
+          "bottom": 214.46875,
+          "left": 129
+        },
+        {
+          "x": 129,
+          "y": 220.015625,
+          "width": 174.78125,
+          "height": 14,
+          "top": 220.015625,
+          "right": 303.78125,
+          "bottom": 234.015625,
+          "left": 129
+        },
+        {
+          "x": 129,
+          "y": 235.390625,
+          "width": 43.78125,
+          "height": 14,
+          "top": 235.390625,
+          "right": 172.78125,
+          "bottom": 249.390625,
+          "left": 129
+        }
+      ],
+      "bodyVisible": false,
+      "overflow": false
+    },
+    {
+      "label": "instruction",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "coach": {
+        "x": 154,
+        "y": 6,
+        "width": 530,
+        "height": 118,
+        "top": 6,
+        "right": 684,
+        "bottom": 124,
+        "left": 154
+      },
+      "portrait": {
+        "x": 171,
+        "y": 30,
+        "width": 70,
+        "height": 70,
+        "top": 30,
+        "right": 241,
+        "bottom": 100,
+        "left": 171
+      },
+      "board": {
+        "x": 148,
+        "y": 128,
+        "width": 607,
+        "height": 262,
+        "top": 128,
+        "right": 755,
+        "bottom": 390,
+        "left": 148
+      },
+      "glyphs": [
+        {
+          "x": 538,
+          "y": 37.71875,
+          "width": 49,
+          "height": 12,
+          "top": 37.71875,
+          "right": 587,
+          "bottom": 49.71875,
+          "left": 538
+        },
+        {
+          "x": 271,
+          "y": 57.359375,
+          "width": 159.578125,
+          "height": 17,
+          "top": 57.359375,
+          "right": 430.578125,
+          "bottom": 74.359375,
+          "left": 271
+        },
+        {
+          "x": 271,
+          "y": 79.90625,
+          "width": 202.6875,
+          "height": 14,
+          "top": 79.90625,
+          "right": 473.6875,
+          "bottom": 93.90625,
+          "left": 271
+        }
+      ],
+      "bodyVisible": false,
+      "overflow": false
+    },
+    {
+      "label": "feedback",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "coach": {
+        "x": 154,
+        "y": 6,
+        "width": 530,
+        "height": 118,
+        "top": 6,
+        "right": 684,
+        "bottom": 124,
+        "left": 154
+      },
+      "portrait": {
+        "x": 171,
+        "y": 30,
+        "width": 70,
+        "height": 70,
+        "top": 30,
+        "right": 241,
+        "bottom": 100,
+        "left": 171
+      },
+      "board": {
+        "x": 148,
+        "y": 128,
+        "width": 607,
+        "height": 262,
+        "top": 128,
+        "right": 755,
+        "bottom": 390,
+        "left": 148
+      },
+      "glyphs": [
+        {
+          "x": 538,
+          "y": 37.71875,
+          "width": 49,
+          "height": 12,
+          "top": 37.71875,
+          "right": 587,
+          "bottom": 49.71875,
+          "left": 538
+        },
+        {
+          "x": 271,
+          "y": 57.359375,
+          "width": 99.203125,
+          "height": 17,
+          "top": 57.359375,
+          "right": 370.203125,
+          "bottom": 74.359375,
+          "left": 271
+        },
+        {
+          "x": 271,
+          "y": 79.90625,
+          "width": 222.015625,
+          "height": 14,
+          "top": 79.90625,
+          "right": 493.015625,
+          "bottom": 93.90625,
+          "left": 271
+        }
+      ],
+      "bodyVisible": false,
+      "overflow": false
+    },
+    {
+      "label": "instruction",
+      "viewport": {
+        "width": 932,
+        "height": 430
+      },
+      "coach": {
+        "x": 154,
+        "y": 6,
+        "width": 530,
+        "height": 118,
+        "top": 6,
+        "right": 684,
+        "bottom": 124,
+        "left": 154
+      },
+      "portrait": {
+        "x": 171,
+        "y": 30,
+        "width": 70,
+        "height": 70,
+        "top": 30,
+        "right": 241,
+        "bottom": 100,
+        "left": 171
+      },
+      "board": {
+        "x": 148,
+        "y": 128,
+        "width": 695,
+        "height": 302,
+        "top": 128,
+        "right": 843,
+        "bottom": 430,
+        "left": 148
+      },
+      "glyphs": [
+        {
+          "x": 538,
+          "y": 37.71875,
+          "width": 49,
+          "height": 12,
+          "top": 37.71875,
+          "right": 587,
+          "bottom": 49.71875,
+          "left": 538
+        },
+        {
+          "x": 271,
+          "y": 57.359375,
+          "width": 159.578125,
+          "height": 17,
+          "top": 57.359375,
+          "right": 430.578125,
+          "bottom": 74.359375,
+          "left": 271
+        },
+        {
+          "x": 271,
+          "y": 79.90625,
+          "width": 202.6875,
+          "height": 14,
+          "top": 79.90625,
+          "right": 473.6875,
+          "bottom": 93.90625,
+          "left": 271
+        }
+      ],
+      "bodyVisible": false,
+      "overflow": false
+    },
+    {
+      "label": "feedback",
+      "viewport": {
+        "width": 932,
+        "height": 430
+      },
+      "coach": {
+        "x": 154,
+        "y": 6,
+        "width": 530,
+        "height": 118,
+        "top": 6,
+        "right": 684,
+        "bottom": 124,
+        "left": 154
+      },
+      "portrait": {
+        "x": 171,
+        "y": 30,
+        "width": 70,
+        "height": 70,
+        "top": 30,
+        "right": 241,
+        "bottom": 100,
+        "left": 171
+      },
+      "board": {
+        "x": 148,
+        "y": 128,
+        "width": 695,
+        "height": 302,
+        "top": 128,
+        "right": 843,
+        "bottom": 430,
+        "left": 148
+      },
+      "glyphs": [
+        {
+          "x": 538,
+          "y": 37.71875,
+          "width": 49,
+          "height": 12,
+          "top": 37.71875,
+          "right": 587,
+          "bottom": 49.71875,
+          "left": 538
+        },
+        {
+          "x": 271,
+          "y": 57.359375,
+          "width": 99.203125,
+          "height": 17,
+          "top": 57.359375,
+          "right": 370.203125,
+          "bottom": 74.359375,
+          "left": 271
+        },
+        {
+          "x": 271,
+          "y": 79.90625,
+          "width": 222.015625,
+          "height": 14,
+          "top": 79.90625,
+          "right": 493.015625,
+          "bottom": 93.90625,
+          "left": 271
+        }
+      ],
+      "bodyVisible": false,
+      "overflow": false
+    },
+    {
+      "label": "instruction",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "coach": {
+        "x": 375,
+        "y": 153.796875,
+        "width": 530,
+        "height": 118,
+        "top": 153.796875,
+        "right": 905,
+        "bottom": 271.796875,
+        "left": 375
+      },
+      "portrait": {
+        "x": 392,
+        "y": 177.796875,
+        "width": 70,
+        "height": 70,
+        "top": 177.796875,
+        "right": 462,
+        "bottom": 247.796875,
+        "left": 392
+      },
+      "board": {
+        "x": 250,
+        "y": 281.796875,
+        "width": 780,
+        "height": 385.203125,
+        "top": 281.796875,
+        "right": 1030,
+        "bottom": 667,
+        "left": 250
+      },
+      "glyphs": [
+        {
+          "x": 759,
+          "y": 185.515625,
+          "width": 49,
+          "height": 12,
+          "top": 185.515625,
+          "right": 808,
+          "bottom": 197.515625,
+          "left": 759
+        },
+        {
+          "x": 492,
+          "y": 205.15625,
+          "width": 159.578125,
+          "height": 17,
+          "top": 205.15625,
+          "right": 651.578125,
+          "bottom": 222.15625,
+          "left": 492
+        },
+        {
+          "x": 492,
+          "y": 227.703125,
+          "width": 202.6875,
+          "height": 14,
+          "top": 227.703125,
+          "right": 694.6875,
+          "bottom": 241.703125,
+          "left": 492
+        }
+      ],
+      "bodyVisible": false,
+      "overflow": false
+    },
+    {
+      "label": "feedback",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "coach": {
+        "x": 375,
+        "y": 153.796875,
+        "width": 530,
+        "height": 118,
+        "top": 153.796875,
+        "right": 905,
+        "bottom": 271.796875,
+        "left": 375
+      },
+      "portrait": {
+        "x": 392,
+        "y": 177.796875,
+        "width": 70,
+        "height": 70,
+        "top": 177.796875,
+        "right": 462,
+        "bottom": 247.796875,
+        "left": 392
+      },
+      "board": {
+        "x": 250,
+        "y": 281.796875,
+        "width": 780,
+        "height": 385.203125,
+        "top": 281.796875,
+        "right": 1030,
+        "bottom": 667,
+        "left": 250
+      },
+      "glyphs": [
+        {
+          "x": 759,
+          "y": 185.515625,
+          "width": 49,
+          "height": 12,
+          "top": 185.515625,
+          "right": 808,
+          "bottom": 197.515625,
+          "left": 759
+        },
+        {
+          "x": 492,
+          "y": 205.15625,
+          "width": 99.203125,
+          "height": 17,
+          "top": 205.15625,
+          "right": 591.203125,
+          "bottom": 222.15625,
+          "left": 492
+        },
+        {
+          "x": 492,
+          "y": 227.703125,
+          "width": 222.015625,
+          "height": 14,
+          "top": 227.703125,
+          "right": 714.015625,
+          "bottom": 241.703125,
+          "left": 492
+        }
+      ],
+      "bodyVisible": false,
+      "overflow": false
+    }
+  ],
+  "errors": [],
+  "failure": null,
+  "physicalDeviceTested": false,
+  "visibilityTest": "synthetic visibilitychange with actual active presentation",
+  "pagehideTest": "synthetic persisted PageTransitionEvent while document.hidden remains false; no native BFCache claim",
+  "offlineTest": "real stopped HTTP origin and service-worker navigation",
+  "filter": null
+}

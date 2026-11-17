@@ -1,0 +1,122 @@
+{
+  "success": true,
+  "scope": "Completed local commands, native browser runs and independently tested Vercel Preview; GitHub CI status is reported by the current Draft PR checks.",
+  "completedAtUtc": "2026-11-17T21:36:27.178002+00:00",
+  "branch": "feature/hexrota-first-play-9-16",
+  "base": "b078da49a0a1c9632195f13aefefad812e7f92ab",
+  "runtimeCommit": "448b3e8a93b04b19ae31c9ad6f2527de07039b34",
+  "draftPr": "https://github.com/kiviman1/hexrota/pull/39",
+  "fullNpm": {
+    "command": "npm test",
+    "exitCode": 0,
+    "log": "reports/onboarding-9-16-npm-test.log",
+    "sha256": "537c97228f7df66791fb31d5a3dec64a67aa6ea52c18491375128a67b6c3157f",
+    "historicalChainPreserved": true
+  },
+  "focusedChecks": {
+    "policyGroups": 21,
+    "guideCases": 28,
+    "saveBoundaryGroups": 13,
+    "mountedGroups": 14,
+    "total": 76,
+    "includedInFullNpm": true,
+    "mountedReport": "reports/onboarding-9-16-mounted-results.json"
+  },
+  "native": {
+    "sdk": "8.0.428",
+    "language": "C# 7.3",
+    "completedSuites": 18,
+    "historicalSuites": 17,
+    "newOnboardingRequests": 448,
+    "report": "reports/onboarding-9-16-native-results.json"
+  },
+  "browser": {
+    "viewports": [
+      [
+        320,
+        568
+      ],
+      [
+        390,
+        844
+      ],
+      [
+        430,
+        932
+      ]
+    ],
+    "chromium": {
+      "success": true,
+      "checks": 15,
+      "recordedCommittedMoves": 48,
+      "layoutChecks": 38,
+      "report": "reports/onboarding-9-16/chromium/results.json"
+    },
+    "webkit": {
+      "success": true,
+      "checks": 15,
+      "recordedCommittedMoves": 48,
+      "layoutChecks": 38,
+      "report": "reports/onboarding-9-16/webkit/results.json"
+    },
+    "touchTargetsMinPx": 44,
+    "numberContrastMin": 4.5,
+    "webKitDrag": "native mouse/pointer fallback; taps use the native touchscreen interface"
+  },
+  "legacyBrowsers": {
+    "chromium": {
+      "state": 25,
+      "scene": 38,
+      "welcomeReset": 8,
+      "firstPlay": 8,
+      "pinnedLab": 6
+    },
+    "webkit": {
+      "state": 25,
+      "scene": 38,
+      "welcomeReset": 8,
+      "firstPlay": 8,
+      "pinnedLab": 6
+    },
+    "report": "reports/onboarding-9-16-legacy-browser-results.json",
+    "firstPlayAndPinnedLab": "Additional completed runs documented in docs/ONBOARDING_9_16.md"
+  },
+  "preview": {
+    "target": "preview",
+    "url": "https://hexrota-72q0b1f91-kivanc-tascioglu-s-projects.vercel.app/?dev=first-play-9-16",
+    "deploymentId": "dpl_83Lmq16mwhbDhew2i41v8bTnB4cU",
+    "runtimeCommit": "448b3e8a93b04b19ae31c9ad6f2527de07039b34",
+    "chromium": {
+      "exitCode": 0,
+      "checks": 1,
+      "authoredMoves": 7,
+      "report": "reports/onboarding-9-16/chromium/preview/results.json"
+    },
+    "webkit": {
+      "exitCode": 0,
+      "checks": 1,
+      "authoredMoves": 7,
+      "report": "reports/onboarding-9-16/webkit/preview/results.json"
+    },
+    "assetProof": "reports/onboarding-9-16-preview-assets.json",
+    "verifiedServedFiles": 8,
+    "sharing": "A separate expiring share URL is supplied to the user; no bypass token is stored in repository evidence."
+  },
+  "protectedContracts": {
+    "sourceFixture": "fixtures/onboarding-9-16-protected.json",
+    "fixtureSha256": "2407b7abbc4b1d5e5d75b9b6d660acd392c306c8a17dcf0214d1723ba0aa6619",
+    "sevenAuthoredMovesUnchanged": true,
+    "gameplaySnapshotsUnchanged": true,
+    "campaignVariants": 40,
+    "certifiedWinningRoutes": 80,
+    "v4v5v6GameplayUnchanged": true,
+    "noNewEconomyEntitlement": true
+  },
+  "notPerformed": {
+    "physicalIPhone": true,
+    "physicalAndroid": true,
+    "unityEditor": true,
+    "firstTimeHumanParticipantStudy": true
+  },
+  "production": "9.16 is not merged or promoted. The separately authorized PR38 merge is the main baseline."
+}

@@ -1,6 +1,6 @@
 # Hexrota 9.16 — İlk oynayış ve öğrenme
 
-Başlangıç `main` `b078da49` (PR #38 sonrası), özellik dalı `feature/hexrota-first-play-9-16`.
+Başlangıç `main` `b078da49` (PR #38 sonrası), özellik dalı `feature/hexrota-first-play-9-16`, [taslak PR #39](https://github.com/kiviman1/hexrota/pull/39). 9.16 otomatik birleştirilmez veya Production’a yükseltilmez.
 
 9.16'nın amacı oyuncunun ilk gerçek takası kendi eliyle yapmasını, sonucunu görmesini ve sonraki adımda tek yeni fikirle karşılaşmasını sağlamaktır. Bu çalışma T1/T2'nin mevcut oyununun sunumunu düzenler. Ayrı bir prova tahtası, otomatik oynayan motor veya yeni malzeme/ödül kuralı oluşturmaz.
 
@@ -50,7 +50,7 @@ Aşağıdaki metinler `dist/onboarding-policy.js` içindeki v2 izdüşümündend
 | T2 / 3 | “25 puana ulaş.” | “Puan tamam; son yeri yeşert.” |
 | T2 / 4 | “Puan tamam; son yeri yeşert.” | “Görev tamam!” / “Puanın yeterli ve her yer yeşil.” |
 
-Yanlış/rehber dışı girişte kısa ve eyleme dönük dil kullanılır: örneğin “Bu iki taşı deneyelim.” Kullanıcıya hata etiketi yapıştırılmaz. İlk ekranda puan, zemin, çift kat, zincir, para ve inşa aynı açıklama içinde verilmez.
+Yanlış/rehber dışı girişte kısa ve eyleme dönük dil kullanılır: “Şu iki taşı dene.” Kullanıcıya hata etiketi yapıştırılmaz. İlk ekranda puan, zemin, çift kat, zincir, para ve inşa aynı açıklama içinde verilmez.
 
 ## Korunacak kanonik sözleşme
 
@@ -113,17 +113,19 @@ Gelecekteki Unity el/koç görünümü sonucun sahibi olmaz. Gerçek takası mev
 
 9.16'nın 4 saniyesi **öğretici yardımı** içindir. Kampanyanın mevcut pasif ipucu politikası farklıdır: kaynak `dist/idle-hints.js` içindeki 10 saniye ilk bekleme, 900 ms gösterim / 900 ms sessiz tekrar, 35 saniye sonraki bekleme ve 60 saniye yeni döngü aralığıdır. Eski belgelerdeki 4 saniyelik kampanya tekrar metni yeni kaynak için kullanılmaz.
 
-Öğretici metni hemen görünür; 4 saniye, gerçek oyuncu girdisini bekleten zorunlu süre değildir. **T1 tur 0 bir kez hemen sonlu gösterim alır.** Sonraki adım için yeni bekleme noktası sonuç kartının kapanıp tahtanın eyleme hazır olmasıdır: gösterim, 900 ms sonuçtan sonra 4000 ms sessiz süre geçince başlayabilir; `SETTLE` sonrasından toplam 4900 ms'dir. Hamle üretmeyen gerçek bir dokunma ise 4000 ms'yi o etkileşimden yeniden başlatır. Sonuç okunurken geçen süre sonraki adımın boşta beklemesi sayılmaz. Gösterim için uygunluk, etkin öğretici/deneme/tur ile gerçek giriş açıklığını kullanır. Dokunma, seçim, sürükleme, gerçek hamle, açık modal, mola, gezinme, resize, gizlenme ve reset eski gösterimi temizler. Azaltılmış hareket tercihinde hareketli kopya yerine sabit vurgu/yön kullanılır.
+Öğretici metni hemen görünür; 4 saniye, gerçek oyuncu girdisini bekleten zorunlu süre değildir. **T1 tur 0 bir kez hemen sonlu gösterim alır.** Sonraki adım için yeni bekleme noktası sonuç kartının kapanıp tahtanın eyleme hazır olmasıdır: gösterim, 900 ms sonuçtan sonra 4000 ms sessiz süre geçince başlayabilir; `SETTLE` sonrasından yaklaşık 4900 ms'dir. Sonraki 4000 ms, gerçek sonuç görünümünün kapandığı anda yeniden kurulur; yoğun bir frame veya geciken callback oyuncunun sessiz süresini kısaltmaz. Hamle üretmeyen gerçek bir dokunma ise 4000 ms'yi o etkileşimden yeniden başlatır. Sonuç okunurken geçen süre sonraki adımın boşta beklemesi sayılmaz. Gösterim için uygunluk, etkin öğretici/deneme/tur ile gerçek giriş açıklığını kullanır. Dokunma, seçim, sürükleme, gerçek hamle, açık modal, mola, gezinme, resize, gizlenme ve reset eski gösterimi temizler. Azaltılmış hareket tercihinde hareket yerine sabit vurgu/yön kullanılır.
 
 Başarılı kanonik hamle kaydı ve sunumun `SETTLE` bitişinden sonra **900 ms** sonuç görünümü başlar. Bu süre boyunca tahta girişi açıktır; dokunma sonucu kapatıp olağan seçimi yapar. Sonuç kapanışı **storage, `guideAcks`, motor veya ödül yazmaz**. Reload gerçek `engine.turn` ile sonraki eylemi gösterir; geçmiş sonuç kartını tekrar oynatmaz.
 
-Zamanlayıcının sahibi uygulamadır; uygunluk anahtarı Attempt ID + tur + epoch'tur. Yeni hamle/deneme, mola, modal, Home, gizlenme, resize ve reset eski callback'i geçersiz kılar. Başarısız veya devam eden yazım için zamanlayıcı başlamaz. Terminal sonuç mevcut kazanma penceresinden önce aynı kısa süreyle görünebilir; Devam/Atla yalnız anlamlı geçişte bulunur. Otomatik kapanışın kalıcı onay sayılması yasaktır.
+Zamanlayıcının sahibi uygulamadır; uygunluk anahtarı Attempt ID + tur + epoch'tur. Yeni hamle/deneme, mola, modal, Home, gizlenme, resize ve reset eski callback'i geçersiz kılar. Başarısız veya devam eden yazım için zamanlayıcı başlamaz. Terminal sonuç mevcut kazanma penceresinden önce aynı kısa süreyle görünebilir. Bu otomatik sonuç sırasında satır içi Devam düğmesi gizlenir; süre bittiğinde gerçek kazanma penceresinin Devam eylemi açılır. T1 kazanma geçişinde ayrıca Atla sunulabilir; devam eden adımlarda zorunlu Devam/Atla kartı yoktur. Otomatik kapanışın kalıcı onay sayılması yasaktır.
 
 V2 başlangıçta yalnız takas kavramını verir; puan, zemin ve hamle HUD'sı T1 tur 0'da görsel olarak ve erişilebilirlik ağacında gizlenir. Sayılar ve kontroller okunur/erişilebilir kalır. Gerçek ilk hamleden sonra ilgili HUD açılır. V2 tahta çizimi eski sonsuz el ve sayı soldurmasını çağırmamak için `guided:null` kullanır; gerçek izin verilen çiftin denetimi eski `guidedStep` verisidir.
 
 Elin yönü mevcut eşleşen taşı göstermek için özgün çiftin **kopyasında** çevrilebilir. Kanonik `findMatches` yalnız değerlerin kopyası üzerinde takas sonrası çağrılır; sonuçlar ters takasla gerçek kaynaklara eşlenir. Bu görsel hesap authored çift, motor değerleri, geçmiş veya özgün `.gem` düğümlerini değiştirmez. Yanlış/rehber dışı giriş yalnız yumuşak bir çağrı ve sonlu gösterim üretir; hamle/RNG/geçmiş üretmez.
 
 El, portre ve metin için gerçek hücrelerin dışında ayrılmış koç alanı kullanılır; ince kontur/yön işareti girişe engel olmaz. `HexFirstPlay.createDemo` ve legacy metin API'leri korunur. Dekoratif portre, el veya ok taşın gerçek dokunma alanını örtmez. Bir animasyon, puan/hamle/zemin/ödül veya kayıt sahibi olamaz.
+
+Mobil sözleşme gerçek hücre ve etkin düğmelerde en az **44 × 44 CSS px** dokunma alanı, okunur sayılar ve erişilebilir ad ister. Yerleşim kabulü yalnız hücre merkezine bakmaz: bütün gerçek altıgen, koç kartı, portre ve el dikdörtgenleri de denetlenir. Sayı rengi korunur; vurgu ve sayı/zemin açıklaması birlikte kullanılır. İlk takasta gizli hedef panelinin iki eski hedefi alt alta dizip tahtanın yüksekliğini azaltmaması için tek satırlık alan korunur. Kısa `1 / 3` sayacı, hikâye etiketinin yanında gereksiz satır kırılmasını önler. Bunlar yalnız v2 sunum seçicileridir; legacy görünümü ve kanonik koordinatlar değişmez.
 
 ## Gerçek ilk kez oyuncu gözlemi protokolü
 
@@ -177,9 +179,15 @@ Buradaki form örnek veri içermez; alıntı yerlerine uydurma katılımcı cüm
 
 Aynı noktada birden fazla kişinin takılması, önce çağrı/işaret/geri bildirim yerleşimini inceleme nedenidir; otomatik olarak bölüm sayılarını veya zorluğunu değiştirme gerekçesi değildir. İnsan sonucu raporlanacaksa örneklem, cihazlar, yardım tanımı ve başarısız/yarım oturumlar birlikte belirtilir.
 
+## Mobil Preview
+
+[9.16 ilk-oynayış Preview](https://hexrota-72q0b1f91-kivanc-tascioglu-s-projects.vercel.app/?dev=first-play-9-16), gerçek uygulamanın izole ilk-oynayış kapsamını açar. Bu Preview’nin runtime commit’i `448b3e8a93b04b19ae31c9ad6f2527de07039b34`, cache nesli `56` ve hedefi Preview’dır. [Dağıtılan dosya kanıtı](../reports/onboarding-9-16-preview-assets.json), HTML ve yedi ilgili runtime/CSS dosyasının HTTP 200 ile geldiğini ve çalışma alanının byte hash’leriyle eşleştiğini kaydeder. Bu asset kontrolü girdi doğrulamasından ayrıdır. Aynı Preview üzerinde Chromium ve WebKit’in her birinde 390×844 boyutunda yedi gerçek öğretici hamlesiyle ayrı tam akış koşumu da geçti; raporlar aşağıdadır.
+
+Vercel erişim korumasını geçen paylaşım bağlantısı teslim mesajında verilir; süresi dolabilen erişim anahtarı bu kalıcı belgeye yazılmaz. Bağlantıdaki `dev=first-play-9-16` korunmalıdır. Bu kapsam normal Production, 9.14 material ve 9.15 story kayıtlarını değiştirmez. Başlayalım ile gerçek T1 açılır; test sırasında mola/menü ve iki dokunma ya da sürükleme kullanılabilir.
+
 ## Otomatik kabul ve teslim durumu
 
-Tam uygulama ve browser kabulü henüz tamamlanmamıştır. Aşağıdaki sonuç yalnız gerçekten bitmiş koşumu belirtir; araştırma ve protokol hazırlamak uygulama veya insan testi yapmakla eş tutulmaz.
+Aşağıdaki sonuçlar gerçekten tamamlanmış otomatik koşumlardır. Araştırma ve protokol hazırlamak insan testi yapmakla eş tutulmaz; browser ve native C# koşumları fiziksel cihaz veya Unity Editor gözlemi değildir. [Toplu doğrulama raporu](../reports/onboarding-9-16-validation.json), runtime commit’ini, gerçek komut sonuçlarını, Preview ve kaynak sözleşmelerini birlikte kaydeder. GitHub’ın güncel CI durumu taslak PR’ın Checks ekranından izlenir; burada yerel doğrulama ile uzak CI sonucu birbirine karıştırılmaz.
 
 | Doğrulama | Gerçek sonuç |
 | --- | --- |
@@ -189,16 +197,30 @@ Tam uygulama ve browser kabulü henüz tamamlanmamıştır. Aşağıdaki sonuç 
 | Legacy `check-onboarding.cjs` | 8 eski mounted grup geçti. |
 | Legacy `check-ui.cjs` | Komut exit 0; iki öğretici ve on kampanya çözümü, migration/skip/replay/girdi kontrolleri korundu. |
 | Legacy `check-first-play-browser.cjs` | Gerçek Chromium 8/8 ve WebKit 8/8 geçti; geometri, render edilmiş PNG, snapshot, onay, dekoratif demo ve gerçek ödül kontrolleri korundu. |
+| Tarihsel state / scene / welcome-reset browser paketleri | Gerçek Chromium ve WebKit’in her birinde **25 / 38 / 8** kontrol, altı komutun tamamı exit 0. [Altı koşumun özeti](../reports/onboarding-9-16-legacy-browser-results.json). |
 | Eski native regresyonlar | 17/17 komut geçti; gameplay, katalog, ödül, can, ekonomi, session, komut, kurtarma, ipucu, engel, büyük tahta, malzeme ve hikâye karşılaştırmaları korundu. |
 | Yeni v2 `check-first-play-v2-ui.cjs` | 14/14 mounted grup geçti; gerçek uygulama/profile akışı, yedi hamle, bozuk yazım, tekil ödül, no-op onay, lifecycle ve eski kısmi kayıtlar kapsandı. Bu JSDOM koşumu native dokunma veya gerçek yerleşim kanıtı değildir. |
-| Yeni v2 browser ve tam npm | Son koşumlar bekleniyor; başarı sayısı henüz ilan edilmez. |
+| Tam `npm test` | Son runtime üzerinde exit 0; bütün tarihsel zincir ve 76 yeni grup/vaka geçti. 40 kampanya varyantı ve 80 sertifikalı kazanma yolu korundu. [Tam log](../reports/onboarding-9-16-npm-test.log). |
+| Sabitlenmiş Balance Lab | Gerçek Chromium 6/6 ve WebKit 6/6 izolasyon grubu geçti. |
+| Yeni v2 browser | Gerçek Chromium **15/15** ve WebKit **15/15**, iki komut da exit 0. Her biri 320×568, 390×844, 430×932 boyutlarında yedi hamleyi oynar. Her tarayıcı raporunda 48 kaydedilmiş gerçek hamle ve 38 yerleşim örneği vardır. Bunlar test grubu sayısına eklenmez. |
+| Gerçek Vercel Preview | Chromium **1/1** ve WebKit **1/1**, exit 0: `448b3e8` dağıtımında 390×844 ile her biri yedi gerçek hamle ve dokuz yerleşim örneği, tekil T2 ödülü ve kayıt doğrulaması. |
 
 Native yaşam döngüleri gerçek T2 galibiyetinin mevcut `onboarding-v1` ledger'ında tekil 20 Altın vermesini, replay/reset politikasının korunmasını, v2'de mevcut üç geçerli onayın korunmasını ve son yazım başarısızlığında tahta ile ödülün geri alınmasını kapsar. Kalıcı kanıtlar: [native sonuç özeti](../reports/onboarding-9-16-native-results.json), [yeni native koşum logu](../reports/onboarding-9-16-native-logs/check-onboarding-parity.cjs.log) ve aynı dizindeki 17 tarihsel komut logu. Farklı komutların senaryo, karşılaştırma, takas ve dalga adetleri tek bir “test sayısı” olarak toplanmaz.
 
 [Mounted uygulama raporu](../reports/onboarding-9-16-mounted-results.json), iki başlangıç ve yedi gerçek hamle sonrasındaki dokuz kanonik snapshot'ın başlangıç commit'iyle byte düzeyinde aynı olduğunu ve 11 korunan motor/gameplay/bölüm kaynağının değişmediğini kaydeder. Zamanlama için gerçek `performance.now`/`setTimeout` kullanır; can muhasebesi için mevcut sabit UTC fixture'ı ve tek bir tutulmuş WAAPI tamamlanma shim'i kapsamda açıkça belirtilmiştir.
 
-Eski akış testleri boş fakat **mevcut** `{}` kaydıyla, politika alanı eklemeden başlar; bu, eski kullanıcı davranışının hâlâ geçerli olduğunu doğrular. Migration girdileri bu fixture ile gölgelenmez. Gerçek kayıt yokluğu ve v2 kaydı yeni testlerdedir. Eski iddialar/eşikler kaldırılmadı.
+[Chromium yerel raporu](../reports/onboarding-9-16/chromium/results.json) ve [WebKit yerel raporu](../reports/onboarding-9-16/webkit/results.json), 15 grubun gerçek adlarını, hamleleri, yerleşimleri ve boş browser hata listelerini içerir. [Chromium Preview raporu](../reports/onboarding-9-16/chromium/preview/results.json) ile [WebKit Preview raporu](../reports/onboarding-9-16/webkit/preview/results.json), dağıtılmış aynı uygulamanın ayrı koşumlarıdır. Süreler değiştirilmemiş üretim saatlerinden ölçüldü: Chromium’da sonuç **902,3 ms**, kapanıştan sonraki sessizlik **4000,1 ms**; WebKit’te **904 ms / 4002 ms**. İki browser da gerçek `touchscreen.tap` kullanır; sürükleme Chromium’da compositor-native touch `preventFling`, WebKit’te native mouse/pointer fallback’tir. WebKit sürükleme sonucu fiziksel iPhone dokunma testi diye sunulmaz.
 
-Beklenen otomatik kapsam: ilk çağrı ve sonlu anlık T1 gösterimi; sonraki adım hazır olduktan veya yeni etkileşimden sonra 4000 ms'den önce gösterim olmaması; gerçek girdide/lifecycle değişiminde iptal; başarılı kayıt + SETTLE sonrası 900 ms sonuç, açık giriş ve hiçbir otomatik onay yazılmaması; eski callback ve reload tutarlılığı; gerçek drag/iki dokunma; değişmeyen yedi T1/T2 hamlesi ve kanonik sonuçları; tekil 20 Altın; mevcut kayıtların legacy kalması, kapsamların korunması ve gerçek tam reset; azaltılmış hareket ve gerçek mobil yerleşim. Yeni kavram zamanlaması, eşik gevşetilerek veya eski motor kontrolleri kaldırılarak doğrulanmaz.
+Yeni browser kabulü 44×44 px alanları, tam hücre/koç/portre/el ayrılığını, sayı görünürlüğünü ve en az 4,5:1 kontrastı, erişilebilir adları, normal/azaltılmış hareketi ve stale callback/kayıt tutarlılığını içerir. Sayı, hücre merkezi veya portre testlerini gevşeterek geçmez.
+
+| Ekran kanıtı | Chromium | WebKit |
+| --- | --- | --- |
+| 320×568 / ilk gerçek takas yönlendirmesi | [Ekran](../reports/onboarding-9-16/screenshots/chromium-320-T1-immediate-swap-guide.png) | [Ekran](../reports/onboarding-9-16/screenshots/webkit-320-T1-immediate-swap-guide.png) |
+| 390×844 / ilk gerçek eşleşme sonrası yeşil zemin | [Ekran](../reports/onboarding-9-16/screenshots/chromium-390-T1-step1-result.png) | [Ekran](../reports/onboarding-9-16/screenshots/webkit-390-T1-step1-result.png) |
+| 430×932 / T2 puan tamam, son zemin hâlâ eksik | [Ekran](../reports/onboarding-9-16/screenshots/chromium-430-T2-step3-result.png) | [Ekran](../reports/onboarding-9-16/screenshots/webkit-430-T2-step3-result.png) |
+
+Eski akış testleri boş fakat **mevcut** `{}` kaydıyla, politika alanı eklemeden başlar; bu, eski kullanıcı davranışının hâlâ geçerli olduğunu doğrular. Migration girdileri bu fixture ile gölgelenmez. Gerçek kayıt yokluğu ve v2 kaydı yeni testlerdedir. Eski iddialar/eşikler kaldırılmadı. Gerçek tam reset testleri ise yeni sözleşmeye uygun v2 kaydını ve boş `guideAcks` listesini doğrular; reset sonrası eski davranışı taklit etmek için sahte bir politika yazılmaz. Döndürme testinde ölçümden önce iki gerçek paint frame’i beklenir; mevcut dialog sınırları değişmez.
+
+Doğrulanan yeni otomatik kapsam: ilk çağrı ve sonlu anlık T1 gösterimi; sonraki adım hazır olduktan veya yeni etkileşimden sonra 4000 ms'den önce gösterim olmaması; gerçek girdide/lifecycle değişiminde iptal; başarılı kayıt + SETTLE sonrası 900 ms sonuç, açık giriş ve hiçbir otomatik onay yazılmaması; eski callback ve reload tutarlılığı; gerçek drag/iki dokunma; değişmeyen yedi T1/T2 hamlesi ve kanonik sonuçları; tekil 20 Altın; mevcut kayıtların legacy kalması, kapsamların korunması ve gerçek tam reset; azaltılmış hareket ve gerçek mobil yerleşim. Yeni kavram zamanlaması, eşik gevşetilerek veya eski motor kontrolleri kaldırılarak doğrulanmaz.
 
 Fiziksel iPhone/Safari gözlemi, gerçek insan ilk-deneyim çalışması ve Unity Editor/IL2CPP testi yapılmış sayılmaz. Bunlar ancak gerçekten gerçekleştirildiklerinde ayrı kanıtla raporlanır.

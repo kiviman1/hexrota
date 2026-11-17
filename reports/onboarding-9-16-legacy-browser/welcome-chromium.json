@@ -1,0 +1,15 @@
+{
+  "browser": "chromium",
+  "groups": 8,
+  "results": [
+    "320×568 a verified welcome chest and continuation fit",
+    "390×844 a verified welcome chest and continuation fit",
+    "844×390 a verified welcome chest and continuation fit",
+    "1280×900 a verified welcome chest and continuation fit",
+    "the slow automatic chest opening changes pixels, never the stored reward",
+    "full reset is reachable from a paused phone lesson and cancellation is harmless",
+    "a failed reset write preserves the profile and permits a safe retry",
+    "committed reset survives audio cleanup failure, reloads fresh and permits both lessons again"
+  ],
+  "physicalDeviceTested": false
+}

@@ -1,0 +1,75 @@
+{
+  "success": true,
+  "verifiedAtUtc": "2026-11-17T21:29:55.432152+00:00",
+  "deploymentId": "dpl_83Lmq16mwhbDhew2i41v8bTnB4cU",
+  "deploymentUrl": "https://hexrota-72q0b1f91-kivanc-tascioglu-s-projects.vercel.app",
+  "commit": "448b3e8a93b04b19ae31c9ad6f2527de07039b34",
+  "target": "preview",
+  "cacheGeneration": 56,
+  "files": [
+    {
+      "file": "index.html",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 54220,
+      "sha256": "eec07eaabb1ef7e21e1300ad8ff3531e81340288209de83e94e58735009e406f",
+      "matchesWorkspace": true
+    },
+    {
+      "file": "app.js",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "bytes": 192870,
+      "sha256": "221cf75ddceb28772d6fa9846f47894cdf5ba26fe010336313ce9e296e01f6f5",
+      "matchesWorkspace": true
+    },
+    {
+      "file": "first-play.js",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "bytes": 17454,
+      "sha256": "6dedc2e75676643a948c5e65753024f6549cae4a5fe9a24e9cc047fb985e9fca",
+      "matchesWorkspace": true
+    },
+    {
+      "file": "onboarding-policy.js",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "bytes": 4044,
+      "sha256": "07ffc9849200bb144258a39fede738d6aecb890e34f23b543e1cda2f76bd4199",
+      "matchesWorkspace": true
+    },
+    {
+      "file": "onboarding-alpha.js",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "bytes": 721,
+      "sha256": "32563e823e41a2352975ffbecad6f4c48185eee7d46509c8df58f9273eb8e52c",
+      "matchesWorkspace": true
+    },
+    {
+      "file": "game-save.js",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "bytes": 6964,
+      "sha256": "62cc8f6cf77f9fe26cce268663fd1360dab5761c59baa3a631f4e7766dec9d8a",
+      "matchesWorkspace": true
+    },
+    {
+      "file": "session-store.js",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "bytes": 7037,
+      "sha256": "a144268dc783b7908528bb3612d4d8bac9e86ada726b0f7c8b5ef340def767b1",
+      "matchesWorkspace": true
+    },
+    {
+      "file": "style.css",
+      "status": 200,
+      "contentType": "text/css; charset=utf-8",
+      "bytes": 170745,
+      "sha256": "546b5da1cc0abe77fc20a0569b1730e81300482c9b5b8f2982e5f8ca8df2e54b",
+      "matchesWorkspace": true
+    }
+  ]
+}
