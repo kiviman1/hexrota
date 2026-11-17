@@ -15,6 +15,6 @@ try{
   assert.deepEqual(actual[index],expected[index],names[index]+' full JSON parity (waves, gravity, refill, RNG, command history and checkpoint)');
   for(const step of actual[index].steps||[]){steps++;waves+=(step.result.frames||[]).length;}
  }
- console.log('Rescue safety parity: '+safetyCases.length+' current-policy/historical-v1 cases; original R-01 requests now reject no_legal_swaps while old successful checkpoints restore verbatim. Unresolved R-02 keeps the standalone --diagnose safety check red.');
+ console.log('Rescue safety parity: '+safetyCases.length+' current-policy/historical-v1 cases; original R-01 requests now reject no_legal_swaps while old successful checkpoints restore verbatim. R-02 recovery safety is checked independently by the standalone --diagnose command and gameplay parity; this historical rescue comparison does not claim recovery safety.');
  console.log('Real C# command parity passed: '+JSON.stringify({...suite.fixture.counts,comparisons:actual.length,recoverySupplemental:recovery.assistedCases.length,currentAuditComparisons:currentAuditCases.length,rescueSafetyComparisons:safetyCases.length,steps,waves,dotnetSdk:dotnet.version,languageVersion:'7.3',expectedSha256:suite.fixture.expectedSha256}));
 }catch(error){console.error(error.stack||error);process.exitCode=1;}finally{if(temp)fs.rmSync(temp,{recursive:true,force:true});}

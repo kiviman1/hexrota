@@ -232,6 +232,35 @@ internal static class Program
     {
         string operation = Required(request, "operation", JsonValueKind.String).GetString();
         if (operation == "case") return ExecuteCase(Required(request, "vector", JsonValueKind.Object));
+        if (operation == "construct")
+        {
+            return Observed(new HexMatch(ReadLevel(Required(request, "level", JsonValueKind.Object))));
+        }
+        if (operation == "recovery")
+        {
+            LevelConfig level = ReadLevel(Required(request, "level", JsonValueKind.Object));
+            JsonElement state;
+            HexMatch game = request.TryGetProperty("state", out state) ? Injected(level, state) : new HexMatch(level);
+            string method = Required(request, "method", JsonValueKind.String).GetString();
+            int repeat = Required(request, "repeat", JsonValueKind.Number).GetInt32();
+            if ((method != "ensure" && method != "stable") || repeat < 1 || repeat > 4) throw new ArgumentException("Invalid recovery test operation");
+            object before = Observed(game); var steps = new List<object>();
+            for (int index = 0; index < repeat; index++)
+            {
+                string prior = JsonSerializer.Serialize(Observed(game), Json);
+                try
+                {
+                    bool result = method == "stable" ? game.StableBoard() : game.EnsurePlayable();
+                    steps.Add(new { error = false, result = result, after = Observed(game), legalMoves = game.LegalMoves(), matches = game.FindMatches() });
+                }
+                catch (Exception error)
+                {
+                    object after = Observed(game);
+                    steps.Add(new { error = true, message = error.Message, after = after, stateUnchanged = JsonSerializer.Serialize(after, Json) == prior });
+                }
+            }
+            return new { before = before, steps = steps };
+        }
         if (operation == "restore")
         {
             LevelConfig level = ReadLevel(Required(request, "level", JsonValueKind.Object));

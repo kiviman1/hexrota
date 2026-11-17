@@ -15,7 +15,7 @@ namespace Hexrota.Gameplay
         public AxialCoordinate Neighbor(int direction)
         {
             if (direction < 0 || direction >= 6) throw new ArgumentOutOfRangeException("direction");
-            return new AxialCoordinate(q + Offsets[direction, 0], r + Offsets[direction, 1]);
+            return new AxialCoordinate(checked(q + Offsets[direction, 0]), checked(r + Offsets[direction, 1]));
         }
         public bool Equals(AxialCoordinate other) { return q == other.q && r == other.r; }
         public override bool Equals(object other) { return other is AxialCoordinate && Equals((AxialCoordinate)other); }
@@ -51,8 +51,14 @@ namespace Hexrota.Gameplay
 
         public static BoardTopology For(LevelConfig level)
         {
-            if (level == null) throw new ArgumentNullException("level");
+            HexMatch.ValidateLevel(level);
             return Cache.GetValue(level, config => new BoardTopology(config));
+        }
+
+        private static bool TryCoordinate(Dictionary<AxialCoordinate, int> cells, long q, long r, out int index)
+        {
+            index = 0;
+            return q >= int.MinValue && q <= int.MaxValue && r >= int.MinValue && r <= int.MaxValue && cells.TryGetValue(new AxialCoordinate((int)q, (int)r), out index);
         }
 
         private BoardTopology(LevelConfig level)
@@ -66,7 +72,7 @@ namespace Hexrota.Gameplay
             for (int i = 0; i < cells.Length; i++)
             {
                 if (cells[i] == null) throw new ArgumentException("A cell cannot be null");
-                byCoordinate[new AxialCoordinate(cells[i].q, cells[i].r)] = i;
+                byCoordinate.Add(new AxialCoordinate(cells[i].q, cells[i].r), i);
                 adjacent[i] = new List<int>();
             }
             // Insertion order is part of deterministic legal-move ordering.
@@ -76,15 +82,16 @@ namespace Hexrota.Gameplay
                 for (int d = 0; d < 3; d++)
                 {
                     int dq = Directions[d, 0], dr = Directions[d, 1], next;
-                    if (byCoordinate.TryGetValue(new AxialCoordinate(cell.q + dq, cell.r + dr), out next))
+                    if (TryCoordinate(byCoordinate, (long)cell.q + dq, (long)cell.r + dr, out next))
                     {
                         adjacent[i].Add(next); adjacent[next].Add(i);
                         allPairs.Add(new[] { i, next });
                     }
-                    if (byCoordinate.ContainsKey(new AxialCoordinate(cell.q - dq, cell.r - dr))) continue;
+                    int previous;
+                    if (TryCoordinate(byCoordinate, (long)cell.q - dq, (long)cell.r - dr, out previous)) continue;
                     var line = new List<int>();
-                    int q = cell.q, r = cell.r, index;
-                    while (byCoordinate.TryGetValue(new AxialCoordinate(q, r), out index))
+                    long q = cell.q, r = cell.r; int index;
+                    while (TryCoordinate(byCoordinate, q, r, out index))
                     {
                         line.Add(index); q += dq; r += dr;
                     }

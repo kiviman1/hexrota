@@ -32,10 +32,29 @@ namespace Hexrota.Gameplay
         private static T[] Duplicate<T>(T[] source) { return (T[])source.Clone(); }
         private static int GroundLayers(Cell cell) { return cell.layers == 0 ? 1 : cell.layers; }
 
+        // Structural safety is separate from publication or solvability rules.
+        // Typed DTO fields already constrain coordinates, values and seed ranges.
+        public static bool ValidateLevel(LevelConfig level)
+        {
+            const string message = "Invalid match-three level";
+            if (level == null || level.cells == null || level.cells.Length == 0 || level.palette == null || level.palette.Length == 0 || level.initial == null || level.initial.Length != level.cells.Length || level.moves < 0 || level.target < 0)
+                throw new ArgumentException(message);
+            var coordinates = new HashSet<AxialCoordinate>();
+            var palette = new HashSet<int>(level.palette); long ground = 0;
+            for (int i = 0; i < level.cells.Length; i++)
+            {
+                Cell cell = level.cells[i];
+                if (cell == null || cell.layers < 0 || !coordinates.Add(new AxialCoordinate(cell.q, cell.r)) || !level.initial[i].HasValue || !palette.Contains(level.initial[i].Value))
+                    throw new ArgumentException(message);
+                ground += GroundLayers(cell);
+                if (ground > int.MaxValue) throw new ArgumentException(message);
+            }
+            return true;
+        }
+
         public void Reset()
         {
-            if (level.initial == null || level.initial.Length != level.cells.Length || level.palette == null || level.palette.Length == 0)
-                throw new ArgumentException("A level requires initial values and a nonempty palette");
+            ValidateLevel(level);
             values = Duplicate(level.initial); layers = new int[level.cells.Length];
             for (int i = 0; i < layers.Length; i++) layers[i] = GroundLayers(level.cells[i]);
             score = 0; movesLeft = level.moves; turn = 0;
@@ -166,43 +185,80 @@ namespace Hexrota.Gameplay
             }
             return new GravityResult { compacted = compacted, refill = refill, falls = falls.ToArray() };
         }
+        private void ValidateRecoveryBoard()
+        {
+            ValidateLevel(level);
+            if (values == null || values.Length != level.cells.Length) throw new InvalidOperationException("Invalid recovery board");
+            var palette = new HashSet<int>(level.palette);
+            foreach (int? value in values)
+                if (!value.HasValue || !palette.Contains(value.Value)) throw new InvalidOperationException("Invalid recovery board");
+            if (palette.Count < 2) throw new InvalidOperationException("Recovery requires at least two distinct palette values");
+        }
+        private bool IsPlayableSettledBoard()
+        {
+            if (values == null || values.Length != level.cells.Length) return false;
+            foreach (int? value in values)
+                if (!value.HasValue || Array.IndexOf(level.palette, value.Value) < 0) return false;
+            return FindMatches().Length == 0 && LegalMoves().Count != 0;
+        }
         public bool StableBoard()
         {
-            for (int attempt = 0; attempt < 64; attempt++)
+            ValidateRecoveryBoard();
+            int?[] originalValues = values, original = Duplicate(values); uint originalRng = rngState;
+            try
             {
-                values = new int?[values.Length]; FillVacancies();
-                if (FindMatches().Length == 0 && LegalMoves().Count != 0) return true;
-            }
-            int[,] coefficients = { { 1, 2 }, { 2, 1 }, { 1, -1 } };
-            for (int c = 0; c < 3; c++)
-                for (int offset = 0; offset < 4; offset++)
+                for (int attempt = 0; attempt < 64; attempt++)
                 {
-                    values = new int?[level.cells.Length];
-                    for (int i = 0; i < values.Length; i++)
-                    {
-                        Cell cell = level.cells[i];
-                        int normalized = ((coefficients[c, 0] * cell.q + coefficients[c, 1] * cell.r + offset) % 4 + 4) % 4;
-                        int paletteIndex = normalized / 2;
-                        values[i] = paletteIndex < level.palette.Length ? (int?)level.palette[paletteIndex] : null;
-                    }
-                    if (FindMatches().Length == 0 && LegalMoves().Count != 0) return true;
+                    values = new int?[values.Length]; FillVacancies();
+                    if (IsPlayableSettledBoard()) return true;
                 }
-            throw new InvalidOperationException("This board shape cannot provide a settled legal swap");
+                int[,] coefficients = { { 1, 2 }, { 2, 1 }, { 1, -1 } };
+                for (int c = 0; c < 3; c++)
+                    for (int offset = 0; offset < 4; offset++)
+                    {
+                        values = new int?[level.cells.Length];
+                        for (int i = 0; i < values.Length; i++)
+                        {
+                            Cell cell = level.cells[i];
+                            long combination = (long)coefficients[c, 0] * cell.q + (long)coefficients[c, 1] * cell.r + offset;
+                            int normalized = (int)((combination % 4 + 4) % 4);
+                            values[i] = level.palette[normalized / 2];
+                        }
+                        if (IsPlayableSettledBoard()) return true;
+                    }
+                throw new InvalidOperationException("This board shape cannot provide a settled legal swap");
+            }
+            catch
+            {
+                values = originalValues; Array.Copy(original, values, original.Length); rngState = originalRng;
+                throw;
+            }
         }
         public bool EnsurePlayable()
         {
-            if (LegalMoves().Count != 0) return false;
-            int?[] original = Duplicate(values);
-            for (int attempt = 0; attempt < 128; attempt++)
+            ValidateRecoveryBoard();
+            int?[] originalValues = values, original = Duplicate(values); uint originalRng = rngState;
+            try
             {
-                values = Duplicate(original);
-                for (int i = values.Length - 1; i > 0; i--)
+                if (IsPlayableSettledBoard()) return false;
+                for (int attempt = 0; attempt < 128; attempt++)
                 {
-                    int j = (int)(Random() % (uint)(i + 1)); Exchange(i, j);
+                    values = Duplicate(original);
+                    for (int i = values.Length - 1; i > 0; i--)
+                    {
+                        int j = (int)(Random() % (uint)(i + 1)); Exchange(i, j);
+                    }
+                    if (IsPlayableSettledBoard()) return true;
                 }
-                if (FindMatches().Length == 0 && LegalMoves().Count != 0) return true;
+                StableBoard();
+                if (IsPlayableSettledBoard()) return true;
+                throw new InvalidOperationException("Recovery did not produce a settled legal board");
             }
-            StableBoard(); return true;
+            catch
+            {
+                values = originalValues; Array.Copy(original, values, original.Length); rngState = originalRng;
+                throw;
+            }
         }
         private static SwapResult Invalid(string reason)
         {

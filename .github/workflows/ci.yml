@@ -168,6 +168,19 @@ jobs:
         env:
           HEXROTA_BROWSER: ${{ matrix.browser }}
           HEXROTA_RESCUE_SAFETY_SCREENSHOT_DIR: test-results/rescue-safety-${{ matrix.browser }}
+      - name: Verify real gameplay rollback when dead-board recovery fails
+        run: npm run test:board-recovery-browser
+        env:
+          HEXROTA_BROWSER: ${{ matrix.browser }}
+          HEXROTA_BOARD_RECOVERY_SCREENSHOT_DIR: test-results/board-recovery-${{ matrix.browser }}
+      - name: Keep recovery fault, retry and reload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: board-recovery-${{ matrix.browser }}
+          path: test-results/board-recovery-${{ matrix.browser }}
+          if-no-files-found: warn
+          retention-days: 7
       - name: Verify permanent botanical progression and read-only mobile garden
         run: npm run test:garden-browser
         env:

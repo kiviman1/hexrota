@@ -3,6 +3,22 @@
   'use strict';
   const topologyCache = new WeakMap();
   const directions = [[1,0],[0,1],[1,-1]];
+  const int32=value=>Number.isInteger(value)&&value>=-2147483648&&value<=2147483647;
+  const dense=value=>{if(!Array.isArray(value))return false;for(let i=0;i<value.length;i++)if(!Object.prototype.hasOwnProperty.call(value,i))return false;return true;};
+  function validateLevel(level){
+    const invalid=()=>{throw new Error('Invalid match-three level');};
+    if(!level||typeof level!=='object'||!dense(level.cells)||!level.cells.length||!dense(level.palette)||!level.palette.length||!dense(level.initial)||level.initial.length!==level.cells.length||!Number.isInteger(level.seed)||level.seed<0||level.seed>0xffffffff||!int32(level.moves)||level.moves<0||!int32(level.target)||level.target<0)invalid();
+    const coordinates=new Set(),palette=new Set();let ground=0;
+    for(const value of level.palette){if(!int32(value))invalid();palette.add(value);}
+    for(const cell of level.cells){
+      if(!cell||typeof cell!=='object'||!int32(cell.q)||!int32(cell.r))invalid();
+      const key=cell.q+','+cell.r;if(coordinates.has(key))invalid();coordinates.add(key);
+      const layers=cell.layers==null||cell.layers===0?1:cell.layers;
+      if(!int32(layers)||layers<0)invalid();ground+=layers;if(ground>2147483647)invalid();
+    }
+    for(const value of level.initial)if(!int32(value)||!palette.has(value))invalid();
+    return true;
+  }
   function topology(level) {
     if (topologyCache.has(level)) return topologyCache.get(level);
     const cells = level.cells, byCoord = new Map(cells.map((c,i) => [`${c.q},${c.r}`,i]));
@@ -29,11 +45,13 @@
   }
   class HexMatch {
     constructor(level, snapshot=null) {
+      validateLevel(level);
       this.level=level; this.topology=topology(level); this.neighbors=this.topology.neighbors;
       this.reset();
       if (snapshot) this._restore(snapshot);
     }
     reset() {
+      validateLevel(this.level);
       this.values=this.level.initial.slice();this.layers=this.level.cells.map(c=>c.layers||1);
       this.score=0;this.movesLeft=this.level.moves;this.turn=0;this.rngState=(this.level.seed>>>0)||0x9e3779b9;this.history=[];
     }
@@ -117,27 +135,46 @@
       for(const tile of refill)falls.push({from:null,to:tile.index,value:tile.value,spawn:true,...spawnSlots.get(tile.index)});
       return {compacted,refill,falls};
     }
+    static validateLevel(level){return validateLevel(level);}
+    _validRecoveryValues(){
+      return dense(this.values)&&this.values.length===this.level.cells.length&&this.values.every(value=>int32(value)&&this.level.palette.includes(value));
+    }
+    _recoveryInput(){
+      validateLevel(this.level);
+      if(!this._validRecoveryValues())throw new Error('Invalid recovery board');
+      if(new Set(this.level.palette).size<2)throw new Error('Recovery requires at least two distinct palette values');
+    }
+    _settledPlayable(){return this._validRecoveryValues()&&!this.findMatches().length&&this.legalMoves().length>0;}
     _stableBoard(){
+      this._recoveryInput();
+      const original=this.values.slice(),rng=this.rngState;
+      try{
       // Bounded, match-aware construction rather than unrestricted refill.
       for(let attempt=0;attempt<64;attempt++){
         this.values=this.values.map(()=>null);this._fillVacancies();
-        if(!this.findMatches().length&&this.legalMoves().length)return true;
+        if(this._settledPlayable())return true;
       }
       for(const coefficients of [[1,2],[2,1],[1,-1]])for(let offset=0;offset<4;offset++){
         this.values=this.level.cells.map(c=>this.level.palette[Math.floor((((coefficients[0]*c.q+coefficients[1]*c.r+offset)%4)+4)%4/2)]);
-        if(!this.findMatches().length&&this.legalMoves().length)return true;
+        if(this._settledPlayable())return true;
       }
       throw new Error('This board shape cannot provide a settled legal swap');
+      }catch(error){this.values=original;this.rngState=rng;throw error;}
     }
     _ensurePlayable(){
-      if(this.legalMoves().length)return false;
-      const base=this.values.slice();
+      this._recoveryInput();
+      const base=this.values.slice(),rng=this.rngState;
+      try{
+      if(this._settledPlayable())return false;
       for(let attempt=0;attempt<128;attempt++){
         this.values=base.slice();
         for(let i=this.values.length-1;i>0;i--){const j=this._random()%(i+1);[this.values[i],this.values[j]]=[this.values[j],this.values[i]];}
-        if(!this.findMatches().length&&this.legalMoves().length)return true;
+        if(this._settledPlayable())return true;
       }
-      this._stableBoard();return true;
+      this._stableBoard();
+      if(!this._settledPlayable())throw new Error('Recovery did not produce a settled legal board');
+      return true;
+      }catch(error){this.values=base;this.rngState=rng;throw error;}
     }
     swap(a,b){
       if(this.status!=='playing')return {ok:false,reason:this.status,frames:[],scoreGain:0,reshuffled:false};

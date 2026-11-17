@@ -1,5 +1,7 @@
 # Hexrota 9.9 — Hamlesiz tahta ve kurtarma raporu
 
+> **9.9b takip durumu:** R-02 artık erken ve mutasyonsuz ret verir; başarılı kurtarma dolu/izinli, eşleşmesiz ve yasal takaslı olmak zorundadır. Özgün fixture değişmedi; güncel diagnostik exit 0. [BOARD_VALIDATION_9_9B.md](BOARD_VALIDATION_9_9B.md). Aşağıdaki 9.9/9.9a hata çıktıları tarihsel kanıttır.
+
 > **9.9a takip durumu:** Bu rapor 9.9 başlangıç davranışını ve dondurulmuş fixture'ı kaydeder. Yeni canlı `grant_moves` isteği artık `no_legal_swaps` ile reddedilir; eski v1 checkpoint'i tarihsel replay ile aynen korunur. Güncel diagnostik bu ikisini ayrı gösterir ve çözülmemiş R-02 nedeniyle hâlâ exit 1 döner. Makbuz saklama ve uyumluluk sözleşmesi: [RESCUE_SAFETY_9_9A.md](RESCUE_SAFETY_9_9A.md).
 
 ## Kapsam
@@ -84,6 +86,8 @@ Yayımlanmış örneklem: esas rapordaki 1.280 oyunun 939 terminal kaybında bu 
 Bu audit bu seçeneklerden hiçbirini uygulamaz.
 
 ## R-02 — Tek değerli geçersiz paletin son yedeği boş taş üretebilir
+
+**Güncel durum — 9.9b: giderildi.** Erken açık ret ve kurtarma son koşulu eklendi; özgün yeniden üretim aşağıda tarihsel kanıt olarak korunur. Güncel testler ve uyumluluk: [BOARD_VALIDATION_9_9B.md](BOARD_VALIDATION_9_9B.md).
 
 **Önem:** mevcut yayımlanmış veri dışında düşük; gelecekte Level Studio/import doğrulama sınırı. Mevcut 40 varyantın geçerli palet/topoloji sözleşmesinde görülmedi.
 

@@ -1,0 +1,13 @@
+{
+  "baseline": "f8b0fe25c802404b0516e1b65033fc32627d67fb",
+  "scope": "Reviewed 9.9b structural validation, bounded recovery postconditions and helper rollback; valid classic outputs and archived gameplay vectors remain frozen.",
+  "sha256": {
+    "dist/engine.js": "e34ae85de659e4053a65af17f751b0add08a1b54878a1174d2ad316dc655f58f",
+    "unity/Gameplay/HexMatch.cs": "e65432fcfd824a66332928703043a1d75905ae5f877f4d2ad24f0b6b8943b7ab",
+    "unity/Gameplay/BoardTopology.cs": "1bf1a889e90ee666c5b48db52a3626eb3e439e9f94d40ab9c7f823c00ed98871",
+    "unity/GameplayParityHarness/Program.cs": "9d0dabed0d1be5f7e22145f493f66f6450b90ec2e8ef2fcd81087d1b4da4b5ba"
+  },
+  "reportSourceHashes": {
+    "reports/observable-difficulty.json": "0e1e58969d4286a7254259c296de582e5431e6bb372f5a73bc99390cc3f7e8e4"
+  }
+}

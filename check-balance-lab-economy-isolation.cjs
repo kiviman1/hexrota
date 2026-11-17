@@ -13,12 +13,29 @@ assert.equal(git(['rev-parse','HEAD']),PIN,'Lab source must be the exact reviewe
 const labAssets=['balance-lab.html','balance-lab.css','balance-lab.js','balance-lab-data.js','balance-lab-catalog.js'];
 for(const file of [...labAssets.map(file=>'dist/'+file),'data/balance-lab-9-4.json','fixtures/balance-lab-protected-9-4.json'])assert.equal(git(['diff','--exit-code',PIN,'--',file]),'','Pinned Lab asset was edited: '+file);
 const frozen=JSON.parse(fs.readFileSync(path.join(LAB,'fixtures/balance-lab-protected-9-4.json'),'utf8'));
+// The Lab reference remains pinned. The integrated recovery core has exactly
+// four reviewed 9.9b source updates; neither authored data nor Lab assets move.
+const recoveryProtection=require('./fixtures/board-validation-protected.json');
+assert.equal(recoveryProtection.baseline,'f8b0fe25c802404b0516e1b65033fc32627d67fb');
+assert.deepEqual(Object.keys(recoveryProtection.sha256).sort(),['dist/engine.js','unity/Gameplay/HexMatch.cs','unity/Gameplay/BoardTopology.cs','unity/GameplayParityHarness/Program.cs'].sort(),'only the four reviewed 9.9b core/harness files may differ from the old Lab reference');
+for(const [relative,expected]of Object.entries(recoveryProtection.sha256))assert.equal(sha(fs.readFileSync(path.join(ROOT,relative))),expected,'Current recovery source must match its exact reviewed hash: '+relative);
+assert.deepEqual(Object.keys(recoveryProtection.reportSourceHashes),['reports/observable-difficulty.json'],'only the observable report source checksum may change; metrics remain byte-protected');
+
 const approvedHostChanges=new Set(['dist/app.js','dist/index.html','dist/style.css','dist/sw.js','unity/Application/GameSessionController.cs','unity/Application/ProfileRepository.cs','dist/session-store.js','unity/Application/SaveMigration.cs','unity/ApplicationParityHarness/ApplicationParityHarness.csproj','unity/ApplicationParityHarness/Program.cs']);
-const changedHostFiles=[],sourceOnlyFiles=[];let immutableFiles=0;
+const changedHostFiles=[],sourceOnlyFiles=[],reviewedRecoveryFiles=[],reviewedReportSourceHashes=[];let immutableFiles=0;
 for(const [relative,expected]of Object.entries(frozen.sha256)){
  assert.equal(sha(fs.readFileSync(path.join(LAB,relative))),expected,'The pinned Lab reference itself drifted: '+relative);
  if(relative==='docs/PRODUCT_ROADMAP_2026.md'){sourceOnlyFiles.push(relative);continue;}
  const actual=fs.readFileSync(path.join(ROOT,relative));
+ if(relative==='reports/observable-difficulty.json'){
+  const current=JSON.parse(actual),original=fs.readFileSync(path.join(LAB,relative),'utf8'),prior=JSON.parse(original);
+  assert.equal(current.sourceHash,recoveryProtection.reportSourceHashes[relative],'observable report checksum must match the reviewed current engine');
+  const field='"sourceHash": "'+current.sourceHash+'"';assert.equal(actual.toString('utf8').split(field).length,2,'source checksum field occurs exactly once');
+  assert.equal(actual.toString('utf8').replace(field,'"sourceHash": "'+prior.sourceHash+'"'),original,'every observable metric, trial, policy and byte outside sourceHash stays pinned');
+  reviewedReportSourceHashes.push(relative);continue;
+ }
+
+ if(recoveryProtection.sha256[relative]){assert.equal(sha(actual),recoveryProtection.sha256[relative],'Reviewed recovery source drifted: '+relative);reviewedRecoveryFiles.push(relative);continue;}
  if(approvedHostChanges.has(relative)){if(sha(actual)!==expected)changedHostFiles.push(relative);continue;}
  if(relative==='dist/hint-worker.js'){
   const stripQuery=value=>value.toString('utf8').replace(/(\.\/engine\.js)\?v=\d+/g,'$1');
@@ -29,7 +46,7 @@ for(const [relative,expected]of Object.entries(frozen.sha256)){
 }
 // The browser serves current core files, rather than the pinned page's old copies.
 const runtimeFiles=['engine.js','levels.js','variants-data.js','favicon.svg'];
-for(const file of runtimeFiles)assert.equal(sha(fs.readFileSync(path.join(ROOT,'dist',file))),sha(fs.readFileSync(path.join(LAB,'dist',file))),'Current runtime bytes differ from pinned Lab: '+file);
+for(const file of runtimeFiles)assert.equal(sha(fs.readFileSync(path.join(ROOT,'dist',file))),recoveryProtection.sha256['dist/'+file]||sha(fs.readFileSync(path.join(LAB,'dist',file))),'Current runtime bytes must match the pinned Lab or exact reviewed recovery source: '+file);
 
 function fixture(){
  const sandbox={window:{},performance};vm.createContext(sandbox);const w=sandbox.window;
@@ -138,7 +155,7 @@ async function reachable(page,selector){const node=page.locator(selector);await 
    }
   });
   assert.deepEqual(errors,[],'no uncaught real browser errors');assert.deepEqual(external,[],'no external network requests');for(const pathname of requested)assert(allowed.has(pathname),'Unexpected normal application resource was requested: '+pathname);
-  const report={browser:browserName,pinnedLabCommit:PIN,source:LAB,currentCoreCommit:spawnSync('git',['rev-parse','HEAD'],{cwd:ROOT,encoding:'utf8'}).stdout.trim(),checks:results.length,results,immutableProtectedFiles:immutableFiles,approvedHostChanges:changedHostFiles,sourceOnlyFiles,protectedStorageKeys:Object.keys(seed),fixture:{gold:50,stars:6,greenBrush:3,colorKey:3,attemptSerial:77,lives:3,testGold:211},labExportUiImplemented:false,exportCheck:'JSON.stringify(HexBalanceLab.inspect()) only; no nonexistent export button is claimed',externalRequests:external,pageErrors:errors,physicalIPhoneTested:false,physicalAndroidTested:false};
+  const report={browser:browserName,pinnedLabCommit:PIN,source:LAB,currentCoreCommit:spawnSync('git',['rev-parse','HEAD'],{cwd:ROOT,encoding:'utf8'}).stdout.trim(),checks:results.length,results,immutableProtectedFiles:immutableFiles,approvedHostChanges:changedHostFiles,reviewedRecoveryFiles,reviewedReportSourceHashes,sourceOnlyFiles,protectedStorageKeys:Object.keys(seed),fixture:{gold:50,stars:6,greenBrush:3,colorKey:3,attemptSerial:77,lives:3,testGold:211},labExportUiImplemented:false,exportCheck:'JSON.stringify(HexBalanceLab.inspect()) only; no nonexistent export button is claimed',externalRequests:external,pageErrors:errors,physicalIPhoneTested:false,physicalAndroidTested:false};
   fs.writeFileSync(path.join(output,'report.json'),JSON.stringify(report,null,2));console.log(`Pinned Balance Lab / economy isolation passed: ${results.length} ${browserName} groups, ${immutableFiles} immutable files, ${Object.keys(seed).length} protected keys. Artifacts: ${output}. Physical devices were not tested.`);
  }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(error=>{console.error(error.stack||error);process.exitCode=1;});
