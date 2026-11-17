@@ -13,6 +13,7 @@
     "src/styles/09-idle-hints.css",
     "src/styles/10-obstacle-flow.css",
     "src/styles/11-material-objectives.css",
-    "src/styles/12-story.css"
+    "src/styles/12-story.css",
+    "src/styles/13-first-play.css"
   ]
 }

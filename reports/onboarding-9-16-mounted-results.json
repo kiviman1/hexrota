@@ -1,0 +1,151 @@
+{
+  "date": "2026-11-17",
+  "command": "node check-first-play-v2-ui.cjs",
+  "exitCode": 0,
+  "groups": 14,
+  "cases": [
+    {
+      "name": "a truly new selected-scope player receives v2 and an untouched legible first board",
+      "passed": true
+    },
+    {
+      "name": "wrong taps drag targets and cancelled gestures only offer help without a committed move",
+      "passed": true
+    },
+    {
+      "name": "the transient first result does not block an immediate two-tap next move or create guide acknowledgements",
+      "passed": true
+    },
+    {
+      "name": "automatic result and four-second idle guidance are transient views without profile writes",
+      "passed": true
+    },
+    {
+      "name": "reload during a result resumes the next actual step and never replays a reward receipt",
+      "passed": true
+    },
+    {
+      "name": "a failed canonical move save cannot arm result feedback or advance its actual tutorial turn",
+      "passed": true
+    },
+    {
+      "name": "legacy half-completed lessons retain absent policy and their exact manual feedback checkpoint",
+      "passed": true
+    },
+    {
+      "name": "both unchanged tutorials complete all seven authored swaps and award exactly the existing welcome grant",
+      "passed": true
+    },
+    {
+      "name": "pause Home background and resize retire result callbacks without replaying moves or writing acknowledgements",
+      "passed": true
+    },
+    {
+      "name": "normal-motion busy presentation never arms result feedback before settling and cancellation preserves its commit",
+      "passed": true
+    },
+    {
+      "name": "only the fresh onboarding preview scope enrolls while other developer namespaces stay legacy and isolated",
+      "passed": true
+    },
+    {
+      "name": "only the real T1 win exposes transition skip and campaign HUD never inherits hidden tutorial concepts",
+      "passed": true
+    },
+    {
+      "name": "a failed v2 final T2 save banks no welcome reward and one real retry grants exactly twenty",
+      "passed": true
+    },
+    {
+      "name": "a preserved explicit v2 profile ignores old acknowledgements as progression and never invents more",
+      "passed": true
+    }
+  ],
+  "logSha256": "b2c663c33c2b608393806c8eb4decf808edc3be856ce640a6fba49819bb4bad3",
+  "baseline": "b078da49a0a1c9632195f13aefefad812e7f92ab",
+  "protectedSources": {
+    "dist/engine.js": {
+      "baselineSha256": "54b041f27ebc51ddf47df1e195fb25efc296723da18ff39cd87ebce020f63135",
+      "currentSha256": "54b041f27ebc51ddf47df1e195fb25efc296723da18ff39cd87ebce020f63135",
+      "unchanged": true
+    },
+    "dist/tutorials.js": {
+      "baselineSha256": "b5ae419bffeb4fb684261baad425a74857a73cc6d6dd998f5d1def58c2ea4ee0",
+      "currentSha256": "b5ae419bffeb4fb684261baad425a74857a73cc6d6dd998f5d1def58c2ea4ee0",
+      "unchanged": true
+    },
+    "dist/levels.js": {
+      "baselineSha256": "912d974e9fbcabf77036b0fb1d3e1cc25962049cb598707241fcdb9cc6795bd4",
+      "currentSha256": "912d974e9fbcabf77036b0fb1d3e1cc25962049cb598707241fcdb9cc6795bd4",
+      "unchanged": true
+    },
+    "dist/variants.json": {
+      "baselineSha256": "087caa9349785ad3cd2cea6ae01e38968307205cba0dad530110b9e78a657f7d",
+      "currentSha256": "087caa9349785ad3cd2cea6ae01e38968307205cba0dad530110b9e78a657f7d",
+      "unchanged": true
+    },
+    "data/levels-original.json": {
+      "baselineSha256": "a9a1c3dff5d9d4236aa053c10c509bcdb0d56627e776a2b3ced580b574dfaee3",
+      "currentSha256": "a9a1c3dff5d9d4236aa053c10c509bcdb0d56627e776a2b3ced580b574dfaee3",
+      "unchanged": true
+    },
+    "unity/Gameplay/BoardTopology.cs": {
+      "baselineSha256": "1bf1a889e90ee666c5b48db52a3626eb3e439e9f94d40ab9c7f823c00ed98871",
+      "currentSha256": "1bf1a889e90ee666c5b48db52a3626eb3e439e9f94d40ab9c7f823c00ed98871",
+      "unchanged": true
+    },
+    "unity/Gameplay/GameplayTypes.cs": {
+      "baselineSha256": "216c4b59d12851af1d7f34ca647c8f050d85a80cf6e7688ad8e67a75fe57e298",
+      "currentSha256": "216c4b59d12851af1d7f34ca647c8f050d85a80cf6e7688ad8e67a75fe57e298",
+      "unchanged": true
+    },
+    "unity/Gameplay/HexMatch.ColumnFlow.cs": {
+      "baselineSha256": "c55606f8011c3f192c801f2fe4fa18e49b5053b1d852ad91a36dac0834ec2b70",
+      "currentSha256": "c55606f8011c3f192c801f2fe4fa18e49b5053b1d852ad91a36dac0834ec2b70",
+      "unchanged": true
+    },
+    "unity/Gameplay/HexMatch.Materials.cs": {
+      "baselineSha256": "4d7f1bfc67430231f24a0b476331863e275de914247f8b6d301678dc288714a7",
+      "currentSha256": "4d7f1bfc67430231f24a0b476331863e275de914247f8b6d301678dc288714a7",
+      "unchanged": true
+    },
+    "unity/Gameplay/HexMatch.Obstacles.cs": {
+      "baselineSha256": "2ce3d0f918c8a63193fbeb3b317c9335492aaee0bbb282fee1fe07caeac8e5e0",
+      "currentSha256": "2ce3d0f918c8a63193fbeb3b317c9335492aaee0bbb282fee1fe07caeac8e5e0",
+      "unchanged": true
+    },
+    "unity/Gameplay/HexMatch.cs": {
+      "baselineSha256": "bb47fc06349fdf4fc3742646612e63fcafbeb24b06cf2ee7d601229f207ee184",
+      "currentSha256": "bb47fc06349fdf4fc3742646612e63fcafbeb24b06cf2ee7d601229f207ee184",
+      "unchanged": true
+    }
+  },
+  "tutorialProof": {
+    "tutorials": 2,
+    "authoredMoves": 7,
+    "checkpointCount": 9,
+    "baselineCheckpointSha256": "e75c8a2bf7a207ced20e2c0c4b338c1b9dca8d8a1d74033d03fb73fe23d341b7",
+    "currentCheckpointSha256": "e75c8a2bf7a207ced20e2c0c4b338c1b9dca8d8a1d74033d03fb73fe23d341b7",
+    "byteIdentical": true
+  },
+  "csharpGameplaySourceCount": 6,
+  "scope": {
+    "host": "real mounted index/app, normal authoritative profile and selected developer scopes",
+    "timers": "native window.performance.now and native window.setTimeout; no onboarding clock substitution",
+    "utc": "existing mount fixes Date.now only for life accounting",
+    "input": "synthetic JSDOM clicks and bubbling touch-pointer sequences through actual document/window handlers; pointercancel rearms the native four-second guide without a move; native SVG coordinate shim; no native layout claim",
+    "motion": "reduced mode plus one held WAAPI completion shim to verify commit/settle/cancellation order",
+    "faults": "canonical profile setItem failure injected for first move and final T2 welcome transaction",
+    "legacy": "three actual half-completed v4 tutorial checkpoints keep missing policy and manual acknowledgements",
+    "reload": "new JSDOM host restores the actual profile including existing optional onboarding marker"
+  },
+  "physicalIPhoneTested": false,
+  "physicalAndroidTested": false,
+  "unityEditorTested": false,
+  "additionalChecks": {
+    "pointerCancelIdleGuideRearmed": true,
+    "policyTimersWereNative": true,
+    "initialAndSevenCommittedCheckpointsByteIdentical": true,
+    "failedV2FinalWelcomeCommitRolledBack": true
+  }
+}

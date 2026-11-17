@@ -1,0 +1,1 @@
+Obstacles JS/C# parity passed: 217 scenarios; 6 gated certified routes + 2 flow routes in typed/portable loaders + 48 alternative legal runs; 716 valid swaps, 105 resumes, 105 replays, 110 clone checks, 126 rejected snapshot attempts; full damage/unlock/fall/refill/RNG/status JSON. Actual .NET 8, C# 7.3.

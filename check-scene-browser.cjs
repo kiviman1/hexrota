@@ -100,7 +100,10 @@ async function paintedActor(page){
  let changed=0;for(let i=0;i<a.data.length;i+=4)if(Math.abs(a.data[i]-b.data[i])+Math.abs(a.data[i+1]-b.data[i+1])+Math.abs(a.data[i+2]-b.data[i+2])>40)changed++;
  assert(changed>Math.max(12,a.width*a.height*.02),'actual rendered pixels show Tavik above the scene ('+changed+' changed of '+(a.width*a.height)+')');return changed;
 }
-async function open(size,{saved,energy=lifePool(5),motion='reduce',serviceWorkers='block',routes,disableScene=false,disableDialogue=false}={}){
+// These scene characterizations retain the existing player's manual tutorial
+// acknowledgements and historical labels. Truly absent profiles enroll in v2
+// and are covered by the separate first-play-v2 browser suite.
+async function open(size,{saved={},energy=lifePool(5),motion='reduce',serviceWorkers='block',routes,disableScene=false,disableDialogue=false}={}){
  const context=await browser.newContext({viewport:size,deviceScaleFactor:1,isMobile:true,hasTouch:true,reducedMotion:motion==='reduce'?'reduce':'no-preference',serviceWorkers});
  await context.addInitScript(({saved,energy,now,motion})=>{if(location.protocol!=='http:')return;Date.now=()=>now;if(!localStorage.getItem('hexrota-profile-v2')){if(saved){saved.preferences={...saved.preferences,motion};localStorage.setItem('hexrota-match-v5',JSON.stringify(saved));}localStorage.setItem('hexrota-lives-v1',JSON.stringify(energy));}},{saved,energy,now:NOW,motion});
  if(disableScene)await context.route('**/scene-presentation.js*',route=>route.abort());if(disableDialogue)await context.route('**/tavik-dialogue.js*',route=>route.abort());

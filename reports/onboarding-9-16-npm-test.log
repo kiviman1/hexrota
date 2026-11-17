@@ -1,0 +1,1233 @@
+
+> hexrota@9.2.0 test
+> node check-levels.mjs && node check-engine.mjs && node check-tutorials.mjs && node generate-variants.cjs --check && node check-variants.cjs && node check-attempts.cjs && node sync-lives-config.cjs --check && node check-lives.cjs && node check-life-consistency.cjs && node check-session-consistency.cjs && node generate-life-vectors.cjs --check && node check-life-vectors.cjs && node check-events.cjs && node check-audio.cjs && node check-ui.cjs && node check-onboarding.cjs && node check-full-reset-store.cjs && node check-welcome-reset-ui.cjs && node check-first-play.cjs && node check-input.cjs && node check-menu.cjs && node check-attempt-ui.cjs && node check-lives-ui.cjs && node check-pwa.cjs && node check-game-shell.cjs && node check-score.cjs && node sync-reward-rules.cjs --check && node generate-reward-vectors.cjs --check && node check-rewards.cjs && node check-reward-ui.cjs && node export-game-config.cjs --check && node generate-gameplay-vectors.cjs --check && node check-gameplay-vectors.cjs && node recheck-legacy-balance.cjs && node balance-variants.cjs --check && npm run test:playtest && npm run test:integration && npm run test:swap-lifecycle && npm run test:economy && npm run test:progression-ui && npm run test:commands && npm run test:inventory-ui && npm run test:rescue && npm run test:second-chance-ui && npm run test:garden && npm run test:maintenance && npm run test:comic-ui && npm run test:scene && node check-tavik-dialogue.cjs && npm run test:state && npm run test:f01 && npm run test:animation && npm run test:solvability && npm run test:rescue-safety && npm run test:board-validation && npm run test:solver-integrity && npm run test:idle-hints && npm run test:obstacles && npm run test:column-flow && npm run test:large-flow && npm run test:materials && npm run test:story && npm run test:onboarding-v2
+
+✓ 01 İlk eşleşme: 19 cells, 10 moves, certified 5, 2 winning starts, average chain 1.309
+✓ 02 Üç yönde düşün: 19 cells, 10 moves, certified 5, 2 winning starts, average chain 1.352
+✓ 03 Çifte dikkat: 19 cells, 9 moves, certified 6, 2 winning starts, average chain 1.407
+✓ 04 Yeşil adalar: 23 cells, 9 moves, certified 6, 2 winning starts, average chain 1.568
+✓ 05 Zincir etkisi: 23 cells, 8 moves, certified 5, 2 winning starts, average chain 1.606
+✓ 06 İnce seçim: 23 cells, 8 moves, certified 6, 2 winning starts, average chain 1.466
+✓ 07 Katman katman: 29 cells, 8 moves, certified 6, 2 winning starts, average chain 1.909
+✓ 08 Uzak köşeler: 29 cells, 8 moves, certified 6, 2 winning starts, average chain 1.529
+✓ 09 Son hamle: 37 cells, 12 moves, certified 10, 2 winning starts, average chain 1.622
+✓ 10 Usta dokunuşu: 37 cells, 14 moves, certified 12, 2 winning starts, average chain 1.459
+All 10 classic levels pass stable starts, multiple certified routes, score+ground goals, move budgets and saved-state replay.
+Classic engine checks passed: three axes, no-op rollback, controlled refills, surviving gravity chains, exact tile motion, unchanged campaign snapshots, deterministic state, replay validation, last-move victory, dead-board recovery, bounded hints and 10 authored solutions.
+✓ Tutorial 1: 7 tiles, 3 guided swaps, target 15, final 18; no reshuffles.
+✓ Tutorial 2: 9 tiles, 4 guided swaps, target 25, final 30; no reshuffles.
+Two playable tutorials pass guided steps, exact feedback, two-layer floors, natural cascade, both goals and checkpoint validation.
+Catalog certificates, distinct starts, configured bands and generated wrapper pass.
+✓ Level 1: 4 distinct starts, independent winning openings and exact replay
+✓ Level 2: 4 distinct starts, independent winning openings and exact replay
+✓ Level 3: 4 distinct starts, independent winning openings and exact replay
+✓ Level 4: 4 distinct starts, independent winning openings and exact replay
+✓ Level 5: 4 distinct starts, independent winning openings and exact replay
+✓ Level 6: 4 distinct starts, independent winning openings and exact replay
+✓ Level 7: 4 distinct starts, independent winning openings and exact replay
+✓ Level 8: 4 distinct starts, independent winning openings and exact replay
+✓ Level 9: 4 distinct starts, independent winning openings and exact replay
+✓ Level 10: 4 distinct starts, independent winning openings and exact replay
+Variant acceptance passed: 40 starts, 80 winning routes, 600 restored checkpoints.
+✓ Level 1: legacy continuation, selector cycles, identity/replay guards and variant hints
+✓ Level 2: legacy continuation, selector cycles, identity/replay guards and variant hints
+✓ Level 3: legacy continuation, selector cycles, identity/replay guards and variant hints
+✓ Level 4: legacy continuation, selector cycles, identity/replay guards and variant hints
+✓ Level 5: legacy continuation, selector cycles, identity/replay guards and variant hints
+✓ Level 6: legacy continuation, selector cycles, identity/replay guards and variant hints
+✓ Level 7: legacy continuation, selector cycles, identity/replay guards and variant hints
+✓ Level 8: legacy continuation, selector cycles, identity/replay guards and variant hints
+✓ Level 9: legacy continuation, selector cycles, identity/replay guards and variant hints
+✓ Level 10: legacy continuation, selector cycles, identity/replay guards and variant hints
+Attempt and hint checks passed: 600 proven-route prefixes and 40 off-route searches.
+Life settings match canonical JSON.
+✓ a new profile starts full; failure spends one life while winning and tutorials are free
+✓ 29 minutes do not refill; exactly 30 minutes adds one, and full recovery stops the anchor
+✓ offline elapsed intervals and fractional remainder survive save/restore without a running timer
+✓ a rewarded life preserves the current refill interval and never exceeds five
+✓ callbacks are idempotent across serialization and mismatched/unverified receipts cannot grant
+✓ a verified full-pool ad becomes a one-use banked credit while cooldown rejection stays final
+✓ ad claims enforce a UTC daily limit and a 30-minute cooldown independently of provider callbacks
+✓ zero lives blocks only new campaign attempts; existing games and fixed tutorials remain available
+✓ reset cancellation and untouched attempts are free; a confirmed played reset closes the old attempt exactly once
+✓ failure, future extra-move continuation and repeated final loss charge an attempt at most once
+✓ unlimited play keeps normal regeneration and expires without altering the accumulated pool
+✓ additional unique unlimited purchases extend the current period; full refill preserves the five-life cap
+✓ moving the device clock backwards never duplicates regeneration or rewinds the recorded effective time
+✓ first-failure protection is optional, per early level, and does not protect a paid reset
+✓ developer bypass explicitly removes gating and charges, then normal rules resume
+✓ historical 9.0 results are acknowledged without retroactive charges
+✓ life save validation rejects unknown versions and invalid pools without mutating valid input
+✓ UTC midnight resets the daily ad quota without bypassing the previous claim cooldown
+✓ ledger compaction permits new games and never forgets old idempotency keys
+✓ reserved JavaScript property names cannot bypass attempt or receipt idempotency
+✓ each public action observes one clock sample, including composed HUD and eligibility operations
+✓ development providers require explicit completion and retain the same receipt on repeated callbacks
+Life rules passed: 22 groups, clock recovery, unique settlements, verified rewards, safe restart and portable saves.
+PASS an attempt begun during unlimited retains its waiver after expiry and reload
+PASS a completed verified ad is banked if natural regeneration filled the pool during viewing
+PASS the journal retention threshold never disables future new games
+PASS registered unlimited entitlement survives rollback, restart, and a later result callback exactly once
+PASS registration captures entitlement once, rejects identity reuse, and does not bypass a new-game gate
+PASS ordinary starts still charge after expiry, while a newly active unlimited period can waive an ongoing loss
+PASS banked credit and quota survive restore and duplicate completion callbacks
+PASS banked credits preserve the existing anchor until the pool reaches its cap
+PASS full-pool ad completion cannot bypass cooldown, quota, or the five-active-life limit
+PASS compact arbitrary attempt IDs preserve charge, discard, continuation, and identity proofs
+PASS arbitrary legacy receipt IDs remain exact deduplication tombstones after compaction
+PASS authenticated stream ranges coalesce out-of-order IDs and never accept an altered replay
+PASS unverified stream metadata never creates a consumed identity or poisoned range
+PASS provider finalization is terminal-only, survives restart, and retains proofs for cancelled gaps
+PASS stream fields are authenticated by the development provider, not supplied by the caller
+PASS completed ads are not revoked by inventory depletion after a request began
+PASS legacy life, provider receipts, wallet balances, and already-settled outcomes migrate without new rewards
+PASS corrupt compact proof, pending credit, and entitlement DTOs fail closed
+PASS hundreds of game and provider transactions remain playable without rich-journal growth
+PASS default rule configuration compacts diagnostics before a large rich journal can exhaust browser storage
+PASS unlimited attempt waivers preserve banked credits until a later charged attempt needs a slot
+21 passed; 0 failed
+PASS atomic game/life failure
+PASS canonical recovery authority
+PASS invalid canonical, stale revision, quota, mirrors and revocation
+PASS empty durable slot clears reverted tutorial engine and attempt
+PASS quota-failed provider begin clears transient transaction and can recover
+PASS asynchronous hint stats and local events roll back together
+PASS verified receipt can retry after failed storage without watching again
+Life vectors are current: 19 cases, 157 transitions/probes.
+Shared life vectors passed: 19 cases, 157 transitions/probes; C# life port remains future work.
+Legacy life migration passed: 152 frozen v1 states preserved.
+Local event checks passed: bounded buffer, exact identities, ordered event validation, idempotent observations and no personal data fields.
+Audio checks passed: gesture gating, tiered reward phrases, bounded pitch/gain/voices, singleton music, settings, visibility/pause, failure recovery and disposal.
+UI checks passed: 2 guided tutorials + 10 campaign solutions, guarded actions, skip/replay, exact state, progress migration and stale/failing hints.
+✓ a fresh opening offers one task and one direct first action
+✓ the first opening is derived from progress and never replaces a returning checkpoint
+✓ the slow swap demonstration is decorative and never commits gameplay
+✓ the first result stays explained until acknowledged, with safe controls still usable
+✓ reload resumes the exact explanation without duplicating points or forgetting acknowledgement
+✓ the second lesson separates stone values, double ground and the two win conditions
+✓ reset and tutorial replay clear only the active lesson acknowledgement
+✓ a player can transfer the mechanic to a campaign move without a forced pair
+First-play onboarding checks passed.
+PASS one canonical transaction replaces progression, currencies, attempts, settings and energy with fresh defaults
+PASS cleanup is scoped to actual legacy and observation keys and preserves the live writer lock
+PASS the old in-memory writer is revoked before pagehide can restore the old board or repeat the reset
+PASS failed canonical write preserves all prior keys and keeps the original writer usable
+PASS stale concurrent stores cannot erase a more recent profile
+PASS a writer created before a successful reset cannot resurrect previous progress
+PASS legacy cleanup failures are reported and cannot resurrect the deleted progression on reload
+PASS failed mirror repair is reported while the fresh canonical game and energy remain authoritative
+PASS invalid inputs and exhausted revisions cannot produce partial cleanup or revoke the writer
+PASS fresh data remains a real valid LifeState v2 and normal writer lifecycle resumes only in a new store
+Full test-profile reset storage checks passed: 10 cases; canonical game/energy atomically replaced, optional cleanup reported, no unrelated data erased.
+PASS a real T2 win atomically banks and presents one welcome chest
+PASS T1 and skipping the lessons cannot produce the welcome reward
+PASS replay, old completion flags and reload never farm welcome Gold
+PASS a failed final-move save cannot show or partially bank a welcome reward
+PASS the ordinary progress reset retains the welcome entitlement and banked Gold
+PASS full-data reset explains the erased resources and cancellation preserves every committed value
+PASS full reset failure keeps the original profile, currency, life and live session usable
+PASS a committed full reset survives an optional audio cleanup failure
+PASS confirmed full reset is a fresh profile and stale lifecycle callbacks cannot restore the old game
+Welcome reward and full-reset UI checks passed: 9 groups; real app, real canonical saves, no live payments or ads.
+PASS copy follows the exact lesson turn and the previous result while feedback or animation is shown
+PASS two noninteractive numeric ghosts preserve source identity above floors and below the hand
+PASS both reciprocal routes have a slow loop, a swapped hold and a hidden reset
+PASS stop restores previous source classes and inline styles and can be repeated safely
+PASS starting another demonstration cancels the old one without duplicate layers
+PASS cancelling either animation removes both ghosts and restores both originals
+PASS rebuilding the board triggers observer cleanup of detached source nodes
+PASS removing the ghost layer also releases its source visibility
+PASS reduced motion creates no clones and stops an existing demonstration
+PASS missing animation support and invalid inputs leave the board playable
+PASS an exception creating the second animation cleans the partially built demonstration
+PASS host supplied paths are optional and invalid path data never hides sources
+First-play presentation checks passed: 12 cases; real board-view geometry with no engine, storage or RNG access.
+✓ gesture short directional swipe inside the same stone is recognized on large board
+✓ gesture short directional swipe inside the same stone is recognized on small board
+✓ gesture entering the target then returning to the source preserves the intentional swap
+✓ gesture fast release, slow drag and coalesced samples each produce one attempt
+✓ gesture tile edge and unambiguous narrow gap start retain the source tile
+✓ gesture exact gap bisector and contradictory directions remain uncommitted
+✓ gesture resize, orientation, visibility and page exit cancel held input
+✓ gesture directions recognize all six neighbors independently of whether a match is legal
+✓ gesture cancellation and competing touch do not commit a previously clear direction
+✓ gesture jitter and an ambiguous halfway direction do not invent a swap
+✓ second touch with 10px jitter still swaps selected neighbors
+✓ stable SVG owns capture and cancellation allows the next gesture
+✓ throw animation failure cannot lock controls
+✓ reject animation failure cannot lock controls
+✓ nonzero presentation supports skip and a strict total duration bound
+✓ a tap during a cascade reveals the committed result without an extra move
+✓ backgrounding fast-forwards once and late awaits do not redraw old frames
+✓ reset and level preview navigation cancel presentation without stale persistence
+✓ burst feedback and exact survivor falls preserve visible tile identity
+✓ reduced motion completes without particles, API calls or a presentation wait
+Input checks passed: pointer jitter/capture, animation failures, bounded/skip presentation, real survivor motion, burst effects, reduced motion and cancellation.
+✓ first play enters directly and later map previews remain nonmutating
+✓ continue resumes an existing turn and map preview cancellation is nonmutating
+✓ completed levels disappear and fully cleared journeys lead to the garden
+✓ settings really persist, reset requires consent and keeps preferences
+✓ pause blocks moves and shortcuts, settings return to the same paused board
+✓ nested Escape and browser back close the top modal before leaving the game
+✓ backgrounding pauses a live game and returning cannot silently spend a move
+✓ leaving during effects cannot open stale results above the menu
+✓ records are derived from actual observed wins and result navigation is safe
+Menu checks passed: landing/start/resume, nonmutating previews, settings/reset, pause guards, stale presentation cancellation and real records.
+✓ preview never starts an attempt; actual entry chooses a certified variant exactly once
+✓ continue and hint preserve the exact variant, RNG, move history and reward state
+✓ malformed or forged legacy metadata is never silently dropped, even when modules are unavailable
+✓ restart is explicit, cancel preserves a paused game, and confirmation chooses another variant
+✓ a failed campaign attempt retries immediately with a new certified variant
+✓ winning, review and reload record one terminal result even after event-buffer eviction
+✓ legacy checkpoints remain exact and malformed identities cannot erase them or other progress
+✓ missing or corrupt variant packs fail closed while valid original saves can continue
+✓ presentation cancellation and free tutorial navigation preserve the only active campaign attempt
+Attempt UI checks passed: certified starts, exact continuation, guarded fresh retries, preserved legacy saves, honest hints and local-only events.
+✓ new profiles have five visible hearts in both menus, a stopped timer and explicit development labels
+✓ zero blocks a new attempt before selector/save changes and leaves waiting, test Gold and free teaching available
+✓ an in-flight variant resumes exactly at zero and pause/close/foreground changes spend nothing
+✓ failure spends one, exact reload and repeated result screens cannot spend another; winning spends none
+✓ played restart states its life cost; cancel keeps a paused game and confirmation charges once
+✓ the last-life reset closes the discarded attempt, blocks a fresh board and can recover by a verified user-requested ad
+✓ confirming a played reset at zero closes it without debt and a later rewarded life starts the fresh board with one
+✓ restarting an untouched attempt is free and denying a new attempt at zero preserves the resumable old one
+✓ fake Gold purchases charge configured costs only after completion and duplicate receipts never charge twice
+✓ rewarded ad completion adds one while preserving the timer; cancellation, forged callback and cooldown add nothing
+✓ returning offline refreshes 29/30/150-minute regeneration and unlimited expiry without changing an ongoing game
+✓ an unlimited-start attempt keeps its waiver through expiry, reload and reset confirmation
+✓ 9.0 terminal saves get no retroactive debit, while an unrecorded 9.1 loss after a crash is settled once
+✓ developer life bypass is explicit, persists and permits balancing at zero without changing engine outcomes
+✓ progress reset preserves the life pool, protection and verified test wallet instead of creating a free refill
+✓ an unwritable authoritative profile blocks new transactions without charging the in-memory wallet or erasing gameplay saves
+✓ a callback whose final aggregate write fails grants nothing and never partially debits test Gold
+✓ a failed terminal transaction rolls back board, life and variant; retrying that move after recovery charges once
+✓ the previous v4 game key migrates exactly while the first life profile starts at five
+✓ full progress reset explains played-attempt costs, supports cancellation and batches multiple closures without negative lives
+Life UI checks passed: 20 groups with real modules, atomic profile saves, verified local transactions and unchanged engine results.
+✓ manifest and home-screen icons describe an installable scoped app
+✓ the integrated shell preloads every markup and hint-worker dependency at one version
+✓ native installation runs only after a click and can be dismissed
+✓ manual instructions work on iPhone and touch-enabled iPad desktop user agents
+✓ actual app keeps Settings underneath Install and Escape closes only the top dialog
+✓ standalone hides installation/fullscreen, while browser fullscreen really enters and exits
+✓ share sends a clean canonical URL, cancellation is quiet, and failed APIs expose a selectable link
+✓ service-worker updates wait for explicit approval and never reload an active game automatically
+✓ offline navigation serves only previously validated game HTML
+✓ worker scope excludes API, authentication, foreign, mutation and query navigation requests
+✓ versioned asset cache requires correct content types and preserves exact query keys
+✓ cache quota and unavailable storage cannot discard successful online responses
+✓ install preloads only safe scoped assets, activation preserves other apps, update is explicit
+✓ scene packs are demand-cacheable with only the supplied tutorial foundation and idle warmup
+✓ later prepared backgrounds and poses cache lazily with exact typed offline bytes
+✓ only the three supplied JPEG paths accept typed image/jpeg and optional offline fallback
+✓ optional scene art rejects auth HTML, redirects, poisoned caches and unapproved URL variants
+✓ missing or quota-failed optional scene art cannot fail installation or successful online play
+PWA checks passed: manifest/icons, installation, real modal flow, sharing, fullscreen, approved updates and safe offline caching.
+✓ game mode hides website chrome while menu navigation remains available
+✓ the board help strip is removed without losing controls or accessible status
+✓ visible viewport changes fit the shell without changing the active checkpoint
+✓ pinches cancel pending pointers and leave the next real swap usable
+✓ browser zoom shortcuts are blocked without consuming regular input or settings controls
+Game shell checks passed: scoped chrome, viewport stability, no-zoom gestures and usable game/settings input.
+✓ matched digits merge into a popped total before the total flies to the HUD
+✓ long chains account for every resolved wave and point exactly once without introducing a multiplier
+✓ skip cannot leave stale flights or delayed score writes
+✓ reset cannot leave stale flights or delayed score writes
+✓ navigate cannot leave stale flights or delayed score writes
+✓ background cannot leave stale flights or delayed score writes
+✓ resize cannot leave stale flights or delayed score writes
+✓ reset during count-up cancels the pending score animation frames
+✓ reduced motion and failed flight APIs still settle the exact earned total
+✓ a swap without a match creates no score receipt and consumes no move
+Score checks passed: real number collection, running addition, sum burst, ordered HUD flight, exact chain totals, interruption cleanup and failure safety.
+104 shared reward vectors verified.
+✓ canonical JSON and browser/CommonJS rewards expose the same deterministic rules
+✓ an ordinary triple remains subtle and produces no headline, multiplier or extra points
+✓ real straight four/five/six runs earn distinct tiers while separate triples never become a six-run
+✓ two and three actual intersecting axes are recognized without double-counting shared cells
+✓ ground and completed double layers use actual terrain deltas and integer thresholds
+✓ cascade tiers and headline priority reflect severity first, then the earned shape
+✓ milestones emit only the highest crossed threshold per objective and mark every passed threshold
+✓ objective completion and last-move victory override ordinary headlines and bypass tutorial caps
+✓ epic accents require two intervening valid turns without changing the truthful achievement label
+✓ duplicates, stale input and invalid continuity never emit or change reward state
+✓ evaluation is immutable, deterministic and independent of clocks or randomness
+✓ all authored routes keep identical engine state and silently restore the same director history
+✓ shared golden vectors agree with the portable reference output
+Reward rules passed: truthful patterns, bounded tiers, objective milestones, deterministic replay, immutable classic scoring and shared vectors.
+✓ production markup loads the rules and director before the game
+✓ restoring a played board and asking for a hint never replay rewards
+✓ an ordinary triple keeps light feedback and the original earned score
+✓ a real crossing earns one stronger headline, a progress pulse and gated cues
+✓ turning off sound and vibration keeps achievement visuals and exact scoring
+✓ skip clears in-flight reward pulses without a delayed replay
+✓ reset clears in-flight reward pulses without a delayed replay
+✓ navigate clears in-flight reward pulses without a delayed replay
+✓ background clears in-flight reward pulses without a delayed replay
+✓ resize clears in-flight reward pulses without a delayed replay
+✓ reduced motion settles immediately without reward animations
+✓ victory feedback is emitted once only after the final floor and score settle
+Reward UI checks passed: quiet restoration, truthful one-time headlines, configured intensity, user gates, exact engine state and cancellation safety.
+Original campaign and fixed tutorial JSON exports verified without modifying their JavaScript sources.
+71 gameplay, 80 selector and 9 rejection vectors verified.
+Gameplay goldens passed: 71 cases, 162 valid moves, 56 replay resumes, 80 deterministic selections, 9 rejected attempts. C# gameplay execution is not implemented by this check.
+Original level1: random 5%, archived coverage-greedy 77% reproduce.
+Original level2: random 5%, archived coverage-greedy 100% reproduce.
+Original level3: random 0%, archived coverage-greedy 87% reproduce.
+Original level4: random 0%, archived coverage-greedy 97% reproduce.
+Original level5: random 0%, archived coverage-greedy 70% reproduce.
+Original level6: random 0%, archived coverage-greedy 0% reproduce.
+Original level7: random 0%, archived coverage-greedy 50% reproduce.
+Original level8: random 0%, archived coverage-greedy 100% reproduce.
+Original level9: random 0%, archived coverage-greedy 0% reproduce.
+Original level10: random 0%, archived coverage-greedy 10% reproduce.
+Archived baseline policy measurements reproduce for all10 immutable original levels.
+Level 1: 4 variants × 4 policies × 64 attempts reproduce; mean difficulty 2.5781.
+Level 2: 4 variants × 4 policies × 64 attempts reproduce; mean difficulty 16.875.
+Level 3: 4 variants × 4 policies × 64 attempts reproduce; mean difficulty 36.9727.
+Level 4: 4 variants × 4 policies × 64 attempts reproduce; mean difficulty 52.5.
+Level 5: 4 variants × 4 policies × 64 attempts reproduce; mean difficulty 73.5937.
+Level 6: 4 variants × 4 policies × 64 attempts reproduce; mean difficulty 14.1211.
+Level 7: 4 variants × 4 policies × 64 attempts reproduce; mean difficulty 46.4062.
+Level 8: 4 variants × 4 policies × 64 attempts reproduce; mean difficulty 73.7695.
+Level 9: 4 variants × 4 policies × 64 attempts reproduce; mean difficulty 24.2578.
+Level 10: 4 variants × 4 policies × 64 attempts reproduce; mean difficulty 75.7031.
+40 variants, 10240 reproducible bot attempts and configured sawtooth ordering pass. These are bot-policy results, not human win rates.
+
+> hexrota@9.2.0 test:playtest
+> node check-playtest.cjs && node check-playtest-ui.cjs
+
+Local playtest passed: explicit consent, active-time exclusion, move/goal/life observations, JSON resume, PII rejection and bounded export.
+✓ recorder is off by default; real moves and hints remain unobserved until explicit opt-in
+✓ opt-in records actual identities, cells, waves and hints without changing engine results
+✓ a genuine failed route records exact deficits and retry creates a new observed attempt
+✓ a certified victory records zero deficits and the actual remaining moves
+✓ zero-life blocks and explicit developer bypass are observable without opening an attempt early
+✓ actual pause, background, blur and settings exclude time; clearing only resets observations
+✓ real presentation busy state excludes animation time and skipped presentation preserves the move
+✓ saved opt-in observations resume locally with the same board and no fabricated new start
+✓ late opt-in does not invent a start or pre-consent moves and leaves an honest incomplete window
+Playtest UI checks passed: 9 real-app groups, explicit consent, exact observations, excluded time, local JSON export, zero network and preserved saves.
+
+> hexrota@9.2.0 test:integration
+> node check-integration.cjs
+
+PASS short pointer swipe commits one exact variant result and one observation; cancel never commits
+PASS quota-failed swipe rolls back board, life, events and move observations; one retry commits once
+PASS quota-failed final swipe cannot record a failed level or spend life; recovery settles once
+PASS quota-failed restart restores attempt, selector and observations before a clean confirmed retry
+PASS legacy in-flight game resumes at zero lives and swipe retains original replay identity across reload
+PASS unlimited entitlement survives expiry through an observed failure and later callback/reload
+PASS later nontransactional presentation write failure cannot rewind an already committed move observation
+Integration checks passed: 7 real-app groups covering pointer input, atomic game/life/telemetry rollback, legacy replay and entitlement continuity.
+
+> hexrota@9.2.0 test:swap-lifecycle
+> node check-swap-lifecycle.cjs
+
+PASS both swap stones have an independent top layer, then matching and final drawing resume normally
+PASS skip settles the committed result once and cancelled swap callbacks cannot alter it
+PASS rapid reveal followed by a new swap leaves the new presentation owned by the new move
+PASS invalid neighboring feedback preserves the engine and cannot contaminate a following valid swap
+PASS visibilitychange removes temporary stones while preserving the already committed move
+PASS pagehide removes temporary stones while preserving the already committed move
+PASS resize removes temporary stones while preserving the already committed move
+PASS home removes temporary stones while preserving the already committed move
+PASS reduced motion creates no moving layer and finishes the same game result
+PASS changing motion preference during a swap clears its visual owner without replaying the move
+PASS animation API failure 1 cleans even a partially created pair and settles the exact result
+PASS animation API failure 2 cleans even a partially created pair and settles the exact result
+PASS invalid feedback API failure 1 restores both sources and never changes game state
+PASS invalid feedback API failure 2 restores both sources and never changes game state
+Swap lifecycle checks: 14/14 passed.
+
+> hexrota@9.2.0 test:economy
+> node sync-economy-config.cjs --check && node check-economy.cjs
+
+Canonical economy configuration and generated JS/C# targets match.
+Economy: 20 invariant groups, 125 deterministic flows, 579 operation results; canonical JS/C# config synchronized.
+
+> hexrota@9.2.0 test:progression-ui
+> node check-progression-ui.cjs
+
+✓ first verified win grants once across 100 repeated results and forged completed controls
+✓ verified legacy wins migrate once, ambiguous flags stay closed without invented rewards
+✓ a replay-validated legacy won board is recognized even if its historical done flag is missing
+✓ milestone gifts are committed with real level-three and level-six wins
+✓ ordinary reset preserves cleared levels, reward ledger and inventory across reload
+✓ winning the last incomplete level leads to garden and never loops back to completed play
+✓ winning transaction storage failure preserves board, life, Gold, stars, inventory and events together
+✓ free tutorial replay at zero lives gives no campaign Gold, stars or inventory
+Progression UI checks passed: 8 integration groups, 100 duplicate completions, real milestone wins, migration and transactional rollback.
+
+> hexrota@9.2.0 test:commands
+> node check-commands.cjs && node generate-command-vectors.cjs --check
+
+Command mechanics passed: {"certifiedRoutes":80,"legacyPrefixes":680,"colorChanges":1032,"brushTargets":1032,"malformedCases":56,"rescueCases":40,"validSwaps":1191,"brushes":1631,"keyChanges":1033,"keyWithoutImmediateMatch":803,"keyWithMatch":230,"keyCascades":80,"rescues":40,"duplicates":2105,"rejections":2136,"previews":2105,"resumes":2933,"cases":2928,"outputMutationChecks":2,"assistedHintChecks":1,"classicSourceHashes":4}
+Command vectors checked: {"certifiedRoutes":80,"legacyPrefixes":680,"colorChanges":1032,"brushTargets":1032,"malformedCases":56,"rescueCases":40,"comparisons":2928,"sha256":"5f9650ace1553ab24dff9511c212d4bb533c75792d52dced4c4d46bb9f9be99f"}
+
+> hexrota@9.2.0 test:inventory-ui
+> node check-inventory-ui.cjs
+
+✓ milestone inventory and level unlocks are shown without mixing game Gold and TEST Gold
+✓ owned campaign assistance cannot be consumed in a free guided tutorial
+✓ brush preview and cancellation are observational; a cleared ground target is rejected without stock loss
+✓ brush removes exactly one ground layer once with no move, score, value or RNG change
+✓ color key requires an explicit other palette number, previews its real cascades and spends zero moves
+✓ an assisted campaign clear still grants its first reward once and labels the permanent result honestly
+✓ a zero-point key result is previewed honestly and applies only after explicit confirmation
+✓ 70/90 Gold purchases use the game wallet and insufficient funds never debit either wallet
+✓ assisted saves restore exactly and cross-ledger/command tampering cannot silently create a fresh attempt
+✓ an assistance write failure rolls back inventory, command, board, life and events together
+✓ leaving a preview or racing a newer profile revision cannot spend an obsolete preview
+Inventory UI checks passed: 11 integration groups using real command previews, strict replay, costs, caps and atomic rollback.
+
+> hexrota@9.2.0 test:rescue
+> node check-rescue.cjs && node check-rescue-transactions.cjs
+
+Rescue: 293 immutable JS checks passed; 12 frozen availability cases + 5 full wire goldens; two 300-attempt compaction scenarios, duplicate100 and verified save-failure redelivery.
+Rescue transactions: real published L8 loss/replay, exact +5 preservation, 140 Gold atomic rollback/retry, verified TEST ad redelivery, independent ad quotas, no second life debit and stale-writer rejection passed.
+
+> hexrota@9.2.0 test:second-chance-ui
+> node check-second-chance-ui.cjs
+
+✓ TEST ad begin and cancel grant no moves and consume neither daily right nor Gold
+✓ verified TEST ad preserves board/RNG/attempt and repeated callbacks grant once; a second loss costs no second life
+✓ 140 earned game Gold buys exactly +5 and does not debit or exchange the 300 life TEST wallet
+✓ insufficient game Gold is rejected before any paid operation; life TEST Gold cannot fund it
+✓ canonical Gold save failure rolls back money, five moves, command/receipt ledgers and analytics together
+✓ completed TEST proof survives a failed canonical write for explicit same-page delivery retry
+✓ after failed ad delivery and application reload a verified callback restores the same attempt without rewatching
+✓ two rescue ads consume their own UTC quota; a third remains eligible for Gold and life ads have a separate limit
+✓ unavailable TEST ads stay disabled while the earned-Gold alternative remains usable
+✓ retry after reopening a pending request releases it; a stale completed callback cannot grant to the new attempt
+✓ a genuine last-life loss may recover and saved assisted progress resumes at zero lives
+✓ winning after rescue keeps the first life charge and records completion with the original Attempt ID
+✓ discarding a rescued zero-life attempt remains loadable, cannot resume, and later opens a new attempt without another charge
+✓ a second rescued failure cannot re-emit the canonical failure after the first event was evicted; opt-in observation still records it
+✓ a completed earned proof awaiting save cannot become a paid rescue, new ad, restart, reset or different attempt
+Second-chance UI checks passed: {"groups":15,"realSwaps":169,"realLosses":22,"preservationAssertions":6,"reloads":4}. Real JS app only; this is not a physical-device or live-ad test.
+
+> hexrota@9.2.0 test:garden
+> node check-garden.cjs && node check-garden-ui.cjs
+
+Botanical presentation passed: {"starStates":11,"deterministicRenders":55,"milestoneChecks":44,"malformedViews":17,"allCleared":true,"isolatedBrowser":true,"externalThresholdSource":true}
+✓ 0 verified legacy clears render the configured garden without spending or starting
+✓ 1 verified legacy clears render the configured garden without spending or starting
+✓ 2 verified legacy clears render the configured garden without spending or starting
+✓ 3 verified legacy clears render the configured garden without spending or starting
+✓ 4 verified legacy clears render the configured garden without spending or starting
+✓ 5 verified legacy clears render the configured garden without spending or starting
+✓ 6 verified legacy clears render the configured garden without spending or starting
+✓ 7 verified legacy clears render the configured garden without spending or starting
+✓ 8 verified legacy clears render the configured garden without spending or starting
+✓ 9 verified legacy clears render the configured garden without spending or starting
+✓ 10 verified legacy clears render the configured garden without spending or starting
+✓ opening the garden around a live real swap preserves the exact in-flight attempt
+✓ fully cleared campaign offers the garden and no old playable level
+✓ pending legacy review draws only 0 claimed stars, not 10 closed levels
+✓ pending legacy review draws only 2 claimed stars, not 3 closed levels
+Garden UI passed: 15 actual application groups, all eleven star states, saved/reloaded progression, zero-life access, live-board invariants and pending legacy review.
+
+> hexrota@9.2.0 test:maintenance
+> node scripts/sync-styles.cjs --check && node scripts/check-architecture.cjs && node check-maintenance.cjs
+
+Styles: 14 owned source sections; exact cascade and one payload verified.
+Architecture boundaries, 54 runtime syntax files, explicit script order and offline assets verified.
+PASS revision exhaustion rejects before changing durable memory or storage
+PASS commit validates both game/energy before writing an unloadable envelope
+PASS same-revision canonical corruption is not silently overwritten
+PASS present null inserted into an empty slot cannot masquerade as absence
+PASS contains distinguishes canonical mirrors, absent keys, and present null
+PASS strict progression loading rejects present null, malformed or falsy new/legacy records
+PASS actual application boot refuses a present null game rather than writing defaults
+PASS save normalization remains immutable and supports old indexed containers
+PASS all 52 authored boards preserve exact pre-refactor SVG, geometry and reciprocal paths
+PASS pure swipe classifier preserves six axes, jitter, contradictory paths and bounds
+{"groups":10,"additionalAssertions":512,"baseline":"7deb686e1f4cd79aedd9763522c381ff145d216d","physicalDevicesTested":false}
+
+> hexrota@9.2.0 test:comic-ui
+> node check-comic-ui.cjs
+
+PASS authored gameplay stays frozen and reviewed boundary changes remain pinned
+PASS the first-play module stays free of gameplay and persistence dependencies
+PASS scene presentation cannot own engine, economy or profile writes
+PASS tutorial coop consumes committed tutorial facts without a star or material ledger
+PASS scene extends the same single style pipeline after the original six sources
+PASS all original DOM ids and behavior hooks survive
+PASS original static SVG assets are local and offline-preloaded
+PASS focus, disabled, active and reduced-motion states are explicit
+PASS story kit is a clearly labelled non-economic demo
+{"groups":9,"protectedFiles":88,"presentationAllowances":["dist/app.js"],"reviewedRuleChanges":["dist/economy-config.js","dist/economy.js","dist/session-store.js","unity/Application/GameSessionController.cs","unity/Economy/EconomyDefaults.cs","unity/Economy/EconomyManager.cs","unity/EconomyParityHarness/Program.cs"],"reviewedPresentationChanges":["dist/sw.js"],"assets":3}
+PASS approved Tavik identity, unchanged cropped pixels, local integration and strict offline asset MIME
+
+> hexrota@9.2.0 test:scene
+> node scripts/check-scene-assets.cjs && node scripts/check-tutorial-scene-assets.cjs && node sync-scene-config.cjs --check && node check-scene-presentation.cjs
+
+PASS 39 source/asset hashes; 12 presentation-only motion states.
+PASS 3 byte-preserved tutorial JPEG hashes and 720×1280 frames; 24 malformed/tampered/missing asset cases rejected.
+Scene configuration matches the tutorial-only three-stage presentation contract.
+PASS canonical tutorial stages are strict, data driven and have no future rescue implementation
+PASS tutorial counter contracts preserve typed identities, labels and validated data targets
+PASS campaign stars are neither required nor read by scene presentation
+PASS bad completed counts and committed tutorial turns are rejected before presentation starts
+PASS first opening loads only its active world and one actor before showing intro motion
+PASS home to real game preserves the same world and actor without replaying an opening on resume
+PASS the strict tutorial portrait flag replaces the board actor in both lessons and motion modes
+PASS omitted and nonboolean portrait flags do not hide the normal scene actor
+PASS late actor readiness and approved-image fallback cannot reveal a body during portrait teaching
+PASS both orientations use the same supplied tutorial JPEG
+PASS starting the real board while its background is decoding cannot strand the world
+PASS construction stage derives only from committed tutorial completion
+PASS a late background decode cannot overwrite a newer tutorial stage
+PASS pending actor readiness cannot replay intro after a game transition
+PASS hidden, modal and paused states suspend the supplied actor and reduced motion stays static
+PASS duplicate reaction callbacks are cosmetic and do not replay the same cue
+PASS document visibility pauses motion without advancing the canonical stage
+PASS actor placement reserves room around the board and hides when space is exhausted
+PASS closing a scene destroys actors and invalidates pending images, then a fresh opening can remount
+PASS remounting at a higher stage does not perform a construction animation
+PASS failed reaction leaves the last good pose usable
+PASS tutorial can use a compact actor while its pair is temporarily missing
+PASS final destroy is idempotent and no delayed callback or update can revive it
+PASS failed world assets and an unavailable optional motion SDK leave the real board usable
+Scene presentation checks passed: 24 groups; controlled asset races, immutable view projections and no gameplay/storage services.
+PASS Tavik tutorial portrait: animation, reaction, reduced motion, cleanup and immutable board
+
+> hexrota@9.2.0 test:state
+> node check-app-state.cjs && node check-state-selectors.cjs && node check-state-effects.cjs && node check-state-characterization.cjs && node check-state-guards.cjs && node check-state-operation-ui.cjs && node check-state-lifecycle.cjs
+
+PASS initial regions and every actual screen are explicit and independently immutable
+PASS invalid navigation has no cancellation, modal, subscription or other effects
+PASS all16 declared modal identities match the real DOM and real result guards
+PASS story is an explicit safe game overlay with no implicit availability
+PASS finite nesting permits current flows and rejects every unrelated modal pairing
+PASS verified delivery recovery roots are explicit and do not bypass other result guards
+PASS modal instances fence stale closes; duplicate delivery is idempotent
+PASS non-top closes preserve valid nesting instead of orphaning a confirmation
+PASS navigation and global close emit top-first effects without remounting gameplay
+PASS visual operation lifecycle is deterministic, bounded and duplicate-safe
+PASS replacement, navigation, attempt identity and invalidation reject stale completions
+PASS lifecycle keeps the screen and committed domain out of cancellation decisions
+PASS snapshots/results/tokens are frozen without mutating event, facts or caller state
+PASS validated own data executes exactly without inherited serialization hooks
+PASS unknown or malformed event payloads fail safely without subscriber notifications
+PASS reentrant dispatch is FIFO and copies queued event/fact data
+PASS operation convenience cannot enqueue an orphan while dispatch is notifying
+PASS subscription removal, addition, exceptions and disposal have explicit lifetimes
+PASS counter exhaustion and forged identity data never wrap into a new owner
+PASS runtime remains a small platform-free rule module
+Application state core passed: 20 groups, 2002 assertions; pure transitions, modal instances, FIFO subscriptions and stale visual identities.
+PASS the five real screens are recognized while Settings stays a modal
+PASS pause comes from stack membership and Settings alone does not become pause
+PASS READY distinguishes a read-only preview from an activated engine
+PASS requested input reservation differs from committed resolving and cannot publish a speculative terminal phase
+PASS the actual core operation lifecycle feeds selectors without copied domain state
+PASS board routing permits reveal and acknowledgment, while a new move is narrower
+PASS write, attempt, life, lifecycle and screen barriers fail closed without changing facts
+PASS native modal fallback blocks board input without becoming a second pause flag
+PASS inventory works in its own modal and confirmation while unrelated modal commands are rejected
+PASS committed tutorial progress preserves the exact legacy reach inference
+PASS only the matching committed attempt supplies tutorial turns, without reading stars or board contents
+PASS malformed progress and typed identity mistakes are rejected without inventing a reached stage
+PASS one actor policy reserves the portrait in both tutorials and keeps the existing two update payloads aligned
+PASS terminal, hidden and suspended coach transitions never release the tutorial actor reservation
+PASS HOME, independent screens and optional portrait failure use the existing world fallback policy
+PASS projection is detached, immutable and entirely driven by each new domain view
+PASS presentation rejects invalid Level ID types, lesson payloads and malformed snapshots
+PASS semantic Tavik states map only supplied clips or actual portrait observations
+PASS the projection module contains no platform, economic, timing or random dependency
+PASS pending committed story closes input reservation races without rewriting gameplay phase
+State selector checks: 20/20 passed.
+PASS accepted screens update existing DOM and history without loading or rebuilding a board
+PASS guards reject invalid modal nesting and default closes only the top modal
+PASS modal close callbacks are once per instance and restore a live parent opener
+PASS old programmatic close cannot clear or close a newer opening of the same dialog
+PASS native close then immediate reopen supersedes obsolete cleanup before its event arrives
+PASS an internal close cannot orphan a required confirmation but may remove a legal ancestor
+PASS native required-parent close is repaired in original order without domain cleanup
+PASS reopening a natively closed ancestor before its event repairs the same opening
+PASS closeAll is top-first and navigation does not leave focus inside a hidden screen
+PASS direct accepted state events also execute their declared modal effects once
+PASS native geometry fallback blocks commands without adopting an unrestricted modal
+PASS showModal failure rolls back only that instance and does not poison a later native close
+PASS native close failure keeps a blocking modal and cleanup waits for a successful retry
+PASS cleanup callbacks retain the host action barrier and may reenter through the queued core
+PASS adapter effects do not access durable storage and destroy unsubscribes every owned listener
+PASS story uses the same state owner with an explicit inline native surface
+State DOM effects passed: 16 groups; real pure core, queued-native-event/focus shims only; no physical-device claim.
+PASS tutorial selection and dialogue acknowledgment preserve the SVG and all gameplay/economy authority
+PASS T1 result transitions to T2 through the existing preview-free handoff without awarding welcome Gold
+PASS nested pause/settings/reset close top-first through Escape and Back without changing the saved attempt
+PASS zero-life saved resume and cancelled journey previews retain exact board and variant identity
+PASS failed authoritative T2 final write cannot publish a win or welcome reward and can recover safely
+PASS background cancellation preserves a committed move and late animation completions cannot replay it
+PASS an animation API failure cannot undo a committed move or leave gameplay busy
+PASS a cancelled hint worker cannot write into a later tutorial screen or attempt
+PASS cancelled life proof and cancelled full-reset confirmation never grant or erase authority
+PASS verified campaign result leads to the next unopened level and preview does not allocate its attempt
+PASS second-chance modal completes only after the same-attempt grant and rejects duplicate receipts
+State characterization passed: 11 actual-app groups; no private state API, save contract or gameplay fixture changed. Native focus, pixels and physical devices require the browser suite.
+PASS malformed injected navigation is rejected before any screen/modal/save/history side effect
+PASS raw GAME navigation cannot activate a read-only HOME preview without a committed attempt
+PASS hidden inventory command is rejected while unrelated Settings is open
+PASS hidden Settings command is rejected while unrelated Inventory is open
+PASS a hidden stage command cannot stack a level preview over Settings
+PASS a rejected stage request leaves no pending stage usable by a later hidden start command
+PASS closing a valid preview clears its stage before an invalid stage and stale start request
+PASS intentional Pause → Settings → Reset nesting and top-first cancellation remain permitted
+State guard acceptance: 8/8 passed. Tests use the production host, not a private state test API.
+PASS a real swap becomes OPERATION_PENDING only after its checkpoint is canonically committed
+PASS late settlements from a previous real move cannot settle a newer operation or repeat gameplay/rewards
+PASS null or throwing visual-token allocation fast-reveals actual playing and winning commands without blocking their commit
+PASS a failed canonical winning write emits no pending presentation and a real retry banks its reward before pending
+State operation UI passed: 4 actual-app groups; real engine commands, canonical commit observation, late tokens and four allocation-fault scenarios. No fake engine or financial success.
+PASS state lifecycle: synthetic suspension settles the committed final move without stale result UI or duplicate rewards.
+
+> hexrota@9.2.0 test:f01
+> node check-f01-presentation-ui.cjs
+
+COUNTS {"case":"A-reduce","attempts":1,"successes":1,"rejections":0,"revisionDelta":1,"turn":2}
+PASS A reduced motion makes one canonical write for a real valid move
+COUNTS {"case":"A-animated","attempts":1,"successes":1,"rejections":0,"revisionDelta":1,"turn":2}
+PASS A natural animated finish makes one canonical write for a real valid move
+COUNTS {"case":"B-second-fault","attempts":2,"successes":2,"rejections":0,"first":{"attempts":1,"successes":1,"rejections":0},"expectedTurn":3,"actualTurn":3}
+PASS B a hypothetical second-write quota fault is unused and the next valid input needs no focus recovery
+COUNTS {"case":"C-first-failure-playing","attempts":1,"successes":0,"rejections":1,"revisionDelta":0}
+PASS C first authoritative playing write failure preserves complete rollback
+COUNTS {"case":"C-first-failure-win","attempts":1,"successes":0,"rejections":1,"revisionDelta":0}
+PASS C first authoritative winning write failure preserves complete rollback
+COUNTS {"case":"D-win","attempts":1,"successes":1,"rejections":0,"gold":20,"stars":1,"screen":"game","victoryOpen":true}
+PASS D a real winning move commits one reward, terminal event and uncharged life settlement then shows victory
+COUNTS {"case":"E-greenBrush","attempts":1,"successes":1,"rejections":0,"commands":2,"usage":1,"stock":2}
+PASS E greenBrush real UI command debits once, retains its ID/history and strictly replays after visual finish
+COUNTS {"case":"E-colorKey","attempts":1,"successes":1,"rejections":0,"commands":2,"usage":1,"stock":2}
+PASS E colorKey real UI command debits once, retains its ID/history and strictly replays after visual finish
+COUNTS {"case":"E-first-failure-greenBrush","attempts":1,"successes":0,"rejections":1}
+PASS E greenBrush first-write failure rolls back command, inventory, board, life and local events atomically
+COUNTS {"case":"E-first-failure-colorKey","attempts":1,"successes":0,"rejections":1}
+PASS E colorKey first-write failure rolls back command, inventory, board, life and local events atomically
+COUNTS {"case":"F-pointer-terminal","attempts":2,"successes":2,"rejections":0,"presentationWrites":1,"terminalBefore":1,"terminalAfter":1,"legitimatePreferenceWrites":1}
+PASS F a synthetic pointer win keeps its local terminal event through a later legitimate preference write
+COUNTS {"case":"G-render-levels","attempts":2,"successes":2,"rejections":0,"first":{"attempts":1,"rejections":0},"expectedTurn":3,"actualTurn":3}
+PASS G optional finisher render failure at #levels cleans up without persistence or blocking the next move
+COUNTS {"case":"G-render-board","attempts":2,"successes":2,"rejections":0,"first":{"attempts":1,"rejections":0},"expectedTurn":3,"actualTurn":3}
+PASS G optional finisher render failure at #board cleans up without persistence or blocking the next move
+COUNTS {"case":"guards-rapid-cancel","attempts":2,"successes":2,"rejections":0,"afterReveal":1,"turn":3}
+PASS guards rapid input reveals one committed move and canceled callbacks cannot duplicate it
+COUNTS {"case":"guards-home","attempts":2,"successes":2,"rejections":0,"commandWrites":1,"legitimateActionWrites":1,"waves":1}
+PASS guards home during presentation preserves command and counts its legitimate write separately
+COUNTS {"case":"guards-pause","attempts":2,"successes":2,"rejections":0,"commandWrites":1,"legitimateActionWrites":1,"waves":3}
+PASS guards pause during presentation preserves command and counts its legitimate write separately
+COUNTS {"case":"guards-visibility","attempts":2,"successes":2,"rejections":0,"commandWrites":1,"legitimateActionWrites":1,"waves":1}
+PASS guards visibility during presentation preserves command and counts its legitimate write separately
+COUNTS {"case":"guards-motion","attempts":2,"successes":2,"rejections":0,"commandWrites":1,"legitimateActionWrites":1,"waves":1}
+PASS guards motion during presentation preserves command and counts its legitimate write separately
+COUNTS {"case":"guards-animation-fault-1","attempts":1,"successes":1,"rejections":0,"animationCalls":1}
+PASS guards animation API failure 1 retains the one committed move and releases input
+COUNTS {"case":"guards-animation-fault-2","attempts":1,"successes":1,"rejections":0,"animationCalls":2}
+PASS guards animation API failure 2 retains the one committed move and releases input
+F-01 presentation UI checks: 20/20 actual-app groups passed; 20 canonical-write observations.
+
+> hexrota@9.2.0 test:animation
+> node check-move-presentation.cjs && node check-board-reconcile.cjs && node check-animation-pipeline-ui.cjs
+
+PASS declared phases are the seven independent visual phases
+PASS real 1-wave move visits every resolved wave in order
+PASS real 2-wave move visits every resolved wave in order
+PASS real 5-wave move visits every resolved wave in order
+PASS real 10-wave move visits every resolved wave in order
+PASS plan is an independent deeply frozen own-data projection
+PASS wave projections use actual frames and exact unmultiplied score prefix
+PASS one/two-wave timing stays exact; longer sequences retain readable fall and sufficient watchdog
+PASS reduced motion settles once without any decorative adapter
+PASS motion preference changing between waves reveals final board without later waves
+PASS score and falling overlap without waiting for score before starting falls
+PASS swap adapter throw returns visual failure only
+PASS swap adapter rejection returns visual failure only
+PASS match adapter throw returns visual failure only
+PASS match adapter rejection returns visual failure only
+PASS clear adapter throw returns visual failure only
+PASS clear adapter rejection returns visual failure only
+PASS fall adapter throw returns visual failure only
+PASS fall adapter rejection returns visual failure only
+PASS refill adapter throw returns visual failure only
+PASS refill adapter rejection returns visual failure only
+PASS settle adapter throw returns visual failure only
+PASS settle adapter rejection returns visual failure only
+PASS pause adapter throw returns visual failure only
+PASS pause adapter rejection returns visual failure only
+PASS already aborted signal produces no effects
+PASS score rejection without an Error reason is still a visual failure
+PASS abort races an adapter that never settles and permanently retires later phases
+PASS late completion from retired attempt cannot render a later phase
+PASS wrong Attempt ID is rejected without effects
+PASS phase callback cancellation cannot trigger its adapter
+PASS throwing observer or identity guard fails safely
+PASS assistance with no frames uses a pulse and settles without score or swap semantics
+PASS malformed plan data rejects without evaluating accessors or serialization hooks
+Move presentation checks: 34 groups passed; real-engine 1/2/5/10-wave fixtures, immutable plans, exact phase order, visual faults and cancellation.
+PASS initial projection mounts once; ordinary selection/HUD redraws retain every real stone and static layer
+PASS reciprocal swap captures both original sources before relocating either stone
+PASS all four actual engine waves retain each survivor source identity and create only real refill stones
+PASS render boundary clears disposable opacity/visibility without cancelling unrelated animation objects
+PASS changed values replace only that gem while cell paint and static geometry stay in place
+PASS invalid and inconsistent transition metadata reject before any live mutation
+PASS new attempt reset and topology change intentionally replace old board ownership
+Board reconciliation checks: 7 groups, 4 real waves, 25 moving survivors and 16 new refill nodes; authoritative frames unchanged.
+PASS 1 real waves consume the resolved frame sequence and retain every survivor identity
+PASS 5 real waves consume the resolved frame sequence and retain every survivor identity
+PASS reduced motion settles the exact committed board without decorative phases or extra writes
+PASS invalid feedback uses no move pipeline, canonical write, RNG or reward
+PASS a rejecting native valid animation promise is observed and does not block the next command
+PASS a rejecting native invalid animation promise is observed and does not block the next command
+PASS a deferred completion from a previous Attempt ID cannot paint a newly opened tutorial
+PASS a visual adapter failure after a committed winning move keeps the earned result eligible
+PASS a real losing move presents defeat after settling once and repeating the result cannot spend another life
+PASS the first canonical write failure never starts a visual timeline or publishes a terminal success
+PASS an asynchronous Tavik reaction rejection cannot block gameplay or trigger persistence
+Animation pipeline actual-app checks: 11/11 groups passed.
+
+> hexrota@9.2.0 test:solvability
+> node check-dead-board-recovery.cjs && node check-solvability-hints.cjs && node audit-solvability-9-9.cjs --check
+
+PASS audit vectors are separate from all published level and snapshot identities
+PASS legal enumeration equals actual swap rules on adversarial settled playing boards without mutation
+PASS 128 exhausted permutations regenerate a legal settled board without charging progress
+PASS shuffle and stable construction consume their exact deterministic draw budget
+PASS already-playable recovery is an exact state and RNG no-op
+PASS a real legal move reaches the 32-wave safety reset with exact frozen output
+PASS the cap never fabricates points or layers from unpresented extra matches
+PASS safety-reset checkpoints restore replay clone and the next move exactly
+PASS a normal post-swap dead board recovers within the command and resumes to a real win
+PASS terminal guards reject all swaps without consuming RNG or returning hints
+PASS invalid indices non-neighbors equal gems and no-match swaps never charge state
+PASS impossible topology stays bounded and restores values RNG and every progress field
+PASS color-key 32-wave preview is pure and applies one inventory command without spending a turn
+PASS assisted recovery restores command history and rejects duplicate charges
+Dead-board recovery audit checks: 14 groups; actual 128-shuffle fallback, 32-wave classic/assisted resets, replay, invalid/terminal guards and bounded unsupported topology.
+PASS all40 published variants keep search decisions legal, deterministic and observational under three work budgets
+PASS explicit node budgets remain deterministic across very different clocks and maxMs options
+PASS one remaining move distinguishes a tiny uncertain budget from a replayed winning continuation
+PASS a depth-limited heuristic stays explicitly uncertain even when no node/time early-exit flag is set
+PASS time exhaustion reports a non-guaranteed legal suggestion and does not consume authoritative RNG
+PASS terminal won and lost snapshots never offer another hint
+PASS off-route visible policies cannot read real RNG, history, routes, clone or snapshot
+PASS assisted hints strip swap-only certificates and preserve command, usage, bonus and RNG state
+Solvability hint audit regressions: {"groups":8,"failed":0,"variantSearchStates":40,"trueOffRouteStates":40,"budgetDecisions":120,"clockComparisons":40,"visibleHiddenComparisons":320,"assistedSearches":8,"guaranteesReplayed":1,"sources":{"proven_route":0,"search_win":1,"heuristic":331,"null":2}}
+{"success":true,"summary":{"variants":40,"winningCertificates":80,"certifiedCheckpoints":600,"independentPrefixReplaySwaps":2709,"certificateReshuffles":0,"certificateMaxCascadeWaves":16,"originalLegacyRoutes":10,"observableEpisodes":1280,"observableWins":341,"observableLosses":939,"observableMoves":11767,"offRouteStates":11105,"strictOffRouteRestores":11767,"legalVisibleAgreementChecks":11767,"reshuffles":0,"attemptsWithRepeatedReshuffles":0,"maxConsecutiveReshuffles":0,"terminalLostZeroLegal":0,"maxCascadeWaves":11,"cascadeLimitMoves":0,"lastMoveVisits":1044,"lastMoveUnwinnableVisits":907,"lastMoveUniqueStates":776,"lastMoveUniqueProvenUnwinnable":670,"hintProbes":160,"hintSources":{"proven_route":0,"search_win":13,"heuristic":147},"truncatedHints":0,"guaranteedHints":13,"solverProbes":40,"solverActualSearchExpansions":49325,"solverRequestedBudgetExceeded":0,"solverProvenWinnable":36,"solverUnknown":4,"solverSearchClassifications":{"proven_winnable":36,"proven_unwinnable":0,"unknown":4},"solverTerminationReasons":{"solution_found":36,"node_budget_exhausted":0,"depth_limit":0,"beam_pruned":4,"search_exhausted":0,"invalid_prefix":0},"solverNodeBudgetCutoffs":0,"solverDepthLimited":0,"solverBeamPruned":39,"solverExhaustive":0},"elapsedMs":105469,"report":"exactly reproduced"}
+
+> hexrota@9.2.0 test:rescue-safety
+> node check-rescue-safety.cjs && node check-rescue-receipts-safety.cjs && node check-rescue-safety-ui.cjs
+
+PASS the exact PR29 source fixture and both historical snapshots remain frozen
+PASS the archived winning and losing routes still have their actual distinct outcomes
+PASS new dead-board rescue commands reject without changing any snapshot field
+PASS preview and clone apply the live policy without consuming a rescue or RNG
+PASS historical assisted-v1 restore preserves the original bad checkpoint verbatim
+PASS a historically successful rescue remains duplicate and never creates ten moves
+PASS forged historical checkpoints do not inherit historical trust
+PASS public options extra arguments and imported history cannot enable a replay bypass
+PASS an exception inside historical engine replay cannot leak live authorization
+PASS ordinary playable loss still receives exactly five moves with no reshuffle
+PASS winning and active attempts cannot request extra moves
+PASS all additional native-harness cases have the expected rejection or preserved replay
+Rescue safety: 12 healthy groups; 22 supplemental native-harness cases; historical v1 bytes preserved, current dead-board requests rejected.
+Rescue retained-receipt safety passed: {"groups":10,"comparisons":83,"unclaimedCompletions":129,"processedCompactionRecords":140,"profileIO":"not mocked; tested by host/browser suites"}
+✓ R-01 final real swap rejects new ad and Gold before any provider, command or source debit
+✓ historical earned unpublished delivery reloads as a free claim on an actual published playable loss
+✓ verified R-01 earned right is stored without moves, payment, settlement or quota and survives review/navigation/reload
+✓ unverified, cancelled and wrong-attempt proofs cannot become retained rights or new economic state
+✓ receipt-only write failure keeps memory proof until explicit retry; durable hold then permits menu and reload
+✓ normal eligible grant failure never falls through to a second automatic receipt write
+✓ a late processed ad callback cannot release another attempt's unsaved earned receipt
+✓ historical v1 rescued R-01 checkpoint restores byte-for-byte without reshuffle, refund or second grant
+Rescue safety UI: 8 real-app groups passed. R-01 is an unpublished test-local legacy alias; no physical device or real ad SDK is claimed.
+
+> hexrota@9.2.0 test:board-validation
+> node check-board-validation.cjs && node check-board-recovery.cjs && node check-board-recovery-ui.cjs
+
+PASS valid structural configurations preserve all authored data without RNG draws or recovery
+PASS malformed structural configurations reject without touching any supplied field
+PASS the validator accepts frozen data and preserves duplicate-palette weighting and order
+PASS component opening properties remain separate from publication acceptance
+PASS all original tutorials current variants and archived-version configurations pass structural validation
+PASS legacy snapshot restore does not impose current publishing requirements
+Board structural validation checks: {"groups":6,"validConfigurations":13,"invalidConfigurations":101,"wireCases":74,"publishedAndArchivedConfigurations":92,"historicalRestores":4,"failed":0}. Core acceptance is not a published-board or solvability guarantee.
+PASS the original R02 and healthy golden fixtures are not rewritten
+PASS singleton palettes remain constructible but recovery rejects before drawing or changing state
+PASS one-cell hint and terminal component constructors are not publication-gated
+PASS an empty palette fails construction without consuming gameplay RNG
+PASS invalid current values reject both recovery entries without touching any field
+PASS impossible topology still exhausts bounded work and restores original values and RNG
+PASS an unexpected fill exception rolls back helper values RNG and all progress
+PASS the 404-draw healthy fallback and following no-op remain unchanged
+PASS false is never returned for an unsettled board even if geometric swaps exist
+PASS two and multiple value palettes preserve deterministic successful recovery
+PASS normal recovery and 32-wave reset still replay and resume with their frozen outcomes
+PASS native harness cases compare full success and failure state including repeated attempts
+Board recovery safety: 12 groups; 17 additional native recovery comparisons; R02 preflight and bounded failures preserve full state.
+PASS actual app before recovery-helper exception rolls back every domain and permits explicit retry and reload
+PASS actual app after recovery-helper exception rolls back every domain and permits explicit retry and reload
+PASS pure assisted apply before recovery fault preserves source, command identity and inventory usage
+PASS pure assisted preview before recovery fault preserves source, command identity and inventory usage
+PASS pure assisted clone-apply before recovery fault preserves source, command identity and inventory usage
+PASS pure assisted apply after recovery fault preserves source, command identity and inventory usage
+PASS pure assisted preview after recovery fault preserves source, command identity and inventory usage
+PASS pure assisted clone-apply after recovery fault preserves source, command identity and inventory usage
+PASS pure color-key apply before 32-wave recovery fault cannot consume source inventory usage
+PASS pure color-key preview before 32-wave recovery fault cannot consume source inventory usage
+PASS pure color-key clone-apply before 32-wave recovery fault cannot consume source inventory usage
+PASS pure color-key apply after 32-wave recovery fault cannot consume source inventory usage
+PASS pure color-key preview after 32-wave recovery fault cannot consume source inventory usage
+PASS pure color-key clone-apply after 32-wave recovery fault cannot consume source inventory usage
+{"groups":14,"actualAppGroups":2,"pureAssistedWrapperGroups":12,"results":[{"case":"actual-app-before","faultInjected":true,"trace":{"position":"before","entry":{"version":4,"rulesVersion":"classic-v4","values":[1,2,2,1],"layers":[1,0,0,0],"score":3,"movesLeft":1,"turn":1,"rngState":1594013438,"history":[[0,1]]},"nativeCalled":false},"canonicalWritesOnFailure":0,"canonicalWritesOnExplicitRetry":1,"reload":"fresh actual app mount with the canonical profile","sameAttempt":true,"resourcesPreserved":true},{"case":"actual-app-after","faultInjected":true,"trace":{"position":"after","entry":{"version":4,"rulesVersion":"classic-v4","values":[1,2,2,1],"layers":[1,0,0,0],"score":3,"movesLeft":1,"turn":1,"rngState":1594013438,"history":[[0,1]]},"nativeCalled":true,"exit":{"version":4,"rulesVersion":"classic-v4","values":[3,3,1,3],"layers":[1,0,0,0],"score":3,"movesLeft":1,"turn":1,"rngState":3994976780,"history":[[0,1]]},"returned":true},"canonicalWritesOnFailure":0,"canonicalWritesOnExplicitRetry":1,"reload":"fresh actual app mount with the canonical profile","sameAttempt":true,"resourcesPreserved":true}],"testOnlyLegacyAlias":true,"physicalDeviceTested":false,"nativeCSharpHostFaultInjected":false}
+Board recovery UI: 14 groups passed; actual real-command rollback and pure clone/preview/apply conservation. Booster UI exception handling is not changed or claimed.
+
+> hexrota@9.2.0 test:solver-integrity
+> node check-solver-budget.cjs && node check-hint-certificates.cjs
+
+PASS exact A-01 fixture spends one node on one terminal loss, then stops unknown
+PASS all four terminal losses fit exactly and prove current remaining-move state unwinnable
+PASS the winning child at the exact node boundary is counted and returned
+PASS zero nodes does not expand a child; zero depth also reports its omitted work
+PASS invalid explicit budgets reject before any swap, without coercion or silent defaults
+PASS depth-limited search stays unknown even when all first children were expanded
+PASS a beam-pruned search stays unknown after its retained frontier is entirely lost
+PASS two-ply exhaustive proof includes every one of the 105 real children
+PASS termination precedence retains simultaneous node, depth and beam flags
+PASS terminal prefixes replay outside the budget and invalid continuations cannot prove anything
+PASS frozen input, prefix aliases and existing game state stay untouched
+PASS all 40 published variants use deterministic legal traversal under strict small budgets
+Offline solver budget regressions: {"groups":12,"failed":0,"observedSearches":260,"actualChildSwaps":2823,"losingChildren":131,"winningChildren":2,"playingChildren":2690,"prefixReplaySwaps":169,"winningRoutesReplayed":4,"publishedVariants":40,"invalidOptions":28}
+PASS all 80 published routes preserve every previous route hint field and terminal null
+PASS the ten original published solution paths still offer actual winning guarantees
+PASS H-01 forged one-move routes remain catalog-shaped but cannot claim a winning certificate
+PASS malformed route fields, sparse paths and bad later swaps safely use the same fallback
+PASS a malformed candidate does not hide a later valid winning continuation
+PASS returned arrays and an in-place route mutation cannot reuse an old guarantee
+PASS the same certificate is checked again after the current deterministic future changes
+PASS at most 64 source candidate slots are inspected, including malformed entries
+PASS 512 route-pair copies bound actual proof swaps before the normal search budget
+Hint certificate regressions: {"groups":9,"failed":0,"publishedRoutes":80,"publishedStates":680,"publishedGuarantees":600,"publishedVerificationSwaps":2665,"maxPublishedVerificationSwaps":13,"legacyRoutes":10,"forgedCatalogCases":1,"malformedCases":87,"mutationCases":7,"capCases":11,"maxUntrustedVerificationSwaps":512}
+
+> hexrota@9.2.0 test:idle-hints
+> node check-idle-hints.cjs && node check-idle-hint-view.cjs && node check-idle-obstacles.cjs && node check-idle-hints-v5-ui.cjs
+
+Idle hint checks passed: 58 groups; controlled clocks, rearm/quota/stale guards and actual-engine visible-only ranking.
+PASS one 900ms approach moves only the matching 4 toward the untouched 3; other matching 4s pulse in place
+PASS paint is copied before hiding; exact inline opacity, priority and other original styles return
+PASS custom duration controls single matching-source approach and cleanup
+PASS custom duration controls static outline lifetime
+PASS invalid duration leaves an active cue untouched; zero duration immediately cleans without new animation or timer
+PASS large safe-integer duration uses bounded cleanup timers without overflowing browser delay
+PASS old cleanup and delayed timer/rejection cannot remove a replacement cue
+PASS reduced motion uses matching-only static outlines without hidden originals or movement
+PASS missing animation API uses matching-only static outlines without hidden originals or movement
+PASS animation throw after a partial start restores every original and cancels started work
+PASS native animation rejection retires only decoration and restores originals
+PASS visibility removes all temporary paint and listeners immediately
+PASS pagehide removes all temporary paint and listeners immediately
+PASS motion removes all temporary paint and listeners immediately
+PASS resize removes all temporary paint and listeners immediately
+PASS orientationchange removes all temporary paint and listeners immediately
+PASS blur removes all temporary paint and listeners immediately
+PASS unexpected real-board reconciliation removes cue ownership without rebuilding survivors
+PASS cleanup preserves a later visual owner style and detached original safety
+PASS invalid geometry rejects without residual mutation; destroy is permanent and idempotent
+PASS frozen focus descriptor deduplicates only the intended 4s and leaves full-wave 3s and crates unpainted
+PASS cheap brightness stays below only the focused numerals with bounded opacity and no filters
+PASS show copies focus fields so later caller mutations cannot redirect the matching group or old timer
+PASS reduced motion outlines only focused 4s without touching 3s or crates
+PASS missing animation outlines only focused 4s without touching 3s or crates
+PASS focus animation throw and rejection restore every selected source and retire all owned work
+PASS missing focus or invalid selected sources fail closed without disturbing a valid cue
+PASS real board paint changes retire a focused cue while owned-decoration changes do not self-cancel
+PASS three-fours-only 3↔4 fixture motion leaves the nonfocused endpoint and adjacent crate byte-exact
+PASS three-fours-only 3↔4 fixture static leaves the nonfocused endpoint and adjacent crate byte-exact
+PASS double-result-fours-focus 3↔4 fixture motion leaves the nonfocused endpoint and adjacent crate byte-exact
+PASS double-result-fours-focus 3↔4 fixture static leaves the nonfocused endpoint and adjacent crate byte-exact
+PASS larger-threes-group-focus 3↔4 fixture motion leaves the nonfocused endpoint and adjacent crate byte-exact
+PASS larger-threes-group-focus 3↔4 fixture static leaves the nonfocused endpoint and adjacent crate byte-exact
+Idle hint view checks: 34 groups passed; original identities/geometry/targets, one-way matching-only scale/group limits, static reduced motion, cancellation and visual faults.
+PASS descriptor API exists and all ten real flow routes select legal immutable pure deterministic cues
+PASS all six gated development routes also produce accurate source mappings and actual box hits
+PASS single authored opening reports its visible matching source gems and only neighbouring damaged crates
+PASS a cue uses no RNG history route solution or mutation methods even when getters throw
+PASS inactive null cells non-neighbours and malformed supplied pairs never become selectable
+PASS invalid matching callback output fails closed instead of highlighting inactive or duplicate gems
+PASS forged masks impossible HP coordinates and region definitions reject without gameplay changes
+PASS gated masks inconsistent with broken dependencies and overlapping regions fail closed
+PASS v5 remaining required crates keep cues eligible even when all ground and score objectives are met
+PASS v4 null stones stay invalid and previous-pair avoidance remains transient and deterministic
+PASS sparse v4 and v5 visible values or ground layers fail closed without matching or RNG
+PASS sparse supplied pairs and matching results return null without changing canonical state
+PASS arrays cannot impersonate v5 coordinate obstacle blocker or region records
+PASS canonical 3 versus 4 fixtures focus only the same-value result and its one moving stone
+PASS equal double-results prefer the larger number while a larger group takes priority
+PASS a visual descriptor rejects unrelated or undersized match groups while legacy pair ranking stays compatible
+Obstacle idle hints: 16 groups; 129 flow-route prefixes and 27 gated-route prefixes; 129 swapped-source mappings, 40 real first-wave crate-hit cues.
+PASS v5 null/closed cells receive a valid immutable passive descriptor with no command or save
+PASS one frozen descriptor is repeated at11800 and13600 without another chooser or write
+PASS visible HP regions and active cells participate in the host fingerprint and forged delivery is ignored
+PASS all direct input captures cancel visible and quiet-cycle work immediately
+PASS pause Home resize and attempt replacement retire timers and stale identities
+PASS real persisted opening rearms once and new guidance uses the opened current board
+PASS a canonical legal-scan exception cannot leave authoritative values temporarily swapped
+PASS a canonical-write failure rolls back the actual opening and never rearms
+Mounted v5 idle guidance: 8 groups; real app/controller, isolated canonical store, immutable source descriptors, stale/input/rollback/reload coverage. No native layout or physical-device claim.
+
+> hexrota@9.2.0 test:obstacles
+> node scripts/generate-obstacle-levels.cjs --check && node check-obstacles.cjs
+
+Obstacle catalog wrapper and all 6 winning routes verified.
+PASS versioned standalone development catalog matches generated browser wrapper
+PASS all three complete ground objectives have two different certified winning openings
+PASS HP1 breaks with one hit and its cell receives a real spawned or falling tile
+PASS same wave with multiple adjacent matched cells damages a box only once
+PASS HP2 takes two separate wave hits and opens its region on the second
+PASS real cascade waves hit reinforced box again during one resolved move
+PASS region stays closed until every required box has actually broken
+PASS a box inside a closed region cannot be damaged before exposure
+PASS closed and blocked selection or swap leaves every durable field and RNG intact
+PASS barriers split q gravity and survivors never cross a healthy box
+PASS missing void cell splits a column instead of teleporting survivors
+PASS breaking the barrier merges only contiguous active segments before gravity
+PASS opening a region creates a natural same-turn chain in the newly active cells
+PASS every wave uses one hit per box, valid segmented falls and exact stone score
+PASS replay restore clone and future results match at every certified prefix
+PASS strict v5 snapshots reject forged HP regions null stones RNG and history
+PASS dead-board recovery preserves inactive nulls boxes regions and progress
+PASS required boxes and closed target regions prevent early victory
+PASS bad coordinates overlap dependencies unreachable boxes and inactive initial values reject
+PASS classic snapshots retain v4 contract and reject all null initial stones
+PASS real chipped HP2 and terminal loss checkpoints resume and replay exactly
+PASS real v5 frames visit hit break unlock before clear fall refill and cascade
+PASS obstacle visual plan deep copies and freezes HP region and damage projections
+PASS reinforced first hit skips break unlock and later ordinary waves skip all obstacle phases
+PASS classic visual projections still reject null stones without the v5 contract
+PASS cancelling at real obstacle phases leaves committed result restore and replay unchanged
+Obstacles 9.12: 26 groups; 3 levels, 6 certified routes, 27 replay/restore/clone prefixes; real v5 visual phases and cancellation.
+
+> hexrota@9.2.0 test:column-flow
+> node scripts/generate-campaign-flow-levels.cjs --check && node check-column-flow.cjs && node check-flow-campaign.cjs
+
+L6 flow catalog wrapper and winning certificates verified.
+PASS revised L6 preserves exact original axial geometry ground layers and numbered palette
+PASS a solid r0 crate row blocks every lower q column at startup
+PASS one broken hole opens only its physically connected column and leaves side lanes empty
+PASS unrelated box destruction is not a remote region key
+PASS a reinforced hole remains blocked after its first distinct hit
+PASS descriptive lower region becomes open only when all its cells are physically reachable
+PASS flow gravity keeps every survivor in its q and never crosses closed or absent cells
+PASS two different real openings lead to complete winnable L6 boards
+PASS real authored play opens partial lower lanes while another healthy crate keeps its lane closed
+PASS snapshot restore replay clone preserve each flow activation and next resolved move
+PASS corrupt forged activation masks and incompatible flow versions reject strictly
+PASS invalid source coordinates duplicate sources and key-based flow regions reject
+PASS flow recovery leaves inactive cells null and activation ground and HP unchanged
+PASS source paths reject interior sources same-q aliases void gaps and remote region keys
+PASS the first published opening exposes exactly three lanes and keeps both remaining lanes null
+PASS newly opened lane produces a natural chain during the same physical opening move
+Column flow 9.12: 16 groups; original L6 geometry, independent physical openings, winning routes and strict persistence.
+PASS flow mode requires the explicit query and never activates on ordinary URLs
+PASS all logical storage operations stay inside the development prefix
+PASS canonical store retains atomic revision and mirrors through the same adapter
+PASS development reset cannot remove production or legacy records
+PASS development and ordinary boot use different real writer-lock names
+PASS nine unchanged campaigns delegate every classic variant and initial snapshot
+PASS flow attempt uses numeric six and versioned deterministic metadata
+PASS catalog validates independent real wins and copies its immutable override
+PASS flow checkpoint restore verifies history at every prefix of both winning routes
+PASS missing and forged flow checkpoints or identities reject without changing inputs
+Campaign flow adapter: 10 groups; isolated storage/CAS/reset/writer locks, 36 delegated classic variants, 2 real flow routes / 14 replayed prefixes.
+
+> hexrota@9.2.0 test:large-flow
+> node scripts/generate-campaign-flow-levels-v2.cjs --check && node check-large-flow.cjs && node check-large-flow-campaign.cjs
+
+Five variable-shape flow boards in a 9x9 maximum canvas, wrapper and all 10 winning routes verified.
+PASS v2 publishes only levels 6 through 10 while first five classic levels retain original data
+PASS 9x9 is the maximum canvas and each authored shape has real void slots outside its cells
+PASS ground objectives count every real closed cell and exclude every omitted coordinate
+PASS source paths are contiguous q columns and the complete authored barrier separates upper and lower areas
+PASS all neighbor pairs use six axial directions rather than square-grid adjacency
+PASS every level has two genuine wins starting with independent real swaps
+PASS both published first moves open partial physical lanes while healthy crates keep their lower cells empty
+PASS every wave preserves per-box one-hit damage and physically connected column gravity
+PASS opened lower cells can participate in natural cascade waves of the same move
+  verified 129 real certified prefixes
+PASS every certified prefix restores clones replays and produces identical next waves RNG and activation
+PASS forged activation ghost-cell and HP checkpoints fail replay validation
+PASS closed selection illegal indices and void-coordinate neighbors never spend moves or RNG
+PASS dead-board recovery changes no geometry HP objectives or closed-cell values
+PASS archived v1 L6 still loads its original 23-cell version and both winning routes
+Large flow canvas: 14 groups; five variable authored shapes inside81slots, all10winningroutes, everyprefixrestoreclone and strict void/physical-flow checks.
+PASS v2 is current by declared version order independently of override insertion order
+PASS default new attempts for six through ten use the five actual v2 cell counts
+PASS first five campaign IDs keep all twenty classic variants and start/restore behavior
+PASS explicit v1 pin selects archived six while seven through ten start their original classic boards
+PASS archived v1 six restores both original seven-move paths after v2 becomes current
+PASS earlier classic seven through ten variants and original snapshots restore unchanged
+PASS v1 and v2 snapshot/identity mixtures cannot reinterpret a saved board
+PASS missing per-level archives and unknown version pins fail closed
+PASS review query pin is explicit and never changes the shared development namespace
+Large campaign registry: 9 groups; five current variable shapes, twenty delegated classic variants, 5 v2 prefixes, 14 archived v1 prefixes, 20 earlier classic restores; strict version isolation and unchanged profile namespace.
+
+> hexrota@9.2.0 test:materials
+> node scripts/generate-material-alpha.cjs --check && node check-materials.cjs && node check-material-alpha.cjs && node check-material-hints.cjs && node check-material-view.cjs && node check-materials-ui.cjs
+
+Material alpha A/B/C, browser wrapper and six actual winning routes verified.
+PASS versioned A B C catalog and browser wrapper expose only three alpha overrides
+PASS all six alpha routes really win with their declared AND objectives and persisted status
+PASS material data copies preserve all certified board geometry numbers RNG and physical flow rules
+PASS each material source grants exactly once and cumulative counts derive only from emitted events
+PASS wood appears on actual crate destruction and HP2 first damage grants no wood
+PASS nails require matched active cells and closed material cells grant nothing before opening
+PASS a repeated match on a two-layer nail cell does not grant a second nail
+PASS separate same-wave source IDs at the same cell grant their authored amounts once each
+PASS matched-cell grants precede crate-break grants deterministically in a mixed wave
+PASS disabled score and ground objectives do not block a material-only victory
+PASS unfinished material targets block early win and a true zero-move failure persists lost status
+  52 canonical material prefixes verified
+PASS all certified prefixes restore clone replay and next-wave material events exactly
+PASS forged counts collected flags versions status and ghost sources fail strict replay restore
+PASS invalid definitions and invalid source claims reject before any gameplay starts
+PASS invalid impossible duplicate or empty objective configurations reject
+PASS recovery and invalid input cannot mint material grants or change source flags
+PASS v6 can retain score-ground objectives with zero material definitions and no sources
+PASS existing v4 and v5 checkpoints keep their original versions and have no material authority
+PASS an authentic HP2-only hit grants zero wood and its later break grants exactly one
+PASS a real cell with no possible axial match line cannot claim token supply
+Material objectives 9.14: 20 groups; real A/B/C wood nail mixed wins, first-wave source grants, immutable replay state and strict versioned validation.
+PASS explicit material alpha query and version use their own frozen scope
+PASS storage prefixes every operation and never touches classic or flow sentinels
+PASS three full material definitions are separately archived immutable and version checked
+PASS all six independently opened certified routes checkpoint restore replay and win with v6 snapshots
+PASS first five and levels nine and ten preserve classic selection and saves exactly
+PASS material IDs reject classic flow unknown and missing version identities without fallback
+PASS invalid selection and forged or duplicate material attempt identity reject
+PASS publication requires actual complete wins and two distinct first swaps
+PASS mutable caller data cannot alter frozen archive identity geometry or material objectives
+PASS v5 and forged v6 checkpoints cannot enter the material archive
+PASS publication validates original material source claims before JSON copying can discard invalid keys
+Material alpha catalog: 11 groups, 3 versioned levels, 6 proven routes and 52 strict checkpoint prefixes; classic and flow storage scopes remain separate.
+PASS v6 material-only goal remains eligible after the score and every ground layer are complete
+PASS only enabled objectives determine terminal and exact-score overshoot eligibility
+PASS empty obstacle/material collections support explicitly enabled score or ground objectives
+PASS a direct first-wave token can outrank an unrelated crate hit using only visible goal progress
+PASS HP1 crate drops rank immediately while HP2 damage does not predict a future drop
+PASS first-wave grant expectations match actual canonical v6 swaps and never advance the live checkpoint
+PASS material benefit caps at remaining goal demand and ignores irrelevant or already collected units
+PASS matched-cell sources belong to destination cells rather than the moved gem source
+PASS distinct source IDs sharing a matched cell or crate aggregate without duplicate collection
+PASS a closed token is valid authored data but cannot be selected matched or already collected
+PASS matched-cell supply on a real coordinate without any possible axial triple fails before scanning
+PASS invalid source kinds coordinates blocker bindings quantities and strict record fields fail closed
+PASS forged counters collection flags and objective records fail closed before matching
+PASS sparse arrays and arrays impersonating material records reject without scanning
+PASS the same frozen focus repeats deterministically without commands RNG or serialized state changes
+PASS v4 and v5 callers never read new material or objective fields
+Material idle hints: 16 groups; visible immediate gains, enabled-objective eligibility, strict source/counter validation and unchanged focused presentation.
+PASS wood badge stays inside its crate and cell nails never enter the moving gem or obscure its numeral
+PASS closed, temporarily empty and already collected cell tokens are invisible
+PASS distinct materials co-located in one crate aggregate into one buttonless badge without losing source IDs
+PASS HUD displays exact committed counts and optional goals without changing any gameplay state
+PASS score and ground only v6 definitions create no material badges or material HUD
+PASS actual v6 wave material projections and events are independent deeply frozen data
+PASS mixed v6 watchdog reserves collection and obstacle waits in addition to normal render slack
+PASS real mixed collection order is match then cell collection, damage, break, crate collection and unlock
+PASS cancelling TOKEN_COLLECT stops future adapters without changing the already committed result
+PASS cancelling CRATE_COLLECT stops future adapters without changing the already committed result
+PASS collectTokens visual failure cannot change the committed snapshot
+PASS collectCrates visual failure cannot change the committed snapshot
+PASS reduced motion settles the committed result without material effect adapters
+PASS v6 moving hint keeps material paint fixed and preserves original markers byte-exact
+PASS v6 static hint keeps material paint fixed and preserves original markers byte-exact
+PASS invalid quantities, source duplicates and cell coordinates reject the visual plan
+Material view/presentation checks: 16 groups passed; real committed waves, anchored markers, counter projections, event order and cancellation.
+PASS normal material mode uses isolated storage and cell-owned markers without forged completion
+PASS HP2 actual first damage grants zero wood and the second break grants exactly one
+PASS matched-cell nail grants once on a still-layered cell and reload cannot collect it again
+PASS all six authored A B C routes win through real app counters and strict reload
+PASS mixed token then crate phases paint only already committed immutable events
+PASS canonical write rejection restores counts flags board and HUD without material effects
+PASS pause during collection cancels owned flights while retaining the exact committed material result
+PASS optional material painter failure reveals committed result and reduced motion starts no flights
+PASS real v6 passive hints preserve nullable state material badges counters saves and repeated focus identity
+PASS T1 T2 retain historical teaching counters through every real guided move without v6 material authority
+Mounted material UI: 10 groups; actual app, six real wins, source dedup, atomic rollback, visual cancellation and unchanged teaching counters. No native-layout or physical-device claim.
+
+> hexrota@9.2.0 test:story
+> node scripts/generate-story-content.cjs --check && node check-story.cjs && node check-story-events.cjs && node check-story-content.cjs && node check-story-alpha.cjs && node check-story-presentation.cjs && node check-story-profile.cjs && node check-story-ui.cjs
+
+Story content source, existing scene assets and browser wrapper verified.
+Story reducer: 52 tests passed; immutable deterministic events, bounded queues, choices, proof restoration and strict data validation.
+PASS actual catalog identities produce one immutable start fact without gameplay or schema rewrites
+PASS chapter context is copied frozen unique and tied to the six-field attempt identity
+PASS all six winning routes preserve every checkpoint and append the exact same canonical prefix
+PASS canonical replay constructs one fresh engine and runs history once without restore recursion
+PASS event order and quantities mirror actual per-wave token damage break crate region and goal results
+PASS HP2 damage creates neither a break nor wood and a later genuine break creates its source once
+PASS material goals fire once after real threshold crossing and preserve the committed cumulative total
+PASS canonical losses are derived from an actual exhausted move and terminal follows the last wave
+PASS explicitly identified v4 and v5 boards use the same canonical projection without material fields
+PASS metadata mismatch extra fields arrays and final newlines cannot authorize canonical facts
+PASS forged checkpoints reject altered state history identity and non-JSON null aliases without mutation
+PASS adapter outputs ignore analytics clocks random helpers and cannot mutate the real engine or frozen data
+PASS a canonical fact stream is bounded and overflow cannot mutate the live checkpoint or return a partial stream
+Canonical story events: 13 groups; 6 complete routes / 52 checkpoint prefixes / 204 actual waves / 384 complete-route facts; strict replay, order, source totals, bounds and immutable gameplay.
+PASS canonical content and generated browser wrapper share three validated immutable chapters
+PASS Tavik uses concise Turkish lines existing poses and only approved existing coop scene assets
+PASS A and B react to their first real material collection and close on their own material goal
+PASS C observes both real materials before its two-way narrative choice and both goals before its ending
+PASS gameplay binding validation rejects unknown levels materials sources regions and impossible event filters
+PASS binding filters accept real source and region IDs and never alter canonical level definitions
+PASS all six real winning routes reach their once-only authored endings with both C branches and skip
+PASS first-hit HP2 damage has no first-wood story reaction until actual collection
+PASS choice and goal endings are absent before the committed material conditions exist
+PASS restoring authored scenario progress rejects forged branch ending cursor and content identity
+Story content: 10 groups, 10 authored route/choice scenarios, 116 real gameplay prefixes and 58 narrative-only actions.
+PASS story alpha requires its exact explicit query and exposes a frozen independent scope
+PASS every story storage operation stays outside normal material and flow profiles
+PASS story UI scenario scope reuses all material level definitions without renaming their identities
+PASS all ten numbered game selections remain identical to the material review catalog
+  52 unchanged gameplay checkpoints verified
+PASS all six unchanged gameplay routes retain every canonical snapshot and outcome in story scope
+PASS story wrapper preserves material archive rejection of forged versions and invalid identities
+PASS story cannot construct a catalog without the original material catalog dependency
+Story alpha scope: 7 groups; isolated storage and exact unchanged material A/B/C gameplay identities.
+PASS presentation exposes only render clear and destroy and has no gameplay persistence or clock authority
+PASS render fills safe text and existing assets while the actual StateEffects owner opens it non-modally
+PASS only an explicit current connected control emits a frozen copied action token
+PASS choice cards contain only authored choices and explicit skip with no default acknowledgement
+PASS speaker body and choice strings remain literal text rather than new DOM or script
+PASS detached and deliberately reinserted old buttons cannot deliver a replacement instance
+PASS clear removes native actor listeners and controls but never opens closes or acknowledges a dialog
+PASS queued native close from an earlier StateEffects opening cannot clear a reopened card
+PASS out-of-order native image decode never paints an old idle or replacement actor
+PASS late native success failure and scene error after replacement or destroy cannot resurrect stale art
+PASS host reduced-motion preference reaches the actual native Tavik actor
+PASS platform reduced-motion preference reaches the actual native Tavik actor
+PASS native decode failure or unavailable actor API produces only an existing static fallback portrait
+PASS invalid scene paths are hidden while an old scene failure cannot hide a new approved asset
+PASS failed host callbacks cannot advance the view or prevent later explicit cleanup and retry
+PASS destroy is idempotent, retires all pending native work and permanently rejects rendering
+PASS invalid projections preserve a valid active card and all actions retain a 44px CSS target
+Story presentation: 17 groups; real transient StateEffects and TavikMotion, stale controls/decodes, reduced motion, cleanup, approved assets and immutable board/storage. JSDOM is not native layout or a physical phone.
+PASS new empty story profiles and old nonstory boards migrate without inventing narrative progress
+PASS valid A B C story states restore only against their matching canonical attempts and facts
+PASS existing story boards require a state and a matching attempt rather than silent migration
+PASS story profile versions exact keys unknown stages and noncanonical index strings fail closed
+PASS foreign attempts chapters or level identities cannot reuse another stored narrative state
+PASS forged active pending acknowledged and choice records reject journal replay
+PASS lagged leading extra and altered external facts cannot become profile authority
+PASS corrupted gameplay snapshots cannot validate otherwise well-shaped story state
+PASS an exact new attempt requires fresh story context and cannot inherit old dialogue acknowledgements
+PASS actual SessionStore writes valid story board and energy atomically then reloads every state
+PASS rejected SessionStore staged story commands leave every storage byte revision and memory unchanged
+PASS a forged well-typed material event staged through the reducer still cannot cross SessionStore
+PASS normal mode rejects any story payload on initial load and commit without modifying its profile
+PASS corrupt canonical or mirror story loads fail without rewriting or deleting the retained data
+PASS accessor-backed story envelopes or state slots reject without evaluating their getters
+PASS actual legacy mirror migration adds only an empty story profile when no story board exists
+PASS same-revision backing story corruption cannot be overwritten by an already-open valid writer
+Story profile authority: 17 groups; canonical adapter and actual SessionStore load/commit reject forged or missing narrative proof without storage mutation.
+PASS story review starts the unchanged material board and one canonical intro in isolated storage
+PASS explicit intro acknowledgement persists once and a detached old button cannot acknowledge again
+PASS all six real A B C routes retain exact gameplay while explicit story choices follow both branches
+PASS failed move commit restores both gameplay and the observed story prefix with no new dialogue
+PASS failed acknowledgement commit retains the exact active instance and retries without advancing gameplay
+PASS failed choice commit records neither branch and a retry selects exactly one real response
+PASS reload restores a pending choice and acknowledged journals without duplicate facts or reactions
+PASS skipping the authored choice follows its common next node without fabricating a selection
+PASS pause background and Home close only the story view and reject callbacks from its previous opening
+PASS new attempt invalidates detached callbacks even when the same authored intro is shown
+PASS explicit progress reset clears story and boards only within the story profile namespace
+PASS normal-motion cancellation preserves committed story facts and presents its queued dialogue only after settling
+PASS a terminal story ending can pause and resume before its explicit acknowledgement opens victory
+PASS the explicit full-data reset atomically clears story defaults and revokes stale callbacks only in its namespace
+PASS full T1 T2 teaching routes keep historical v4 counters and produce no chapter state
+Mounted story application: 15 groups; six real winning routes, canonical full-prefix proof, explicit narrative actions, atomic rollback, strict reload, lifecycle, reset isolation and unchanged teaching. No native-layout or physical-device claim.
+
+> hexrota@9.2.0 test:onboarding-v2
+> node check-onboarding-policy.cjs && node check-first-play-guide.cjs && node check-onboarding-save.cjs && node check-first-play-v2-ui.cjs
+
+PASS only a truly absent eligible profile selects the new presentation policy
+PASS missing policy on untouched partial terminal or skipped old records stays absent
+PASS explicit v1 and v2 survive reload replay skip and ineligible developer contexts unchanged
+PASS present invalid policies cannot become legacy or silently choose v2
+PASS normalization requires an explicit exact record-presence and eligibility context
+PASS policy and context accessors symbols and inherited version fields reject without evaluation
+PASS rules are frozen presentation-only values and never become a valid persistent policy
+PASS the three authored legacy acknowledgement gates remain exact while v2 creates none
+PASS v2 acknowledgement checks read neither legacy acknowledgement flags nor progression getters
+PASS legacy projection never replaces existing copy or reads a new presentation request
+PASS initial T1 introduces one swap action without score formulas floors or later concepts
+PASS T1 reveals ground only after the first real match and then permits an independent try
+PASS T2 teaches the real two-hit floor before introducing the score objective
+PASS the actual chain result explains no extra move and stays on the score concept
+PASS the actual 27-point eight-of-nine board stays playing and explains the remaining ground
+PASS terminal result copy stays on both completed conditions and offers no fictitious extra move
+PASS non-tutorial projection does not inspect irrelevant turn or phase metadata
+PASS malformed recognized tutorial projection fails closed without reading accessors
+PASS policy normalization and projection change no state across all seven authored tutorial swaps
+PASS the new presentation version cannot rename or duplicate the existing welcome20 entitlement
+PASS the module reads no clocks storage gameplay source or RNG dependencies
+Onboarding policy: 21 groups; optional immutable v1/v2 transport, exact legacy gates, staged concepts and unchanged seven-swap gameplay/welcome entitlement.
+PASS source target and exact current matching group are unambiguous without moving or hiding any stone
+PASS guide anchors use supplied hex geometry and preserve every authored floor target
+PASS only bounded finite guide animations run and completion leaves a usable static cue
+PASS reprompt has the same exact source group and does not introduce unrelated stones
+PASS legacy hand visibility is restored exactly after repeated stop
+PASS reduced motion supplies static source target match and hand instruction without animations
+PASS missing animation API keeps a complete static guide available
+PASS operating system reduced motion also prevents guide animations
+PASS duplicate matching sources are rejected rather than rendering ambiguous effects
+PASS mixed numbers or the nonmatching target cannot be presented as the matching group
+PASS invalid pairs coordinates modes and missing cells fail closed without touching real tiles
+PASS success feedback outlines only supplied already-green terrain and never modifies it
+PASS feedback rejects ungrown or invalid cells and reduced mode remains static
+PASS replacement cancels the previous guide and stale animation completion cannot remove the new one
+PASS cancelled or rejected motion cleans the owned layer and restores the legacy gesture
+PASS animation construction failure leaves no partial layer or changed originals
+PASS board replacement or external layer removal triggers observer cleanup
+PASS removing a referenced real stone cancels the guide even if its layer remains
+PASS changed viewBox gem identity or printed value invalidate the old visual cue
+PASS a removed layer reinserted before observer delivery cannot remain an active stale cue
+PASS destroy is idempotent and old completions cannot remount effects
+PASS optional coach host keeps the whole finite hand demonstration outside all real board cells
+PASS off-board coach demonstration is static in reduced motion and green feedback adds no hand
+PASS removing or briefly detaching the coach cancels both owned visuals without reviving an old gesture
+PASS off-board animation failure and replacement cannot leak coach slots or stale hand callbacks
+PASS a detached or board-contained gesture host fails closed without mutating any real tile
+PASS v2 reveals only the current HUD concept while preserving underlying counter values
+PASS concept CSS leaves legacy and non-tutorial campaign presentation alone
+First-play guide checks passed: 28 cases; real seven-cell hex geometry, no engine/storage/RNG access.
+PASS an eligible genuinely missing save enrolls v2 in memory without writing any storage
+PASS ineligible missing scope and historical defaults stay absent while sound-only data is not progression
+PASS existing untouched partial terminal and skipped modern records never auto-enroll
+PASS all three legacy formats keep their historical conversion and never fabricate policy or acknowledgements
+PASS explicit v2 transports valid old guideAcks and exact tutorial checkpoints without treating them as progress
+PASS present undefined null unknown and extra policy fields reject at actual save normalization boundaries
+PASS GameSave rejects own policy and nested version accessors without evaluating their getters
+PASS SessionStore makes the fresh v2 choice durable only with its canonical game and energy transaction
+PASS invalid staged policies cannot change canonical bytes mirrors revision or durable memory
+PASS SessionStore rejects top-level and nested policy accessors without executing either getter
+PASS a failed canonical write preserves the previous policy and leaves the valid writer reusable
+PASS corrupted persisted policies reject load and same-revision replacement without repairing raw evidence
+PASS the optional first-play review namespace reads and writes only its own storage prefix
+Onboarding save boundary: 13 groups; actual normalization and atomic load/commit preserve optional policy, legacy records, acknowledgements and raw evidence.
+PASS a truly new selected-scope player receives v2 and an untouched legible first board
+PASS wrong taps drag targets and cancelled gestures only offer help without a committed move
+PASS the transient first result does not block an immediate two-tap next move or create guide acknowledgements
+PASS automatic result and four-second idle guidance are transient views without profile writes
+PASS reload during a result resumes the next actual step and never replays a reward receipt
+PASS a failed canonical move save cannot arm result feedback or advance its actual tutorial turn
+PASS legacy half-completed lessons retain absent policy and their exact manual feedback checkpoint
+PASS both unchanged tutorials complete all seven authored swaps and award exactly the existing welcome grant
+PASS pause Home background and resize retire result callbacks without replaying moves or writing acknowledgements
+PASS normal-motion busy presentation never arms result feedback before settling and cancellation preserves its commit
+PASS only the fresh onboarding preview scope enrolls while other developer namespaces stay legacy and isolated
+PASS only the real T1 win exposes transition skip and campaign HUD never inherits hidden tutorial concepts
+PASS a failed v2 final T2 save banks no welcome reward and one real retry grants exactly twenty
+PASS a preserved explicit v2 profile ignores old acknowledgements as progression and never invents more
+Mounted onboarding-v2: 14 groups; genuine enrollment, nonblocking automatic feedback, legacy acknowledgement compatibility, exact seven tutorial swaps, immutable RNG/history and once-only welcome reward. JSDOM is not native layout or a physical device.

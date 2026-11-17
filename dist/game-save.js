@@ -7,15 +7,19 @@
   const DEFAULT_PREFERENCES = Object.freeze({ music: false, volume: .65, motion: 'auto', haptics: false });
   const map = value => !!value && typeof value === 'object' && !Array.isArray(value);
   const clone = value => JSON.parse(JSON.stringify(value));
+  const policy=()=>root.HexOnboardingPolicy||(typeof module==='object'&&module.exports?require('./onboarding-policy.js'):null);
+  function readOnboarding(raw){const d=Object.getOwnPropertyDescriptor(raw,'onboarding');if(!d)return undefined;if(!Object.prototype.hasOwnProperty.call(d,'value')||!policy())throw new Error('invalid_onboarding_policy');return policy().validate(d.value);}
   function defaults() { return {current:0,done:[],boards:{},attempts:{},attemptStats:{},variantSelection:{seed:0,serial:0,counts:{},recent:{}},guideAcks:[],sound:false,preferences:{...DEFAULT_PREFERENCES},records:{}}; }
   function normalize(raw, levels, tutorials, {story=null}={}) {
     if (!map(raw)) throw new Error('invalid_game_save');
     const descriptor=Object.getOwnPropertyDescriptor(raw,'story');
     if(descriptor&&!Object.prototype.hasOwnProperty.call(descriptor,'value')||descriptor&&!story)throw new Error('invalid_story_scope');
     const restoredStory=story?story.restore(descriptor?descriptor.value:undefined,raw):undefined;
+    const onboarding=readOnboarding(raw);
     raw = clone(raw);
     const saved = defaults();
     if(story)saved.story=restoredStory;
+    if(onboarding!==undefined)saved.onboarding=onboarding;
     if(raw&&typeof raw==='object'){
       if(Object.prototype.hasOwnProperty.call(raw,'economy'))saved.economy=raw.economy;
       if(Object.prototype.hasOwnProperty.call(raw,'rescue'))saved.rescue=raw.rescue;
@@ -47,7 +51,7 @@
 
     return saved;
   }
-  function load({ read, contains, levels, tutorials, story=null }) {
+  function load({ read, contains, levels, tutorials, story=null, freshOnboarding=false }) {
     let sourceSaveKey = KEY, migrated = false, raw = null;
     // Missing is not the same as a present null/false/corrupt legacy document.
     if (contains(KEY)) {
@@ -68,13 +72,15 @@
           done: [...tutorials.map((_, i) => i), ...(Array.isArray(previous.done) ? previous.done.filter(i => Number.isInteger(i) && i >= 0 && i < campaignCount).map(i => i + tutorialCount) : [])],
           boards, sound: previous.sound,
           ...(Object.prototype.hasOwnProperty.call(previous, 'economy') ? { economy: previous.economy } : {}),
-          ...(Object.prototype.hasOwnProperty.call(previous, 'rescue') ? { rescue: previous.rescue } : {})
+          ...(Object.prototype.hasOwnProperty.call(previous, 'rescue') ? { rescue: previous.rescue } : {}),
+          ...(Object.prototype.hasOwnProperty.call(previous,'onboarding')?{onboarding:readOnboarding(previous)}:{})
         };
         break;
       }
     }
     const saved = raw === null ? defaults() : normalize(raw, levels, tutorials,{story});
     if(raw===null&&story)saved.story=story.create();
+    if(raw===null&&freshOnboarding){if(!policy())throw new Error('onboarding_policy_unavailable');saved.onboarding=policy().normalize(undefined,{existingRecord:false,eligible:true});}
     // The old sound-only preference is not authoritative progression data.
     if (raw === null) try { saved.sound = read('hexrota-v1')?.sound === true; } catch (_) {}
     return { saved, sourceSaveKey, migrated };

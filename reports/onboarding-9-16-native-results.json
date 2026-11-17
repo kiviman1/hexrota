@@ -1,0 +1,206 @@
+{
+  "success": true,
+  "completedAtUtc": "2026-11-17T21:17:17.540662+00:00",
+  "command": "DOTNET_PATH=/workspace/scratch/dotnet/dotnet node check-onboarding-parity.cjs",
+  "dotnetSdk": "8.0.428",
+  "languageVersion": "7.3",
+  "requests": 448,
+  "phaseProjectionRequests": 195,
+  "optionalSaveTransportRequests": 25,
+  "rejectedMalformedInputs": 190,
+  "actualNativeApplicationLifecycles": 5,
+  "authoredTutorialSwapAttempts": 37,
+  "tutorialMovesUnchanged": 7,
+  "baseline": "b078da49",
+  "protectedGameplayAndTutorialSourcesUnchanged": true,
+  "protectedSourcesCompared": 9,
+  "log": "reports/onboarding-9-16-native-logs/check-onboarding-parity.cjs.log",
+  "historicalNativeSuites": {
+    "completed": 17,
+    "passed": 17,
+    "failed": 0,
+    "suites": [
+      {
+        "command": "DOTNET_PATH=/workspace/scratch/dotnet/dotnet node check-reward-parity.cjs",
+        "success": true,
+        "seconds": 3.24,
+        "log": "reports/onboarding-9-16-native-logs/check-reward-parity.cjs.log",
+        "summaryLines": [
+          "Reward parity checks passed: 104 shared vectors and createState factory (98 valid, 7 rejected); JS and C# outputs agree. C# 7.3 compiled with .NET SDK 8.0.428."
+        ]
+      },
+      {
+        "command": "DOTNET_PATH=/workspace/scratch/dotnet/dotnet node check-gameplay-parity.cjs",
+        "success": true,
+        "seconds": 9.531,
+        "log": "reports/onboarding-9-16-native-logs/check-gameplay-parity.cjs.log",
+        "summaryLines": [
+          "C# gameplay parity passed: 71 archived mechanics cases + 4 recovery cases/1 bounded component errors + 80 full certified routes + 120 off-route legal runs (1150 swaps); 1916 total valid swaps, 258 exact resumes, 262 explicit replays, 2177 independent clone checks, 1915 cloned next-swap comparisons, 1050 rejected core saves with unchanged prior state. All intermediate matches/refill/falls/RNG/layers/status JSON agrees. C# 7.3 compiled with .NET SDK 8.0.428.",
+          "Recovery safety parity: 17 additional complete success/error comparisons; 1 original R02 configuration now rejects explicitly with unchanged state. Archived invalid output is not an accepted current result.",
+          "Structural input parity: 74 shared JSON inputs (12 exact accepted states, 62 native typed/parser/core rejections). JavaScript-only undefined/sparse inputs are tested separately.",
+          "Explicit phase-1 scope: 80 variant-selector vectors, 9 attempt-envelope rejection vectors and hint recommendations remain JavaScript checks in npm test; they are not claimed as C# ports."
+        ]
+      },
+      {
+        "command": "DOTNET_PATH=/workspace/scratch/dotnet/dotnet node check-catalog-parity.cjs",
+        "success": true,
+        "seconds": 9.199,
+        "log": "reports/onboarding-9-16-native-logs/check-catalog-parity.cjs.log",
+        "summaryLines": [
+          "C# catalog parity passed: 2107 complete JSON comparisons; 725 exact selections, 610 exact resumes, 90 checkpoint envelopes, 80 full certified routes/600 replayed swaps, 38 tutorial ID/metadata/restores, 21 archived-version checks, 546 rejected catalog/identity/replay inputs. .NET SDK 8.0.428, C#7.3; numeric/string IDs, publication ordering, isolated RNG and copy boundaries preserved."
+        ]
+      },
+      {
+        "command": "DOTNET_PATH=/workspace/scratch/dotnet/dotnet node check-reward-adapter-parity.cjs",
+        "success": true,
+        "seconds": 7.92,
+        "log": "reports/onboarding-9-16-native-logs/check-reward-adapter-parity.cjs.log",
+        "summaryLines": [
+          "C# reward adapter parity passed: 175 routes (80 complete certified + 80 off-route), 1456 turns, 2928 waves, 1564 replay/restore checks, 16 component/status cases, 86 invalid routes and 12 nonmutating hint boundaries. Full RewardInput/evaluated plans/nextState/restore JSON agrees. C# 7.3 compiled with .NET SDK 8.0.428."
+        ]
+      },
+      {
+        "command": "DOTNET_PATH=/workspace/scratch/dotnet/dotnet node check-lives-parity.cjs",
+        "success": true,
+        "seconds": 3.73,
+        "log": "reports/onboarding-9-16-native-logs/check-lives-parity.cjs.log",
+        "summaryLines": [
+          "C# life parity passed: 19 shared scenarios plus1long-run stress/460 transitions, 152 frozen v1 migrations, 172 extra strict/error/archive/receipt probes (102 rejections, 6 verified callback inspections). Every state, view, nullable time, result, ledger and waiver agrees; 344 compiled requests keep inputs unchanged. C#7.3/.NET8.0.428."
+        ]
+      },
+      {
+        "command": "DOTNET_PATH=/workspace/scratch/dotnet/dotnet node check-event-parity.cjs",
+        "success": true,
+        "seconds": 1.54,
+        "log": "reports/onboarding-9-16-native-logs/check-event-parity.cjs.log",
+        "summaryLines": [
+          "C# event parity passed: 580 complete JSON comparisons (29 create, 423 validate, 58 state validation, 70 append), 462 exact rejection messages; input immutability for every success/rejection. Covers bounded buffer/order, duplicate terminal callbacks, typed IDs, token boundaries, PII/unknown fields and deterministic wire fuzz. C# 7.3 compiled with .NET SDK 8.0.428."
+        ]
+      },
+      {
+        "command": "DOTNET_PATH=/workspace/scratch/dotnet/dotnet node check-hints-parity.cjs",
+        "success": true,
+        "seconds": 18.411,
+        "log": "reports/onboarding-9-16-native-logs/check-hints-parity.cjs.log",
+        "summaryLines": [
+          "C# hint parity passed: {\"publishedRouteStates\":680,\"certifiedRoutes\":80,\"originalLevels\":10,\"originalRoutes\":20,\"originalRouteStates\":162,\"searchStates\":280,\"clockPolicyCases\":11,\"continuedGames\":265,\"rejectedSnapshots\":13,\"rejectedUntrustedRoutes\":22,\"returnedOutputMutation\":191,\"inputRouteMutation\":100,\"auditBudgetTransitionCases\":3,\"rawRouteFallbacks\":14,\"mixedRouteCandidates\":3,\"routeWorkCapCases\":14,\"depthLimitedUncertainty\":40,\"assistedStates\":20,\"terminalStates\":2,\"guaranteesReplayed\":815,\"comparisons\":1274,\"sources\":{\"proven_route\":759,\"search_win\":56,\"heuristic\":319,\"null\":105},\"dotnetSdk\":\"8.0.428\",\"languageVersion\":\"7.3\"}",
+          "Every guarantee was independently replayed to a win; source routes, gameplay, assisted commands and RNG are unchanged. Raw JS bad imports safely fall back; the separate strict native binding (JSON shape parsing plus Create validation) rejects them, then compiled Find with null routes produces the same fallback. Valid over-cap bindings exercise compiled Find directly. Depth/beam uncertainty is separate from node/time exhaustion."
+        ]
+      },
+      {
+        "command": "DOTNET_PATH=/workspace/scratch/dotnet/dotnet node check-economy-parity.cjs",
+        "success": true,
+        "seconds": 2.198,
+        "log": "reports/onboarding-9-16-native-logs/check-economy-parity.cjs.log",
+        "summaryLines": [
+          "Real .NET 8 / C# 7.3 economy parity: 125 flows, 579 complete result+state comparisons passed. No web-engine replacement or SDK fallback."
+        ]
+      },
+      {
+        "command": "DOTNET_PATH=/workspace/scratch/dotnet/dotnet node check-session-parity.cjs",
+        "success": true,
+        "seconds": 16.044,
+        "log": "reports/onboarding-9-16-native-logs/check-session-parity.cjs.log",
+        "summaryLines": [
+          "C# session parity passed: 1362 full JSON comparisons; 36 real app.js flows; 63 native fault/guard scenarios; canonical profile/revision, provider receipts, migration and atomic rollback covered. Physical Unity/iOS/Android tests remain outside this harness."
+        ]
+      },
+      {
+        "command": "DOTNET_PATH=/workspace/scratch/dotnet/dotnet node check-command-parity.cjs",
+        "success": true,
+        "seconds": 12.112,
+        "log": "reports/onboarding-9-16-native-logs/check-command-parity.cjs.log",
+        "summaryLines": [
+          "Rescue safety parity: 22 current-policy/historical-v1 cases; original R-01 requests now reject no_legal_swaps while old successful checkpoints restore verbatim. R-02 recovery safety is checked independently by the standalone --diagnose command and gameplay parity; this historical rescue comparison does not claim recovery safety.",
+          "Real C# command parity passed: {\"certifiedRoutes\":80,\"legacyPrefixes\":680,\"colorChanges\":1032,\"brushTargets\":1032,\"malformedCases\":56,\"rescueCases\":40,\"comparisons\":2952,\"recoverySupplemental\":1,\"currentAuditComparisons\":1,\"rescueSafetyComparisons\":22,\"steps\":16051,\"waves\":3332,\"dotnetSdk\":\"8.0.428\",\"languageVersion\":\"7.3\",\"expectedSha256\":\"5f9650ace1553ab24dff9511c212d4bb533c75792d52dced4c4d46bb9f9be99f\"}"
+        ]
+      },
+      {
+        "command": "DOTNET_PATH=/workspace/scratch/dotnet/dotnet node check-obstacles-parity.cjs",
+        "success": true,
+        "seconds": 4.239,
+        "log": "reports/onboarding-9-16-native-logs/check-obstacles-parity.cjs.log",
+        "summaryLines": [
+          "Obstacles JS/C# parity passed: 217 scenarios; 6 gated certified routes + 2 flow routes in typed/portable loaders + 48 alternative legal runs; 716 valid swaps, 105 resumes, 105 replays, 110 clone checks, 126 rejected snapshot attempts; full damage/unlock/fall/refill/RNG/status JSON. Actual .NET 8, C# 7.3."
+        ]
+      },
+      {
+        "command": "DOTNET_PATH=/workspace/scratch/dotnet/dotnet node check-campaign-flow-parity.cjs",
+        "success": true,
+        "seconds": 1.966,
+        "log": "reports/onboarding-9-16-native-logs/check-campaign-flow-parity.cjs.log",
+        "summaryLines": [
+          "Campaign flow JS/C# catalog parity passed: 136 scenarios, 26 selection cases, 2 complete routes/14 checkpoint prefixes, 85 rejected override/identity/snapshot cases. Actual .NET8, C#7.3; legacy catalog and new scoped L6 identities remain separate."
+        ]
+      },
+      {
+        "command": "DOTNET_PATH=/workspace/scratch/dotnet/dotnet node check-rescue-parity.cjs",
+        "success": true,
+        "seconds": 8.877,
+        "log": "reports/onboarding-9-16-native-logs/check-rescue-parity.cjs.log",
+        "summaryLines": [
+          "Rescue parity: 376 real C# comparisons passed (.NET 8.0.428, C#7.3); 293 unchanged original comparisons, 83 retained-receipt comparisons in 10 groups; 12 frozen cases + 600 compiled lifecycle transitions. No Unity/IL2CPP/device claim."
+        ]
+      },
+      {
+        "command": "DOTNET_PATH=/workspace/scratch/dotnet/dotnet node check-materials-parity.cjs",
+        "success": true,
+        "seconds": 5.588,
+        "log": "reports/onboarding-9-16-native-logs/check-materials-parity.cjs.log",
+        "summaryLines": [
+          "Material JS/C# parity passed: 196 scenarios; 6 certified routes/52 prefixes + 24 alternative legal runs; 501 valid swaps/1154 waves/269 material events; 166 exact resumes, 165 replays, 168 independent clones; 102 rejected checkpoints, 41 rejected definitions/objectives. Actual .NET8/C#7.3; event order, once-only grants, objectives, RNG, geometry and status agree."
+        ]
+      },
+      {
+        "command": "DOTNET_PATH=/workspace/scratch/dotnet/dotnet node check-material-alpha-parity.cjs",
+        "success": true,
+        "seconds": 4.945,
+        "log": "reports/onboarding-9-16-native-logs/check-material-alpha-parity.cjs.log",
+        "summaryLines": [
+          "Material alpha JS/C# catalog parity passed: 156 scenarios, 30 selection cases, 6 complete routes/52 checkpoint prefixes, 89 rejected override/identity/snapshot cases. Actual .NET8, C#7.3; legacy catalog and isolated material alpha identities remain separate."
+        ]
+      },
+      {
+        "command": "DOTNET_PATH=/workspace/scratch/dotnet/dotnet node check-story-parity.cjs",
+        "success": true,
+        "seconds": 10.717,
+        "log": "reports/onboarding-9-16-native-logs/check-story-parity.cjs.log",
+        "summaryLines": [
+          "Story JS/C# parity passed: 282 scenarios; 10 authored route/choice/skip scenarios covering all 6 winning routes/116 gameplay prefixes; 141 actual native fact projections; 1051 reducer calls (405 observations, 407 acknowledgements/choices, 123 strict restores); 125 schema/progress/identity/action rejections. Actual .NET8/C#7.3; queue, conditions, dedup, narrative actions, snapshots and native canonical facts agree."
+        ]
+      },
+      {
+        "command": "DOTNET_PATH=/workspace/scratch/dotnet/dotnet node check-large-flow-parity.cjs",
+        "success": true,
+        "seconds": 23.389,
+        "log": "reports/onboarding-9-16-native-logs/check-large-flow-parity.cjs.log",
+        "summaryLines": [
+          "Large flow JS/C# parity passed: 5 shapes inside 9x9 hex canvases (43/49/53/61/65 cells); 10 certified routes; 50 mechanics + 103 catalog scenarios; 329 valid swaps/826 waves, 139 exact resumes, 139 replays, 144 independent clones, 48 rejected saves/identities; 129 v2 + 14 archived v1 checkpoint prefixes. Actual .NET8/C#7.3; every resolved fall/refill/RNG/status agrees."
+        ]
+      }
+    ]
+  },
+  "physicalDeviceTested": false,
+  "unityEditorTested": false,
+  "sourceSha256": {
+    "unity/Application/OnboardingPolicy.cs": "2397625abdfae48f0196c78213c5cb438996f4a8c3e09567a748b7186407a158",
+    "unity/Application/SaveMigration.cs": "a7346aa26eec5ed71ff0e5ec756959f44724554732eab30e66244d014bb7f64a",
+    "unity/Application/GameSessionController.cs": "a2f22b72557e8ff5cdeae9211dfccab09404d28f44909ad5e818f1598f833099",
+    "unity/OnboardingParityHarness/Program.cs": "dd2cf0867a9dd84faf6ca3943e96c00706ba1c5f6113e1e22d16d987d627a84f",
+    "unity/OnboardingParityHarness/Hexrota.OnboardingParity.csproj": "b4273847441d996cf0bda9142f57030a490ba3e67bd41543247f5045981fa7df",
+    "check-onboarding-parity.cjs": "57933f4d45384131e00e6fcec2b5e81df666d40387253b62df4be1ffc5ab2703",
+    "dist/onboarding-policy.js": "07ffc9849200bb144258a39fede738d6aecb890e34f23b543e1cda2f76bd4199",
+    "dist/game-save.js": "62cc8f6cf77f9fe26cce268663fd1360dab5761c59baa3a631f4e7766dec9d8a"
+  },
+  "protectedSourceSha256": {
+    "dist/engine.js": "54b041f27ebc51ddf47df1e195fb25efc296723da18ff39cd87ebce020f63135",
+    "dist/tutorials.js": "b5ae419bffeb4fb684261baad425a74857a73cc6d6dd998f5d1def58c2ea4ee0",
+    "data/tutorials-fixed.json": "95b1c396d66c576ec932d59bc31ad3301d0c5d5a082f46259314162ee12eb843",
+    "unity/Gameplay/BoardTopology.cs": "1bf1a889e90ee666c5b48db52a3626eb3e439e9f94d40ab9c7f823c00ed98871",
+    "unity/Gameplay/GameplayTypes.cs": "216c4b59d12851af1d7f34ca647c8f050d85a80cf6e7688ad8e67a75fe57e298",
+    "unity/Gameplay/HexMatch.ColumnFlow.cs": "c55606f8011c3f192c801f2fe4fa18e49b5053b1d852ad91a36dac0834ec2b70",
+    "unity/Gameplay/HexMatch.Materials.cs": "4d7f1bfc67430231f24a0b476331863e275de914247f8b6d301678dc288714a7",
+    "unity/Gameplay/HexMatch.Obstacles.cs": "2ce3d0f918c8a63193fbeb3b317c9335492aaee0bbb282fee1fe07caeac8e5e0",
+    "unity/Gameplay/HexMatch.cs": "bb47fc06349fdf4fc3742646612e63fcafbeb24b06cf2ee7d601229f207ee184"
+  }
+}

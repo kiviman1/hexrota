@@ -1,0 +1,1 @@
+C# reward adapter parity passed: 175 routes (80 complete certified + 80 off-route), 1456 turns, 2928 waves, 1564 replay/restore checks, 16 component/status cases, 86 invalid routes and 12 nonmutating hint boundaries. Full RewardInput/evaluated plans/nextState/restore JSON agrees. C# 7.3 compiled with .NET SDK 8.0.428.

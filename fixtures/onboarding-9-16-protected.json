@@ -1,0 +1,29 @@
+{
+  "baseline": "b078da49a0a1c9632195f13aefefad812e7f92ab",
+  "scope": "Reviewed optional first-play policy, fresh-profile enrollment, unchanged legacy transport, automatic committed-result receipt, finite off-board gesture guide, scoped teaching HUD and cache generation. Only the explicit host/policy/presentation/save/application files below override earlier source hashes. Gameplay, authored tutorials and campaign data, economy, story content, all historical fixtures, view goldens, 40 variants/80 routes and audit metrics remain intact.",
+  "addedIds": [
+    "first-play-skip"
+  ],
+  "sha256": {
+    "dist/app.js": "221cf75ddceb28772d6fa9846f47894cdf5ba26fe010336313ce9e296e01f6f5",
+    "dist/first-play.js": "6dedc2e75676643a948c5e65753024f6549cae4a5fe9a24e9cc047fb985e9fca",
+    "dist/game-save.js": "62cc8f6cf77f9fe26cce268663fd1360dab5761c59baa3a631f4e7766dec9d8a",
+    "dist/session-store.js": "a144268dc783b7908528bb3612d4d8bac9e86ada726b0f7c8b5ef340def767b1",
+    "dist/index.html": "eec07eaabb1ef7e21e1300ad8ff3531e81340288209de83e94e58735009e406f",
+    "dist/style.css": "546b5da1cc0abe77fc20a0569b1730e81300482c9b5b8f2982e5f8ca8df2e54b",
+    "dist/sw.js": "9c8d302f8bc727bef407ad0172065d755f23ffb96888dd21f0d6d48e45c18fb8",
+    "dist/hint-worker.js": "005a87a3e0aa4a5f6ec356975543b108edf9e886c4aecbb43e793eb0ee5e53ae",
+    "dist/obstacles.html": "e7b94b17acb3763a94f27fd3f57341bc5198785c1d2e43295fb412abbeaf2fbc",
+    "dist/ui-kit.html": "ec103db9c8781f545e5534456886bc62b600cbf4ab04f39b4bf5cba16c38fa11",
+    "src/styles/manifest.json": "88d517ec95fbd98be1817a884a3fb8fc930f6e694a4a90a18cf1482bf288bad4",
+    "src/styles/13-first-play.css": "fc956a9e1dd0e7e2f8fc043d20c0a31a1963ab8d700dfbb9ac97fbf01bc79a37",
+    "dist/onboarding-policy.js": "07ffc9849200bb144258a39fede738d6aecb890e34f23b543e1cda2f76bd4199",
+    "dist/onboarding-alpha.js": "32563e823e41a2352975ffbecad6f4c48185eee7d46509c8df58f9273eb8e52c",
+    "unity/Application/GameSessionController.cs": "a2f22b72557e8ff5cdeae9211dfccab09404d28f44909ad5e818f1598f833099",
+    "unity/Application/SaveMigration.cs": "a7346aa26eec5ed71ff0e5ec756959f44724554732eab30e66244d014bb7f64a",
+    "unity/Application/OnboardingPolicy.cs": "2397625abdfae48f0196c78213c5cb438996f4a8c3e09567a748b7186407a158",
+    "unity/OnboardingParityHarness/Program.cs": "dd2cf0867a9dd84faf6ca3943e96c00706ba1c5f6113e1e22d16d987d627a84f",
+    "unity/OnboardingParityHarness/Hexrota.OnboardingParity.csproj": "b4273847441d996cf0bda9142f57030a490ba3e67bd41543247f5045981fa7df",
+    "unity/OnboardingParityHarness/NuGet.Config": "2142cfb2dfa2c7feefbe40fabcc68b0dfecadafa99a1db9b70239d977cf2a7ef"
+  }
+}

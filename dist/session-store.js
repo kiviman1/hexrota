@@ -13,7 +13,7 @@
   if(!isMap(value)||value.schemaVersion!==2||!Number.isSafeInteger(value.revision)||value.revision<1||!isMap(value.game)||!isMap(value.energy))throw new Error('invalid_profile');
  }
  function createStore(storage,{writable=true,storyAdapter=null}={}){
-  const validateStory=game=>{if(storyAdapter)storyAdapter.restore(game.story,game);else if(Object.prototype.hasOwnProperty.call(game,'story'))throw new Error('invalid_story_scope');};
+  const validateStory=game=>{const d=Object.getOwnPropertyDescriptor(game,'onboarding');if(d){const p=root.HexOnboardingPolicy||(typeof module==='object'&&module.exports?require('./onboarding-policy.js'):null);if(!p)throw new Error('onboarding_policy_unavailable');if(!Object.prototype.hasOwnProperty.call(d,'value'))throw new Error('invalid_onboarding_policy');p.validate(d.value);}if(storyAdapter)storyAdapter.restore(game.story,game);else if(Object.prototype.hasOwnProperty.call(game,'story'))throw new Error('invalid_story_scope');};
   let revision=0,durable=null;
   const parse=key=>{const raw=storage.getItem(key);return raw===null?null:JSON.parse(raw);};
   const canonicalRaw=storage.getItem(KEY);
@@ -69,7 +69,7 @@
   return {read,contains,current,commit,resetForTesting,storyAdapter,get revision(){return revision;},revoke(){writable=false;}};
  }
  function boot(start){
-  const w=root,scope=w.HexStoryAlpha?.enabled===true?w.HexStoryAlpha:w.HexMaterialAlpha?.enabled===true?w.HexMaterialAlpha:w.HexCampaignFlow?.enabled===true?w.HexCampaignFlow:null,storage=scope?scope.storage(w.localStorage):w.localStorage;
+  const w=root,scope=w.HexOnboardingAlpha?.enabled===true?w.HexOnboardingAlpha:w.HexStoryAlpha?.enabled===true?w.HexStoryAlpha:w.HexMaterialAlpha?.enabled===true?w.HexMaterialAlpha:w.HexCampaignFlow?.enabled===true?w.HexCampaignFlow:null,storage=scope?scope.storage(w.localStorage):w.localStorage;
   const storyAdapter=w.HexStoryAlpha?.enabled===true?w.HexStoryProfile.fromGlobals(w):null;
   if(w.HexSessionTestMode?.isolated===true){start(createStore(storage,{storyAdapter}));return;}
   const blocked=(message,retry=true)=>{

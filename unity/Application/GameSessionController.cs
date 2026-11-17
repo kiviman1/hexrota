@@ -283,7 +283,7 @@ namespace Hexrota.Application
                     if (maximumCharge == 0 && settlement.Charged == true) { energy["life"] = priorLife; return Result(false, "confirmation_changed"); }
                     if (!lives.CanStart(new LifeState(W.Map(energy["life"])), W.Obj("tutorial", false))) { Abandon(previous, reason); return Result(false, "lives_empty"); }
                 }
-                if (fresh) game["guideAcks"] = W.List(game["guideAcks"]).Where(x => !((string)x).StartsWith(index + ":", StringComparison.Ordinal)).ToList();
+                if (fresh && !OnboardingPolicy.IsV2(W.Get(game, "onboarding"))) game["guideAcks"] = W.List(game["guideAcks"]).Where(x => !((string)x).StartsWith(index + ":", StringComparison.Ordinal)).ToList();
                 if (previous != null && !fresh) LoadExisting(index, true);
                 else
                 {
@@ -355,6 +355,7 @@ namespace Hexrota.Application
         public Dictionary<string, object> AcknowledgeTutorial(SessionCommand command = null)
         {
             if (active >= tutorialCount || engine == null) return Result(false, "not_tutorial");
+            if (OnboardingPolicy.IsV2(W.Get(game, "onboarding"))) return Result(false, "automatic_feedback");
             return Execute(() => { string id = active + ":" + engine.turn; var acks = W.List(game["guideAcks"]); if (!acks.Contains(id)) acks.Add(id); return Result(true, "acknowledged"); }, command);
         }
         public Dictionary<string, object> ResetProgress(bool confirmed, int? maximumCharge = null, SessionCommand command = null)
