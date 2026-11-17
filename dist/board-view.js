@@ -6,11 +6,24 @@
   function geometry(level, tutorial = false) {
     const step=44,radius=40;
     let positions=level.cells.map(c=>({x:1.5*step*c.q,y:Math.sqrt(3)*step*(c.r+c.q/2)}));
-    const xs=positions.map(p=>p.x),ys=positions.map(p=>p.y);
+    const size=level.boardSize,framed=size?.layout==='odd-q'&&Number.isSafeInteger(size.columns)&&size.columns>0&&Number.isSafeInteger(size.rows)&&size.rows>0;
+    let bounds=positions;
+    if(framed){
+      // Capacity reserves visual room only. Omitted coordinates remain void:
+      // no floor, gem, hit target or objective is manufactured for these slots.
+      const qMin=Number.isSafeInteger(size.qMin)?size.qMin:-Math.floor(size.columns/2),rowMin=Number.isSafeInteger(size.rowMin)?size.rowMin:-Math.floor(size.rows/2);
+      const columns=[qMin,qMin+size.columns-1,...(size.columns>1?[qMin+1]:[])];
+      bounds=columns.flatMap(q=>[0,size.rows-1].map(row=>({x:1.5*step*q,y:Math.sqrt(3)*step*(rowMin+row+q/2-Math.floor(q/2))})));
+    }
+    const xs=bounds.map(p=>p.x),ys=bounds.map(p=>p.y);
     const cx=(Math.min(...xs)+Math.max(...xs))/2,cy=(Math.min(...ys)+Math.max(...ys))/2;
     positions=positions.map(p=>({x:p.x-cx,y:p.y-cy}));
-    const width=Math.max(tutorial?275:370,Math.max(...xs)-Math.min(...xs)+radius*2+24);
-    const height=Math.max(tutorial?260:300,Math.max(...ys)-Math.min(...ys)+radius*Math.sqrt(3)+26);
+    // Dense authored boards opt into a tighter outer margin. Cell spacing and
+    // every existing level's geometry remain the same; only spare viewport
+    // padding changes, with room for the terrain's outer edge and floor stroke.
+    const compact=level.presentation?.fit==='compact';
+    const width=Math.max(compact?1:tutorial?275:370,Math.max(...xs)-Math.min(...xs)+radius*2+(compact?12:24));
+    const height=Math.max(compact?1:tutorial?260:300,Math.max(...ys)-Math.min(...ys)+radius*Math.sqrt(3)+(compact?12:26));
     return {positions,radius,width,height};
   }
 

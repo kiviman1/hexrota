@@ -17,10 +17,10 @@ internal static class Program
         if (operation == "initialize")
         {
             classic = new LevelCatalog(Levels(Wire.Get(request, "levels")), Wire.Get(request, "packs"));
-            flow = new CampaignFlowCatalog(classic, Levels(Wire.Get(request, "overrides")));
+            flow = new CampaignFlowCatalog(classic, Levels(Wire.Get(request, "overrides")), Wire.Get(request, "currentVersion") as string);
             return Wire.Obj("currentVersion", flow.CurrentVersion, "versions", flow.Versions);
         }
-        if (operation == "create") { new CampaignFlowCatalog(classic, Levels(Wire.Get(request, "overrides"))); return Wire.Obj("ok", true); }
+        if (operation == "create") { new CampaignFlowCatalog(classic, Levels(Wire.Get(request, "overrides")), Wire.Get(request, "currentVersion") as string); return Wire.Obj("ok", true); }
         object id = Wire.Get(request, "levelId");
         if (operation == "start") return flow.Start(id, Wire.Map(Wire.Get(request, "options", Wire.Obj()))).ToWire();
         if (operation == "classicStart") return classic.Start(id, Wire.Map(Wire.Get(request, "options", Wire.Obj()))).ToWire();

@@ -1,6 +1,8 @@
 # Hexrota 9.12 — Kırılabilir kutular ve dinamik bölgeler
 
-> **Güncel kabul akışı — mevcut oyuna entegrasyon:** Son kullanıcı düzeltmesiyle asıl test girişi ayrı laboratuvar değil, normal `index.html` uygulamasının `?dev=flow-9-12` modudur. Bu modda on kampanya bölümü ilerleme doldurmadan seçilebilir; gerçek 6. bölüm aynı arayüz içinde kutu duvarı ve kaynak sütunlarından fiziksel akış kullanır. Aşağıdaki ilk teslim/laboratuvar sözleşmesi geriye uyum ve mekanik kapsamı için korunur. Güncel kaynak akışı ve kayıt ayrımı hemen aşağıdaki **“Mevcut oyundaki 6. bölüm — kaynak sütunu düzeltmesi”** bölümündedir. İlk teslimin CI sayıları sonraki düzeltmenin CI sonucu sayılmaz.
+> **Güncel v2 düzeltmesi:** 6–10. bölümler 9×9 azami çerçeve içinde **43/49/53/61/65 gerçek hücre** kullanır; 81 hedef hücreye zorlanmaz. Normal uygulama girişi, void/kapalı hücre ayrımı, sürümlü kayıt arşivi ve yeni test sonuçları: [LARGE_BOARDS_9_12.md](LARGE_BOARDS_9_12.md). Aşağıdaki 23 hücreli L6 anlatımı arşiv `campaign-flow-v1` sözleşmesidir; mevcut yeni deneme varsayılanı v2'dir.
+
+> **Arşiv v1 kabul akışı — mevcut oyuna entegrasyon:** Son kullanıcı düzeltmesiyle asıl test girişi ayrı laboratuvar değil, normal `index.html` uygulamasının `?dev=flow-9-12` modudur. Bu modda on kampanya bölümü ilerleme doldurmadan seçilebilir; gerçek 6. bölüm aynı arayüz içinde kutu duvarı ve kaynak sütunlarından fiziksel akış kullanır. Aşağıdaki ilk teslim/laboratuvar sözleşmesi geriye uyum ve mekanik kapsamı için korunur. Güncel kaynak akışı ve kayıt ayrımı hemen aşağıdaki **“Mevcut oyundaki 6. bölüm — kaynak sütunu düzeltmesi”** bölümündedir. İlk teslimin CI sayıları sonraki düzeltmenin CI sonucu sayılmaz.
 
 ## Mevcut oyundaki 6. bölüm — kaynak sütunu düzeltmesi
 

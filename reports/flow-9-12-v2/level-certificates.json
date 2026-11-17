@@ -1,0 +1,4062 @@
+{
+  "rulesVersion": "classic-v5",
+  "levelDataVersion": "campaign-flow-v2",
+  "activation": "column-flow-v1",
+  "boardSize": {
+    "columns": 9,
+    "rows": 9,
+    "layout": "odd-q",
+    "qMin": -4,
+    "rowMin": -4
+  },
+  "levels": [
+    {
+      "id": 6,
+      "cells": 43,
+      "groundLayers": 43,
+      "moves": 16,
+      "target": 210,
+      "routes": [
+        {
+          "path": [
+            [
+              1,
+              7
+            ],
+            [
+              7,
+              15
+            ],
+            [
+              28,
+              35
+            ],
+            [
+              22,
+              23
+            ],
+            [
+              3,
+              9
+            ],
+            [
+              21,
+              28
+            ],
+            [
+              5,
+              6
+            ],
+            [
+              1,
+              2
+            ]
+          ],
+          "steps": [
+            {
+              "pair": [
+                1,
+                7
+              ],
+              "waves": 1,
+              "scoreGain": 12,
+              "hits": [
+                {
+                  "id": "l6-crate-4",
+                  "cell": 22,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 0
+                },
+                {
+                  "id": "l6-crate-5",
+                  "cell": 23,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l6-crate-6",
+                  "cell": 24,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 23,
+                  "wave": 0
+                },
+                {
+                  "cell": 24,
+                  "wave": 0
+                },
+                {
+                  "cell": 30,
+                  "wave": 0
+                },
+                {
+                  "cell": 31,
+                  "wave": 0
+                },
+                {
+                  "cell": 37,
+                  "wave": 0
+                },
+                {
+                  "cell": 38,
+                  "wave": 0
+                },
+                {
+                  "cell": 42,
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                7,
+                15
+              ],
+              "waves": 1,
+              "scoreGain": 3,
+              "hits": [
+                {
+                  "id": "l6-crate-2",
+                  "cell": 20,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l6-crate-3",
+                  "cell": 21,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l6-crate-4",
+                  "cell": 22,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 20,
+                  "wave": 0
+                },
+                {
+                  "cell": 21,
+                  "wave": 0
+                },
+                {
+                  "cell": 22,
+                  "wave": 0
+                },
+                {
+                  "cell": 27,
+                  "wave": 0
+                },
+                {
+                  "cell": 28,
+                  "wave": 0
+                },
+                {
+                  "cell": 29,
+                  "wave": 0
+                },
+                {
+                  "cell": 34,
+                  "wave": 0
+                },
+                {
+                  "cell": 35,
+                  "wave": 0
+                },
+                {
+                  "cell": 36,
+                  "wave": 0
+                },
+                {
+                  "cell": 40,
+                  "wave": 0
+                },
+                {
+                  "cell": 41,
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                28,
+                35
+              ],
+              "waves": 3,
+              "scoreGain": 33,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                22,
+                23
+              ],
+              "waves": 13,
+              "scoreGain": 175,
+              "hits": [
+                {
+                  "id": "l6-crate-1",
+                  "cell": 19,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 1
+                },
+                {
+                  "id": "l6-crate-7",
+                  "cell": 25,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 3
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 19,
+                  "wave": 1
+                },
+                {
+                  "cell": 26,
+                  "wave": 1
+                },
+                {
+                  "cell": 33,
+                  "wave": 1
+                },
+                {
+                  "cell": 25,
+                  "wave": 3
+                },
+                {
+                  "cell": 32,
+                  "wave": 3
+                },
+                {
+                  "cell": 39,
+                  "wave": 3
+                }
+              ]
+            },
+            {
+              "pair": [
+                3,
+                9
+              ],
+              "waves": 1,
+              "scoreGain": 9,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                21,
+                28
+              ],
+              "waves": 1,
+              "scoreGain": 12,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                5,
+                6
+              ],
+              "waves": 1,
+              "scoreGain": 11,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                1,
+                2
+              ],
+              "waves": 1,
+              "scoreGain": 9,
+              "hits": [],
+              "openedCells": []
+            }
+          ],
+          "status": "won",
+          "score": 264,
+          "movesUsed": 8,
+          "movesLeft": 8,
+          "rngState": 1495422923,
+          "covered": 43
+        },
+        {
+          "path": [
+            [
+              5,
+              13
+            ],
+            [
+              3,
+              4
+            ],
+            [
+              20,
+              27
+            ],
+            [
+              37,
+              38
+            ],
+            [
+              27,
+              34
+            ],
+            [
+              12,
+              19
+            ],
+            [
+              7,
+              15
+            ]
+          ],
+          "steps": [
+            {
+              "pair": [
+                5,
+                13
+              ],
+              "waves": 2,
+              "scoreGain": 21,
+              "hits": [
+                {
+                  "id": "l6-crate-1",
+                  "cell": 19,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l6-crate-2",
+                  "cell": 20,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l6-crate-4",
+                  "cell": 22,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 1
+                },
+                {
+                  "id": "l6-crate-5",
+                  "cell": 23,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 1
+                },
+                {
+                  "id": "l6-crate-6",
+                  "cell": 24,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 1
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 19,
+                  "wave": 0
+                },
+                {
+                  "cell": 20,
+                  "wave": 0
+                },
+                {
+                  "cell": 26,
+                  "wave": 0
+                },
+                {
+                  "cell": 27,
+                  "wave": 0
+                },
+                {
+                  "cell": 33,
+                  "wave": 0
+                },
+                {
+                  "cell": 34,
+                  "wave": 0
+                },
+                {
+                  "cell": 23,
+                  "wave": 1
+                },
+                {
+                  "cell": 24,
+                  "wave": 1
+                },
+                {
+                  "cell": 30,
+                  "wave": 1
+                },
+                {
+                  "cell": 31,
+                  "wave": 1
+                },
+                {
+                  "cell": 37,
+                  "wave": 1
+                },
+                {
+                  "cell": 38,
+                  "wave": 1
+                },
+                {
+                  "cell": 42,
+                  "wave": 1
+                }
+              ]
+            },
+            {
+              "pair": [
+                3,
+                4
+              ],
+              "waves": 1,
+              "scoreGain": 10,
+              "hits": [
+                {
+                  "id": "l6-crate-4",
+                  "cell": 22,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 22,
+                  "wave": 0
+                },
+                {
+                  "cell": 29,
+                  "wave": 0
+                },
+                {
+                  "cell": 36,
+                  "wave": 0
+                },
+                {
+                  "cell": 41,
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                20,
+                27
+              ],
+              "waves": 13,
+              "scoreGain": 115,
+              "hits": [
+                {
+                  "id": "l6-crate-3",
+                  "cell": 21,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l6-crate-7",
+                  "cell": 25,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 6
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 21,
+                  "wave": 0
+                },
+                {
+                  "cell": 28,
+                  "wave": 0
+                },
+                {
+                  "cell": 35,
+                  "wave": 0
+                },
+                {
+                  "cell": 40,
+                  "wave": 0
+                },
+                {
+                  "cell": 25,
+                  "wave": 6
+                },
+                {
+                  "cell": 32,
+                  "wave": 6
+                },
+                {
+                  "cell": 39,
+                  "wave": 6
+                }
+              ]
+            },
+            {
+              "pair": [
+                37,
+                38
+              ],
+              "waves": 4,
+              "scoreGain": 30,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                27,
+                34
+              ],
+              "waves": 6,
+              "scoreGain": 81,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                12,
+                19
+              ],
+              "waves": 5,
+              "scoreGain": 102,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                7,
+                15
+              ],
+              "waves": 1,
+              "scoreGain": 6,
+              "hits": [],
+              "openedCells": []
+            }
+          ],
+          "status": "won",
+          "score": 365,
+          "movesUsed": 7,
+          "movesLeft": 9,
+          "rngState": 310783884,
+          "covered": 43
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "cells": 49,
+      "groundLayers": 53,
+      "moves": 18,
+      "target": 250,
+      "routes": [
+        {
+          "path": [
+            [
+              2,
+              10
+            ],
+            [
+              8,
+              9
+            ],
+            [
+              31,
+              25
+            ],
+            [
+              26,
+              20
+            ],
+            [
+              31,
+              32
+            ],
+            [
+              2,
+              10
+            ],
+            [
+              31,
+              25
+            ],
+            [
+              0,
+              8
+            ],
+            [
+              11,
+              12
+            ]
+          ],
+          "steps": [
+            {
+              "pair": [
+                2,
+                10
+              ],
+              "waves": 1,
+              "scoreGain": 6,
+              "hits": [
+                {
+                  "id": "l7-crate-2",
+                  "cell": 22,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 0
+                },
+                {
+                  "id": "l7-crate-3",
+                  "cell": 23,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l7-crate-4",
+                  "cell": 24,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 23,
+                  "wave": 0
+                },
+                {
+                  "cell": 24,
+                  "wave": 0
+                },
+                {
+                  "cell": 30,
+                  "wave": 0
+                },
+                {
+                  "cell": 31,
+                  "wave": 0
+                },
+                {
+                  "cell": 37,
+                  "wave": 0
+                },
+                {
+                  "cell": 38,
+                  "wave": 0
+                },
+                {
+                  "cell": 44,
+                  "wave": 0
+                },
+                {
+                  "cell": 45,
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                8,
+                9
+              ],
+              "waves": 8,
+              "scoreGain": 101,
+              "hits": [
+                {
+                  "id": "l7-crate-5",
+                  "cell": 25,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l7-crate-6",
+                  "cell": 26,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 0
+                },
+                {
+                  "id": "l7-crate-1",
+                  "cell": 21,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 1
+                },
+                {
+                  "id": "l7-crate-2",
+                  "cell": 22,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 1
+                },
+                {
+                  "id": "l7-crate-6",
+                  "cell": 26,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 2
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 25,
+                  "wave": 0
+                },
+                {
+                  "cell": 32,
+                  "wave": 0
+                },
+                {
+                  "cell": 39,
+                  "wave": 0
+                },
+                {
+                  "cell": 46,
+                  "wave": 0
+                },
+                {
+                  "cell": 21,
+                  "wave": 1
+                },
+                {
+                  "cell": 22,
+                  "wave": 1
+                },
+                {
+                  "cell": 28,
+                  "wave": 1
+                },
+                {
+                  "cell": 29,
+                  "wave": 1
+                },
+                {
+                  "cell": 35,
+                  "wave": 1
+                },
+                {
+                  "cell": 36,
+                  "wave": 1
+                },
+                {
+                  "cell": 42,
+                  "wave": 1
+                },
+                {
+                  "cell": 43,
+                  "wave": 1
+                },
+                {
+                  "cell": 26,
+                  "wave": 2
+                },
+                {
+                  "cell": 33,
+                  "wave": 2
+                },
+                {
+                  "cell": 40,
+                  "wave": 2
+                },
+                {
+                  "cell": 47,
+                  "wave": 2
+                }
+              ]
+            },
+            {
+              "pair": [
+                31,
+                25
+              ],
+              "waves": 6,
+              "scoreGain": 65,
+              "hits": [
+                {
+                  "id": "l7-crate-7",
+                  "cell": 27,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 27,
+                  "wave": 0
+                },
+                {
+                  "cell": 34,
+                  "wave": 0
+                },
+                {
+                  "cell": 41,
+                  "wave": 0
+                },
+                {
+                  "cell": 48,
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                26,
+                20
+              ],
+              "waves": 16,
+              "scoreGain": 223,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                31,
+                32
+              ],
+              "waves": 3,
+              "scoreGain": 14,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                2,
+                10
+              ],
+              "waves": 1,
+              "scoreGain": 6,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                31,
+                25
+              ],
+              "waves": 8,
+              "scoreGain": 81,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                0,
+                8
+              ],
+              "waves": 1,
+              "scoreGain": 8,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                11,
+                12
+              ],
+              "waves": 1,
+              "scoreGain": 21,
+              "hits": [],
+              "openedCells": []
+            }
+          ],
+          "status": "won",
+          "score": 525,
+          "movesUsed": 9,
+          "movesLeft": 9,
+          "rngState": 233759585,
+          "covered": 49
+        },
+        {
+          "path": [
+            [
+              2,
+              9
+            ],
+            [
+              11,
+              19
+            ],
+            [
+              1,
+              8
+            ],
+            [
+              31,
+              25
+            ],
+            [
+              33,
+              40
+            ],
+            [
+              36,
+              43
+            ],
+            [
+              0,
+              8
+            ],
+            [
+              12,
+              19
+            ],
+            [
+              29,
+              30
+            ],
+            [
+              0,
+              8
+            ]
+          ],
+          "steps": [
+            {
+              "pair": [
+                2,
+                9
+              ],
+              "waves": 1,
+              "scoreGain": 3,
+              "hits": [
+                {
+                  "id": "l7-crate-1",
+                  "cell": 21,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l7-crate-2",
+                  "cell": 22,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 0
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 21,
+                  "wave": 0
+                },
+                {
+                  "cell": 28,
+                  "wave": 0
+                },
+                {
+                  "cell": 35,
+                  "wave": 0
+                },
+                {
+                  "cell": 42,
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                11,
+                19
+              ],
+              "waves": 1,
+              "scoreGain": 9,
+              "hits": [
+                {
+                  "id": "l7-crate-4",
+                  "cell": 24,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l7-crate-5",
+                  "cell": 25,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l7-crate-6",
+                  "cell": 26,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 0
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 24,
+                  "wave": 0
+                },
+                {
+                  "cell": 25,
+                  "wave": 0
+                },
+                {
+                  "cell": 31,
+                  "wave": 0
+                },
+                {
+                  "cell": 32,
+                  "wave": 0
+                },
+                {
+                  "cell": 38,
+                  "wave": 0
+                },
+                {
+                  "cell": 39,
+                  "wave": 0
+                },
+                {
+                  "cell": 45,
+                  "wave": 0
+                },
+                {
+                  "cell": 46,
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                1,
+                8
+              ],
+              "waves": 6,
+              "scoreGain": 84,
+              "hits": [
+                {
+                  "id": "l7-crate-3",
+                  "cell": 23,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 2
+                },
+                {
+                  "id": "l7-crate-6",
+                  "cell": 26,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 2
+                },
+                {
+                  "id": "l7-crate-7",
+                  "cell": 27,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 2
+                },
+                {
+                  "id": "l7-crate-2",
+                  "cell": 22,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 4
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 23,
+                  "wave": 2
+                },
+                {
+                  "cell": 26,
+                  "wave": 2
+                },
+                {
+                  "cell": 27,
+                  "wave": 2
+                },
+                {
+                  "cell": 30,
+                  "wave": 2
+                },
+                {
+                  "cell": 33,
+                  "wave": 2
+                },
+                {
+                  "cell": 34,
+                  "wave": 2
+                },
+                {
+                  "cell": 37,
+                  "wave": 2
+                },
+                {
+                  "cell": 40,
+                  "wave": 2
+                },
+                {
+                  "cell": 41,
+                  "wave": 2
+                },
+                {
+                  "cell": 44,
+                  "wave": 2
+                },
+                {
+                  "cell": 47,
+                  "wave": 2
+                },
+                {
+                  "cell": 48,
+                  "wave": 2
+                },
+                {
+                  "cell": 22,
+                  "wave": 4
+                },
+                {
+                  "cell": 29,
+                  "wave": 4
+                },
+                {
+                  "cell": 36,
+                  "wave": 4
+                },
+                {
+                  "cell": 43,
+                  "wave": 4
+                }
+              ]
+            },
+            {
+              "pair": [
+                31,
+                25
+              ],
+              "waves": 6,
+              "scoreGain": 71,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                33,
+                40
+              ],
+              "waves": 7,
+              "scoreGain": 86,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                36,
+                43
+              ],
+              "waves": 10,
+              "scoreGain": 147,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                0,
+                8
+              ],
+              "waves": 6,
+              "scoreGain": 43,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                12,
+                19
+              ],
+              "waves": 1,
+              "scoreGain": 6,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                29,
+                30
+              ],
+              "waves": 7,
+              "scoreGain": 87,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                0,
+                8
+              ],
+              "waves": 1,
+              "scoreGain": 9,
+              "hits": [],
+              "openedCells": []
+            }
+          ],
+          "status": "won",
+          "score": 545,
+          "movesUsed": 10,
+          "movesLeft": 8,
+          "rngState": 3891835459,
+          "covered": 49
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "cells": 53,
+      "groundLayers": 59,
+      "moves": 20,
+      "target": 290,
+      "routes": [
+        {
+          "path": [
+            [
+              8,
+              16
+            ],
+            [
+              18,
+              28
+            ],
+            [
+              7,
+              15
+            ],
+            [
+              49,
+              50
+            ],
+            [
+              40,
+              41
+            ],
+            [
+              44,
+              50
+            ],
+            [
+              36,
+              45
+            ],
+            [
+              13,
+              6
+            ],
+            [
+              6,
+              15
+            ],
+            [
+              19,
+              12
+            ],
+            [
+              35,
+              27
+            ],
+            [
+              19,
+              12
+            ],
+            [
+              2,
+              9
+            ],
+            [
+              9,
+              10
+            ],
+            [
+              20,
+              30
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "steps": [
+            {
+              "pair": [
+                8,
+                16
+              ],
+              "waves": 1,
+              "scoreGain": 12,
+              "hits": [
+                {
+                  "id": "l8-crate-4",
+                  "cell": 26,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 0
+                },
+                {
+                  "id": "l8-crate-5",
+                  "cell": 27,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l8-crate-6",
+                  "cell": 28,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 27,
+                  "wave": 0
+                },
+                {
+                  "cell": 28,
+                  "wave": 0
+                },
+                {
+                  "cell": 36,
+                  "wave": 0
+                },
+                {
+                  "cell": 37,
+                  "wave": 0
+                },
+                {
+                  "cell": 44,
+                  "wave": 0
+                },
+                {
+                  "cell": 45,
+                  "wave": 0
+                },
+                {
+                  "cell": 50,
+                  "wave": 0
+                },
+                {
+                  "cell": 51,
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                18,
+                28
+              ],
+              "waves": 2,
+              "scoreGain": 24,
+              "hits": [
+                {
+                  "id": "l8-crate-4",
+                  "cell": 26,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l8-crate-7",
+                  "cell": 29,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 0
+                },
+                {
+                  "id": "l8-crate-8",
+                  "cell": 30,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l8-crate-7",
+                  "cell": 29,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 1
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 26,
+                  "wave": 0
+                },
+                {
+                  "cell": 30,
+                  "wave": 0
+                },
+                {
+                  "cell": 35,
+                  "wave": 0
+                },
+                {
+                  "cell": 39,
+                  "wave": 0
+                },
+                {
+                  "cell": 43,
+                  "wave": 0
+                },
+                {
+                  "cell": 49,
+                  "wave": 0
+                },
+                {
+                  "cell": 52,
+                  "wave": 0
+                },
+                {
+                  "cell": 29,
+                  "wave": 1
+                },
+                {
+                  "cell": 38,
+                  "wave": 1
+                },
+                {
+                  "cell": 46,
+                  "wave": 1
+                }
+              ]
+            },
+            {
+              "pair": [
+                7,
+                15
+              ],
+              "waves": 1,
+              "scoreGain": 15,
+              "hits": [
+                {
+                  "id": "l8-crate-2",
+                  "cell": 24,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l8-crate-3",
+                  "cell": 25,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 24,
+                  "wave": 0
+                },
+                {
+                  "cell": 25,
+                  "wave": 0
+                },
+                {
+                  "cell": 33,
+                  "wave": 0
+                },
+                {
+                  "cell": 34,
+                  "wave": 0
+                },
+                {
+                  "cell": 41,
+                  "wave": 0
+                },
+                {
+                  "cell": 42,
+                  "wave": 0
+                },
+                {
+                  "cell": 47,
+                  "wave": 0
+                },
+                {
+                  "cell": 48,
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                49,
+                50
+              ],
+              "waves": 4,
+              "scoreGain": 28,
+              "hits": [
+                {
+                  "id": "l8-crate-0",
+                  "cell": 22,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 1
+                },
+                {
+                  "id": "l8-crate-1",
+                  "cell": 23,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 1
+                },
+                {
+                  "id": "l8-crate-1",
+                  "cell": 23,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 2
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 22,
+                  "wave": 1
+                },
+                {
+                  "cell": 31,
+                  "wave": 1
+                },
+                {
+                  "cell": 23,
+                  "wave": 2
+                },
+                {
+                  "cell": 32,
+                  "wave": 2
+                },
+                {
+                  "cell": 40,
+                  "wave": 2
+                }
+              ]
+            },
+            {
+              "pair": [
+                40,
+                41
+              ],
+              "waves": 6,
+              "scoreGain": 93,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                44,
+                50
+              ],
+              "waves": 3,
+              "scoreGain": 38,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                36,
+                45
+              ],
+              "waves": 5,
+              "scoreGain": 63,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                13,
+                6
+              ],
+              "waves": 3,
+              "scoreGain": 22,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                6,
+                15
+              ],
+              "waves": 4,
+              "scoreGain": 42,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                19,
+                12
+              ],
+              "waves": 1,
+              "scoreGain": 9,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                35,
+                27
+              ],
+              "waves": 6,
+              "scoreGain": 137,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                19,
+                12
+              ],
+              "waves": 3,
+              "scoreGain": 34,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                2,
+                9
+              ],
+              "waves": 1,
+              "scoreGain": 15,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                9,
+                10
+              ],
+              "waves": 1,
+              "scoreGain": 15,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                20,
+                30
+              ],
+              "waves": 1,
+              "scoreGain": 6,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                4,
+                5
+              ],
+              "waves": 1,
+              "scoreGain": 9,
+              "hits": [],
+              "openedCells": []
+            }
+          ],
+          "status": "won",
+          "score": 562,
+          "movesUsed": 16,
+          "movesLeft": 4,
+          "rngState": 3224360922,
+          "covered": 53
+        },
+        {
+          "path": [
+            [
+              8,
+              9
+            ],
+            [
+              17,
+              18
+            ],
+            [
+              28,
+              20
+            ],
+            [
+              34,
+              43
+            ],
+            [
+              36,
+              45
+            ],
+            [
+              44,
+              51
+            ],
+            [
+              7,
+              8
+            ],
+            [
+              47,
+              48
+            ],
+            [
+              16,
+              25
+            ],
+            [
+              41,
+              34
+            ],
+            [
+              18,
+              19
+            ],
+            [
+              31,
+              23
+            ],
+            [
+              3,
+              4
+            ],
+            [
+              19,
+              20
+            ],
+            [
+              10,
+              19
+            ],
+            [
+              8,
+              9
+            ]
+          ],
+          "steps": [
+            {
+              "pair": [
+                8,
+                9
+              ],
+              "waves": 1,
+              "scoreGain": 12,
+              "hits": [
+                {
+                  "id": "l8-crate-4",
+                  "cell": 26,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 0
+                },
+                {
+                  "id": "l8-crate-5",
+                  "cell": 27,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l8-crate-6",
+                  "cell": 28,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 27,
+                  "wave": 0
+                },
+                {
+                  "cell": 28,
+                  "wave": 0
+                },
+                {
+                  "cell": 36,
+                  "wave": 0
+                },
+                {
+                  "cell": 37,
+                  "wave": 0
+                },
+                {
+                  "cell": 44,
+                  "wave": 0
+                },
+                {
+                  "cell": 45,
+                  "wave": 0
+                },
+                {
+                  "cell": 50,
+                  "wave": 0
+                },
+                {
+                  "cell": 51,
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                17,
+                18
+              ],
+              "waves": 1,
+              "scoreGain": 15,
+              "hits": [
+                {
+                  "id": "l8-crate-4",
+                  "cell": 26,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 26,
+                  "wave": 0
+                },
+                {
+                  "cell": 35,
+                  "wave": 0
+                },
+                {
+                  "cell": 43,
+                  "wave": 0
+                },
+                {
+                  "cell": 49,
+                  "wave": 0
+                },
+                {
+                  "cell": 52,
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                28,
+                20
+              ],
+              "waves": 2,
+              "scoreGain": 24,
+              "hits": [
+                {
+                  "id": "l8-crate-3",
+                  "cell": 25,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l8-crate-7",
+                  "cell": 29,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 0
+                },
+                {
+                  "id": "l8-crate-7",
+                  "cell": 29,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 1
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 25,
+                  "wave": 0
+                },
+                {
+                  "cell": 34,
+                  "wave": 0
+                },
+                {
+                  "cell": 42,
+                  "wave": 0
+                },
+                {
+                  "cell": 48,
+                  "wave": 0
+                },
+                {
+                  "cell": 29,
+                  "wave": 1
+                },
+                {
+                  "cell": 38,
+                  "wave": 1
+                },
+                {
+                  "cell": 46,
+                  "wave": 1
+                }
+              ]
+            },
+            {
+              "pair": [
+                34,
+                43
+              ],
+              "waves": 9,
+              "scoreGain": 85,
+              "hits": [
+                {
+                  "id": "l8-crate-2",
+                  "cell": 24,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 4
+                },
+                {
+                  "id": "l8-crate-8",
+                  "cell": 30,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 5
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 24,
+                  "wave": 4
+                },
+                {
+                  "cell": 33,
+                  "wave": 4
+                },
+                {
+                  "cell": 41,
+                  "wave": 4
+                },
+                {
+                  "cell": 47,
+                  "wave": 4
+                },
+                {
+                  "cell": 30,
+                  "wave": 5
+                },
+                {
+                  "cell": 39,
+                  "wave": 5
+                }
+              ]
+            },
+            {
+              "pair": [
+                36,
+                45
+              ],
+              "waves": 7,
+              "scoreGain": 84,
+              "hits": [
+                {
+                  "id": "l8-crate-1",
+                  "cell": 23,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 6
+                }
+              ],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                44,
+                51
+              ],
+              "waves": 8,
+              "scoreGain": 130,
+              "hits": [
+                {
+                  "id": "l8-crate-1",
+                  "cell": 23,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 1
+                },
+                {
+                  "id": "l8-crate-0",
+                  "cell": 22,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 7
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 23,
+                  "wave": 1
+                },
+                {
+                  "cell": 32,
+                  "wave": 1
+                },
+                {
+                  "cell": 40,
+                  "wave": 1
+                },
+                {
+                  "cell": 22,
+                  "wave": 7
+                },
+                {
+                  "cell": 31,
+                  "wave": 7
+                }
+              ]
+            },
+            {
+              "pair": [
+                7,
+                8
+              ],
+              "waves": 1,
+              "scoreGain": 6,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                47,
+                48
+              ],
+              "waves": 2,
+              "scoreGain": 15,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                16,
+                25
+              ],
+              "waves": 4,
+              "scoreGain": 63,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                41,
+                34
+              ],
+              "waves": 5,
+              "scoreGain": 47,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                18,
+                19
+              ],
+              "waves": 1,
+              "scoreGain": 9,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                31,
+                23
+              ],
+              "waves": 1,
+              "scoreGain": 3,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                3,
+                4
+              ],
+              "waves": 2,
+              "scoreGain": 12,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                19,
+                20
+              ],
+              "waves": 2,
+              "scoreGain": 15,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                10,
+                19
+              ],
+              "waves": 4,
+              "scoreGain": 77,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                8,
+                9
+              ],
+              "waves": 1,
+              "scoreGain": 15,
+              "hits": [],
+              "openedCells": []
+            }
+          ],
+          "status": "won",
+          "score": 612,
+          "movesUsed": 16,
+          "movesLeft": 4,
+          "rngState": 2478916816,
+          "covered": 53
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "cells": 61,
+      "groundLayers": 69,
+      "moves": 22,
+      "target": 340,
+      "routes": [
+        {
+          "path": [
+            [
+              8,
+              1
+            ],
+            [
+              9,
+              19
+            ],
+            [
+              28,
+              20
+            ],
+            [
+              13,
+              23
+            ],
+            [
+              40,
+              49
+            ],
+            [
+              54,
+              55
+            ],
+            [
+              28,
+              29
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              24,
+              34
+            ],
+            [
+              45,
+              53
+            ],
+            [
+              39,
+              48
+            ],
+            [
+              12,
+              13
+            ],
+            [
+              46,
+              47
+            ],
+            [
+              1,
+              9
+            ],
+            [
+              13,
+              23
+            ],
+            [
+              24,
+              25
+            ],
+            [
+              22,
+              31
+            ],
+            [
+              41,
+              42
+            ]
+          ],
+          "steps": [
+            {
+              "pair": [
+                8,
+                1
+              ],
+              "waves": 1,
+              "scoreGain": 15,
+              "hits": [
+                {
+                  "id": "l9-crate-2",
+                  "cell": 28,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 28,
+                  "wave": 0
+                },
+                {
+                  "cell": 37,
+                  "wave": 0
+                },
+                {
+                  "cell": 46,
+                  "wave": 0
+                },
+                {
+                  "cell": 54,
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                9,
+                19
+              ],
+              "waves": 2,
+              "scoreGain": 24,
+              "hits": [
+                {
+                  "id": "l9-crate-6",
+                  "cell": 32,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 1
+                }
+              ],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                28,
+                20
+              ],
+              "waves": 1,
+              "scoreGain": 12,
+              "hits": [
+                {
+                  "id": "l9-crate-1",
+                  "cell": 27,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l9-crate-3",
+                  "cell": 29,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 0
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 27,
+                  "wave": 0
+                },
+                {
+                  "cell": 36,
+                  "wave": 0
+                },
+                {
+                  "cell": 45,
+                  "wave": 0
+                },
+                {
+                  "cell": 53,
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                13,
+                23
+              ],
+              "waves": 7,
+              "scoreGain": 63,
+              "hits": [
+                {
+                  "id": "l9-crate-3",
+                  "cell": 29,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l9-crate-4",
+                  "cell": 30,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l9-crate-5",
+                  "cell": 31,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 3
+                },
+                {
+                  "id": "l9-crate-0",
+                  "cell": 26,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 4
+                },
+                {
+                  "id": "l9-crate-6",
+                  "cell": 32,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 5
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 29,
+                  "wave": 0
+                },
+                {
+                  "cell": 30,
+                  "wave": 0
+                },
+                {
+                  "cell": 38,
+                  "wave": 0
+                },
+                {
+                  "cell": 39,
+                  "wave": 0
+                },
+                {
+                  "cell": 47,
+                  "wave": 0
+                },
+                {
+                  "cell": 48,
+                  "wave": 0
+                },
+                {
+                  "cell": 55,
+                  "wave": 0
+                },
+                {
+                  "cell": 56,
+                  "wave": 0
+                },
+                {
+                  "cell": 60,
+                  "wave": 0
+                },
+                {
+                  "cell": 31,
+                  "wave": 3
+                },
+                {
+                  "cell": 40,
+                  "wave": 3
+                },
+                {
+                  "cell": 49,
+                  "wave": 3
+                },
+                {
+                  "cell": 57,
+                  "wave": 3
+                },
+                {
+                  "cell": 32,
+                  "wave": 5
+                },
+                {
+                  "cell": 41,
+                  "wave": 5
+                },
+                {
+                  "cell": 50,
+                  "wave": 5
+                },
+                {
+                  "cell": 58,
+                  "wave": 5
+                }
+              ]
+            },
+            {
+              "pair": [
+                40,
+                49
+              ],
+              "waves": 6,
+              "scoreGain": 58,
+              "hits": [
+                {
+                  "id": "l9-crate-7",
+                  "cell": 33,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 1
+                },
+                {
+                  "id": "l9-crate-8",
+                  "cell": 34,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 4
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 33,
+                  "wave": 1
+                },
+                {
+                  "cell": 42,
+                  "wave": 1
+                },
+                {
+                  "cell": 51,
+                  "wave": 1
+                },
+                {
+                  "cell": 59,
+                  "wave": 1
+                },
+                {
+                  "cell": 34,
+                  "wave": 4
+                },
+                {
+                  "cell": 43,
+                  "wave": 4
+                },
+                {
+                  "cell": 52,
+                  "wave": 4
+                }
+              ]
+            },
+            {
+              "pair": [
+                54,
+                55
+              ],
+              "waves": 7,
+              "scoreGain": 87,
+              "hits": [
+                {
+                  "id": "l9-crate-0",
+                  "cell": 26,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 3
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 26,
+                  "wave": 3
+                },
+                {
+                  "cell": 35,
+                  "wave": 3
+                },
+                {
+                  "cell": 44,
+                  "wave": 3
+                }
+              ]
+            },
+            {
+              "pair": [
+                28,
+                29
+              ],
+              "waves": 9,
+              "scoreGain": 109,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                4,
+                5
+              ],
+              "waves": 3,
+              "scoreGain": 27,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                24,
+                34
+              ],
+              "waves": 1,
+              "scoreGain": 12,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                45,
+                53
+              ],
+              "waves": 2,
+              "scoreGain": 23,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                39,
+                48
+              ],
+              "waves": 8,
+              "scoreGain": 83,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                12,
+                13
+              ],
+              "waves": 1,
+              "scoreGain": 3,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                46,
+                47
+              ],
+              "waves": 3,
+              "scoreGain": 48,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                1,
+                9
+              ],
+              "waves": 1,
+              "scoreGain": 3,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                13,
+                23
+              ],
+              "waves": 1,
+              "scoreGain": 6,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                24,
+                25
+              ],
+              "waves": 1,
+              "scoreGain": 3,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                22,
+                31
+              ],
+              "waves": 5,
+              "scoreGain": 45,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                41,
+                42
+              ],
+              "waves": 2,
+              "scoreGain": 27,
+              "hits": [],
+              "openedCells": []
+            }
+          ],
+          "status": "won",
+          "score": 648,
+          "movesUsed": 18,
+          "movesLeft": 4,
+          "rngState": 4179076359,
+          "covered": 61
+        },
+        {
+          "path": [
+            [
+              18,
+              19
+            ],
+            [
+              5,
+              6
+            ],
+            [
+              18,
+              28
+            ],
+            [
+              30,
+              39
+            ],
+            [
+              38,
+              39
+            ],
+            [
+              32,
+              33
+            ],
+            [
+              40,
+              50
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              9,
+              10
+            ],
+            [
+              12,
+              13
+            ],
+            [
+              16,
+              25
+            ],
+            [
+              36,
+              45
+            ],
+            [
+              57,
+              58
+            ],
+            [
+              8,
+              9
+            ],
+            [
+              3,
+              11
+            ],
+            [
+              9,
+              18
+            ],
+            [
+              11,
+              12
+            ]
+          ],
+          "steps": [
+            {
+              "pair": [
+                18,
+                19
+              ],
+              "waves": 1,
+              "scoreGain": 15,
+              "hits": [
+                {
+                  "id": "l9-crate-0",
+                  "cell": 26,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 0
+                },
+                {
+                  "id": "l9-crate-1",
+                  "cell": 27,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l9-crate-2",
+                  "cell": 28,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 27,
+                  "wave": 0
+                },
+                {
+                  "cell": 28,
+                  "wave": 0
+                },
+                {
+                  "cell": 36,
+                  "wave": 0
+                },
+                {
+                  "cell": 37,
+                  "wave": 0
+                },
+                {
+                  "cell": 45,
+                  "wave": 0
+                },
+                {
+                  "cell": 46,
+                  "wave": 0
+                },
+                {
+                  "cell": 53,
+                  "wave": 0
+                },
+                {
+                  "cell": 54,
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                5,
+                6
+              ],
+              "waves": 3,
+              "scoreGain": 30,
+              "hits": [
+                {
+                  "id": "l9-crate-6",
+                  "cell": 32,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 1
+                }
+              ],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                18,
+                28
+              ],
+              "waves": 3,
+              "scoreGain": 34,
+              "hits": [
+                {
+                  "id": "l9-crate-0",
+                  "cell": 26,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l9-crate-3",
+                  "cell": 29,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 0
+                },
+                {
+                  "id": "l9-crate-4",
+                  "cell": 30,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l9-crate-3",
+                  "cell": 29,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 1
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 26,
+                  "wave": 0
+                },
+                {
+                  "cell": 30,
+                  "wave": 0
+                },
+                {
+                  "cell": 35,
+                  "wave": 0
+                },
+                {
+                  "cell": 39,
+                  "wave": 0
+                },
+                {
+                  "cell": 44,
+                  "wave": 0
+                },
+                {
+                  "cell": 48,
+                  "wave": 0
+                },
+                {
+                  "cell": 56,
+                  "wave": 0
+                },
+                {
+                  "cell": 60,
+                  "wave": 0
+                },
+                {
+                  "cell": 29,
+                  "wave": 1
+                },
+                {
+                  "cell": 38,
+                  "wave": 1
+                },
+                {
+                  "cell": 47,
+                  "wave": 1
+                },
+                {
+                  "cell": 55,
+                  "wave": 1
+                }
+              ]
+            },
+            {
+              "pair": [
+                30,
+                39
+              ],
+              "waves": 1,
+              "scoreGain": 15,
+              "hits": [
+                {
+                  "id": "l9-crate-5",
+                  "cell": 31,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l9-crate-6",
+                  "cell": 32,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 31,
+                  "wave": 0
+                },
+                {
+                  "cell": 32,
+                  "wave": 0
+                },
+                {
+                  "cell": 40,
+                  "wave": 0
+                },
+                {
+                  "cell": 41,
+                  "wave": 0
+                },
+                {
+                  "cell": 49,
+                  "wave": 0
+                },
+                {
+                  "cell": 50,
+                  "wave": 0
+                },
+                {
+                  "cell": 57,
+                  "wave": 0
+                },
+                {
+                  "cell": 58,
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                38,
+                39
+              ],
+              "waves": 6,
+              "scoreGain": 95,
+              "hits": [
+                {
+                  "id": "l9-crate-7",
+                  "cell": 33,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 1
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 33,
+                  "wave": 1
+                },
+                {
+                  "cell": 42,
+                  "wave": 1
+                },
+                {
+                  "cell": 51,
+                  "wave": 1
+                },
+                {
+                  "cell": 59,
+                  "wave": 1
+                }
+              ]
+            },
+            {
+              "pair": [
+                32,
+                33
+              ],
+              "waves": 8,
+              "scoreGain": 177,
+              "hits": [
+                {
+                  "id": "l9-crate-8",
+                  "cell": 34,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 34,
+                  "wave": 0
+                },
+                {
+                  "cell": 43,
+                  "wave": 0
+                },
+                {
+                  "cell": 52,
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                40,
+                50
+              ],
+              "waves": 4,
+              "scoreGain": 75,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                2,
+                3
+              ],
+              "waves": 3,
+              "scoreGain": 37,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                9,
+                10
+              ],
+              "waves": 3,
+              "scoreGain": 32,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                12,
+                13
+              ],
+              "waves": 2,
+              "scoreGain": 27,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                16,
+                25
+              ],
+              "waves": 1,
+              "scoreGain": 3,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                36,
+                45
+              ],
+              "waves": 1,
+              "scoreGain": 3,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                57,
+                58
+              ],
+              "waves": 4,
+              "scoreGain": 85,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                8,
+                9
+              ],
+              "waves": 1,
+              "scoreGain": 12,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                3,
+                11
+              ],
+              "waves": 1,
+              "scoreGain": 6,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                9,
+                18
+              ],
+              "waves": 2,
+              "scoreGain": 12,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                11,
+                12
+              ],
+              "waves": 1,
+              "scoreGain": 20,
+              "hits": [],
+              "openedCells": []
+            }
+          ],
+          "status": "won",
+          "score": 678,
+          "movesUsed": 17,
+          "movesLeft": 5,
+          "rngState": 3315913078,
+          "covered": 61
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "cells": 65,
+      "groundLayers": 75,
+      "moves": 24,
+      "target": 390,
+      "routes": [
+        {
+          "path": [
+            [
+              5,
+              13
+            ],
+            [
+              15,
+              25
+            ],
+            [
+              15,
+              24
+            ],
+            [
+              15,
+              16
+            ],
+            [
+              40,
+              41
+            ],
+            [
+              51,
+              59
+            ],
+            [
+              8,
+              9
+            ],
+            [
+              24,
+              33
+            ],
+            [
+              3,
+              12
+            ],
+            [
+              33,
+              43
+            ],
+            [
+              38,
+              39
+            ],
+            [
+              53,
+              61
+            ],
+            [
+              29,
+              30
+            ],
+            [
+              8,
+              9
+            ],
+            [
+              17,
+              18
+            ]
+          ],
+          "steps": [
+            {
+              "pair": [
+                5,
+                13
+              ],
+              "waves": 1,
+              "scoreGain": 3,
+              "hits": [
+                {
+                  "id": "l10-crate-4",
+                  "cell": 32,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 32,
+                  "wave": 0
+                },
+                {
+                  "cell": 41,
+                  "wave": 0
+                },
+                {
+                  "cell": 50,
+                  "wave": 0
+                },
+                {
+                  "cell": 58,
+                  "wave": 0
+                },
+                {
+                  "cell": 63,
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                15,
+                25
+              ],
+              "waves": 1,
+              "scoreGain": 3,
+              "hits": [
+                {
+                  "id": "l10-crate-2",
+                  "cell": 30,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l10-crate-3",
+                  "cell": 31,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 0
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 30,
+                  "wave": 0
+                },
+                {
+                  "cell": 39,
+                  "wave": 0
+                },
+                {
+                  "cell": 48,
+                  "wave": 0
+                },
+                {
+                  "cell": 56,
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                15,
+                24
+              ],
+              "waves": 3,
+              "scoreGain": 61,
+              "hits": [
+                {
+                  "id": "l10-crate-6",
+                  "cell": 34,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l10-crate-5",
+                  "cell": 33,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 1
+                },
+                {
+                  "id": "l10-crate-5",
+                  "cell": 33,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 2
+                },
+                {
+                  "id": "l10-crate-7",
+                  "cell": 35,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 2
+                },
+                {
+                  "id": "l10-crate-8",
+                  "cell": 36,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 2
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 34,
+                  "wave": 0
+                },
+                {
+                  "cell": 43,
+                  "wave": 0
+                },
+                {
+                  "cell": 52,
+                  "wave": 0
+                },
+                {
+                  "cell": 60,
+                  "wave": 0
+                },
+                {
+                  "cell": 33,
+                  "wave": 2
+                },
+                {
+                  "cell": 36,
+                  "wave": 2
+                },
+                {
+                  "cell": 42,
+                  "wave": 2
+                },
+                {
+                  "cell": 45,
+                  "wave": 2
+                },
+                {
+                  "cell": 51,
+                  "wave": 2
+                },
+                {
+                  "cell": 54,
+                  "wave": 2
+                },
+                {
+                  "cell": 59,
+                  "wave": 2
+                },
+                {
+                  "cell": 64,
+                  "wave": 2
+                }
+              ]
+            },
+            {
+              "pair": [
+                15,
+                16
+              ],
+              "waves": 9,
+              "scoreGain": 95,
+              "hits": [
+                {
+                  "id": "l10-crate-3",
+                  "cell": 31,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l10-crate-7",
+                  "cell": 35,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 1
+                },
+                {
+                  "id": "l10-crate-1",
+                  "cell": 29,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 3
+                },
+                {
+                  "id": "l10-crate-1",
+                  "cell": 29,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 4
+                },
+                {
+                  "id": "l10-crate-0",
+                  "cell": 28,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 6
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 31,
+                  "wave": 0
+                },
+                {
+                  "cell": 40,
+                  "wave": 0
+                },
+                {
+                  "cell": 49,
+                  "wave": 0
+                },
+                {
+                  "cell": 57,
+                  "wave": 0
+                },
+                {
+                  "cell": 62,
+                  "wave": 0
+                },
+                {
+                  "cell": 35,
+                  "wave": 1
+                },
+                {
+                  "cell": 44,
+                  "wave": 1
+                },
+                {
+                  "cell": 53,
+                  "wave": 1
+                },
+                {
+                  "cell": 61,
+                  "wave": 1
+                },
+                {
+                  "cell": 29,
+                  "wave": 4
+                },
+                {
+                  "cell": 38,
+                  "wave": 4
+                },
+                {
+                  "cell": 47,
+                  "wave": 4
+                },
+                {
+                  "cell": 55,
+                  "wave": 4
+                },
+                {
+                  "cell": 28,
+                  "wave": 6
+                },
+                {
+                  "cell": 37,
+                  "wave": 6
+                },
+                {
+                  "cell": 46,
+                  "wave": 6
+                }
+              ]
+            },
+            {
+              "pair": [
+                40,
+                41
+              ],
+              "waves": 6,
+              "scoreGain": 81,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                51,
+                59
+              ],
+              "waves": 7,
+              "scoreGain": 87,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                8,
+                9
+              ],
+              "waves": 1,
+              "scoreGain": 12,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                24,
+                33
+              ],
+              "waves": 8,
+              "scoreGain": 124,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                3,
+                12
+              ],
+              "waves": 1,
+              "scoreGain": 3,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                33,
+                43
+              ],
+              "waves": 9,
+              "scoreGain": 118,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                38,
+                39
+              ],
+              "waves": 5,
+              "scoreGain": 59,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                53,
+                61
+              ],
+              "waves": 1,
+              "scoreGain": 15,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                29,
+                30
+              ],
+              "waves": 5,
+              "scoreGain": 45,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                8,
+                9
+              ],
+              "waves": 1,
+              "scoreGain": 12,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                17,
+                18
+              ],
+              "waves": 1,
+              "scoreGain": 3,
+              "hits": [],
+              "openedCells": []
+            }
+          ],
+          "status": "won",
+          "score": 721,
+          "movesUsed": 15,
+          "movesLeft": 9,
+          "rngState": 4220402416,
+          "covered": 65
+        },
+        {
+          "path": [
+            [
+              7,
+              16
+            ],
+            [
+              12,
+              13
+            ],
+            [
+              14,
+              23
+            ],
+            [
+              22,
+              23
+            ],
+            [
+              30,
+              39
+            ],
+            [
+              56,
+              57
+            ],
+            [
+              24,
+              33
+            ],
+            [
+              17,
+              18
+            ],
+            [
+              24,
+              34
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              35,
+              36
+            ],
+            [
+              38,
+              39
+            ],
+            [
+              28,
+              20
+            ]
+          ],
+          "steps": [
+            {
+              "pair": [
+                7,
+                16
+              ],
+              "waves": 1,
+              "scoreGain": 15,
+              "hits": [
+                {
+                  "id": "l10-crate-4",
+                  "cell": 32,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l10-crate-5",
+                  "cell": 33,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 0
+                },
+                {
+                  "id": "l10-crate-6",
+                  "cell": 34,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 32,
+                  "wave": 0
+                },
+                {
+                  "cell": 34,
+                  "wave": 0
+                },
+                {
+                  "cell": 41,
+                  "wave": 0
+                },
+                {
+                  "cell": 43,
+                  "wave": 0
+                },
+                {
+                  "cell": 50,
+                  "wave": 0
+                },
+                {
+                  "cell": 52,
+                  "wave": 0
+                },
+                {
+                  "cell": 58,
+                  "wave": 0
+                },
+                {
+                  "cell": 60,
+                  "wave": 0
+                },
+                {
+                  "cell": 63,
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                12,
+                13
+              ],
+              "waves": 1,
+              "scoreGain": 3,
+              "hits": [
+                {
+                  "id": "l10-crate-2",
+                  "cell": 30,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l10-crate-3",
+                  "cell": 31,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 0
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 30,
+                  "wave": 0
+                },
+                {
+                  "cell": 39,
+                  "wave": 0
+                },
+                {
+                  "cell": 48,
+                  "wave": 0
+                },
+                {
+                  "cell": 56,
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                14,
+                23
+              ],
+              "waves": 2,
+              "scoreGain": 43,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                22,
+                23
+              ],
+              "waves": 7,
+              "scoreGain": 155,
+              "hits": [
+                {
+                  "id": "l10-crate-3",
+                  "cell": 31,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l10-crate-5",
+                  "cell": 33,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l10-crate-1",
+                  "cell": 29,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 1
+                },
+                {
+                  "id": "l10-crate-7",
+                  "cell": 35,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 1
+                },
+                {
+                  "id": "l10-crate-0",
+                  "cell": 28,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 2
+                },
+                {
+                  "id": "l10-crate-1",
+                  "cell": 29,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 2
+                },
+                {
+                  "id": "l10-crate-7",
+                  "cell": 35,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 6
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 31,
+                  "wave": 0
+                },
+                {
+                  "cell": 33,
+                  "wave": 0
+                },
+                {
+                  "cell": 40,
+                  "wave": 0
+                },
+                {
+                  "cell": 42,
+                  "wave": 0
+                },
+                {
+                  "cell": 49,
+                  "wave": 0
+                },
+                {
+                  "cell": 51,
+                  "wave": 0
+                },
+                {
+                  "cell": 57,
+                  "wave": 0
+                },
+                {
+                  "cell": 59,
+                  "wave": 0
+                },
+                {
+                  "cell": 62,
+                  "wave": 0
+                },
+                {
+                  "cell": 64,
+                  "wave": 0
+                },
+                {
+                  "cell": 28,
+                  "wave": 2
+                },
+                {
+                  "cell": 29,
+                  "wave": 2
+                },
+                {
+                  "cell": 37,
+                  "wave": 2
+                },
+                {
+                  "cell": 38,
+                  "wave": 2
+                },
+                {
+                  "cell": 46,
+                  "wave": 2
+                },
+                {
+                  "cell": 47,
+                  "wave": 2
+                },
+                {
+                  "cell": 55,
+                  "wave": 2
+                },
+                {
+                  "cell": 35,
+                  "wave": 6
+                },
+                {
+                  "cell": 44,
+                  "wave": 6
+                },
+                {
+                  "cell": 53,
+                  "wave": 6
+                },
+                {
+                  "cell": 61,
+                  "wave": 6
+                }
+              ]
+            },
+            {
+              "pair": [
+                30,
+                39
+              ],
+              "waves": 2,
+              "scoreGain": 32,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                56,
+                57
+              ],
+              "waves": 7,
+              "scoreGain": 100,
+              "hits": [
+                {
+                  "id": "l10-crate-8",
+                  "cell": 36,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 6
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 36,
+                  "wave": 6
+                },
+                {
+                  "cell": 45,
+                  "wave": 6
+                },
+                {
+                  "cell": 54,
+                  "wave": 6
+                }
+              ]
+            },
+            {
+              "pair": [
+                24,
+                33
+              ],
+              "waves": 4,
+              "scoreGain": 52,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                17,
+                18
+              ],
+              "waves": 1,
+              "scoreGain": 5,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                24,
+                34
+              ],
+              "waves": 7,
+              "scoreGain": 101,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                4,
+                5
+              ],
+              "waves": 1,
+              "scoreGain": 17,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                35,
+                36
+              ],
+              "waves": 1,
+              "scoreGain": 15,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                38,
+                39
+              ],
+              "waves": 7,
+              "scoreGain": 154,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                28,
+                20
+              ],
+              "waves": 1,
+              "scoreGain": 9,
+              "hits": [],
+              "openedCells": []
+            }
+          ],
+          "status": "won",
+          "score": 701,
+          "movesUsed": 13,
+          "movesLeft": 11,
+          "rngState": 4310859,
+          "covered": 65
+        }
+      ]
+    }
+  ]
+}

@@ -303,7 +303,7 @@ jobs:
         with:
           dotnet-version: '8.0.x'
       - name: Compile C# 7.3 and compare catalogs, selections and replay saves
-        run: npm run test:unity-catalog && node check-campaign-flow-parity.cjs
+        run: npm run test:unity-catalog && node check-campaign-flow-parity.cjs && node check-large-flow-parity.cjs
 
   csharp-hint-adapter-parity:
     name: C# hints and reward adapter parity
@@ -542,6 +542,10 @@ jobs:
       - run: npx playwright install --with-deps ${{ matrix.browser }}
       - run: npm run test:obstacles
       - run: npm run test:unity-obstacles
+      - run: npm run test:large-flow-browser
+        env:
+          HEXROTA_BROWSER: ${{ matrix.browser }}
+          HEXROTA_LARGE_FLOW_SCREENSHOT_DIR: test-results/large-flow-${{ matrix.browser }}
       - run: npm run test:flow-browser
         env:
           HEXROTA_BROWSER: ${{ matrix.browser }}
@@ -557,4 +561,5 @@ jobs:
           path: |
             test-results/obstacles-${{ matrix.browser }}
             test-results/flow-${{ matrix.browser }}
+            test-results/large-flow-${{ matrix.browser }}
           if-no-files-found: warn

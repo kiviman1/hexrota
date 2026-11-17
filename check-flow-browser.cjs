@@ -44,7 +44,7 @@ async function rendered(page){const s=await snapshot(page),l=await flowLevel(pag
 async function isolated(page){const io=await page.evaluate(()=>window.__flowIO);for(const key of protectedKeys){assert(!io.reads.includes(key),'normal campaign key is not read: '+key);assert(!io.writes.some(row=>row.key===key),'normal campaign key is not written: '+key);assert(!io.removes.includes(key),'normal campaign key is not removed: '+key);assert.equal(await page.evaluate(key=>window.__flowRawGet(key),key),'sentinel:'+key);}}
 async function screenshot(page,name){await page.screenshot({path:path.join(output,name+'.png'),animations:'disabled'});}
 (async()=>{
- await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));url=`http://127.0.0.1:${server.address().port}/?dev=flow-9-12`;
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));url=`http://127.0.0.1:${server.address().port}/?dev=flow-9-12&flowData=campaign-flow-v1`;
  const executable=browserName==='webkit'?process.env.HEXROTA_WEBKIT_PATH:process.env.HEXROTA_CHROMIUM_PATH||(fs.existsSync('/usr/bin/chromium')?'/usr/bin/chromium':undefined);
  try{
   browser=await(browserName==='webkit'?webkit:chromium).launch({headless:true,...(executable?{executablePath:executable}:{}),...(browserName==='chromium'?{args:['--no-sandbox']}:{})});

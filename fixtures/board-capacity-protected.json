@@ -1,0 +1,17 @@
+{
+  "baseline": "2d1dcb1d484101e767b8cb1ad5b15331e19d2a51",
+  "scope": "Reviewed 9x9 maximum canvas with per-level authored subsets and v1/v2 archived definitions. Existing engine, original campaign, v1 data, behavioral goldens and acceptance thresholds remain frozen.",
+  "sha256": {
+    "dist/app.js": "a5631c239ad181d8176bb2040459fecb4200a815790123afd97080a5837046d4",
+    "dist/board-view.js": "a747e8b271f3476371b5118b35f1fbb4cc7db942280bef6b0305cedf3abbd98b",
+    "dist/campaign-flow.js": "e0ed6adae2bd687b767196a4099ef59d0dda13a3149e8ba3645c0db5e84bed00",
+    "dist/sw.js": "84eaad2ed5e0790e0cad17616fb8c9fb2b38b944538cc9591559afb2b0fcaf6f",
+    "dist/style.css": "de5c9933950e00153bff881ae38f5985c3528d7c3b93610727740672b04d1bd3",
+    "src/styles/10-obstacle-flow.css": "47e711b70bdb6273aabf1c3237e4162be762a7a26e2963e0a2bb554611ebbf4a",
+    "unity/Catalog/CampaignFlowCatalog.cs": "2fc772943732983c3b4a7d18b4e2fd4d540a6dfee387400c10982aeac775602b",
+    "unity/CampaignFlowParityHarness/Program.cs": "fae5d4ef8b4b5e8b5d32d7a372be2fb8a8a6425ebca88c47682199419c00e567",
+    "data/campaign-flow-levels-v2.json": "af658c77b22cdc090add8ccc84385fa75cfa3a688166bce983d6725d56c2bd78",
+    "dist/campaign-flow-levels-v2.js": "f5bfb233d449deccea102613dd3b587623071e2cfa70622cade35cce50477d32",
+    "scripts/generate-campaign-flow-levels-v2.cjs": "d7dbc534855b038f41c1871a81ff76fac70de493af0a47d2b2699af76ca29d3b"
+  }
+}

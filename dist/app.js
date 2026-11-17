@@ -5,13 +5,15 @@ window.HexSessionStore.boot(function startApp(session) {
   const storage=devFlow?window.HexCampaignFlow.storage(window.localStorage):window.localStorage;
   if(devFlow)document.body.dataset.devFlow='true';
   const tutorials=window.HEX_TUTORIALS||[];
-  const campaignLevels=devFlow?window.HEX_LEVELS.map(level=>(window.HEX_CAMPAIGN_FLOW_LEVELS||[]).find(update=>update.id===level.id)||level):window.HEX_LEVELS;
+  const flowArchives=[...(window.HEX_CAMPAIGN_FLOW_LEVELS||[]),...(window.HEX_CAMPAIGN_FLOW_LEVELS_V2||[])];
+  const currentFlowLevels=devFlow?window.HexCampaignFlow.currentLevels(flowArchives,window.HexCampaignFlow.reviewVersion):[];
+  const campaignLevels=devFlow?window.HEX_LEVELS.map(level=>currentFlowLevels.find(update=>update.id===level.id)||level):window.HEX_LEVELS;
   const levels=[...tutorials,...campaignLevels];
   const tutorialCount=tutorials.length,campaignCount=window.HEX_LEVELS.length;
   const key = 'hexrota-match-v5',eventKey='hexrota-events-v1';
   let variantCatalog=null;
   if(window.HexAttempts)try{variantCatalog=window.HexAttempts.createCatalog(window.HEX_LEVELS,window.HEX_VARIANTS||null,window.HexMatch);}catch(_){try{variantCatalog=window.HexAttempts.createCatalog(window.HEX_LEVELS,null,window.HexMatch);}catch(_){}}
-  if(devFlow){if(!variantCatalog||!window.HEX_CAMPAIGN_FLOW_LEVELS?.length)throw new Error('Flow campaign data unavailable');variantCatalog=window.HexCampaignFlow.createCatalog(variantCatalog,window.HEX_CAMPAIGN_FLOW_LEVELS,window.HexMatch);}
+  if(devFlow){if(!variantCatalog||!window.HEX_CAMPAIGN_FLOW_LEVELS?.length)throw new Error('Flow campaign data unavailable');variantCatalog=window.HexCampaignFlow.createCatalog(variantCatalog,flowArchives,window.HexMatch,{currentVersion:window.HexCampaignFlow.reviewVersion});}
   const motion={swap:300,digit:240,spread:180,collectPulse:100,pop:200,hold:140,flight:380,count:140,arrival:220,burst:220,ring:300,particle:320,matchPause:430,fall:380,fallStagger:70,columnDelay:16,invalid:280,budget:3300};
   let sourceSaveKey=key;
   let gameLoadIssue=null;
@@ -38,7 +40,7 @@ window.HexSessionStore.boot(function startApp(session) {
   let boardRenderIdentity=null; // Disposable SVG scope; never an attempt or save authority.
   let idleHints=null,idleHintView=null,idleUnfocused=false,idlePageHidden=false,renderedIdleBoardKey=null;
   const idleHintListeners=[];
-  const geometryCache=new Map();
+  const geometryCache=new WeakMap();
   let pendingStage=null,pendingRestart=null,invalidPresentation=null;
   const appState=window.HexAppState.create();
   appState.dispatch({type:'APP_VISIBILITY_CHANGED',hidden:document.hidden});
@@ -1132,7 +1134,7 @@ window.HexSessionStore.boot(function startApp(session) {
   function requestStage(index){
     if(!Number.isInteger(index)||index<0||index>=levels.length||!canOpen(index)||!stateEffects.canOpen('pregame-dialog',modalFacts('pregame-dialog')))return;
     const recovering=recoverableLoss(index),held=retainedRescueReceipt(index),heldOnly=held&&!rescueOffer(index)?.eligible;
-    const level=levels[index],checkpoint=validCheckpoint(index),resume=checkpoint?.status==='playing'&&(checkpoint.turn>0||checkpoint.assisted)&&!lifeDiscarded(index),blocked=!!saved.boards[index]&&!checkpoint;
+    const checkpoint=validCheckpoint(index),level=checkpoint?.status==='playing'?checkpoint.level:levels[index],resume=checkpoint?.status==='playing'&&(checkpoint.turn>0||checkpoint.assisted)&&!lifeDiscarded(index),blocked=!!saved.boards[index]&&!checkpoint;
     pendingStage=index;
     $('pregame-dialog').dataset.learning=index===0?'first':index<tutorialCount?'goals':'';
     if($('pregame-lesson'))$('pregame-lesson').hidden=index!==0;
@@ -1233,8 +1235,8 @@ window.HexSessionStore.boot(function startApp(session) {
   const playableCell=index=>typeof engine.isPlayable!=='function'||engine.isPlayable(index);
   // Geometry and markup are pure: the host supplies all current view state.
   function geometry() {
-    if (!geometryCache.has(active)) geometryCache.set(active, window.HexBoardView.geometry(activeLevel, isTutorial()));
-    return geometryCache.get(active);
+    if (!geometryCache.has(activeLevel)) geometryCache.set(activeLevel, window.HexBoardView.geometry(activeLevel, isTutorial()));
+    return geometryCache.get(activeLevel);
   }
   function boardMarkup(state, matching = [], falling = []) {
     const layout = geometry(), { width, height } = layout;
@@ -1250,6 +1252,7 @@ window.HexSessionStore.boot(function startApp(session) {
     const display=state||visualProjection();
     document.body.dataset.obstacles=String(activeLevel.rulesVersion==='classic-v5');
     document.body.dataset.obstacleFlow=String(!!display.cellOpen);
+    document.body.dataset.boardFit=activeLevel.presentation?.fit==='compact'?'compact':'standard';
     const focused=document.activeElement?.closest?.('[data-index]')?.dataset.index;
     const visualIdentity=activeAttempt?.attemptId||`preview:${active}`;
     window.HexBoardView.reconcile($('board'),boardMarkup(display,options.matching||[],options.falling||[]),{...options.transition,reset:boardRenderIdentity!==visualIdentity});
@@ -1683,7 +1686,7 @@ window.HexSessionStore.boot(function startApp(session) {
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=50');
+            job.worker=new Worker('./hint-worker.js?v=51');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:activeLevel,snapshot:engine.snapshot()});

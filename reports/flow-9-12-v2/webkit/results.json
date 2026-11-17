@@ -1,0 +1,4858 @@
+{
+  "browser": "webkit",
+  "checks": 9,
+  "results": [
+    "all ten campaign levels remain selectable; original 1–5 and five authored 9x9-capacity boards coexist",
+    "320x568 all authored hex cells and four corner gestures fit; native level6 partial flow, reload and victory",
+    "390x844 all authored hex cells and four corner gestures fit; native level6 partial flow, reload and victory",
+    "430x932 all authored hex cells and four corner gestures fit; native level6 partial flow, reload and victory",
+    "390x844 native level7 opens source columns and completes its certified authored route",
+    "390x844 native level8 opens source columns and completes its certified authored route",
+    "390x844 native level9 opens source columns and completes its certified authored route",
+    "390x844 native level10 opens source columns and completes its certified authored route",
+    "archived v1 attempt resumes its original geometry until explicit restart selects v2"
+  ],
+  "measurements": [
+    {
+      "kind": "startup",
+      "width": 390,
+      "height": 844,
+      "review": "current",
+      "wallMs": 1188.2759059999998,
+      "firstInteractiveMs": 804,
+      "domContentLoadedMs": 142,
+      "visibleLevelNodes": 12
+    },
+    {
+      "kind": "startup",
+      "width": 320,
+      "height": 568,
+      "review": "current",
+      "wallMs": 662.1774379999997,
+      "firstInteractiveMs": 455,
+      "domContentLoadedMs": 56,
+      "visibleLevelNodes": 12
+    },
+    {
+      "id": 6,
+      "width": 320,
+      "height": 568,
+      "overflow": false,
+      "board": {
+        "x": 4,
+        "y": 140.890625,
+        "width": 312,
+        "height": 359.109375,
+        "top": 140.890625,
+        "right": 316,
+        "bottom": 500,
+        "left": 4
+      },
+      "stage": {
+        "x": 0,
+        "y": 136.890625,
+        "width": 320,
+        "height": 363.109375,
+        "top": 136.890625,
+        "right": 320,
+        "bottom": 500,
+        "left": 0
+      },
+      "cells": [
+        {
+          "index": 0,
+          "x": 94.98223876953125,
+          "y": 198.44674682617188,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 1,
+          "x": 127.49111938476562,
+          "y": 217.21575927734375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 2,
+          "x": 160,
+          "y": 198.44674682617188,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 3,
+          "x": 192.50888061523438,
+          "y": 217.21575927734375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 4,
+          "x": 225.01776123046875,
+          "y": 198.44674682617188,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 5,
+          "x": 62.47335433959961,
+          "y": 254.75376892089844,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 6,
+          "x": 94.98223876953125,
+          "y": 235.98477172851562,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 7,
+          "x": 127.49111938476562,
+          "y": 254.75376892089844,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 8,
+          "x": 160,
+          "y": 235.98477172851562,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 9,
+          "x": 192.50888061523438,
+          "y": 254.75376892089844,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 10,
+          "x": 225.01776123046875,
+          "y": 235.98477172851562,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 11,
+          "x": 257.5266418457031,
+          "y": 254.75376892089844,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 12,
+          "x": 62.47335433959961,
+          "y": 292.29180908203125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 13,
+          "x": 94.98223876953125,
+          "y": 273.5227966308594,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 14,
+          "x": 127.49111938476562,
+          "y": 292.29180908203125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 15,
+          "x": 160,
+          "y": 273.5227966308594,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 16,
+          "x": 192.50888061523438,
+          "y": 292.29180908203125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 17,
+          "x": 225.01776123046875,
+          "y": 273.5227966308594,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 18,
+          "x": 257.5266418457031,
+          "y": 292.29180908203125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 19,
+          "x": 62.47335433959961,
+          "y": 329.8298034667969,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 20,
+          "x": 94.98223876953125,
+          "y": 311.0608215332031,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 21,
+          "x": 127.49111938476562,
+          "y": 329.8298034667969,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 22,
+          "x": 160,
+          "y": 311.0608215332031,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 23,
+          "x": 192.50888061523438,
+          "y": 329.8298034667969,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 24,
+          "x": 225.01776123046875,
+          "y": 311.0608215332031,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 25,
+          "x": 257.5266418457031,
+          "y": 329.8298034667969,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 26,
+          "x": 62.47335433959961,
+          "y": 367.3678283691406,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 27,
+          "x": 94.98223876953125,
+          "y": 348.59881591796875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 28,
+          "x": 127.49111938476562,
+          "y": 367.3678283691406,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 29,
+          "x": 160,
+          "y": 348.59881591796875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 30,
+          "x": 192.50888061523438,
+          "y": 367.3678283691406,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 31,
+          "x": 225.01776123046875,
+          "y": 348.59881591796875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 32,
+          "x": 257.5266418457031,
+          "y": 367.3678283691406,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 33,
+          "x": 62.47335433959961,
+          "y": 404.9058532714844,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 34,
+          "x": 94.98223876953125,
+          "y": 386.1368408203125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 35,
+          "x": 127.49111938476562,
+          "y": 404.9058532714844,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 36,
+          "x": 160,
+          "y": 386.1368408203125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 37,
+          "x": 192.50888061523438,
+          "y": 404.9058532714844,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 38,
+          "x": 225.01776123046875,
+          "y": 386.1368408203125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 39,
+          "x": 257.5266418457031,
+          "y": 404.9058532714844,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 40,
+          "x": 127.49111938476562,
+          "y": 442.4438781738281,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 41,
+          "x": 160,
+          "y": 423.67486572265625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 42,
+          "x": 192.50888061523438,
+          "y": 442.4438781738281,
+          "reachable": true,
+          "unclipped": true
+        }
+      ]
+    },
+    {
+      "width": 320,
+      "height": 568,
+      "voidProbe": {
+        "q": -4,
+        "r": 0,
+        "active": 5,
+        "screen": {
+          "x": 29.964473724365234,
+          "y": 235.98477172851562
+        },
+        "hasHit": false
+      }
+    },
+    {
+      "id": 6,
+      "width": 320,
+      "height": 568,
+      "overflow": false,
+      "board": {
+        "x": 4,
+        "y": 140.890625,
+        "width": 312,
+        "height": 359.109375,
+        "top": 140.890625,
+        "right": 316,
+        "bottom": 500,
+        "left": 4
+      },
+      "stage": {
+        "x": 0,
+        "y": 136.890625,
+        "width": 320,
+        "height": 363.109375,
+        "top": 136.890625,
+        "right": 320,
+        "bottom": 500,
+        "left": 0
+      },
+      "cells": [
+        {
+          "index": 0,
+          "x": 94.98223876953125,
+          "y": 198.44674682617188,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 1,
+          "x": 127.49111938476562,
+          "y": 217.21575927734375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 2,
+          "x": 160,
+          "y": 198.44674682617188,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 3,
+          "x": 192.50888061523438,
+          "y": 217.21575927734375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 4,
+          "x": 225.01776123046875,
+          "y": 198.44674682617188,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 5,
+          "x": 62.47335433959961,
+          "y": 254.75376892089844,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 6,
+          "x": 94.98223876953125,
+          "y": 235.98477172851562,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 7,
+          "x": 127.49111938476562,
+          "y": 254.75376892089844,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 8,
+          "x": 160,
+          "y": 235.98477172851562,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 9,
+          "x": 192.50888061523438,
+          "y": 254.75376892089844,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 10,
+          "x": 225.01776123046875,
+          "y": 235.98477172851562,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 11,
+          "x": 257.5266418457031,
+          "y": 254.75376892089844,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 12,
+          "x": 62.47335433959961,
+          "y": 292.29180908203125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 13,
+          "x": 94.98223876953125,
+          "y": 273.5227966308594,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 14,
+          "x": 127.49111938476562,
+          "y": 292.29180908203125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 15,
+          "x": 160,
+          "y": 273.5227966308594,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 16,
+          "x": 192.50888061523438,
+          "y": 292.29180908203125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 17,
+          "x": 225.01776123046875,
+          "y": 273.5227966308594,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 18,
+          "x": 257.5266418457031,
+          "y": 292.29180908203125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 19,
+          "x": 62.47335433959961,
+          "y": 329.8298034667969,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 20,
+          "x": 94.98223876953125,
+          "y": 311.0608215332031,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 21,
+          "x": 127.49111938476562,
+          "y": 329.8298034667969,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 22,
+          "x": 160,
+          "y": 311.0608215332031,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 23,
+          "x": 192.50888061523438,
+          "y": 329.8298034667969,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 24,
+          "x": 225.01776123046875,
+          "y": 311.0608215332031,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 25,
+          "x": 257.5266418457031,
+          "y": 329.8298034667969,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 26,
+          "x": 62.47335433959961,
+          "y": 367.3678283691406,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 27,
+          "x": 94.98223876953125,
+          "y": 348.59881591796875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 28,
+          "x": 127.49111938476562,
+          "y": 367.3678283691406,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 29,
+          "x": 160,
+          "y": 348.59881591796875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 30,
+          "x": 192.50888061523438,
+          "y": 367.3678283691406,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 31,
+          "x": 225.01776123046875,
+          "y": 348.59881591796875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 32,
+          "x": 257.5266418457031,
+          "y": 367.3678283691406,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 33,
+          "x": 62.47335433959961,
+          "y": 404.9058532714844,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 34,
+          "x": 94.98223876953125,
+          "y": 386.1368408203125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 35,
+          "x": 127.49111938476562,
+          "y": 404.9058532714844,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 36,
+          "x": 160,
+          "y": 386.1368408203125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 37,
+          "x": 192.50888061523438,
+          "y": 404.9058532714844,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 38,
+          "x": 225.01776123046875,
+          "y": 386.1368408203125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 39,
+          "x": 257.5266418457031,
+          "y": 404.9058532714844,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 40,
+          "x": 127.49111938476562,
+          "y": 442.4438781738281,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 41,
+          "x": 160,
+          "y": 423.67486572265625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 42,
+          "x": 192.50888061523438,
+          "y": 442.4438781738281,
+          "reachable": true,
+          "unclipped": true
+        }
+      ]
+    },
+    {
+      "kind": "startup",
+      "width": 390,
+      "height": 844,
+      "review": "current",
+      "wallMs": 679.5803109999997,
+      "firstInteractiveMs": 479,
+      "domContentLoadedMs": 59,
+      "visibleLevelNodes": 12
+    },
+    {
+      "id": 6,
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "board": {
+        "x": 4,
+        "y": 170.796875,
+        "width": 382,
+        "height": 582.203125,
+        "top": 170.796875,
+        "right": 386,
+        "bottom": 753,
+        "left": 4
+      },
+      "stage": {
+        "x": 0,
+        "y": 160.796875,
+        "width": 390,
+        "height": 592.203125,
+        "top": 160.796875,
+        "right": 390,
+        "bottom": 753,
+        "left": 0
+      },
+      "cells": [
+        {
+          "index": 0,
+          "x": 113.67096710205078,
+          "y": 309.2935791015625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 1,
+          "x": 154.33547973632812,
+          "y": 332.7712707519531,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 2,
+          "x": 195,
+          "y": 309.2935791015625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 3,
+          "x": 235.66452026367188,
+          "y": 332.7712707519531,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 4,
+          "x": 276.32904052734375,
+          "y": 309.2935791015625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 5,
+          "x": 73.00645446777344,
+          "y": 379.7265930175781,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 6,
+          "x": 113.67096710205078,
+          "y": 356.2489318847656,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 7,
+          "x": 154.33547973632812,
+          "y": 379.7265930175781,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 8,
+          "x": 195,
+          "y": 356.2489318847656,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 9,
+          "x": 235.66452026367188,
+          "y": 379.7265930175781,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 10,
+          "x": 276.32904052734375,
+          "y": 356.2489318847656,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 11,
+          "x": 316.9935607910156,
+          "y": 379.7265930175781,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 12,
+          "x": 73.00645446777344,
+          "y": 426.68194580078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 13,
+          "x": 113.67096710205078,
+          "y": 403.2042541503906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 14,
+          "x": 154.33547973632812,
+          "y": 426.68194580078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 15,
+          "x": 195,
+          "y": 403.2042541503906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 16,
+          "x": 235.66452026367188,
+          "y": 426.68194580078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 17,
+          "x": 276.32904052734375,
+          "y": 403.2042541503906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 18,
+          "x": 316.9935607910156,
+          "y": 426.68194580078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 19,
+          "x": 73.00645446777344,
+          "y": 473.63726806640625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 20,
+          "x": 113.67096710205078,
+          "y": 450.15960693359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 21,
+          "x": 154.33547973632812,
+          "y": 473.63726806640625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 22,
+          "x": 195,
+          "y": 450.15960693359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 23,
+          "x": 235.66452026367188,
+          "y": 473.63726806640625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 24,
+          "x": 276.32904052734375,
+          "y": 450.15960693359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 25,
+          "x": 316.9935607910156,
+          "y": 473.63726806640625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 26,
+          "x": 73.00645446777344,
+          "y": 520.5925903320312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 27,
+          "x": 113.67096710205078,
+          "y": 497.11492919921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 28,
+          "x": 154.33547973632812,
+          "y": 520.5925903320312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 29,
+          "x": 195,
+          "y": 497.11492919921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 30,
+          "x": 235.66452026367188,
+          "y": 520.5925903320312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 31,
+          "x": 276.32904052734375,
+          "y": 497.11492919921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 32,
+          "x": 316.9935607910156,
+          "y": 520.5925903320312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 33,
+          "x": 73.00645446777344,
+          "y": 567.5479736328125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 34,
+          "x": 113.67096710205078,
+          "y": 544.0702514648438,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 35,
+          "x": 154.33547973632812,
+          "y": 567.5479736328125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 36,
+          "x": 195,
+          "y": 544.0702514648438,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 37,
+          "x": 235.66452026367188,
+          "y": 567.5479736328125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 38,
+          "x": 276.32904052734375,
+          "y": 544.0702514648438,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 39,
+          "x": 316.9935607910156,
+          "y": 567.5479736328125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 40,
+          "x": 154.33547973632812,
+          "y": 614.5032958984375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 41,
+          "x": 195,
+          "y": 591.025634765625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 42,
+          "x": 235.66452026367188,
+          "y": 614.5032958984375,
+          "reachable": true,
+          "unclipped": true
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "voidProbe": {
+        "q": -4,
+        "r": 0,
+        "active": 5,
+        "screen": {
+          "x": 32.34193420410156,
+          "y": 356.2489318847656
+        },
+        "hasHit": false
+      }
+    },
+    {
+      "id": 6,
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "board": {
+        "x": 4,
+        "y": 170.796875,
+        "width": 382,
+        "height": 582.203125,
+        "top": 170.796875,
+        "right": 386,
+        "bottom": 753,
+        "left": 4
+      },
+      "stage": {
+        "x": 0,
+        "y": 160.796875,
+        "width": 390,
+        "height": 592.203125,
+        "top": 160.796875,
+        "right": 390,
+        "bottom": 753,
+        "left": 0
+      },
+      "cells": [
+        {
+          "index": 0,
+          "x": 113.67096710205078,
+          "y": 309.2935791015625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 1,
+          "x": 154.33547973632812,
+          "y": 332.7712707519531,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 2,
+          "x": 195,
+          "y": 309.2935791015625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 3,
+          "x": 235.66452026367188,
+          "y": 332.7712707519531,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 4,
+          "x": 276.32904052734375,
+          "y": 309.2935791015625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 5,
+          "x": 73.00645446777344,
+          "y": 379.7265930175781,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 6,
+          "x": 113.67096710205078,
+          "y": 356.2489318847656,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 7,
+          "x": 154.33547973632812,
+          "y": 379.7265930175781,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 8,
+          "x": 195,
+          "y": 356.2489318847656,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 9,
+          "x": 235.66452026367188,
+          "y": 379.7265930175781,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 10,
+          "x": 276.32904052734375,
+          "y": 356.2489318847656,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 11,
+          "x": 316.9935607910156,
+          "y": 379.7265930175781,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 12,
+          "x": 73.00645446777344,
+          "y": 426.68194580078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 13,
+          "x": 113.67096710205078,
+          "y": 403.2042541503906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 14,
+          "x": 154.33547973632812,
+          "y": 426.68194580078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 15,
+          "x": 195,
+          "y": 403.2042541503906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 16,
+          "x": 235.66452026367188,
+          "y": 426.68194580078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 17,
+          "x": 276.32904052734375,
+          "y": 403.2042541503906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 18,
+          "x": 316.9935607910156,
+          "y": 426.68194580078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 19,
+          "x": 73.00645446777344,
+          "y": 473.63726806640625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 20,
+          "x": 113.67096710205078,
+          "y": 450.15960693359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 21,
+          "x": 154.33547973632812,
+          "y": 473.63726806640625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 22,
+          "x": 195,
+          "y": 450.15960693359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 23,
+          "x": 235.66452026367188,
+          "y": 473.63726806640625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 24,
+          "x": 276.32904052734375,
+          "y": 450.15960693359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 25,
+          "x": 316.9935607910156,
+          "y": 473.63726806640625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 26,
+          "x": 73.00645446777344,
+          "y": 520.5925903320312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 27,
+          "x": 113.67096710205078,
+          "y": 497.11492919921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 28,
+          "x": 154.33547973632812,
+          "y": 520.5925903320312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 29,
+          "x": 195,
+          "y": 497.11492919921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 30,
+          "x": 235.66452026367188,
+          "y": 520.5925903320312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 31,
+          "x": 276.32904052734375,
+          "y": 497.11492919921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 32,
+          "x": 316.9935607910156,
+          "y": 520.5925903320312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 33,
+          "x": 73.00645446777344,
+          "y": 567.5479736328125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 34,
+          "x": 113.67096710205078,
+          "y": 544.0702514648438,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 35,
+          "x": 154.33547973632812,
+          "y": 567.5479736328125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 36,
+          "x": 195,
+          "y": 544.0702514648438,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 37,
+          "x": 235.66452026367188,
+          "y": 567.5479736328125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 38,
+          "x": 276.32904052734375,
+          "y": 544.0702514648438,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 39,
+          "x": 316.9935607910156,
+          "y": 567.5479736328125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 40,
+          "x": 154.33547973632812,
+          "y": 614.5032958984375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 41,
+          "x": 195,
+          "y": 591.025634765625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 42,
+          "x": 235.66452026367188,
+          "y": 614.5032958984375,
+          "reachable": true,
+          "unclipped": true
+        }
+      ]
+    },
+    {
+      "kind": "startup",
+      "width": 430,
+      "height": 932,
+      "review": "current",
+      "wallMs": 724.7738129999998,
+      "firstInteractiveMs": 508,
+      "domContentLoadedMs": 68,
+      "visibleLevelNodes": 12
+    },
+    {
+      "id": 6,
+      "width": 430,
+      "height": 932,
+      "overflow": false,
+      "board": {
+        "x": 4,
+        "y": 170.796875,
+        "width": 422,
+        "height": 670.203125,
+        "top": 170.796875,
+        "right": 426,
+        "bottom": 841,
+        "left": 4
+      },
+      "stage": {
+        "x": 0,
+        "y": 160.796875,
+        "width": 430,
+        "height": 680.203125,
+        "top": 160.796875,
+        "right": 430,
+        "bottom": 841,
+        "left": 0
+      },
+      "cells": [
+        {
+          "index": 0,
+          "x": 125.15483856201172,
+          "y": 337.31402587890625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 1,
+          "x": 170.07742309570312,
+          "y": 363.2500915527344,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 2,
+          "x": 215,
+          "y": 337.31402587890625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 3,
+          "x": 259.9225769042969,
+          "y": 363.2500915527344,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 4,
+          "x": 304.84515380859375,
+          "y": 337.31402587890625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 5,
+          "x": 80.23226165771484,
+          "y": 415.1222229003906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 6,
+          "x": 125.15483856201172,
+          "y": 389.1861572265625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 7,
+          "x": 170.07742309570312,
+          "y": 415.1222229003906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 8,
+          "x": 215,
+          "y": 389.1861572265625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 9,
+          "x": 259.9225769042969,
+          "y": 415.1222229003906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 10,
+          "x": 304.84515380859375,
+          "y": 389.1861572265625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 11,
+          "x": 349.7677307128906,
+          "y": 415.1222229003906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 12,
+          "x": 80.23226165771484,
+          "y": 466.9943542480469,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 13,
+          "x": 125.15483856201172,
+          "y": 441.05828857421875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 14,
+          "x": 170.07742309570312,
+          "y": 466.9943542480469,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 15,
+          "x": 215,
+          "y": 441.05828857421875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 16,
+          "x": 259.9225769042969,
+          "y": 466.9943542480469,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 17,
+          "x": 304.84515380859375,
+          "y": 441.05828857421875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 18,
+          "x": 349.7677307128906,
+          "y": 466.9943542480469,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 19,
+          "x": 80.23226165771484,
+          "y": 518.866455078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 20,
+          "x": 125.15483856201172,
+          "y": 492.930419921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 21,
+          "x": 170.07742309570312,
+          "y": 518.866455078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 22,
+          "x": 215,
+          "y": 492.930419921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 23,
+          "x": 259.9225769042969,
+          "y": 518.866455078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 24,
+          "x": 304.84515380859375,
+          "y": 492.930419921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 25,
+          "x": 349.7677307128906,
+          "y": 518.866455078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 26,
+          "x": 80.23226165771484,
+          "y": 570.7385864257812,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 27,
+          "x": 125.15483856201172,
+          "y": 544.8025512695312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 28,
+          "x": 170.07742309570312,
+          "y": 570.7385864257812,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 29,
+          "x": 215,
+          "y": 544.8025512695312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 30,
+          "x": 259.9225769042969,
+          "y": 570.7385864257812,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 31,
+          "x": 304.84515380859375,
+          "y": 544.8025512695312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 32,
+          "x": 349.7677307128906,
+          "y": 570.7385864257812,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 33,
+          "x": 80.23226165771484,
+          "y": 622.6107177734375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 34,
+          "x": 125.15483856201172,
+          "y": 596.6746826171875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 35,
+          "x": 170.07742309570312,
+          "y": 622.6107177734375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 36,
+          "x": 215,
+          "y": 596.6746826171875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 37,
+          "x": 259.9225769042969,
+          "y": 622.6107177734375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 38,
+          "x": 304.84515380859375,
+          "y": 596.6746826171875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 39,
+          "x": 349.7677307128906,
+          "y": 622.6107177734375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 40,
+          "x": 170.07742309570312,
+          "y": 674.4828491210938,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 41,
+          "x": 215,
+          "y": 648.5468139648438,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 42,
+          "x": 259.9225769042969,
+          "y": 674.4828491210938,
+          "reachable": true,
+          "unclipped": true
+        }
+      ]
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "voidProbe": {
+        "q": -4,
+        "r": 0,
+        "active": 5,
+        "screen": {
+          "x": 35.30967712402344,
+          "y": 389.1861572265625
+        },
+        "hasHit": false
+      }
+    },
+    {
+      "id": 6,
+      "width": 430,
+      "height": 932,
+      "overflow": false,
+      "board": {
+        "x": 4,
+        "y": 170.796875,
+        "width": 422,
+        "height": 670.203125,
+        "top": 170.796875,
+        "right": 426,
+        "bottom": 841,
+        "left": 4
+      },
+      "stage": {
+        "x": 0,
+        "y": 160.796875,
+        "width": 430,
+        "height": 680.203125,
+        "top": 160.796875,
+        "right": 430,
+        "bottom": 841,
+        "left": 0
+      },
+      "cells": [
+        {
+          "index": 0,
+          "x": 125.15483856201172,
+          "y": 337.31402587890625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 1,
+          "x": 170.07742309570312,
+          "y": 363.2500915527344,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 2,
+          "x": 215,
+          "y": 337.31402587890625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 3,
+          "x": 259.9225769042969,
+          "y": 363.2500915527344,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 4,
+          "x": 304.84515380859375,
+          "y": 337.31402587890625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 5,
+          "x": 80.23226165771484,
+          "y": 415.1222229003906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 6,
+          "x": 125.15483856201172,
+          "y": 389.1861572265625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 7,
+          "x": 170.07742309570312,
+          "y": 415.1222229003906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 8,
+          "x": 215,
+          "y": 389.1861572265625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 9,
+          "x": 259.9225769042969,
+          "y": 415.1222229003906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 10,
+          "x": 304.84515380859375,
+          "y": 389.1861572265625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 11,
+          "x": 349.7677307128906,
+          "y": 415.1222229003906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 12,
+          "x": 80.23226165771484,
+          "y": 466.9943542480469,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 13,
+          "x": 125.15483856201172,
+          "y": 441.05828857421875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 14,
+          "x": 170.07742309570312,
+          "y": 466.9943542480469,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 15,
+          "x": 215,
+          "y": 441.05828857421875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 16,
+          "x": 259.9225769042969,
+          "y": 466.9943542480469,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 17,
+          "x": 304.84515380859375,
+          "y": 441.05828857421875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 18,
+          "x": 349.7677307128906,
+          "y": 466.9943542480469,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 19,
+          "x": 80.23226165771484,
+          "y": 518.866455078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 20,
+          "x": 125.15483856201172,
+          "y": 492.930419921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 21,
+          "x": 170.07742309570312,
+          "y": 518.866455078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 22,
+          "x": 215,
+          "y": 492.930419921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 23,
+          "x": 259.9225769042969,
+          "y": 518.866455078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 24,
+          "x": 304.84515380859375,
+          "y": 492.930419921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 25,
+          "x": 349.7677307128906,
+          "y": 518.866455078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 26,
+          "x": 80.23226165771484,
+          "y": 570.7385864257812,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 27,
+          "x": 125.15483856201172,
+          "y": 544.8025512695312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 28,
+          "x": 170.07742309570312,
+          "y": 570.7385864257812,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 29,
+          "x": 215,
+          "y": 544.8025512695312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 30,
+          "x": 259.9225769042969,
+          "y": 570.7385864257812,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 31,
+          "x": 304.84515380859375,
+          "y": 544.8025512695312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 32,
+          "x": 349.7677307128906,
+          "y": 570.7385864257812,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 33,
+          "x": 80.23226165771484,
+          "y": 622.6107177734375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 34,
+          "x": 125.15483856201172,
+          "y": 596.6746826171875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 35,
+          "x": 170.07742309570312,
+          "y": 622.6107177734375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 36,
+          "x": 215,
+          "y": 596.6746826171875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 37,
+          "x": 259.9225769042969,
+          "y": 622.6107177734375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 38,
+          "x": 304.84515380859375,
+          "y": 596.6746826171875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 39,
+          "x": 349.7677307128906,
+          "y": 622.6107177734375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 40,
+          "x": 170.07742309570312,
+          "y": 674.4828491210938,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 41,
+          "x": 215,
+          "y": 648.5468139648438,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 42,
+          "x": 259.9225769042969,
+          "y": 674.4828491210938,
+          "reachable": true,
+          "unclipped": true
+        }
+      ]
+    },
+    {
+      "kind": "startup",
+      "width": 390,
+      "height": 844,
+      "review": "current",
+      "wallMs": 809.6721459999972,
+      "firstInteractiveMs": 523,
+      "domContentLoadedMs": 72,
+      "visibleLevelNodes": 12
+    },
+    {
+      "id": 7,
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "board": {
+        "x": 4,
+        "y": 170.796875,
+        "width": 382,
+        "height": 582.203125,
+        "top": 170.796875,
+        "right": 386,
+        "bottom": 753,
+        "left": 4
+      },
+      "stage": {
+        "x": 0,
+        "y": 160.796875,
+        "width": 390,
+        "height": 592.203125,
+        "top": 160.796875,
+        "right": 390,
+        "bottom": 753,
+        "left": 0
+      },
+      "cells": [
+        {
+          "index": 0,
+          "x": 73.00645446777344,
+          "y": 332.7712707519531,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 1,
+          "x": 113.67096710205078,
+          "y": 309.2935791015625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 2,
+          "x": 154.33547973632812,
+          "y": 332.7712707519531,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 3,
+          "x": 195,
+          "y": 309.2935791015625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 4,
+          "x": 235.66452026367188,
+          "y": 332.7712707519531,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 5,
+          "x": 276.32904052734375,
+          "y": 309.2935791015625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 6,
+          "x": 316.9935607910156,
+          "y": 332.7712707519531,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 7,
+          "x": 73.00645446777344,
+          "y": 379.7265930175781,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 8,
+          "x": 113.67096710205078,
+          "y": 356.2489318847656,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 9,
+          "x": 154.33547973632812,
+          "y": 379.7265930175781,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 10,
+          "x": 195,
+          "y": 356.2489318847656,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 11,
+          "x": 235.66452026367188,
+          "y": 379.7265930175781,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 12,
+          "x": 276.32904052734375,
+          "y": 356.2489318847656,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 13,
+          "x": 316.9935607910156,
+          "y": 379.7265930175781,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 14,
+          "x": 73.00645446777344,
+          "y": 426.68194580078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 15,
+          "x": 113.67096710205078,
+          "y": 403.2042541503906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 16,
+          "x": 154.33547973632812,
+          "y": 426.68194580078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 17,
+          "x": 195,
+          "y": 403.2042541503906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 18,
+          "x": 235.66452026367188,
+          "y": 426.68194580078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 19,
+          "x": 276.32904052734375,
+          "y": 403.2042541503906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 20,
+          "x": 316.9935607910156,
+          "y": 426.68194580078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 21,
+          "x": 73.00645446777344,
+          "y": 473.63726806640625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 22,
+          "x": 113.67096710205078,
+          "y": 450.15960693359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 23,
+          "x": 154.33547973632812,
+          "y": 473.63726806640625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 24,
+          "x": 195,
+          "y": 450.15960693359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 25,
+          "x": 235.66452026367188,
+          "y": 473.63726806640625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 26,
+          "x": 276.32904052734375,
+          "y": 450.15960693359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 27,
+          "x": 316.9935607910156,
+          "y": 473.63726806640625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 28,
+          "x": 73.00645446777344,
+          "y": 520.5925903320312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 29,
+          "x": 113.67096710205078,
+          "y": 497.11492919921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 30,
+          "x": 154.33547973632812,
+          "y": 520.5925903320312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 31,
+          "x": 195,
+          "y": 497.11492919921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 32,
+          "x": 235.66452026367188,
+          "y": 520.5925903320312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 33,
+          "x": 276.32904052734375,
+          "y": 497.11492919921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 34,
+          "x": 316.9935607910156,
+          "y": 520.5925903320312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 35,
+          "x": 73.00645446777344,
+          "y": 567.5479736328125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 36,
+          "x": 113.67096710205078,
+          "y": 544.0702514648438,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 37,
+          "x": 154.33547973632812,
+          "y": 567.5479736328125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 38,
+          "x": 195,
+          "y": 544.0702514648438,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 39,
+          "x": 235.66452026367188,
+          "y": 567.5479736328125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 40,
+          "x": 276.32904052734375,
+          "y": 544.0702514648438,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 41,
+          "x": 316.9935607910156,
+          "y": 567.5479736328125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 42,
+          "x": 73.00645446777344,
+          "y": 614.5032958984375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 43,
+          "x": 113.67096710205078,
+          "y": 591.025634765625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 44,
+          "x": 154.33547973632812,
+          "y": 614.5032958984375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 45,
+          "x": 195,
+          "y": 591.025634765625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 46,
+          "x": 235.66452026367188,
+          "y": 614.5032958984375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 47,
+          "x": 276.32904052734375,
+          "y": 591.025634765625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 48,
+          "x": 316.9935607910156,
+          "y": 614.5032958984375,
+          "reachable": true,
+          "unclipped": true
+        }
+      ]
+    },
+    {
+      "kind": "startup",
+      "width": 390,
+      "height": 844,
+      "review": "current",
+      "wallMs": 1070.788572999998,
+      "firstInteractiveMs": 692,
+      "domContentLoadedMs": 121,
+      "visibleLevelNodes": 12
+    },
+    {
+      "id": 8,
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "board": {
+        "x": 4,
+        "y": 170.796875,
+        "width": 382,
+        "height": 582.203125,
+        "top": 170.796875,
+        "right": 386,
+        "bottom": 753,
+        "left": 4
+      },
+      "stage": {
+        "x": 0,
+        "y": 160.796875,
+        "width": 390,
+        "height": 592.203125,
+        "top": 160.796875,
+        "right": 390,
+        "bottom": 753,
+        "left": 0
+      },
+      "cells": [
+        {
+          "index": 0,
+          "x": 195,
+          "y": 262.3382568359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 1,
+          "x": 113.67096710205078,
+          "y": 309.2935791015625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 2,
+          "x": 154.33547973632812,
+          "y": 332.7712707519531,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 3,
+          "x": 195,
+          "y": 309.2935791015625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 4,
+          "x": 235.66452026367188,
+          "y": 332.7712707519531,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 5,
+          "x": 276.32904052734375,
+          "y": 309.2935791015625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 6,
+          "x": 73.00645446777344,
+          "y": 379.7265930175781,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 7,
+          "x": 113.67096710205078,
+          "y": 356.2489318847656,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 8,
+          "x": 154.33547973632812,
+          "y": 379.7265930175781,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 9,
+          "x": 195,
+          "y": 356.2489318847656,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 10,
+          "x": 235.66452026367188,
+          "y": 379.7265930175781,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 11,
+          "x": 276.32904052734375,
+          "y": 356.2489318847656,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 12,
+          "x": 316.9935607910156,
+          "y": 379.7265930175781,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 13,
+          "x": 32.34193420410156,
+          "y": 403.2042541503906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 14,
+          "x": 73.00645446777344,
+          "y": 426.68194580078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 15,
+          "x": 113.67096710205078,
+          "y": 403.2042541503906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 16,
+          "x": 154.33547973632812,
+          "y": 426.68194580078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 17,
+          "x": 195,
+          "y": 403.2042541503906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 18,
+          "x": 235.66452026367188,
+          "y": 426.68194580078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 19,
+          "x": 276.32904052734375,
+          "y": 403.2042541503906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 20,
+          "x": 316.9935607910156,
+          "y": 426.68194580078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 21,
+          "x": 357.6580505371094,
+          "y": 403.2042541503906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 22,
+          "x": 32.34193420410156,
+          "y": 450.15960693359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 23,
+          "x": 73.00645446777344,
+          "y": 473.63726806640625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 24,
+          "x": 113.67096710205078,
+          "y": 450.15960693359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 25,
+          "x": 154.33547973632812,
+          "y": 473.63726806640625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 26,
+          "x": 195,
+          "y": 450.15960693359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 27,
+          "x": 235.66452026367188,
+          "y": 473.63726806640625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 28,
+          "x": 276.32904052734375,
+          "y": 450.15960693359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 29,
+          "x": 316.9935607910156,
+          "y": 473.63726806640625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 30,
+          "x": 357.6580505371094,
+          "y": 450.15960693359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 31,
+          "x": 32.34193420410156,
+          "y": 497.11492919921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 32,
+          "x": 73.00645446777344,
+          "y": 520.5925903320312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 33,
+          "x": 113.67096710205078,
+          "y": 497.11492919921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 34,
+          "x": 154.33547973632812,
+          "y": 520.5925903320312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 35,
+          "x": 195,
+          "y": 497.11492919921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 36,
+          "x": 235.66452026367188,
+          "y": 520.5925903320312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 37,
+          "x": 276.32904052734375,
+          "y": 497.11492919921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 38,
+          "x": 316.9935607910156,
+          "y": 520.5925903320312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 39,
+          "x": 357.6580505371094,
+          "y": 497.11492919921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 40,
+          "x": 73.00645446777344,
+          "y": 567.5479736328125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 41,
+          "x": 113.67096710205078,
+          "y": 544.0702514648438,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 42,
+          "x": 154.33547973632812,
+          "y": 567.5479736328125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 43,
+          "x": 195,
+          "y": 544.0702514648438,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 44,
+          "x": 235.66452026367188,
+          "y": 567.5479736328125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 45,
+          "x": 276.32904052734375,
+          "y": 544.0702514648438,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 46,
+          "x": 316.9935607910156,
+          "y": 567.5479736328125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 47,
+          "x": 113.67096710205078,
+          "y": 591.025634765625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 48,
+          "x": 154.33547973632812,
+          "y": 614.5032958984375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 49,
+          "x": 195,
+          "y": 591.025634765625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 50,
+          "x": 235.66452026367188,
+          "y": 614.5032958984375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 51,
+          "x": 276.32904052734375,
+          "y": 591.025634765625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 52,
+          "x": 195,
+          "y": 637.98095703125,
+          "reachable": true,
+          "unclipped": true
+        }
+      ]
+    },
+    {
+      "kind": "startup",
+      "width": 390,
+      "height": 844,
+      "review": "current",
+      "wallMs": 1041.3086259999982,
+      "firstInteractiveMs": 808,
+      "domContentLoadedMs": 77,
+      "visibleLevelNodes": 12
+    },
+    {
+      "id": 9,
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "board": {
+        "x": 4,
+        "y": 170.796875,
+        "width": 382,
+        "height": 582.203125,
+        "top": 170.796875,
+        "right": 386,
+        "bottom": 753,
+        "left": 4
+      },
+      "stage": {
+        "x": 0,
+        "y": 160.796875,
+        "width": 390,
+        "height": 592.203125,
+        "top": 160.796875,
+        "right": 390,
+        "bottom": 753,
+        "left": 0
+      },
+      "cells": [
+        {
+          "index": 0,
+          "x": 195,
+          "y": 262.3382568359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 1,
+          "x": 73.00645446777344,
+          "y": 332.7712707519531,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 2,
+          "x": 113.67096710205078,
+          "y": 309.2935791015625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 3,
+          "x": 154.33547973632812,
+          "y": 332.7712707519531,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 4,
+          "x": 195,
+          "y": 309.2935791015625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 5,
+          "x": 235.66452026367188,
+          "y": 332.7712707519531,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 6,
+          "x": 276.32904052734375,
+          "y": 309.2935791015625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 7,
+          "x": 316.9935607910156,
+          "y": 332.7712707519531,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 8,
+          "x": 32.34193420410156,
+          "y": 356.2489318847656,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 9,
+          "x": 73.00645446777344,
+          "y": 379.7265930175781,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 10,
+          "x": 113.67096710205078,
+          "y": 356.2489318847656,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 11,
+          "x": 154.33547973632812,
+          "y": 379.7265930175781,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 12,
+          "x": 195,
+          "y": 356.2489318847656,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 13,
+          "x": 235.66452026367188,
+          "y": 379.7265930175781,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 14,
+          "x": 276.32904052734375,
+          "y": 356.2489318847656,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 15,
+          "x": 316.9935607910156,
+          "y": 379.7265930175781,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 16,
+          "x": 357.6580505371094,
+          "y": 356.2489318847656,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 17,
+          "x": 32.34193420410156,
+          "y": 403.2042541503906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 18,
+          "x": 73.00645446777344,
+          "y": 426.68194580078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 19,
+          "x": 113.67096710205078,
+          "y": 403.2042541503906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 20,
+          "x": 154.33547973632812,
+          "y": 426.68194580078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 21,
+          "x": 195,
+          "y": 403.2042541503906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 22,
+          "x": 235.66452026367188,
+          "y": 426.68194580078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 23,
+          "x": 276.32904052734375,
+          "y": 403.2042541503906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 24,
+          "x": 316.9935607910156,
+          "y": 426.68194580078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 25,
+          "x": 357.6580505371094,
+          "y": 403.2042541503906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 26,
+          "x": 32.34193420410156,
+          "y": 450.15960693359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 27,
+          "x": 73.00645446777344,
+          "y": 473.63726806640625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 28,
+          "x": 113.67096710205078,
+          "y": 450.15960693359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 29,
+          "x": 154.33547973632812,
+          "y": 473.63726806640625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 30,
+          "x": 195,
+          "y": 450.15960693359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 31,
+          "x": 235.66452026367188,
+          "y": 473.63726806640625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 32,
+          "x": 276.32904052734375,
+          "y": 450.15960693359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 33,
+          "x": 316.9935607910156,
+          "y": 473.63726806640625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 34,
+          "x": 357.6580505371094,
+          "y": 450.15960693359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 35,
+          "x": 32.34193420410156,
+          "y": 497.11492919921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 36,
+          "x": 73.00645446777344,
+          "y": 520.5925903320312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 37,
+          "x": 113.67096710205078,
+          "y": 497.11492919921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 38,
+          "x": 154.33547973632812,
+          "y": 520.5925903320312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 39,
+          "x": 195,
+          "y": 497.11492919921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 40,
+          "x": 235.66452026367188,
+          "y": 520.5925903320312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 41,
+          "x": 276.32904052734375,
+          "y": 497.11492919921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 42,
+          "x": 316.9935607910156,
+          "y": 520.5925903320312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 43,
+          "x": 357.6580505371094,
+          "y": 497.11492919921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 44,
+          "x": 32.34193420410156,
+          "y": 544.0702514648438,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 45,
+          "x": 73.00645446777344,
+          "y": 567.5479736328125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 46,
+          "x": 113.67096710205078,
+          "y": 544.0702514648438,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 47,
+          "x": 154.33547973632812,
+          "y": 567.5479736328125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 48,
+          "x": 195,
+          "y": 544.0702514648438,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 49,
+          "x": 235.66452026367188,
+          "y": 567.5479736328125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 50,
+          "x": 276.32904052734375,
+          "y": 544.0702514648438,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 51,
+          "x": 316.9935607910156,
+          "y": 567.5479736328125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 52,
+          "x": 357.6580505371094,
+          "y": 544.0702514648438,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 53,
+          "x": 73.00645446777344,
+          "y": 614.5032958984375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 54,
+          "x": 113.67096710205078,
+          "y": 591.025634765625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 55,
+          "x": 154.33547973632812,
+          "y": 614.5032958984375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 56,
+          "x": 195,
+          "y": 591.025634765625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 57,
+          "x": 235.66452026367188,
+          "y": 614.5032958984375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 58,
+          "x": 276.32904052734375,
+          "y": 591.025634765625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 59,
+          "x": 316.9935607910156,
+          "y": 614.5032958984375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 60,
+          "x": 195,
+          "y": 637.98095703125,
+          "reachable": true,
+          "unclipped": true
+        }
+      ]
+    },
+    {
+      "kind": "startup",
+      "width": 390,
+      "height": 844,
+      "review": "current",
+      "wallMs": 1055.0470369999966,
+      "firstInteractiveMs": 648,
+      "domContentLoadedMs": 116,
+      "visibleLevelNodes": 12
+    },
+    {
+      "id": 10,
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "board": {
+        "x": 4,
+        "y": 170.796875,
+        "width": 382,
+        "height": 582.203125,
+        "top": 170.796875,
+        "right": 386,
+        "bottom": 753,
+        "left": 4
+      },
+      "stage": {
+        "x": 0,
+        "y": 160.796875,
+        "width": 390,
+        "height": 592.203125,
+        "top": 160.796875,
+        "right": 390,
+        "bottom": 753,
+        "left": 0
+      },
+      "cells": [
+        {
+          "index": 0,
+          "x": 154.33547973632812,
+          "y": 285.81591796875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 1,
+          "x": 195,
+          "y": 262.3382568359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 2,
+          "x": 235.66452026367188,
+          "y": 285.81591796875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 3,
+          "x": 73.00645446777344,
+          "y": 332.7712707519531,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 4,
+          "x": 113.67096710205078,
+          "y": 309.2935791015625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 5,
+          "x": 154.33547973632812,
+          "y": 332.7712707519531,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 6,
+          "x": 195,
+          "y": 309.2935791015625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 7,
+          "x": 235.66452026367188,
+          "y": 332.7712707519531,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 8,
+          "x": 276.32904052734375,
+          "y": 309.2935791015625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 9,
+          "x": 316.9935607910156,
+          "y": 332.7712707519531,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 10,
+          "x": 32.34193420410156,
+          "y": 356.2489318847656,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 11,
+          "x": 73.00645446777344,
+          "y": 379.7265930175781,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 12,
+          "x": 113.67096710205078,
+          "y": 356.2489318847656,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 13,
+          "x": 154.33547973632812,
+          "y": 379.7265930175781,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 14,
+          "x": 195,
+          "y": 356.2489318847656,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 15,
+          "x": 235.66452026367188,
+          "y": 379.7265930175781,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 16,
+          "x": 276.32904052734375,
+          "y": 356.2489318847656,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 17,
+          "x": 316.9935607910156,
+          "y": 379.7265930175781,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 18,
+          "x": 357.6580505371094,
+          "y": 356.2489318847656,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 19,
+          "x": 32.34193420410156,
+          "y": 403.2042541503906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 20,
+          "x": 73.00645446777344,
+          "y": 426.68194580078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 21,
+          "x": 113.67096710205078,
+          "y": 403.2042541503906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 22,
+          "x": 154.33547973632812,
+          "y": 426.68194580078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 23,
+          "x": 195,
+          "y": 403.2042541503906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 24,
+          "x": 235.66452026367188,
+          "y": 426.68194580078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 25,
+          "x": 276.32904052734375,
+          "y": 403.2042541503906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 26,
+          "x": 316.9935607910156,
+          "y": 426.68194580078125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 27,
+          "x": 357.6580505371094,
+          "y": 403.2042541503906,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 28,
+          "x": 32.34193420410156,
+          "y": 450.15960693359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 29,
+          "x": 73.00645446777344,
+          "y": 473.63726806640625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 30,
+          "x": 113.67096710205078,
+          "y": 450.15960693359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 31,
+          "x": 154.33547973632812,
+          "y": 473.63726806640625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 32,
+          "x": 195,
+          "y": 450.15960693359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 33,
+          "x": 235.66452026367188,
+          "y": 473.63726806640625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 34,
+          "x": 276.32904052734375,
+          "y": 450.15960693359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 35,
+          "x": 316.9935607910156,
+          "y": 473.63726806640625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 36,
+          "x": 357.6580505371094,
+          "y": 450.15960693359375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 37,
+          "x": 32.34193420410156,
+          "y": 497.11492919921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 38,
+          "x": 73.00645446777344,
+          "y": 520.5925903320312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 39,
+          "x": 113.67096710205078,
+          "y": 497.11492919921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 40,
+          "x": 154.33547973632812,
+          "y": 520.5925903320312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 41,
+          "x": 195,
+          "y": 497.11492919921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 42,
+          "x": 235.66452026367188,
+          "y": 520.5925903320312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 43,
+          "x": 276.32904052734375,
+          "y": 497.11492919921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 44,
+          "x": 316.9935607910156,
+          "y": 520.5925903320312,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 45,
+          "x": 357.6580505371094,
+          "y": 497.11492919921875,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 46,
+          "x": 32.34193420410156,
+          "y": 544.0702514648438,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 47,
+          "x": 73.00645446777344,
+          "y": 567.5479736328125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 48,
+          "x": 113.67096710205078,
+          "y": 544.0702514648438,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 49,
+          "x": 154.33547973632812,
+          "y": 567.5479736328125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 50,
+          "x": 195,
+          "y": 544.0702514648438,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 51,
+          "x": 235.66452026367188,
+          "y": 567.5479736328125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 52,
+          "x": 276.32904052734375,
+          "y": 544.0702514648438,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 53,
+          "x": 316.9935607910156,
+          "y": 567.5479736328125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 54,
+          "x": 357.6580505371094,
+          "y": 544.0702514648438,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 55,
+          "x": 73.00645446777344,
+          "y": 614.5032958984375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 56,
+          "x": 113.67096710205078,
+          "y": 591.025634765625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 57,
+          "x": 154.33547973632812,
+          "y": 614.5032958984375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 58,
+          "x": 195,
+          "y": 591.025634765625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 59,
+          "x": 235.66452026367188,
+          "y": 614.5032958984375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 60,
+          "x": 276.32904052734375,
+          "y": 591.025634765625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 61,
+          "x": 316.9935607910156,
+          "y": 614.5032958984375,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 62,
+          "x": 154.33547973632812,
+          "y": 661.4586181640625,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 63,
+          "x": 195,
+          "y": 637.98095703125,
+          "reachable": true,
+          "unclipped": true
+        },
+        {
+          "index": 64,
+          "x": 235.66452026367188,
+          "y": 661.4586181640625,
+          "reachable": true,
+          "unclipped": true
+        }
+      ]
+    },
+    {
+      "kind": "startup",
+      "width": 390,
+      "height": 844,
+      "review": "&flowData=campaign-flow-v1",
+      "wallMs": 642.833212000005,
+      "firstInteractiveMs": 438,
+      "domContentLoadedMs": 65,
+      "visibleLevelNodes": 12
+    }
+  ],
+  "cornerGestures": [
+    {
+      "width": 320,
+      "height": 568,
+      "index": 5,
+      "pair": [
+        5,
+        12
+      ],
+      "accepted": false,
+      "reason": "no-match"
+    },
+    {
+      "width": 320,
+      "height": 568,
+      "index": 33,
+      "pair": [
+        33,
+        26
+      ],
+      "accepted": false,
+      "reason": "blocked"
+    },
+    {
+      "width": 320,
+      "height": 568,
+      "index": 11,
+      "pair": [
+        11,
+        10
+      ],
+      "accepted": false,
+      "reason": "no-match"
+    },
+    {
+      "width": 320,
+      "height": 568,
+      "index": 39,
+      "pair": [
+        39,
+        32
+      ],
+      "accepted": false,
+      "reason": "blocked"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "index": 5,
+      "pair": [
+        5,
+        12
+      ],
+      "accepted": false,
+      "reason": "no-match"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "index": 33,
+      "pair": [
+        33,
+        26
+      ],
+      "accepted": false,
+      "reason": "blocked"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "index": 11,
+      "pair": [
+        11,
+        10
+      ],
+      "accepted": false,
+      "reason": "no-match"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "index": 39,
+      "pair": [
+        39,
+        32
+      ],
+      "accepted": false,
+      "reason": "blocked"
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "index": 5,
+      "pair": [
+        5,
+        12
+      ],
+      "accepted": false,
+      "reason": "no-match"
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "index": 33,
+      "pair": [
+        33,
+        26
+      ],
+      "accepted": false,
+      "reason": "blocked"
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "index": 11,
+      "pair": [
+        11,
+        10
+      ],
+      "accepted": false,
+      "reason": "no-match"
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "index": 39,
+      "pair": [
+        39,
+        32
+      ],
+      "accepted": false,
+      "reason": "blocked"
+    }
+  ],
+  "nativeRoutes": [
+    {
+      "id": 6,
+      "width": 320,
+      "height": 568,
+      "moves": 8,
+      "partial": true,
+      "newArea": true,
+      "won": true
+    },
+    {
+      "id": 6,
+      "width": 390,
+      "height": 844,
+      "moves": 8,
+      "partial": true,
+      "newArea": true,
+      "won": true
+    },
+    {
+      "id": 6,
+      "width": 430,
+      "height": 932,
+      "moves": 8,
+      "partial": true,
+      "newArea": true,
+      "won": true
+    },
+    {
+      "id": 7,
+      "width": 390,
+      "height": 844,
+      "moves": 9,
+      "partial": true,
+      "newArea": true,
+      "won": true
+    },
+    {
+      "id": 8,
+      "width": 390,
+      "height": 844,
+      "moves": 16,
+      "partial": true,
+      "newArea": true,
+      "won": true
+    },
+    {
+      "id": 9,
+      "width": 390,
+      "height": 844,
+      "moves": 18,
+      "partial": true,
+      "newArea": true,
+      "won": true
+    },
+    {
+      "id": 10,
+      "width": 390,
+      "height": 844,
+      "moves": 15,
+      "partial": true,
+      "newArea": true,
+      "won": true
+    }
+  ],
+  "commandTimings": [
+    {
+      "id": 6,
+      "width": 320,
+      "height": 568,
+      "turn": 1,
+      "gesture": "drag",
+      "commitMs": 29,
+      "settleMs": 61,
+      "writes": 1
+    },
+    {
+      "id": 6,
+      "width": 320,
+      "height": 568,
+      "turn": 2,
+      "gesture": "tap",
+      "commitMs": 31,
+      "settleMs": 65,
+      "writes": 1
+    },
+    {
+      "id": 6,
+      "width": 320,
+      "height": 568,
+      "turn": 3,
+      "gesture": "tap",
+      "commitMs": 27,
+      "settleMs": 51,
+      "writes": 1
+    },
+    {
+      "id": 6,
+      "width": 320,
+      "height": 568,
+      "turn": 4,
+      "gesture": "tap",
+      "commitMs": 31,
+      "settleMs": 63,
+      "writes": 1
+    },
+    {
+      "id": 6,
+      "width": 320,
+      "height": 568,
+      "turn": 5,
+      "gesture": "tap",
+      "commitMs": 26,
+      "settleMs": 55,
+      "writes": 1
+    },
+    {
+      "id": 6,
+      "width": 320,
+      "height": 568,
+      "turn": 6,
+      "gesture": "tap",
+      "commitMs": 24,
+      "settleMs": 52,
+      "writes": 1
+    },
+    {
+      "id": 6,
+      "width": 320,
+      "height": 568,
+      "turn": 7,
+      "gesture": "tap",
+      "commitMs": 27,
+      "settleMs": 49,
+      "writes": 1
+    },
+    {
+      "id": 6,
+      "width": 320,
+      "height": 568,
+      "turn": 8,
+      "gesture": "tap",
+      "commitMs": 22,
+      "settleMs": 76,
+      "writes": 1
+    },
+    {
+      "id": 6,
+      "width": 390,
+      "height": 844,
+      "turn": 1,
+      "gesture": "drag",
+      "commitMs": 27,
+      "settleMs": 84,
+      "writes": 1
+    },
+    {
+      "id": 6,
+      "width": 390,
+      "height": 844,
+      "turn": 2,
+      "gesture": "tap",
+      "commitMs": 18,
+      "settleMs": 38,
+      "writes": 1
+    },
+    {
+      "id": 6,
+      "width": 390,
+      "height": 844,
+      "turn": 3,
+      "gesture": "tap",
+      "commitMs": 19,
+      "settleMs": 41,
+      "writes": 1
+    },
+    {
+      "id": 6,
+      "width": 390,
+      "height": 844,
+      "turn": 4,
+      "gesture": "tap",
+      "commitMs": 20,
+      "settleMs": 45,
+      "writes": 1
+    },
+    {
+      "id": 6,
+      "width": 390,
+      "height": 844,
+      "turn": 5,
+      "gesture": "tap",
+      "commitMs": 26,
+      "settleMs": 44,
+      "writes": 1
+    },
+    {
+      "id": 6,
+      "width": 390,
+      "height": 844,
+      "turn": 6,
+      "gesture": "tap",
+      "commitMs": 15,
+      "settleMs": 35,
+      "writes": 1
+    },
+    {
+      "id": 6,
+      "width": 390,
+      "height": 844,
+      "turn": 7,
+      "gesture": "tap",
+      "commitMs": 18,
+      "settleMs": 34,
+      "writes": 1
+    },
+    {
+      "id": 6,
+      "width": 390,
+      "height": 844,
+      "turn": 8,
+      "gesture": "tap",
+      "commitMs": 17,
+      "settleMs": 63,
+      "writes": 1
+    },
+    {
+      "id": 6,
+      "width": 430,
+      "height": 932,
+      "turn": 1,
+      "gesture": "drag",
+      "commitMs": 18,
+      "settleMs": 72,
+      "writes": 1
+    },
+    {
+      "id": 6,
+      "width": 430,
+      "height": 932,
+      "turn": 2,
+      "gesture": "tap",
+      "commitMs": 24,
+      "settleMs": 52,
+      "writes": 1
+    },
+    {
+      "id": 6,
+      "width": 430,
+      "height": 932,
+      "turn": 3,
+      "gesture": "tap",
+      "commitMs": 31,
+      "settleMs": 68,
+      "writes": 1
+    },
+    {
+      "id": 6,
+      "width": 430,
+      "height": 932,
+      "turn": 4,
+      "gesture": "tap",
+      "commitMs": 38,
+      "settleMs": 77,
+      "writes": 1
+    },
+    {
+      "id": 6,
+      "width": 430,
+      "height": 932,
+      "turn": 5,
+      "gesture": "tap",
+      "commitMs": 28,
+      "settleMs": 67,
+      "writes": 1
+    },
+    {
+      "id": 6,
+      "width": 430,
+      "height": 932,
+      "turn": 6,
+      "gesture": "tap",
+      "commitMs": 39,
+      "settleMs": 129,
+      "writes": 1
+    },
+    {
+      "id": 6,
+      "width": 430,
+      "height": 932,
+      "turn": 7,
+      "gesture": "tap",
+      "commitMs": 26,
+      "settleMs": 65,
+      "writes": 1
+    },
+    {
+      "id": 6,
+      "width": 430,
+      "height": 932,
+      "turn": 8,
+      "gesture": "tap",
+      "commitMs": 21,
+      "settleMs": 70,
+      "writes": 1
+    },
+    {
+      "id": 7,
+      "width": 390,
+      "height": 844,
+      "turn": 1,
+      "gesture": "drag",
+      "commitMs": 39,
+      "settleMs": 141,
+      "writes": 1
+    },
+    {
+      "id": 7,
+      "width": 390,
+      "height": 844,
+      "turn": 2,
+      "gesture": "tap",
+      "commitMs": 22,
+      "settleMs": 44,
+      "writes": 1
+    },
+    {
+      "id": 7,
+      "width": 390,
+      "height": 844,
+      "turn": 3,
+      "gesture": "tap",
+      "commitMs": 22,
+      "settleMs": 46,
+      "writes": 1
+    },
+    {
+      "id": 7,
+      "width": 390,
+      "height": 844,
+      "turn": 4,
+      "gesture": "tap",
+      "commitMs": 30,
+      "settleMs": 64,
+      "writes": 1
+    },
+    {
+      "id": 7,
+      "width": 390,
+      "height": 844,
+      "turn": 5,
+      "gesture": "tap",
+      "commitMs": 22,
+      "settleMs": 44,
+      "writes": 1
+    },
+    {
+      "id": 7,
+      "width": 390,
+      "height": 844,
+      "turn": 6,
+      "gesture": "tap",
+      "commitMs": 35,
+      "settleMs": 61,
+      "writes": 1
+    },
+    {
+      "id": 7,
+      "width": 390,
+      "height": 844,
+      "turn": 7,
+      "gesture": "tap",
+      "commitMs": 24,
+      "settleMs": 50,
+      "writes": 1
+    },
+    {
+      "id": 7,
+      "width": 390,
+      "height": 844,
+      "turn": 8,
+      "gesture": "tap",
+      "commitMs": 27,
+      "settleMs": 57,
+      "writes": 1
+    },
+    {
+      "id": 7,
+      "width": 390,
+      "height": 844,
+      "turn": 9,
+      "gesture": "tap",
+      "commitMs": 25,
+      "settleMs": 96,
+      "writes": 1
+    },
+    {
+      "id": 8,
+      "width": 390,
+      "height": 844,
+      "turn": 1,
+      "gesture": "drag",
+      "commitMs": 30,
+      "settleMs": 74,
+      "writes": 1
+    },
+    {
+      "id": 8,
+      "width": 390,
+      "height": 844,
+      "turn": 2,
+      "gesture": "tap",
+      "commitMs": 23,
+      "settleMs": 60,
+      "writes": 1
+    },
+    {
+      "id": 8,
+      "width": 390,
+      "height": 844,
+      "turn": 3,
+      "gesture": "tap",
+      "commitMs": 23,
+      "settleMs": 42,
+      "writes": 1
+    },
+    {
+      "id": 8,
+      "width": 390,
+      "height": 844,
+      "turn": 4,
+      "gesture": "tap",
+      "commitMs": 23,
+      "settleMs": 52,
+      "writes": 1
+    },
+    {
+      "id": 8,
+      "width": 390,
+      "height": 844,
+      "turn": 5,
+      "gesture": "tap",
+      "commitMs": 25,
+      "settleMs": 51,
+      "writes": 1
+    },
+    {
+      "id": 8,
+      "width": 390,
+      "height": 844,
+      "turn": 6,
+      "gesture": "tap",
+      "commitMs": 22,
+      "settleMs": 57,
+      "writes": 1
+    },
+    {
+      "id": 8,
+      "width": 390,
+      "height": 844,
+      "turn": 7,
+      "gesture": "tap",
+      "commitMs": 27,
+      "settleMs": 77,
+      "writes": 1
+    },
+    {
+      "id": 8,
+      "width": 390,
+      "height": 844,
+      "turn": 8,
+      "gesture": "tap",
+      "commitMs": 19,
+      "settleMs": 42,
+      "writes": 1
+    },
+    {
+      "id": 8,
+      "width": 390,
+      "height": 844,
+      "turn": 9,
+      "gesture": "tap",
+      "commitMs": 22,
+      "settleMs": 51,
+      "writes": 1
+    },
+    {
+      "id": 8,
+      "width": 390,
+      "height": 844,
+      "turn": 10,
+      "gesture": "tap",
+      "commitMs": 25,
+      "settleMs": 46,
+      "writes": 1
+    },
+    {
+      "id": 8,
+      "width": 390,
+      "height": 844,
+      "turn": 11,
+      "gesture": "tap",
+      "commitMs": 22,
+      "settleMs": 52,
+      "writes": 1
+    },
+    {
+      "id": 8,
+      "width": 390,
+      "height": 844,
+      "turn": 12,
+      "gesture": "tap",
+      "commitMs": 29,
+      "settleMs": 56,
+      "writes": 1
+    },
+    {
+      "id": 8,
+      "width": 390,
+      "height": 844,
+      "turn": 13,
+      "gesture": "tap",
+      "commitMs": 36,
+      "settleMs": 67,
+      "writes": 1
+    },
+    {
+      "id": 8,
+      "width": 390,
+      "height": 844,
+      "turn": 14,
+      "gesture": "tap",
+      "commitMs": 24,
+      "settleMs": 67,
+      "writes": 1
+    },
+    {
+      "id": 8,
+      "width": 390,
+      "height": 844,
+      "turn": 15,
+      "gesture": "tap",
+      "commitMs": 26,
+      "settleMs": 62,
+      "writes": 1
+    },
+    {
+      "id": 8,
+      "width": 390,
+      "height": 844,
+      "turn": 16,
+      "gesture": "tap",
+      "commitMs": 25,
+      "settleMs": 88,
+      "writes": 1
+    },
+    {
+      "id": 9,
+      "width": 390,
+      "height": 844,
+      "turn": 1,
+      "gesture": "drag",
+      "commitMs": 38,
+      "settleMs": 83,
+      "writes": 1
+    },
+    {
+      "id": 9,
+      "width": 390,
+      "height": 844,
+      "turn": 2,
+      "gesture": "tap",
+      "commitMs": 31,
+      "settleMs": 52,
+      "writes": 1
+    },
+    {
+      "id": 9,
+      "width": 390,
+      "height": 844,
+      "turn": 3,
+      "gesture": "tap",
+      "commitMs": 38,
+      "settleMs": 66,
+      "writes": 1
+    },
+    {
+      "id": 9,
+      "width": 390,
+      "height": 844,
+      "turn": 4,
+      "gesture": "tap",
+      "commitMs": 28,
+      "settleMs": 67,
+      "writes": 1
+    },
+    {
+      "id": 9,
+      "width": 390,
+      "height": 844,
+      "turn": 5,
+      "gesture": "tap",
+      "commitMs": 24,
+      "settleMs": 64,
+      "writes": 1
+    },
+    {
+      "id": 9,
+      "width": 390,
+      "height": 844,
+      "turn": 6,
+      "gesture": "tap",
+      "commitMs": 24,
+      "settleMs": 53,
+      "writes": 1
+    },
+    {
+      "id": 9,
+      "width": 390,
+      "height": 844,
+      "turn": 7,
+      "gesture": "tap",
+      "commitMs": 24,
+      "settleMs": 47,
+      "writes": 1
+    },
+    {
+      "id": 9,
+      "width": 390,
+      "height": 844,
+      "turn": 8,
+      "gesture": "tap",
+      "commitMs": 24,
+      "settleMs": 56,
+      "writes": 1
+    },
+    {
+      "id": 9,
+      "width": 390,
+      "height": 844,
+      "turn": 9,
+      "gesture": "tap",
+      "commitMs": 27,
+      "settleMs": 51,
+      "writes": 1
+    },
+    {
+      "id": 9,
+      "width": 390,
+      "height": 844,
+      "turn": 10,
+      "gesture": "tap",
+      "commitMs": 22,
+      "settleMs": 49,
+      "writes": 1
+    },
+    {
+      "id": 9,
+      "width": 390,
+      "height": 844,
+      "turn": 11,
+      "gesture": "tap",
+      "commitMs": 26,
+      "settleMs": 48,
+      "writes": 1
+    },
+    {
+      "id": 9,
+      "width": 390,
+      "height": 844,
+      "turn": 12,
+      "gesture": "tap",
+      "commitMs": 25,
+      "settleMs": 51,
+      "writes": 1
+    },
+    {
+      "id": 9,
+      "width": 390,
+      "height": 844,
+      "turn": 13,
+      "gesture": "tap",
+      "commitMs": 30,
+      "settleMs": 80,
+      "writes": 1
+    },
+    {
+      "id": 9,
+      "width": 390,
+      "height": 844,
+      "turn": 14,
+      "gesture": "tap",
+      "commitMs": 24,
+      "settleMs": 51,
+      "writes": 1
+    },
+    {
+      "id": 9,
+      "width": 390,
+      "height": 844,
+      "turn": 15,
+      "gesture": "tap",
+      "commitMs": 24,
+      "settleMs": 53,
+      "writes": 1
+    },
+    {
+      "id": 9,
+      "width": 390,
+      "height": 844,
+      "turn": 16,
+      "gesture": "tap",
+      "commitMs": 17,
+      "settleMs": 35,
+      "writes": 1
+    },
+    {
+      "id": 9,
+      "width": 390,
+      "height": 844,
+      "turn": 17,
+      "gesture": "tap",
+      "commitMs": 26,
+      "settleMs": 47,
+      "writes": 1
+    },
+    {
+      "id": 9,
+      "width": 390,
+      "height": 844,
+      "turn": 18,
+      "gesture": "tap",
+      "commitMs": 22,
+      "settleMs": 98,
+      "writes": 1
+    },
+    {
+      "id": 10,
+      "width": 390,
+      "height": 844,
+      "turn": 1,
+      "gesture": "drag",
+      "commitMs": 18,
+      "settleMs": 53,
+      "writes": 1
+    },
+    {
+      "id": 10,
+      "width": 390,
+      "height": 844,
+      "turn": 2,
+      "gesture": "tap",
+      "commitMs": 21,
+      "settleMs": 40,
+      "writes": 1
+    },
+    {
+      "id": 10,
+      "width": 390,
+      "height": 844,
+      "turn": 3,
+      "gesture": "tap",
+      "commitMs": 30,
+      "settleMs": 61,
+      "writes": 1
+    },
+    {
+      "id": 10,
+      "width": 390,
+      "height": 844,
+      "turn": 4,
+      "gesture": "tap",
+      "commitMs": 25,
+      "settleMs": 49,
+      "writes": 1
+    },
+    {
+      "id": 10,
+      "width": 390,
+      "height": 844,
+      "turn": 5,
+      "gesture": "tap",
+      "commitMs": 22,
+      "settleMs": 47,
+      "writes": 1
+    },
+    {
+      "id": 10,
+      "width": 390,
+      "height": 844,
+      "turn": 6,
+      "gesture": "tap",
+      "commitMs": 36,
+      "settleMs": 109,
+      "writes": 1
+    },
+    {
+      "id": 10,
+      "width": 390,
+      "height": 844,
+      "turn": 7,
+      "gesture": "tap",
+      "commitMs": 25,
+      "settleMs": 49,
+      "writes": 1
+    },
+    {
+      "id": 10,
+      "width": 390,
+      "height": 844,
+      "turn": 8,
+      "gesture": "tap",
+      "commitMs": 23,
+      "settleMs": 63,
+      "writes": 1
+    },
+    {
+      "id": 10,
+      "width": 390,
+      "height": 844,
+      "turn": 9,
+      "gesture": "tap",
+      "commitMs": 21,
+      "settleMs": 40,
+      "writes": 1
+    },
+    {
+      "id": 10,
+      "width": 390,
+      "height": 844,
+      "turn": 10,
+      "gesture": "tap",
+      "commitMs": 21,
+      "settleMs": 62,
+      "writes": 1
+    },
+    {
+      "id": 10,
+      "width": 390,
+      "height": 844,
+      "turn": 11,
+      "gesture": "tap",
+      "commitMs": 20,
+      "settleMs": 57,
+      "writes": 1
+    },
+    {
+      "id": 10,
+      "width": 390,
+      "height": 844,
+      "turn": 12,
+      "gesture": "tap",
+      "commitMs": 22,
+      "settleMs": 39,
+      "writes": 1
+    },
+    {
+      "id": 10,
+      "width": 390,
+      "height": 844,
+      "turn": 13,
+      "gesture": "tap",
+      "commitMs": 17,
+      "settleMs": 44,
+      "writes": 1
+    },
+    {
+      "id": 10,
+      "width": 390,
+      "height": 844,
+      "turn": 14,
+      "gesture": "tap",
+      "commitMs": 19,
+      "settleMs": 45,
+      "writes": 1
+    },
+    {
+      "id": 10,
+      "width": 390,
+      "height": 844,
+      "turn": 15,
+      "gesture": "tap",
+      "commitMs": 24,
+      "settleMs": 85,
+      "writes": 1
+    }
+  ],
+  "errors": [],
+  "physicalIPhone": false,
+  "input": {
+    "tap": "native touchscreen",
+    "drag": "native mouse/pointer fallback"
+  }
+}
