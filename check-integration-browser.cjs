@@ -1,4 +1,5 @@
-/* Real browser boundaries: touch -> atomic profile -> observations -> offline resume. */
+/* Real browser boundaries: native touch moves and developer legacy hint requests
+ * -> atomic profile -> observations -> offline resume. */
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),http=require('node:http');
 const {chromium}=require('playwright');
@@ -21,7 +22,10 @@ const server=http.createServer((request,response)=>{
 function optedIn(){const tracker=createTracker({now:()=>NOW,monotonic:()=>0});tracker.setEnabled(true);return tracker.snapshot();}
 const read=page=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)),PROFILE);
 const observations=page=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)||'null'),OBS);
-const ready=page=>page.waitForFunction(()=>!!window.HexLifeTestAdapter);
+const ready=page=>page.waitForFunction(()=>{
+ const adapter=window.HexHintTestAdapter,descriptor=Object.getOwnPropertyDescriptor(window,'HexHintTestAdapter');
+ return !!window.HexLifeTestAdapter&&!!adapter&&Object.isFrozen(adapter)&&descriptor?.enumerable===false&&typeof adapter.request==='function'&&typeof adapter.isPending==='function';
+});
 async function enter(page){await page.locator('#home-play').click();if(await page.locator('#pregame-dialog').evaluate(node=>node.open))await page.locator('#pregame-start').click();await page.waitForFunction(()=>document.body.dataset.screen==='game'&&document.getElementById('board').getAttribute('aria-busy')==='false');}
 async function levelFor(page){return page.evaluate(()=>{const p=JSON.parse(localStorage.getItem('hexrota-profile-v2')),i=p.game.current,meta=p.game.attempts[i];return i<2?HEX_TUTORIALS[i]:HexAttempts.createCatalog(HEX_LEVELS,HEX_VARIANTS,HexMatch).resolveLevel(HEX_LEVELS[i-2].id,meta.variantId,meta.levelDataVersion);});}
 async function swipe(page,cdp,pair){
@@ -42,6 +46,7 @@ async function main(){
   context.on('page',page=>page.on('pageerror',error=>errors.push(error.message)));
   context.on('request',request=>{if(!request.url().startsWith(url)&&!request.url().startsWith('blob:')&&!request.url().startsWith('data:'))external.push(request.url());});
   await context.addInitScript(({saved,life,observations,now})=>{
+   window.HexHintTestMode={enabled:true};
    window.__integrationUtc=now;Date.now=()=>window.__integrationUtc;
    if(location.protocol!=='http:')return;
    if(!localStorage.getItem('hexrota-profile-v2')&&!localStorage.getItem('hexrota-match-v5')){
@@ -87,12 +92,12 @@ async function main(){
    await page.waitForFunction(async({cacheName,assets})=>{const cache=await caches.open(cacheName);return(await Promise.all(assets.map(name=>cache.match(new URL(name,location.href).href)))).every(Boolean);},{cacheName:shellCache,assets:offlineAssets});
    await enter(page);const initial=await read(page),stage=initial.game.current,level=await levelFor(page),model=new Engine(level,initial.game.boards[stage]);model.swap(...level.solution[0]);await swipe(page,cdp,plain(level.solution[0]));assert.deepEqual((await read(page)).game.boards[stage],plain(model.snapshot()));
    await context.setOffline(true);await page.reload();await ready(page);await page.locator('.tavik-portrait img').evaluate(n=>n.decode());assert.equal(await page.locator('.tavik-portrait img').evaluate(n=>n.naturalWidth),147,'approved Tavik remains available offline');await enter(page);assert.deepEqual((await read(page)).game.boards[stage],plain(model.snapshot()));assert.equal(await page.locator('#setting-playtest').isChecked(),true);
-   const beforeHint=(await read(page)).game.boards[stage];await page.locator('#hint').click();await page.waitForFunction(()=>JSON.parse(localStorage.getItem('hexrota-playtest-v1')).events.some(e=>e.name==='hint_used'));assert.deepEqual((await read(page)).game.boards[stage],beforeHint,'offline hint cannot change score, RNG or spent moves');
+   const beforeHint=(await read(page)).game.boards[stage];assert.equal(await page.locator('#hint').count(),0,'the native hint control is absent');await page.evaluate(()=>{window.HexHintTestAdapter.request();});await page.waitForFunction(()=>!window.HexHintTestAdapter.isPending()&&JSON.parse(localStorage.getItem('hexrota-playtest-v1')).events.some(e=>e.name==='hint_used'));assert.deepEqual((await read(page)).game.boards[stage],beforeHint,'offline hint cannot change score, RNG or spent moves');
    const next=plain(level.solution[1]);model.swap(...next);await swipe(page,cdp,next);const after=await read(page);assert.deepEqual(after.game.boards[stage],plain(model.snapshot()));assert.equal(after.energy.life.lives,5);assert.equal((await observations(page)).events.filter(e=>e.name==='move').length,2);
    await context.setOffline(false);
   });
   assert.deepEqual(errors,[],'no uncaught browser errors across combined flows');assert.deepEqual(external,[],'local developer tests never send data to an external service');
-  const report={browser:'chromium',transport:'native CDP touch',checks:results.length,results,errors,externalRequests:external,physicalIPhoneTested:false};
+  const report={browser:'chromium',transport:'native CDP touch for moves; developer HexHintTestAdapter for legacy hint requests',checks:results.length,results,errors,externalRequests:external,physicalIPhoneTested:false};
   if(process.env.HEXROTA_INTEGRATION_BROWSER_REPORT)fs.writeFileSync(process.env.HEXROTA_INTEGRATION_BROWSER_REPORT,JSON.stringify(report,null,2));
   console.log(JSON.stringify({checks:results.length,failed:results.filter(row=>!row.passed).length,physicalIPhoneTested:false}));assert.equal(results.filter(row=>!row.passed).length,0);
  }finally{if(current)await current.close();await browser.close();await new Promise(resolve=>server.close(resolve));}

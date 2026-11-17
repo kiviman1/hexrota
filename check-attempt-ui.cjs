@@ -28,7 +28,7 @@ function mount(state=fresh(),options={}){
  else w.localStorage.setItem(key,JSON.stringify(state));
  if(options.events)w.localStorage.setItem(eventKey,JSON.stringify(options.events));
  for(const file of ['engine.js','levels.js','tutorials.js','variants-data.js','attempts.js','events.js','reward-rules.js','rewards.js','reward-adapter.js','app.js']){
-  if(file==='app.js')prepareLifeBypass(w,read);
+  if(file==='app.js')prepareLifeBypass(w,read,{hintDiagnostics:options.hintDiagnostics===true});
   if(file==='app.js'&&Object.hasOwn(options,'pack'))w.HEX_VARIANTS=options.pack;
   if(file==='app.js'&&options.attempts===false)delete w.HexAttempts;
   w.eval(read(file));
@@ -68,9 +68,9 @@ test('preview never starts an attempt; actual entry chooses a certified variant 
 test('continue and hint preserve the exact variant, RNG, move history and reward state',async()=>{
  let f=mount();try{
   await enter(f);const game=f.game(),pair=game.level.solution[0];game.swap(...pair);await move(f,pair);exact(f,game,'first certified variant move');
-  const save=plain(f.save()),events=plain(f.eventState()),meta=identity(f),selector=plain(save.variantSelection);f.close();f=mount(save,{events});
+  const save=plain(f.save()),events=plain(f.eventState()),meta=identity(f),selector=plain(save.variantSelection);f.close();f=mount(save,{events,hintDiagnostics:true});
   await enter(f);exact(f,game,'reload continues the exact board');assert.deepEqual(identity(f),meta);assert.deepEqual(f.save().variantSelection,selector);assert.deepEqual(f.eventState(),events,'resume does not count another start');
-  const before=snapshot(f),rewards=f.feedback.length;f.click('#hint');await until(()=>f.d.querySelectorAll('#board .hinted').length===2,'a real variant hint is displayed');
+  const before=snapshot(f),rewards=f.feedback.length;assert.equal(f.d.querySelector('#hint'),null,'manual hint control stays removed');f.w.HexHintTestAdapter.request();await until(()=>f.d.querySelectorAll('#board .hinted').length===2,'a real variant hint is displayed');
   assert.deepEqual(snapshot(f),before,'hint cannot mutate score, terrain, moves, RNG or history');assert.deepEqual(identity(f),meta);assert.deepEqual(f.save().variantSelection,selector);assert.equal(f.feedback.length,rewards,'a hint cannot award audiovisual rewards');
   assert.equal(stats(f).hintsUsed,1);const hint=f.events('hint_used').at(-1);assert(hint);assert.equal(hint.attemptId,meta.attemptId);assert.equal(hint.hintKind,'proven_route');assert.equal(hint.hintGuarantee,'certified_route');
   assert.equal(hint.score,game.score);assert.equal(hint.movesRemaining,game.movesLeft);validEvents(f);

@@ -21,7 +21,7 @@ function mount(state,legacy,options={}){
  if(legacy)w.localStorage.setItem('hexrota-v1',JSON.stringify(legacy));
  for(const v of [2,3,4])if(options['v'+v])w.localStorage.setItem('hexrota-match-v'+v,JSON.stringify(options['v'+v]));
  if(options.Worker)w.Worker=options.Worker;
- loadGame(w,['levels.js','engine.js','tutorials.js','audio.js','app.js'],file=>fs.readFileSync(root+file,'utf8'),{originalBoards:options.legacyCampaign?Array.from({length:10},(_,i)=>i+2):options.originalStage!==undefined?[options.originalStage]:[]});
+ loadGame(w,['levels.js','engine.js','tutorials.js','audio.js','app.js'],file=>fs.readFileSync(root+file,'utf8'),{originalBoards:options.legacyCampaign?Array.from({length:10},(_,i)=>i+2):options.originalStage!==undefined?[options.originalStage]:[],hintDiagnostics:options.hintDiagnostics===true});
  if(options.launch!==false)enterStage(w,readSave(w).current);
  return dom;
 }
@@ -78,7 +78,8 @@ function assertLegalHint(w){
  const pair=[...w.document.querySelectorAll('#board .hinted')].map(node=>+node.dataset.index);
  assert.equal(pair.length,2,'fallback produces a pair');
  assert(game.legalMoves().some(p=>p.includes(pair[0])&&p.includes(pair[1])),'fallback hint is currently legal');
- assert.equal(w.document.getElementById('hint').disabled,false,'hint button returns to ready');
+ assert.equal(w.document.getElementById('hint'),null,'manual hint control stays removed');
+ assert.equal(w.HexHintTestAdapter.isPending(),false,'developer hint operation returns to ready');
  assert.equal(w.document.getElementById('reset').disabled,false,'controls remain responsive');
 }
 const campaignState=()=>({current:2,done:[0,1],boards:{},sound:false});
@@ -181,19 +182,19 @@ const campaignState=()=>({current:2,done:[0,1],boards:{},sound:false});
  const preferred=mount(null,null,{v2,v3,v4});assert.equal(readSave(preferred.window).current,7,'latest previous version wins');
  // Worker responses belong to one campaign board revision.
  for(const cancel of ['turn','restart']){
-  const {WorkerStub,instances}=fakeWorkers(),fixture=mount(campaignState(),null,{Worker:WorkerStub,originalStage:2}),fw=fixture.window,fd=fw.document;
+  const {WorkerStub,instances}=fakeWorkers(),fixture=mount(campaignState(),null,{Worker:WorkerStub,originalStage:2,hintDiagnostics:true}),fw=fixture.window,fd=fw.document;
   const source=fw.HEX_LEVELS[0],next=source.solution[0];let shadow=new fw.HexMatch(source);
-  click(fw,'#hint');assert.equal(instances.length,1);assert(fd.getElementById('hint').disabled);
+  assert.equal(fd.getElementById('hint'),null,'developer worker coverage adds no manual control');fw.HexHintTestAdapter.request();assert.equal(instances.length,1);assert.equal(fw.HexHintTestAdapter.isPending(),true);
   assert.equal(fd.getElementById('reset').disabled,false);
   const worker=instances[0];assert(worker.url.includes('hint-worker.js'));assert(worker.payload.snapshot);
   if(cancel==='turn'){await swap(fw,next);shadow.swap(...next);}else {click(fw,'#reset');shadow=savedGame(fw);}
   worker.reply({pair:next});await settle();assert(worker.terminated);
   assert.equal(fd.querySelectorAll('#board .hinted').length,0,'late hint cannot override new revision');
-  assertBoard(fw,shadow,'stale worker '+cancel);assert.equal(fd.getElementById('hint').disabled,false);
+  assertBoard(fw,shadow,'stale worker '+cancel);assert.equal(fw.HexHintTestAdapter.isPending(),false);
  }
  class UnavailableWorker{constructor(){throw new Error('Worker blocked');}}
- const blocked=mount(campaignState(),null,{Worker:UnavailableWorker,originalStage:2});click(blocked.window,'#hint');await settle();assertLegalHint(blocked.window);
- const workers=fakeWorkers(),failed=mount(campaignState(),null,{Worker:workers.WorkerStub,originalStage:2});click(failed.window,'#hint');
+ const blocked=mount(campaignState(),null,{Worker:UnavailableWorker,originalStage:2,hintDiagnostics:true});blocked.window.HexHintTestAdapter.request();await settle();assertLegalHint(blocked.window);
+ const workers=fakeWorkers(),failed=mount(campaignState(),null,{Worker:workers.WorkerStub,originalStage:2,hintDiagnostics:true});failed.window.HexHintTestAdapter.request();
  workers.instances[0].onerror({preventDefault(){}});await settle();assert(workers.instances[0].terminated);assertLegalHint(failed.window);
  assert.equal(errors.length,0,errors.join('\n'));assert.equal(unhandled.length,0,unhandled.join('\n'));
  console.log('UI checks passed: 2 guided tutorials + 10 campaign solutions, guarded actions, skip/replay, exact state, progress migration and stale/failing hints.');

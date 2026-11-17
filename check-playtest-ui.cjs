@@ -13,10 +13,11 @@ for(const file of ['engine.js','levels.js','tutorials.js','variants-data.js','at
 const R=reference.window;
 function fresh(stage=2,motion='reduce'){return {current:stage,done:Array.from({length:stage},(_,i)=>i),boards:{},sound:false,preferences:{motion,music:false,haptics:false},variantSelection:{seed:0x41abca,serial:0,counts:{},recent:{}}};}
 function zeroLives(){const manager=R.HexLives.createManager(R.HEX_LIVES_CONFIG,{clock:()=>NOW});let state=manager.createState();for(let n=0;n<5;n++)state=manager.settleAttempt(state,{attemptId:'prior-'+n,levelId:10,tutorial:false,movesUsed:1,outcome:'failed'}).state;return plain(R.HexLifePrototype.createState(state,{providerNamespace:'playtest-ui',gold:300,adAvailable:false}));}
-function mount({saved=fresh(),life,observations,animated=false}={}){
+function mount({saved=fresh(),life,observations,animated=false,hintDiagnostics=false}={}){
  const vc=new VirtualConsole();vc.on('jsdomError',error=>errors.push(error.message));
  const dom=new JSDOM(read('index.html'),{url:'https://hexrota-playtest.example/?email=private%40example.test&secret=do-not-export',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});
  const w=dom.window,d=w.document,network=[],blobs=[],downloads=[];let mono=0;w.HexSessionTestMode={isolated:true};
+ if(hintDiagnostics)w.HexHintTestMode={enabled:true};
  w.Date.now=()=>NOW+mono;Object.defineProperty(w.performance,'now',{configurable:true,value:()=>mono});
  w.matchMedia=()=>({matches:!animated,addEventListener(){},removeEventListener(){}});
  w.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};w.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');this.dispatchEvent(new w.Event('close'));};
@@ -50,16 +51,16 @@ const events=(f,name)=>f.observed()?.events.filter(event=>event.name===name)||[]
 function losingRoute(level){for(let policy=0;policy<120;policy++){const g=new R.HexMatch(level);while(g.status==='playing'){const legal=g.legalMoves();g.swap(...legal[(g.turn*7+policy)%legal.length]);}if(g.status==='lost')return plain(g.history);}throw Error('A genuine losing test route is required');}
 
 test('recorder is off by default; real moves and hints remain unobserved until explicit opt-in',async()=>{
- const f=mount();try{assert.equal(f.node('#setting-playtest').checked,false);await enter(f);await move(f,plain(f.game().level.solution[0]));f.click('#hint');await wait(1);const data=await f.export();assert.equal(data.enabled,false);assert.deepEqual(data.events,[]);assert.deepEqual(data.attempts,[]);assert.equal(f.game().turn,1);noNetwork(f);}finally{f.close();}
+ const f=mount({hintDiagnostics:true});try{assert.equal(f.node('#setting-playtest').checked,false);await enter(f);await move(f,plain(f.game().level.solution[0]));assert.equal(f.d.querySelector('#hint'),null,'manual hint control stays removed');f.w.HexHintTestAdapter.request();await wait(1);const data=await f.export();assert.equal(data.enabled,false);assert.deepEqual(data.events,[]);assert.deepEqual(data.attempts,[]);assert.equal(f.game().turn,1);noNetwork(f);}finally{f.close();}
 });
 
 test('opt-in records actual identities, cells, waves and hints without changing engine results',async()=>{
- const f=mount({saved:fresh(5)});try{
+ const f=mount({saved:fresh(5),hintDiagnostics:true});try{
   f.enable(true);await enter(f);const start=events(f,'level_started');assert.equal(start.length,1);assert.equal(start[0].data.developerBypass,false);assert.equal(events(f,'attempt_resumed').length,0,'a fresh attempt is not a resume');
   const model=f.game(),before=plain(model.snapshot()),pair=plain(model.level.solution[0]),result=plain(model.swap(...pair));await move(f,pair);
   assert.deepEqual(plain(f.game().snapshot()),plain(model.snapshot()));const rows=events(f,'move');assert.equal(rows.length,1);
   assert.deepEqual(rows[0].data,{attemptId:f.save().attempts[5].attemptId,turn:1,pair,cells:pair.map(i=>plain(model.level.cells[i])).map(({q,r})=>({q,r})),scoreBefore:before.score,scoreAfter:model.score,movesRemaining:model.movesLeft,coveredBefore:before.layers.filter(n=>n===0).length,coveredAfter:model.covered,remainingLayers:model.remainingLayers,waves:result.frames.length,developerBypass:false,matchedIndices:[...new Set(result.frames.flatMap(frame=>frame.matched))]});
-  const unchanged=plain(f.game().snapshot());f.click('#hint');await until(()=>events(f,'hint_used').length===1,'actual hint result is observed');assert.deepEqual(plain(f.game().snapshot()),unchanged);assert.equal(events(f,'hint_used')[0].data.hintsUsed,1);
+  const unchanged=plain(f.game().snapshot());assert.equal(f.d.querySelector('#hint'),null,'manual hint control stays removed');f.w.HexHintTestAdapter.request();await until(()=>events(f,'hint_used').length===1,'actual hint result is observed');assert.deepEqual(plain(f.game().snapshot()),unchanged);assert.equal(events(f,'hint_used')[0].data.hintsUsed,1);
   const probe=new f.w.HexMatch(model.level,unchanged);let invalid;
   for(let a=0;a<probe.total&&!invalid;a++)for(let b=a+1;b<probe.total;b++)if(probe.adjacent(a,b)&&!probe.clone().swap(a,b).ok){invalid=[a,b];break;}
   assert(invalid);await move(f,invalid);assert.equal(events(f,'move').length,1,'invalid swaps are not logged as spent moves');assert.deepEqual(plain(f.game().snapshot()),unchanged);
@@ -108,8 +109,8 @@ test('saved opt-in observations resume locally with the same board and no fabric
 });
 
 test('late opt-in does not invent a start or pre-consent moves and leaves an honest incomplete window',async()=>{
- const f=mount({saved:fresh(5)});try{
-  await enter(f);await move(f,plain(f.game().level.solution[0]));f.enable(true);f.advance(400);f.click('#hint');await until(()=>events(f,'hint_used').length===1,'late observation sees the actual hint');const data=await f.export();assert.equal(data.events.filter(e=>e.name==='level_started').length,0);assert.equal(data.events.filter(e=>e.name==='move').length,0);assert.equal(data.attempts.length,1);assert.equal(data.attempts[0].observedStart,false);assert.equal(data.attempts[0].activeMs,400);assert.equal(f.game().turn,1);noNetwork(f);
+ const f=mount({saved:fresh(5),hintDiagnostics:true});try{
+  await enter(f);await move(f,plain(f.game().level.solution[0]));f.enable(true);f.advance(400);assert.equal(f.d.querySelector('#hint'),null,'manual hint control stays removed');f.w.HexHintTestAdapter.request();await until(()=>events(f,'hint_used').length===1,'late observation sees the actual hint');const data=await f.export();assert.equal(data.events.filter(e=>e.name==='level_started').length,0);assert.equal(data.events.filter(e=>e.name==='move').length,0);assert.equal(data.attempts.length,1);assert.equal(data.attempts[0].observedStart,false);assert.equal(data.attempts[0].activeMs,400);assert.equal(f.game().turn,1);noNetwork(f);
  }finally{f.close();}
 });
 

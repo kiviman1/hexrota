@@ -1,0 +1,9 @@
+{
+  "environment": "Node v24.22.1",
+  "boards": 40,
+  "iterations": 1000,
+  "p50Ms": 0.07734200000001579,
+  "p95Ms": 0.30720600000000786,
+  "maxMs": 1.7287699999999973,
+  "scope": "Canonical legalMoves + visible candidate ranking on 40 initial campaign variants; same snapshots unchanged; not a mobile/FPS/battery measurement."
+}

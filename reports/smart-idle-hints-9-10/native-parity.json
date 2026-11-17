@@ -1,0 +1,271 @@
+{
+  "sdkVersion": "8.0.428",
+  "startedAt": "2026-11-17T09:36:05.145Z",
+  "commands": [
+    {
+      "name": "gameplay",
+      "command": "npm run test:unity-gameplay",
+      "script": "node check-gameplay-parity.cjs",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-17T09:36:05.148Z",
+      "finishedAt": "2026-11-17T09:36:16.634Z",
+      "durationMs": 11486,
+      "countLines": [
+        "C# gameplay parity passed: 71 archived mechanics cases + 4 recovery cases/1 bounded component errors + 80 full certified routes + 120 off-route legal runs (1150 swaps); 1916 total valid swaps, 258 exact resumes, 262 explicit replays, 2177 independent clone checks, 1915 cloned next-swap comparisons, 1050 rejected core saves with unchanged prior state. All intermediate matches/refill/falls/RNG/layers/status JSON agrees. C# 7.3 compiled with .NET SDK 8.0.428.",
+        "Recovery safety parity: 17 additional complete success/error comparisons; 1 original R02 configuration now rejects explicitly with unchanged state. Archived invalid output is not an accepted current result.",
+        "Structural input parity: 74 shared JSON inputs (12 exact accepted states, 62 native typed/parser/core rejections). JavaScript-only undefined/sparse inputs are tested separately."
+      ],
+      "counts": {
+        "archivedMechanicsCases": 71,
+        "recoveryCases": 4,
+        "boundedComponentErrors": 1,
+        "certifiedRoutes": 80,
+        "offRouteRuns": 120,
+        "offRouteSwaps": 1150,
+        "validSwaps": 1916,
+        "exactResumes": 258,
+        "explicitReplays": 262,
+        "cloneChecks": 2177,
+        "clonedNextSwapComparisons": 1915,
+        "rejectedCoreSaves": 1050,
+        "recoverySafetyComparisons": 17,
+        "explicitR02Rejections": 1,
+        "structuralInputs": 74,
+        "structuralAcceptedStates": 12,
+        "structuralRejections": 62
+      }
+    },
+    {
+      "name": "rewards",
+      "command": "npm run test:unity-rewards",
+      "script": "node check-reward-parity.cjs",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-17T09:36:16.634Z",
+      "finishedAt": "2026-11-17T09:36:18.946Z",
+      "durationMs": 2312,
+      "countLines": [
+        "Reward parity checks passed: 104 shared vectors and createState factory (98 valid, 7 rejected); JS and C# outputs agree. C# 7.3 compiled with .NET SDK 8.0.428."
+      ],
+      "counts": {
+        "sharedVectors": 104,
+        "validOutcomes": 98,
+        "rejectedOutcomes": 7,
+        "createStateFactories": 1
+      }
+    },
+    {
+      "name": "catalog",
+      "command": "npm run test:unity-catalog",
+      "script": "node check-catalog-parity.cjs",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-17T09:36:18.946Z",
+      "finishedAt": "2026-11-17T09:36:28.177Z",
+      "durationMs": 9231,
+      "countLines": [
+        "C# catalog parity passed: 2107 complete JSON comparisons; 725 exact selections, 610 exact resumes, 90 checkpoint envelopes, 80 full certified routes/600 replayed swaps, 38 tutorial ID/metadata/restores, 21 archived-version checks, 546 rejected catalog/identity/replay inputs. .NET SDK 8.0.428, C#7.3; numeric/string IDs, publication ordering, isolated RNG and copy boundaries preserved."
+      ],
+      "counts": {
+        "comparisons": 2107,
+        "exactSelections": 725,
+        "exactResumes": 610,
+        "checkpointEnvelopes": 90,
+        "certifiedRoutes": 80,
+        "replayedSwaps": 600,
+        "tutorialCases": 38,
+        "archivedVersionChecks": 21,
+        "rejections": 546
+      }
+    },
+    {
+      "name": "hints",
+      "command": "npm run test:unity-hints",
+      "script": "node check-hints-parity.cjs",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-17T09:36:28.177Z",
+      "finishedAt": "2026-11-17T09:36:44.786Z",
+      "durationMs": 16609,
+      "countLines": [
+        "C# hint parity passed: {\"publishedRouteStates\":680,\"certifiedRoutes\":80,\"originalLevels\":10,\"originalRoutes\":20,\"originalRouteStates\":162,\"searchStates\":280,\"clockPolicyCases\":11,\"continuedGames\":265,\"rejectedSnapshots\":13,\"rejectedUntrustedRoutes\":22,\"returnedOutputMutation\":191,\"inputRouteMutation\":100,\"auditBudgetTransitionCases\":3,\"rawRouteFallbacks\":14,\"mixedRouteCandidates\":3,\"routeWorkCapCases\":14,\"depthLimitedUncertainty\":40,\"assistedStates\":20,\"terminalStates\":2,\"guaranteesReplayed\":815,\"comparisons\":1274,\"sources\":{\"proven_route\":759,\"search_win\":56,\"heuristic\":319,\"null\":105},\"dotnetSdk\":\"8.0.428\",\"languageVersion\":\"7.3\"}"
+      ],
+      "counts": {
+        "publishedRouteStates": 680,
+        "certifiedRoutes": 80,
+        "originalLevels": 10,
+        "originalRoutes": 20,
+        "originalRouteStates": 162,
+        "searchStates": 280,
+        "clockPolicyCases": 11,
+        "continuedGames": 265,
+        "rejectedSnapshots": 13,
+        "rejectedUntrustedRoutes": 22,
+        "returnedOutputMutation": 191,
+        "inputRouteMutation": 100,
+        "auditBudgetTransitionCases": 3,
+        "rawRouteFallbacks": 14,
+        "mixedRouteCandidates": 3,
+        "routeWorkCapCases": 14,
+        "depthLimitedUncertainty": 40,
+        "assistedStates": 20,
+        "terminalStates": 2,
+        "guaranteesReplayed": 815,
+        "comparisons": 1274,
+        "sources": {
+          "proven_route": 759,
+          "search_win": 56,
+          "heuristic": 319,
+          "null": 105
+        },
+        "dotnetSdk": "8.0.428",
+        "languageVersion": "7.3"
+      }
+    },
+    {
+      "name": "reward-adapter",
+      "command": "npm run test:unity-reward-adapter",
+      "script": "node check-reward-adapter-parity.cjs",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-17T09:36:44.787Z",
+      "finishedAt": "2026-11-17T09:36:51.830Z",
+      "durationMs": 7043,
+      "countLines": [
+        "C# reward adapter parity passed: 175 routes (80 complete certified + 80 off-route), 1456 turns, 2928 waves, 1564 replay/restore checks, 16 component/status cases, 86 invalid routes and 12 nonmutating hint boundaries. Full RewardInput/evaluated plans/nextState/restore JSON agrees. C# 7.3 compiled with .NET SDK 8.0.428."
+      ],
+      "counts": {
+        "routes": 175,
+        "certifiedRoutes": 80,
+        "offRouteRoutes": 80,
+        "turns": 1456,
+        "waves": 2928,
+        "replayRestoreChecks": 1564,
+        "componentStatusCases": 16,
+        "invalidRoutes": 86,
+        "nonmutatingHintBoundaries": 12
+      }
+    },
+    {
+      "name": "lives",
+      "command": "npm run test:unity-lives",
+      "script": "node check-lives-parity.cjs",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-17T09:36:51.831Z",
+      "finishedAt": "2026-11-17T09:36:56.477Z",
+      "durationMs": 4646,
+      "countLines": [
+        "C# life parity passed: 19 shared scenarios plus1long-run stress/460 transitions, 152 frozen v1 migrations, 172 extra strict/error/archive/receipt probes (102 rejections, 6 verified callback inspections). Every state, view, nullable time, result, ledger and waiver agrees; 344 compiled requests keep inputs unchanged. C#7.3/.NET8.0.428."
+      ],
+      "counts": {
+        "sharedScenarios": 19,
+        "stressTransitions": 460,
+        "frozenV1Migrations": 152,
+        "extraProbes": 172,
+        "rejections": 102,
+        "verifiedCallbackInspections": 6,
+        "compiledRequests": 344,
+        "longRunStressCases": 1
+      }
+    },
+    {
+      "name": "session",
+      "command": "npm run test:unity-session",
+      "script": "node check-event-parity.cjs && node check-session-parity.cjs",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-17T09:36:56.478Z",
+      "finishedAt": "2026-11-17T09:37:22.723Z",
+      "durationMs": 26245,
+      "countLines": [
+        "C# event parity passed: 580 complete JSON comparisons (29 create, 423 validate, 58 state validation, 70 append), 462 exact rejection messages; input immutability for every success/rejection. Covers bounded buffer/order, duplicate terminal callbacks, typed IDs, token boundaries, PII/unknown fields and deterministic wire fuzz. C# 7.3 compiled with .NET SDK 8.0.428.",
+        "C# session parity passed: 1362 full JSON comparisons; 36 real app.js flows; 63 native fault/guard scenarios; canonical profile/revision, provider receipts, migration and atomic rollback covered. Physical Unity/iOS/Android tests remain outside this harness."
+      ],
+      "counts": {
+        "eventComparisons": 580,
+        "eventCreateCases": 29,
+        "eventValidateCases": 423,
+        "eventStateValidationCases": 58,
+        "eventAppendCases": 70,
+        "eventRejections": 462,
+        "sessionComparisons": 1362,
+        "appFlows": 36,
+        "nativeGuardScenarios": 63
+      }
+    },
+    {
+      "name": "economy",
+      "command": "npm run test:unity-economy",
+      "script": "node check-economy-parity.cjs",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-17T09:37:22.724Z",
+      "finishedAt": "2026-11-17T09:37:29.101Z",
+      "durationMs": 6377,
+      "countLines": [
+        "Real .NET 8 / C# 7.3 economy parity: 125 flows, 579 complete result+state comparisons passed. No web-engine replacement or SDK fallback."
+      ],
+      "counts": {
+        "flows": 125,
+        "comparisons": 579
+      }
+    },
+    {
+      "name": "commands",
+      "command": "npm run test:unity-commands",
+      "script": "node check-command-parity.cjs",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-17T09:37:29.101Z",
+      "finishedAt": "2026-11-17T09:37:52.521Z",
+      "durationMs": 23420,
+      "countLines": [
+        "Real C# command parity passed: {\"certifiedRoutes\":80,\"legacyPrefixes\":680,\"colorChanges\":1032,\"brushTargets\":1032,\"malformedCases\":56,\"rescueCases\":40,\"comparisons\":2952,\"recoverySupplemental\":1,\"currentAuditComparisons\":1,\"rescueSafetyComparisons\":22,\"steps\":16051,\"waves\":3332,\"dotnetSdk\":\"8.0.428\",\"languageVersion\":\"7.3\",\"expectedSha256\":\"5f9650ace1553ab24dff9511c212d4bb533c75792d52dced4c4d46bb9f9be99f\"}"
+      ],
+      "counts": {
+        "certifiedRoutes": 80,
+        "legacyPrefixes": 680,
+        "colorChanges": 1032,
+        "brushTargets": 1032,
+        "malformedCases": 56,
+        "rescueCases": 40,
+        "comparisons": 2952,
+        "recoverySupplemental": 1,
+        "currentAuditComparisons": 1,
+        "rescueSafetyComparisons": 22,
+        "steps": 16051,
+        "waves": 3332,
+        "dotnetSdk": "8.0.428",
+        "languageVersion": "7.3",
+        "expectedSha256": "5f9650ace1553ab24dff9511c212d4bb533c75792d52dced4c4d46bb9f9be99f"
+      }
+    },
+    {
+      "name": "rescue",
+      "command": "npm run test:unity-rescue",
+      "script": "node check-rescue-parity.cjs",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-17T09:37:52.527Z",
+      "finishedAt": "2026-11-17T09:38:14.647Z",
+      "durationMs": 22120,
+      "countLines": [
+        "Rescue parity: 376 real C# comparisons passed (.NET 8.0.428, C#7.3); 293 unchanged original comparisons, 83 retained-receipt comparisons in 10 groups; 12 frozen cases + 600 compiled lifecycle transitions. No Unity/IL2CPP/device claim."
+      ],
+      "counts": {
+        "comparisons": 376,
+        "originalComparisons": 293,
+        "retainedReceiptComparisons": 83,
+        "retainedReceiptGroups": 10,
+        "frozenCases": 12,
+        "lifecycleTransitions": 600
+      }
+    }
+  ],
+  "finishedAt": "2026-11-17T09:38:14.651Z",
+  "durationMs": 129506,
+  "passed": 10,
+  "countSource": "Exact success output from the real .NET/C# parity commands; raw countLines retained."
+}

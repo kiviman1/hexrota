@@ -110,6 +110,20 @@ jobs:
         run: npm ci
       - name: Install browser and system dependencies
         run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Fetch the immutable pre-idle mobile layout reference
+        run: git fetch --no-tags --depth=1 origin 616c66389d1aca7c225b56641f27bc901e5a9012
+      - name: Verify passive idle timing, native touch, pixels and profile isolation
+        run: npm run test:idle-hints-browser
+        env:
+          HEXROTA_BROWSER: ${{ matrix.browser }}
+      - name: Keep idle hint mobile geometry, screenshots and timing evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: idle-hints-${{ matrix.browser }}
+          path: test-results/idle-hints-${{ matrix.browser }}
+          if-no-files-found: warn
+          retention-days: 7
       - name: Test actual SVG geometry and pointer input
         run: npm run test:mobile-browser
         env:

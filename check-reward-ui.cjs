@@ -24,7 +24,7 @@ function fixture(turn){
 }
 const ordinary=fixture(1),cross=fixture(0),winning=fixture(level.solution.length-1);
 
-function mount({which=ordinary,motion='full',sound=true,haptics=true}={}){
+function mount({which=ordinary,motion='full',sound=true,haptics=true,hintDiagnostics=false}={}){
  const vc=new VirtualConsole();vc.on('jsdomError',error=>errors.push(error.message));
  const dom=new JSDOM(read('index.html'),{url:'https://hexrota-reward-ui.example/',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});
  try{
@@ -67,7 +67,7 @@ function mount({which=ordinary,motion='full',sound=true,haptics=true}={}){
    if(packet.dataset.phase==='pop'&&!burstSnapshots.some(snapshot=>snapshot.node===packet))burstSnapshots.push({node:packet,rings:d.querySelectorAll('.score-burst-ring').length,sparks:d.querySelectorAll('.score-burst-spark').length});
   }
  });observer.observe(d.body,{subtree:true,childList:true,attributes:true,attributeFilter:['data-phase','data-reward-headline']});
- loadGame(w,['engine.js','levels.js','tutorials.js','reward-rules.js','rewards.js','reward-adapter.js','app.js'],read);
+ loadGame(w,['engine.js','levels.js','tutorials.js','reward-rules.js','rewards.js','reward-adapter.js','app.js'],read,{hintDiagnostics});
  const node=id=>{const n=d.getElementById(id);assert(n,'#'+id+' exists');return n;};
  const click=id=>{node(id).click();if(id==='reset')confirmRestart(w);},save=()=>JSON.parse(w.localStorage.getItem(key));
  function enter(){d.querySelector('[data-nav="journey"]').click();d.querySelector('[data-stage="2"]').click();if(node('pregame-dialog').open)click('pregame-start');assert.equal(d.body.dataset.screen,'game');assert.equal(save().current,2,'fixture enters the requested campaign board');}
@@ -90,9 +90,9 @@ test('production markup loads the rules and director before the game',()=>{
 });
 
 test('restoring a played board and asking for a hint never replay rewards',async()=>{
- const f=mount();try{
+ const f=mount({hintDiagnostics:true});try{
   assert.equal(f.audio.length,0);assert.equal(f.vibrations.length,0);assert.equal(f.packets.length,0);
-  const before=plain(f.save().boards[2]);f.enter();f.click('hint');
+  const before=plain(f.save().boards[2]);f.enter();assert.equal(f.d.querySelector('#hint'),null,'manual hint control stays removed');f.w.HexHintTestAdapter.request();
   await until(()=>f.d.querySelector('.hinted'),'the real hint completes');
   assert.deepEqual(f.save().boards[2],before);assert.equal(f.audio.length,0,'restore and hint do not play old reward cues');assert.equal(f.vibrations.length,0);assert.equal(goalAnimations(f).length,0,'old ground milestones are not replayed');
  }finally{f.close();}

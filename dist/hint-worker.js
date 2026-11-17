@@ -1,5 +1,5 @@
 /* Hint search stays off the input/render thread on supported browsers. */
-importScripts('./engine.js?v=45');
+importScripts('./engine.js?v=46');
 self.onmessage = event => {
   try {
     const game = new self.HexMatch(event.data.level,event.data.snapshot);

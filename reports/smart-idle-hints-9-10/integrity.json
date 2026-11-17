@@ -1,0 +1,19 @@
+{
+  "baseline": "616c66389d1aca7c225b56641f27bc901e5a9012",
+  "sourceSha256": {
+    "dist/app.js": "f9cd1219b50454cdc2718426600d1973ca655107e334e0c0e1d4f801934fd600",
+    "dist/idle-hints.js": "a70d02b32a461f3b79854ca8f4e220425dc07159488ab07c5d169ceefcf05ba0",
+    "dist/idle-hint-view.js": "f0142073f632b1675a10caef9f782abd06d8e63da6eb6e9c928a9fd45724f570",
+    "dist/index.html": "610e8247537d1d3d5de447fb36f627300c15dd9166d89e44df3201309c076b18",
+    "dist/style.css": "007515b533fdf9e57300193b9276e4dba17b1e6cbb725fa96cd0e74955097c0a",
+    "dist/sw.js": "e785741ebf0110a52317206d5be38dc2a75f9677007355a0ed2b799a5fb1a114",
+    "check-idle-hints-browser.cjs": "a3cf9d0eca3d5441d740a6aeb5a953c5bfb4a220e1a9a1bf9355b424de19abb5"
+  },
+  "evidenceSha256": {
+    "docs/evidence/smart-idle-hints-9-10/after-390x844.png": "b8646f2ea1e6c57c90232eb25755545e1b10741e8a52ca42179a27f6b91fe7ac",
+    "docs/evidence/smart-idle-hints-9-10/before-390x844.png": "ee6e22846ce284a34ce07da9a85555e7fbab96c7e7c6dc9a3a9becff1f83b0a8",
+    "docs/evidence/smart-idle-hints-9-10/cue-peak-390x844.png": "6d5241e050f10ca5abc68ac7baaebc406d29c155439117ec582f338d372dae0c",
+    "docs/evidence/smart-idle-hints-9-10/cue-start-390x844.png": "2bc25b465c2ae1726c76e6706206193b032f5566241913587276c858636da282"
+  },
+  "physicalDevicesTested": false
+}

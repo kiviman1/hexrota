@@ -65,3 +65,7 @@ Otomatik WebKit testi fiziksel iPhone Safari testi yerine geçmez. İlk gerçek 
 ## Yeniden deneme için tam sıfırlama
 
 Ayarlar → Geliştirme testi → **Test için her şeyi sıfırla**. Ayrı onaydan sonra öğreticiler, bölüm ilerlemesi, Altın, yıldız, çanta, can, TEST cüzdanı ve yerel gözlemler yeni oyuncu durumuna döner; sayfa otomatik yeniden açılır. Normal açık-deneme sıfırlaması ve ödül hakları değişmez. Teknik güvenlik ve testler: `WELCOME_REWARD_AND_TEST_RESET.md`.
+
+## 9.10 kampanya bekleme ipucu
+
+T1/T2'nin rehber hamleleri, mevcut öğretici koçu, Tavik portresi, Tahta/Çivi sayaçları ve hoş geldin ödülü aynen korunur. Yeni pasif ipucu yalnız öğretici olmayan, etkileşime açık ana bölüm tahtasında çalışır. İlk uygun bekleme 20 saniyedir; gösterimden sonra başarılı bir oyuncu hamlesi olmadan tekrar kurulmaz. Sonraki uygun bekleme 35 saniye, iki gösterim arası en az 60 saniye ve aynı sayfa oturumunda deneme başına en fazla iki gösterimdir. Tüm ortak runtime/style bağımlılıkları artık PWA v46'dadır; bu yalnız önbellek kuşağıdır.

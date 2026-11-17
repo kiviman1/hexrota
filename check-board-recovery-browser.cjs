@@ -92,7 +92,7 @@ async function installFault(page,position){
 }
 async function assertAvailable(page){
  assert.equal(await page.locator('#board').getAttribute('aria-busy'),'false');assert.equal(await page.locator('#board').getAttribute('aria-disabled'),'false');
- assert.equal(await page.locator('#hint').isDisabled(),false);assert.equal(await page.locator('#reset').isDisabled(),false);assert.equal(await page.locator('#open-inventory').isDisabled(),false);
+ assert.equal(await page.locator('#hint').count(),0,'manual hint remains absent after command failure');assert.equal(await page.locator('#reset').isDisabled(),false);assert.equal(await page.locator('#open-inventory').isDisabled(),false);
  assert.deepEqual(await page.locator('dialog[open]').evaluateAll(nodes=>nodes.map(node=>node.id)),[],'no speculative result or provider modal');
  assert.equal(await page.locator('.swap-pair,.swap-layer .swap-stone,.score-packet,.tutorial-demo-layer').count(),0,'no retired presentation nodes remain');
 }

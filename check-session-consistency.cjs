@@ -41,10 +41,10 @@ async function testEmptySlotRollback(){
  }finally{f.close();}
 }
 async function testAsyncHintRollback(){
- const f=mount();try{
+ const f=mount({hintDiagnostics:true});try{
   await enter(f);const before=plain(f.save()),events=plain(f.events()),native=f.w.Storage.prototype.setItem;
   f.w.Storage.prototype.setItem=function(key,value){if(key===profileKey)throw new f.w.DOMException('quota','QuotaExceededError');return native.call(this,key,value);};
-  f.click('#hint');await new Promise(resolve=>setTimeout(resolve,5));assert.deepEqual(f.save(),before);assert.deepEqual(f.events(),events,'hint observation does not escape a failed profile transaction');
+  assert.equal(f.d.querySelector('#hint'),null,'manual hint control stays removed');f.w.HexHintTestAdapter.request();await new Promise(resolve=>setTimeout(resolve,5));assert.deepEqual(f.save(),before);assert.deepEqual(f.events(),events,'hint observation does not escape a failed profile transaction');
  }finally{f.close();}
 }
 async function testProviderBeginRollback(){

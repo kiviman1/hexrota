@@ -97,8 +97,6 @@ body[data-ui-theme="comic"] .game-toolbar{background:linear-gradient(#61427c,#35
 body[data-ui-theme="comic"] .dock-button{color:#fff4db;background:linear-gradient(#a17abf,#785398 24%,#50336b);border-color:#b997cb;box-shadow:inset 0 1px #e7ccf2aa,0 3px #251738}
 body[data-ui-theme="comic"] .dock-button>span{color:#fff2de;text-shadow:0 1px #38224c}
 body[data-ui-theme="comic"] .dock-button .icon{color:#fff4d7;background:linear-gradient(#9473ad,#67457f);border-color:#d1b0da;box-shadow:inset 0 1px #e9d4f0,0 2px #2e1b40}
-body[data-ui-theme="comic"] #hint{color:#fff3c0;background:linear-gradient(#cd9854,#98703d);border-color:#f3d394}
-body[data-ui-theme="comic"] #hint .icon{color:#5b4125;background:linear-gradient(#ffed9b,#efbf54);border-color:#fff3b5}
 body[data-ui-theme="comic"] #open-inventory{background:linear-gradient(#81b9e2,#3e84b8);border-color:#b1e3ff}
 body[data-ui-theme="comic"] #open-inventory .icon{background:linear-gradient(#7dbee7,#3778ab);border-color:#c6e9ff}
 body[data-ui-theme="comic"] .tutorial-coach{background:linear-gradient(#fff4d5,#f4dca8);border-color:#ce9855;color:#543855}
@@ -234,7 +232,7 @@ body[data-screen="game"]:is([data-learning="first"],[data-learning="goals"]) .co
 body[data-screen="game"][data-guide-feedback="true"] .coach-skip{display:none}
 body[data-screen="game"][data-guide-feedback="true"] .tutorial-coach{grid-template-columns:minmax(0,1fr) auto}
 body[data-screen="game"][data-guide-feedback="true"] .coach-copy{grid-column:1;grid-row:1}
-body[data-screen="game"]:is([data-learning="first"],[data-learning="goals"]) :is(#reset,#hint,#game-settings){display:none}
+body[data-screen="game"]:is([data-learning="first"],[data-learning="goals"]) :is(#reset,#game-settings){display:none}
 body[data-screen="game"]:is([data-learning="first"],[data-learning="goals"]) .tool-actions{display:flex;justify-content:space-between;max-width:530px;gap:16px}
 body[data-screen="game"]:is([data-learning="first"],[data-learning="goals"]) .dock-button{flex-direction:row;width:auto;gap:8px;min-height:38px;font-size:11px}
 body[data-screen="game"]:is([data-learning="first"],[data-learning="goals"]) .dock-button>.icon{width:34px;height:34px;min-width:34px;padding:7px;border-radius:12px}
