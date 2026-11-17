@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><LangVersion>7.3</LangVersion>
+    <Nullable>disable</Nullable><ImplicitUsings>disable</ImplicitUsings><EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo><AssemblyName>Hexrota.StoryParity</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" /><Compile Include="../Story/*.cs" />
+    <Compile Include="../StoryAdapter/*.cs" /><Compile Include="../Gameplay/*.cs" /><Compile Include="../Catalog/CatalogWire.cs" />
+    <Compile Include="../Contracts/Wire.cs" /><Compile Include="../ParitySupport/WireJson.cs" />
+  </ItemGroup>
+</Project>

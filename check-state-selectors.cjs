@@ -208,6 +208,8 @@ test('the projection module contains no platform, economic, timing or random dep
   assert(Object.isFrozen(S));
 });
 
+test('pending committed story closes input reservation races without rewriting gameplay phase',()=>{const current=state(),domain=campaign({storyPending:true});assert.equal(S.gameplayPhase(current,domain),'PLAYING');assert.equal(S.canRouteBoardInput(current,domain),false);assert.equal(S.canStartMove(current,domain),false);assert.equal(S.canUseInventory(current,domain),false);assert.equal(S.canStartMove(current,campaign({storyPending:false})),true);assert.equal(S.canStartMove(current,campaign({storyPending:'true'})),false);});
+
 let failed=0;
 for(const {name,run}of tests)try{run();console.log('PASS '+name);}catch(error){failed++;console.error('FAIL '+name);console.error(error);}
 console.log('State selector checks: '+(tests.length-failed)+'/'+tests.length+' passed.');

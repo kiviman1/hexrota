@@ -1,0 +1,31 @@
+Skipping host requirements validation logic because `PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS` env variable is set.
+PASS webkit isolated story review exposes all ten campaign choices and unchanged material attempt identities
+PASS webkit 320x568 alpha1 route0 native victory with explicit story actions and exact reload
+PASS webkit 320x568 alpha1 route1 native victory with explicit story actions and exact reload
+PASS webkit 320x568 alpha2 route0 native victory with explicit story actions and exact reload
+PASS webkit 320x568 alpha2 route1 native victory with explicit story actions and exact reload
+PASS webkit 320x568 alpha3 route0 native victory with explicit story actions and exact reload
+PASS webkit 320x568 alpha3 route1 native victory with explicit story actions and exact reload
+PASS webkit 390x844 alpha1 route0 native victory with explicit story actions and exact reload
+PASS webkit 390x844 alpha1 route1 native victory with explicit story actions and exact reload
+PASS webkit 390x844 alpha2 route0 native victory with explicit story actions and exact reload
+PASS webkit 390x844 alpha2 route1 native victory with explicit story actions and exact reload
+PASS webkit 390x844 alpha3 route0 native victory with explicit story actions and exact reload
+PASS webkit 390x844 alpha3 route1 native victory with explicit story actions and exact reload
+PASS webkit 430x932 alpha1 route0 native victory with explicit story actions and exact reload
+PASS webkit 430x932 alpha1 route1 native victory with explicit story actions and exact reload
+PASS webkit 430x932 alpha2 route0 native victory with explicit story actions and exact reload
+PASS webkit 430x932 alpha2 route1 native victory with explicit story actions and exact reload
+PASS webkit 430x932 alpha3 route0 native victory with explicit story actions and exact reload
+PASS webkit 430x932 alpha3 route1 native victory with explicit story actions and exact reload
+PASS webkit failed move write rolls back board materials and observed story facts together
+PASS webkit failed acknowledgement preserves the same active instance and retry commits once
+PASS webkit failed choice preserves both branches and retry selects exactly one authored response
+PASS webkit pending choice reload is exact and skip follows the common plan without selecting a branch
+PASS webkit Escape pause background and Home retain active story while rejecting previous view callbacks
+PASS webkit new attempt and progress reset invalidate detached controls and protect all older namespaces
+PASS webkit normal material animation queues story until settle and real pause cancellation cannot duplicate facts
+PASS webkit terminal A story can pause and resume its same ending before explicit acknowledgement releases victory
+PASS webkit T1 T2 full native teaching routes preserve historical counters and create no story chapter state
+PASS webkit actual full-profile reset commits fresh story defaults atomically and revokes stale writers across native reload
+29 story browser checks passed in webkit; physical iPhone not tested.

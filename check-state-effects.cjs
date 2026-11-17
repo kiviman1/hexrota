@@ -4,13 +4,14 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),{JSDOM}=require('jsdom');
 const Core=require('./dist/app-state.js'),Effects=require('./dist/state-effects.js');
 const tests=[],mounted=[];const test=(name,run)=>tests.push({name,run});
-function fixture({queued=true,onClose,runAction}={}){
+function fixture({queued=true,onClose,runAction,inlineDialogs=[]}={}){
  const dom=new JSDOM(fs.readFileSync(__dirname+'/dist/index.html','utf8'),{url:'https://state-effects.example/#home',pretendToBeVisual:true}),w=dom.window,d=w.document;
  const queue=[],native=[],closed=[],errors=[],guard={gameAvailable:true,engineStatus:'playing',blocked:false,recovery:false};
  let failShow=false,failClose=false;
  w.HTMLDialogElement.prototype.showModal=function(){if(failShow)throw new Error('test showModal failure');this.setAttribute('open','');native.push('open:'+this.id);this.querySelector('[autofocus],button')?.focus();};
+ w.HTMLDialogElement.prototype.show=function(){this.setAttribute('open','');native.push('inline:'+this.id);this.querySelector('button')?.focus();};
  w.HTMLDialogElement.prototype.close=function(){if(failClose)throw new Error('test close failure');if(!this.open)return;this.removeAttribute('open');native.push('close:'+this.id);const event=()=>this.dispatchEvent(new w.Event('close'));if(queued)queue.push(event);else event();};
- const state=Core.create(),adapter=Effects.create({document:d,window:w,state,getFacts:()=>guard,runAction,onError:failure=>errors.push(failure),onClose:value=>{closed.push(value);onClose?.(value);}});
+ const state=Core.create(),adapter=Effects.create({document:d,window:w,state,inlineDialogs,getFacts:()=>guard,runAction,onError:failure=>errors.push(failure),onClose:value=>{closed.push(value);onClose?.(value);}});
  const f={dom,w,d,state,adapter,guard,queue,native,closed,errors,showFailure:value=>failShow=value,closeFailure:value=>failClose=value,
   node:id=>d.getElementById(id),flush(){while(queue.length)queue.shift()();},navigate(screen,options={historyChange:false}){const change=state.dispatch({type:'NAVIGATE',screen},guard);if(change.accepted)assert.equal(adapter.renderScreen(screen,options).accepted,true);return change;},
   dispose(){adapter.destroy();state.destroy();dom.window.close();}};mounted.push(f);return f;
@@ -158,5 +159,7 @@ test('adapter effects do not access durable storage and destroy unsubscribes eve
   assert.equal(f.adapter.open('help-dialog').reason,'disposed');assert.equal(f.adapter.renderScreen('home').reason,'disposed');
  }finally{f.dispose();}
 });
+
+test('story uses the same state owner with an explicit inline native surface',()=>{const f=fixture({inlineDialogs:['story-dialog']});try{f.navigate('game');f.guard.storyAvailable=true;assert(f.adapter.open('story-dialog').accepted);assert.deepEqual(ids(f),['story-dialog']);assert(f.native.includes('inline:story-dialog'));assert(!f.native.includes('open:story-dialog'));assert(f.node('story-dialog').open);assert.equal(f.adapter.open('pause-dialog').accepted,false,'host must explicitly close story visual before pause');f.adapter.close('story-dialog');f.flush();assert(f.adapter.open('pause-dialog').accepted);assert(f.native.includes('open:pause-dialog'));}finally{f.dispose();}});
 
 (async()=>{let failed=0;for(const {name,run}of tests)try{await run();console.log('PASS '+name);}catch(error){failed++;console.error('FAIL '+name+'\n'+error.stack);}finally{for(const f of mounted.splice(0))f.dispose();}if(failed)process.exitCode=1;else console.log('State DOM effects passed: '+tests.length+' groups; real pure core, queued-native-event/focus shims only; no physical-device claim.');})().catch(error=>{console.error(error);process.exitCode=1;});

@@ -1,0 +1,30 @@
+PASS chromium isolated story review exposes all ten campaign choices and unchanged material attempt identities
+PASS chromium 320x568 alpha1 route0 native victory with explicit story actions and exact reload
+PASS chromium 320x568 alpha1 route1 native victory with explicit story actions and exact reload
+PASS chromium 320x568 alpha2 route0 native victory with explicit story actions and exact reload
+PASS chromium 320x568 alpha2 route1 native victory with explicit story actions and exact reload
+PASS chromium 320x568 alpha3 route0 native victory with explicit story actions and exact reload
+PASS chromium 320x568 alpha3 route1 native victory with explicit story actions and exact reload
+PASS chromium 390x844 alpha1 route0 native victory with explicit story actions and exact reload
+PASS chromium 390x844 alpha1 route1 native victory with explicit story actions and exact reload
+PASS chromium 390x844 alpha2 route0 native victory with explicit story actions and exact reload
+PASS chromium 390x844 alpha2 route1 native victory with explicit story actions and exact reload
+PASS chromium 390x844 alpha3 route0 native victory with explicit story actions and exact reload
+PASS chromium 390x844 alpha3 route1 native victory with explicit story actions and exact reload
+PASS chromium 430x932 alpha1 route0 native victory with explicit story actions and exact reload
+PASS chromium 430x932 alpha1 route1 native victory with explicit story actions and exact reload
+PASS chromium 430x932 alpha2 route0 native victory with explicit story actions and exact reload
+PASS chromium 430x932 alpha2 route1 native victory with explicit story actions and exact reload
+PASS chromium 430x932 alpha3 route0 native victory with explicit story actions and exact reload
+PASS chromium 430x932 alpha3 route1 native victory with explicit story actions and exact reload
+PASS chromium failed move write rolls back board materials and observed story facts together
+PASS chromium failed acknowledgement preserves the same active instance and retry commits once
+PASS chromium failed choice preserves both branches and retry selects exactly one authored response
+PASS chromium pending choice reload is exact and skip follows the common plan without selecting a branch
+PASS chromium Escape pause background and Home retain active story while rejecting previous view callbacks
+PASS chromium new attempt and progress reset invalidate detached controls and protect all older namespaces
+PASS chromium normal material animation queues story until settle and real pause cancellation cannot duplicate facts
+PASS chromium terminal A story can pause and resume its same ending before explicit acknowledgement releases victory
+PASS chromium T1 T2 full native teaching routes preserve historical counters and create no story chapter state
+PASS chromium actual full-profile reset commits fresh story defaults atomically and revokes stale writers across native reload
+29 story browser checks passed in chromium; physical iPhone not tested.

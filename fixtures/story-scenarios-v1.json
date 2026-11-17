@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "story-content-v1",
+  "cases": [
+    {"id":"wood-route-1","levelId":6,"routeIndex":0,"choiceId":null,"endingId":"a-wood-ready"},
+    {"id":"wood-route-2","levelId":6,"routeIndex":1,"choiceId":null,"endingId":"a-wood-ready"},
+    {"id":"nails-route-1","levelId":7,"routeIndex":0,"choiceId":null,"endingId":"b-nails-ready"},
+    {"id":"nails-route-2","levelId":7,"routeIndex":1,"choiceId":null,"endingId":"b-nails-ready"},
+    {"id":"together-gate-1","levelId":8,"routeIndex":0,"choiceId":"gate-first","endingId":"c-materials-ready"},
+    {"id":"together-coop-1","levelId":8,"routeIndex":0,"choiceId":"coop-first","endingId":"c-materials-ready"},
+    {"id":"together-skip-1","levelId":8,"routeIndex":0,"choiceId":null,"endingId":"c-materials-ready"},
+    {"id":"together-gate-2","levelId":8,"routeIndex":1,"choiceId":"gate-first","endingId":"c-materials-ready"},
+    {"id":"together-coop-2","levelId":8,"routeIndex":1,"choiceId":"coop-first","endingId":"c-materials-ready"},
+    {"id":"together-skip-2","levelId":8,"routeIndex":1,"choiceId":null,"endingId":"c-materials-ready"}
+  ]
+}

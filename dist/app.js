@@ -1,15 +1,18 @@
 window.HexSessionStore.boot(function startApp(session) {
   'use strict';
   const $ = id => document.getElementById(id);
-  const devFlow=window.HexCampaignFlow?.enabled===true,devMaterials=window.HexMaterialAlpha?.enabled===true,developerMode=devFlow||devMaterials;
+  const devStory=window.HexStoryAlpha?.enabled===true,devFlow=window.HexCampaignFlow?.enabled===true,devMaterials=devStory||window.HexMaterialAlpha?.enabled===true,developerMode=devFlow||devMaterials;
+  const materialScope=devStory?window.HexStoryAlpha:window.HexMaterialAlpha,storyAdapter=devStory?session.storyAdapter:null;
+  if(devStory&&!storyAdapter)throw new Error('Story persistence unavailable');
   const hasObstacleRules=level=>['classic-v5','classic-v6'].includes(level?.rulesVersion);
-  const storage=devMaterials?window.HexMaterialAlpha.storage(window.localStorage):devFlow?window.HexCampaignFlow.storage(window.localStorage):window.localStorage;
+  const storage=devStory?window.HexStoryAlpha.storage(window.localStorage):devMaterials?window.HexMaterialAlpha.storage(window.localStorage):devFlow?window.HexCampaignFlow.storage(window.localStorage):window.localStorage;
   if(devMaterials)document.body.dataset.devMaterials='true';
+  if(devStory)document.body.dataset.devStory='true';
   if(devFlow)document.body.dataset.devFlow='true';
   const tutorials=window.HEX_TUTORIALS||[];
   const flowArchives=[...(window.HEX_CAMPAIGN_FLOW_LEVELS||[]),...(window.HEX_CAMPAIGN_FLOW_LEVELS_V2||[])];
   const currentFlowLevels=devFlow?window.HexCampaignFlow.currentLevels(flowArchives,window.HexCampaignFlow.reviewVersion):[];
-  const currentMaterialLevels=devMaterials?window.HexMaterialAlpha.currentLevels(window.HEX_MATERIAL_ALPHA_LEVELS||[]):[];
+  const currentMaterialLevels=devMaterials?materialScope.currentLevels(window.HEX_MATERIAL_ALPHA_LEVELS||[]):[];
   const campaignLevels=developerMode?window.HEX_LEVELS.map(level=>(devMaterials?currentMaterialLevels:currentFlowLevels).find(update=>update.id===level.id)||level):window.HEX_LEVELS;
   const levels=[...tutorials,...campaignLevels];
   const tutorialCount=tutorials.length,campaignCount=window.HEX_LEVELS.length;
@@ -17,7 +20,7 @@ window.HexSessionStore.boot(function startApp(session) {
   let variantCatalog=null;
   if(window.HexAttempts)try{variantCatalog=window.HexAttempts.createCatalog(window.HEX_LEVELS,window.HEX_VARIANTS||null,window.HexMatch);}catch(_){try{variantCatalog=window.HexAttempts.createCatalog(window.HEX_LEVELS,null,window.HexMatch);}catch(_){}}
   if(devFlow){if(!variantCatalog||!window.HEX_CAMPAIGN_FLOW_LEVELS?.length)throw new Error('Flow campaign data unavailable');variantCatalog=window.HexCampaignFlow.createCatalog(variantCatalog,flowArchives,window.HexMatch,{currentVersion:window.HexCampaignFlow.reviewVersion});}
-  if(devMaterials){if(!variantCatalog||!window.HEX_MATERIAL_ALPHA_LEVELS?.length)throw new Error('Material alpha data unavailable');variantCatalog=window.HexMaterialAlpha.createCatalog(variantCatalog,window.HEX_MATERIAL_ALPHA_LEVELS,window.HexMatch);}
+  if(devMaterials){if(!variantCatalog||!window.HEX_MATERIAL_ALPHA_LEVELS?.length)throw new Error('Material alpha data unavailable');variantCatalog=materialScope.createCatalog(variantCatalog,window.HEX_MATERIAL_ALPHA_LEVELS,window.HexMatch);}
   const motion={swap:300,digit:240,spread:180,collectPulse:100,pop:200,hold:140,flight:380,count:140,arrival:220,burst:220,ring:300,particle:320,matchPause:430,fall:380,fallStagger:70,columnDelay:16,invalid:280,budget:3300};
   let sourceSaveKey=key;
   let gameLoadIssue=null;
@@ -30,7 +33,7 @@ window.HexSessionStore.boot(function startApp(session) {
   function readSave(name){try{return session?session.read(name):JSON.parse(storage.getItem(name));}catch(_){return null;}}
   try {
     const loaded = window.HexGameSave.load({
-      read: name => session.read(name), contains: name => session.contains(name), levels, tutorials
+      read: name => session.read(name), contains: name => session.contains(name), levels, tutorials,story:storyAdapter
     });
     saved = loaded.saved; sourceSaveKey = loaded.sourceSaveKey; migrated = loaded.migrated;
   } catch (_) { gameLoadIssue = 'invalid'; }
@@ -41,6 +44,7 @@ window.HexSessionStore.boot(function startApp(session) {
   const recurringTimers=[];
   let active=saved.current,activeLevel=levels[saved.current],activeAttempt=null,attemptPending=true,saveBlocked=false,loadIssue=null,engine, selected=null, hinted=null, focusIndex=0;
   let pointer=null, toastTimer, terminalTimer, epoch=0, comboText='',presentation=null,hintJob=null;
+  let storyPresenter=null,storyVisible=null,storyPumpTimer=null,storyActionBusy=false,storyTransition=false,storyReady=false;
   let boardRenderIdentity=null; // Disposable SVG scope; never an attempt or save authority.
   let idleHints=null,idleHintView=null,idleUnfocused=false,idlePageHidden=false,renderedIdleBoardKey=null;
   const idleHintListeners=[];
@@ -54,12 +58,12 @@ window.HexSessionStore.boot(function startApp(session) {
   const appHintPending=()=>!!hintJob&&!!hintJob.uiOperation&&appState.isCurrentOperation(hintJob.uiOperation);
   let navigationEffectGeneration=0;
   const stateEffects=window.HexStateEffects.create({
-    document,window,state:appState,getFacts:()=>modalFacts(),
+    document,window,state:appState,getFacts:()=>modalFacts(),inlineDialogs:['story-dialog'],
     runAction:sessionAction,onClose:modalClosed,onError:()=>{}
   });
   function modalFacts(id=null){
     return {gameAvailable:!!engine&&!!activeAttempt&&!attemptPending&&!saveBlocked,
-      engineStatus:engine?.status||null,blocked:fullResetPending,
+      engineStatus:engine?.status||null,blocked:fullResetPending,storyAvailable:devStory&&storyPending(),
       recovery:id==='life-provider-dialog'?!!pendingLifeReceipt:id==='rescue-provider-dialog'?!!pendingRescueReceipt:false};
   }
   let assistanceMode=null,pendingAssistance=null;
@@ -77,7 +81,7 @@ window.HexSessionStore.boot(function startApp(session) {
     return {attemptReady:!!engine&&!!activeAttempt&&!attemptPending&&!saveBlocked,
       engineStatus:engine?.status||null,canOpen:canOpen(active),writeBlocked:lifeWriteFailed||saveBlocked,
       lifeDiscarded:lifeDiscarded(),resetPending:fullResetPending,nativeModalOpen:!!modal,nativeModalId:modal?.id||null,
-      tutorial:isTutorial(),activeIndex:active,tutorialCount,feedback:!!guideFeedback()};
+      tutorial:isTutorial(),activeIndex:active,tutorialCount,feedback:!!guideFeedback(),storyPending:devStory&&storyPending()};
   }
   // Idle hints own transient timing and decorative SVG only. The engine and
   // existing selectors remain the authority for rules, input and lifecycle.
@@ -173,6 +177,51 @@ window.HexSessionStore.boot(function startApp(session) {
     // is hidden. Optional adapters fail independently after the same projection.
     try{tavikDialogue?.update(view.portrait);}catch(_){}
     try{scenePresentation?.update(view.scene);}catch(_){}
+  }
+  function storyStateAt(index,game=committedSceneGame){
+    if(!devStory)return null;const value=game?.story?.states?.[index],metadata=game?.attempts?.[index];return value&&value.context.attemptId===metadata?.attemptId?value:null;
+  }
+  function currentStoryState(){const value=storyStateAt(active);return value&&value.context.attemptId===activeAttempt?.attemptId?value:null;}
+  function storyPending(index=active){const value=index===active?currentStoryState():storyStateAt(index);return !!value&&(!!value.active||value.pending.length>0);}
+  function hideStoryVisual(){
+    if(storyPumpTimer!==null){clearTimeout(storyPumpTimer);storyPumpTimer=null;}storyVisible=null;storyPresenter?.clear();document.body.dataset.storyActive='false';
+    if($('story-dialog')?.open)stateEffects.close($('story-dialog'),{internal:true,restoreFocus:false});
+  }
+  function queueStoryPump(){
+    if(!devStory||!storyReady||storyTransition||fullResetPending)return;
+    if(storyPumpTimer!==null)clearTimeout(storyPumpTimer);storyPumpTimer=setTimeout(()=>{storyPumpTimer=null;pumpStory();},0);
+  }
+  function stageStory(fresh=false){
+    if(!devStory||!activeAttempt||attemptPending||saveBlocked||!storyAdapter.relevant(active))return;
+    const context=storyAdapter.context(activeAttempt),facts=window.HexStoryEvents.facts(activeLevel,activeAttempt,engine.snapshot(),window.HexMatch),prior=saved.story.states[active];
+    if(!fresh&&!prior)throw new Error('Missing story state');
+    const state=fresh?window.HexStory.create(storyAdapter.content,context):prior,next=window.HexStory.observe(storyAdapter.content,state,facts);
+    saved.story={version:'story-profile-v1',states:{...saved.story.states,[active]:window.HexStory.snapshot(next)}};
+  }
+  function pumpStory(){
+    if(!devStory||!storyReady||storyTransition||storyActionBusy||fullResetPending||sessionRestoring||appScreen()!=='game'||appBusy()||presentation||appPaused()||document.hidden||appState.snapshot().lifecycle.suspended||attemptPending||saveBlocked)return;
+    const state=currentStoryState(),model=state?window.HexStory.active(storyAdapter.content,state):null;
+    if(!model){if(storyVisible){storyTransition=true;hideStoryVisual();storyTransition=false;}if(engine?.status!=='playing'&&!topDialog()){clearTimeout(terminalTimer);terminalTimer=null;showResult();}return;}
+    const top=topDialog();if(top&&top.id!=='story-dialog')return;
+    if(storyVisible?.instanceId===model.instanceId&&storyVisible.generation===epoch&&$('story-dialog').open)return;
+    storyTransition=true;hideStoryVisual();storyTransition=false;
+    if(!stateEffects.open('story-dialog',modalFacts('story-dialog')).accepted)return;
+    const modal=appState.snapshot().overlays.modals.find(item=>item.id==='story-dialog');if(!modal)return;
+    storyVisible={attemptId:activeAttempt.attemptId,instanceId:model.instanceId,modalInstance:modal.instance,generation:epoch};
+    const scene=storyAdapter.content.scenes.find(item=>item.id===model.sceneId);
+    storyPresenter.render({...model,sceneAsset:scene?.asset||null},storyVisible);document.body.dataset.storyActive='true';
+    $('story-dialog').querySelector('button')?.focus({preventScroll:true});syncIdleHints();syncScene();
+  }
+  function storyAction(action){
+    const modal=appState.snapshot().overlays.modals.find(item=>item.id==='story-dialog'),state=currentStoryState();
+    if(!devStory||storyActionBusy||!storyVisible||!state?.active||action.attemptId!==activeAttempt?.attemptId||action.instanceId!==state.active.instanceId||action.generation!==epoch||action.modalInstance!==modal?.instance||storyVisible.modalInstance!==modal.instance)return false;
+    storyActionBusy=true;for(const button of $('story-dialog').querySelectorAll('button'))button.disabled=true;
+    try{
+      const current=saved.story.states[active],next=action.kind==='choice'?window.HexStory.choose(storyAdapter.content,current,action.instanceId,action.choiceId):window.HexStory.acknowledge(storyAdapter.content,current,action.instanceId,action.kind==='skip');
+      saved.story={version:'story-profile-v1',states:{...saved.story.states,[active]:window.HexStory.snapshot(next)}};persist();
+      if(!commitSession())return false;storyTransition=true;hideStoryVisual();storyTransition=false;return true;
+    }catch(_){restoreDurable();toast('Diyalog kaydedilemedi. Son güvenli durumun korundu.');return false;}
+    finally{storyActionBusy=false;for(const button of $('story-dialog').querySelectorAll('button'))button.disabled=false;queueStoryPump();}
   }
   function sceneCommitted(profile){committedSceneGame=profile?.game||null;syncScene();}
   function reactScene(job){
@@ -741,11 +790,12 @@ window.HexSessionStore.boot(function startApp(session) {
     try{if(!canOpen(active)){active=nextCampaignIndex()??0;saved.current=active;}
       const entry=restoredStage(active);if(entry){engine=entry.game;activeLevel=entry.level;activeAttempt=entry.metadata;attemptPending=false;saveBlocked=false;}else{activeLevel=levels[active];engine=new window.HexMatch(activeLevel);activeAttempt=null;attemptPending=true;saveBlocked=false;loadIssue=null;}}catch(_){saveBlocked=true;}
     committedSceneGame=durable.game||null;
+    if(devStory){storyTransition=true;hideStoryVisual();storyTransition=false;}
     sessionRestoring=true;try{cancelAssistance();cancelPresentation();cancelHint();selected=null;pendingStage=null;pendingRestart=null;pendingResetLifeCost=null;if(pendingLifeProvider&&!lifeFeature.provider.transactions[pendingLifeProvider]&&!pendingLifeReceipt){pendingLifeProvider=null;if($('life-provider-dialog')?.open)closeModal($('life-provider-dialog'));}if(attemptPending)showScreen('home',{replace:true});restoreRewards();renderLevels();render();renderLives();renderRescue();}catch(_){}finally{sessionRestoring=false;syncScene();}
   }
   function commitSession(){
     sessionDirty=false;if(fullResetPending)return false;if(sessionRestoring||!lifeFeature)return true;
-    try{captureGame();const committed=session.commit(saved,lifeFeature);sceneCommitted(committed);if(eventState)try{storage.setItem(eventKey,JSON.stringify(eventState));}catch(_){}lifeWriteFailed=false;lifeLastPersistUtc=lifeFeature.life.lastSeenUtc;if(pendingLifeReceipt&&lifeFeature.testWallet.processedTransactions[pendingLifeReceipt.receipt.transactionId])pendingLifeReceipt=null;if(sessionPlaytestDirty)persistPlaytest();return true;}
+    try{captureGame();const committed=session.commit(saved,lifeFeature);sceneCommitted(committed);if(eventState)try{storage.setItem(eventKey,JSON.stringify(eventState));}catch(_){}lifeWriteFailed=false;lifeLastPersistUtc=lifeFeature.life.lastSeenUtc;if(pendingLifeReceipt&&lifeFeature.testWallet.processedTransactions[pendingLifeReceipt.receipt.transactionId])pendingLifeReceipt=null;if(sessionPlaytestDirty)persistPlaytest();queueStoryPump();return true;}
     catch(_){eventState=sessionEventBaseline;
       // Observation events describe committed moves only. Never rewind an already
       // saved move when a later presentation-only write fails.
@@ -1006,6 +1056,7 @@ window.HexSessionStore.boot(function startApp(session) {
   function syncAudio(){document.body.classList.toggle('reduce-motion',reduceMotion());audio?.configure({sfx:saved.sound,music:saved.preferences.music,volume:saved.preferences.volume});audio?.setActive(!document.hidden&&!appPaused());syncScene();}
   function unlockAudio(){syncAudio();audio?.unlock().catch(()=>{});}
   function openModal(id){
+    if(id!=='story-dialog'&&topDialog()?.id==='story-dialog'){storyTransition=true;hideStoryVisual();storyTransition=false;}
     if(!stateEffects.canOpen(id,modalFacts(id)))return false;
     idleHintInteraction();lessonDemo.stop();stopPointer();cancelHint();clearInvalidSwap();if(id!=='assistance-dialog')cancelAssistance();
     if(presentation)finishPresentation(presentation);
@@ -1021,6 +1072,8 @@ window.HexSessionStore.boot(function startApp(session) {
   function closeModal(dialog,options){return stateEffects.close(dialog,options);}
   function closeAllDialogs(){return stateEffects.closeAll();}
   function modalClosed({id}){
+    if(id==='story-dialog'){storyVisible=null;storyPresenter?.clear();document.body.dataset.storyActive='false';}
+    queueStoryPump();
     if(id==='pause-dialog')syncAudio();
     if(id==='pregame-dialog')pendingStage=null;
     if(id==='restart-dialog')pendingRestart=null;
@@ -1100,6 +1153,7 @@ window.HexSessionStore.boot(function startApp(session) {
   function showScreen(next,{replace=false,historyChange=true}={}){
     const event={type:'NAVIGATE',screen:next};
     if(!appState.preview(event,modalFacts()).accepted)return false;
+    storyTransition=true;hideStoryVisual();
     idleHintInteraction();cancelAssistance();
     if(presentation)finishPresentation(presentation);
     if(next!=='game')clearScoreReceipt();
@@ -1109,7 +1163,7 @@ window.HexSessionStore.boot(function startApp(session) {
     const apply=()=>{
       if(fullResetPending||appState.snapshot().lifecycle.suspended||generation!==navigationEffectGeneration||appScreen()!==next)return false;
       if(!stateEffects.renderScreen(next,{replace,historyChange}).accepted)return false;
-      updateMenus();syncAudio();syncPlaytestActivity();renderLives();refreshLessonDemo();syncScene();syncIdleHints();return true;
+      updateMenus();syncAudio();syncPlaytestActivity();renderLives();refreshLessonDemo();syncScene();syncIdleHints();storyTransition=false;queueStoryPump();return true;
     };
     // A provider close may synchronously recover a failed write. Its navigation
     // can queue behind a modal effect; only render the latest accepted screen.
@@ -1122,7 +1176,7 @@ window.HexSessionStore.boot(function startApp(session) {
     if(!fresh&&recoverableLoss(index))return resumeSecondChance(index);
     lifeRefresh({persist:true});
     if(index>=tutorialCount&&lifeDiscarded(index))fresh=true;
-    const savedGame=validCheckpoint(index),newAttempt=fresh||!savedGame||savedGame.status!=='playing';
+    const savedGame=validCheckpoint(index),pendingStory=devStory&&!!storyStateAt(index)&&(!!storyStateAt(index).active||storyStateAt(index).pending.length>0),newAttempt=fresh||!savedGame||savedGame.status!=='playing'&&!pendingStory;
     if(index>=tutorialCount&&newAttempt&&savedGame&&savedGame.status!=='playing'&&lifeReady()){
       const terminal=stageEntry(index),recovery=lifeSettle(terminal,savedGame.status==='won'?'won':'failed');
       if(['storage','invalid','unavailable','ledger_full'].includes(recovery.reason)){openLives({index,reason});return false;}
@@ -1159,7 +1213,7 @@ window.HexSessionStore.boot(function startApp(session) {
   function requestStage(index){
     if(!Number.isInteger(index)||index<0||index>=levels.length||!canOpen(index)||!stateEffects.canOpen('pregame-dialog',modalFacts('pregame-dialog')))return;
     const recovering=recoverableLoss(index),held=retainedRescueReceipt(index),heldOnly=held&&!rescueOffer(index)?.eligible;
-    const checkpoint=validCheckpoint(index),level=checkpoint?.status==='playing'?checkpoint.level:levels[index],resume=checkpoint?.status==='playing'&&(checkpoint.turn>0||checkpoint.assisted)&&!lifeDiscarded(index),blocked=!!saved.boards[index]&&!checkpoint;
+    const checkpoint=validCheckpoint(index),pendingStory=devStory&&!!storyStateAt(index)&&(!!storyStateAt(index).active||storyStateAt(index).pending.length>0),level=checkpoint&&(checkpoint.status==='playing'||pendingStory)?checkpoint.level:levels[index],resume=(pendingStory||checkpoint?.status==='playing'&&(checkpoint.turn>0||checkpoint.assisted))&&!lifeDiscarded(index),blocked=!!saved.boards[index]&&!checkpoint;
     pendingStage=index;
     $('pregame-dialog').dataset.learning=index===0?'first':index<tutorialCount?'goals':'';
     if($('pregame-lesson'))$('pregame-lesson').hidden=index!==0;
@@ -1178,12 +1232,14 @@ window.HexSessionStore.boot(function startApp(session) {
     openModal('pregame-dialog');
   }
   function pauseGame(){
+    if(topDialog()?.id==='story-dialog'){storyTransition=true;hideStoryVisual();storyTransition=false;}
     if(appScreen()!=='game'||appPaused()||topDialog())return;
     if(presentation)finishPresentation(presentation);
-    if(engine.status!=='playing'){showResult();return;}
+    if(engine.status!=='playing'&&!storyPending()){showResult();return;}
     cancelHint();persist();openModal('pause-dialog');syncAudio();
   }
   function openSettings(){
+    if(topDialog()?.id==='story-dialog'){storyTransition=true;hideStoryVisual();storyTransition=false;}
     if(!stateEffects.canOpen('settings-dialog',modalFacts('settings-dialog')))return false;
     if(presentation)finishPresentation(presentation);cancelHint();
     $('setting-sfx').checked=saved.sound;$('setting-music').checked=saved.preferences.music;
@@ -1254,6 +1310,7 @@ window.HexSessionStore.boot(function startApp(session) {
     $('target').textContent=activeLevel.target;$('level-note').textContent=activeLevel.subtitle;
     if(isTutorial())focusIndex=activeLevel.steps[engine.turn]?.pair[0]||0;
     if(lifeReady()&&active>=tutorialCount&&activeAttempt&&!attemptPending&&!saveBlocked){const registration=lifeManager.registerAttempt(lifeFeature.life,{attemptId:activeAttempt.attemptId,levelId:activeLevel.id,tutorial:activeLevel.kind==='tutorial',resume:!!restored});lifeFeature={...lifeFeature,life:registration.state};}
+    if(devStory&&activeAttempt&&!attemptPending&&!saveBlocked)stageStory(!restored);
     markCompleted();renderLevels();render();persist();return !saveBlocked;
   }
   // Presentation receives disposable copies of the already resolved engine.
@@ -1397,7 +1454,7 @@ window.HexSessionStore.boot(function startApp(session) {
       $('board').setAttribute('aria-busy','false');$('board-stage').classList.remove('busy');$('reset').disabled=false;$('skip-animation').hidden=true;syncIdleHints();
     }
     const receipt=$('score-receipt');if(receipt)receipt.textContent=result.scoreGain?`+${result.scoreGain}`:'';
-    syncScene();reactScene(job);
+    syncScene();reactScene(job);queueStoryPump();
     if(result.reshuffled)toast('Eşleşme kalmadı; sayılar karıştırıldı. Zemin ve hamlelerin korundu.');
     if(appScreen()==='game'&&!appPaused()&&engine.status!=='playing'&&!document.hidden&&!appState.snapshot().lifecycle.suspended){
       terminalTimer=setTimeout(()=>{if(job.token===epoch&&appScreen()==='game'&&!appPaused()&&!document.hidden&&!appState.snapshot().lifecycle.suspended&&!topDialog())showResult();},80);
@@ -1652,7 +1709,7 @@ window.HexSessionStore.boot(function startApp(session) {
     const job={token:++epoch,result,controller:new AbortController(),animations:[],watchdog:null,scoreDisplay:before.score,materialBefore:before.materialCounts?{materialCounts:before.materialCounts}:null,scoreTasks:[],rewardPlan,rewardCueIds:new Set(),rewardMilestoneIds:new Set(),rewardNodes:new Set(),rewardHeadlineUsed:false};
     startPresentation(job);selected=null;hinted=null;comboText='';syncPlaytestActivity();
     try{
-      markCompleted(true);persist();settleActiveLife();terminalEvent();
+      stageStory();markCompleted(true);persist();settleActiveLife();terminalEvent();
       // Commit the board, life settlement and permanent reward together before feedback.
       if(!commitSession())return;
       job.committed=true;try{idleHints?.playerMoveSucceeded();}catch(_){}renderLevels();if(engine.status==='won')updateMenus();
@@ -1719,7 +1776,7 @@ window.HexSessionStore.boot(function startApp(session) {
     $('lose-coverage').textContent=`${engine.covered} / ${activeLevel.cells.length}`;renderRescue();
     openModal('lose-dialog');
   }
-  function showResult() {if(engine.status==='won')showVictory();else if(engine.status==='lost')showLoss();}
+  function showResult() {if(storyPending()){queueStoryPump();return;}if(engine.status==='won'&&topDialog()?.id!=='win-dialog')showVictory();else if(engine.status==='lost'&&topDialog()?.id!=='lose-dialog')showLoss();}
   function restart(index=active) {
     if(!Number.isInteger(index))index=active;
     if(!campaignEntryAllowed(index))return;
@@ -1756,7 +1813,7 @@ window.HexSessionStore.boot(function startApp(session) {
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=54');
+            job.worker=new Worker('./hint-worker.js?v=55');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:activeLevel,snapshot:engine.snapshot()});
@@ -1843,9 +1900,10 @@ window.HexSessionStore.boot(function startApp(session) {
   const cancelPointer=e=>{if(pointer&&(e.pointerId===undefined||e.pointerId===pointer.id))stopPointer();};
   on($('board'),'lostpointercapture',cancelPointer);
   on(window,'pointercancel',cancelPointer);
-  on(window,'blur',()=>{lessonDemo.stop();cancelAssistance();stopPointer();if(presentation)finishPresentation(presentation);pauseGame();});
-  on(document,'visibilitychange',()=>{appState.dispatch({type:'APP_VISIBILITY_CHANGED',hidden:document.hidden});if(document.hidden){lessonDemo.stop();cancelAssistance();cancelHint();}stopPointer();if(document.hidden){if(presentation)finishPresentation(presentation);pauseGame();}syncAudio();refreshLessonDemo();});
+  on(window,'blur',()=>{storyTransition=true;hideStoryVisual();storyTransition=false;lessonDemo.stop();cancelAssistance();stopPointer();if(presentation)finishPresentation(presentation);pauseGame();});
+  on(document,'visibilitychange',()=>{appState.dispatch({type:'APP_VISIBILITY_CHANGED',hidden:document.hidden});if(document.hidden){storyTransition=true;hideStoryVisual();storyTransition=false;lessonDemo.stop();cancelAssistance();cancelHint();}else queueStoryPump();stopPointer();if(document.hidden){if(presentation)finishPresentation(presentation);pauseGame();}syncAudio();refreshLessonDemo();});
   on(window,'pagehide',()=>{
+    storyTransition=true;hideStoryVisual();
     lessonDemo.stop();cancelAssistance();stopPointer();clearInvalidSwap();
     if(presentation)finishPresentation(presentation);
     cancelHint();clearTimeout(terminalTimer);terminalTimer=null;epoch++;
@@ -1854,7 +1912,7 @@ window.HexSessionStore.boot(function startApp(session) {
   });
   // A BFCache return reuses this host. Recreate only the disposed presentation;
   // SessionStore retains its existing persisted-pageshow lock/reload policy.
-  on(window,'pageshow',()=>{appState.dispatch({type:'APP_RESUMED'});appState.dispatch({type:'APP_VISIBILITY_CHANGED',hidden:document.hidden});mountScene();renderCoach();syncScene();mountIdleHints();});
+  on(window,'pageshow',()=>{storyTransition=false;queueStoryPump();appState.dispatch({type:'APP_RESUMED'});appState.dispatch({type:'APP_VISIBILITY_CHANGED',hidden:document.hidden});mountScene();renderCoach();syncScene();mountIdleHints();});
   on($('board'),'click',e=>{if(e.detail===0){const tile=e.target.closest('[data-index]');if(tile)select(+tile.dataset.index);}});
   on($('board'),'keydown',e=>{
     const tile=e.target.closest('[data-index]');if(!tile||!gameInputAllowed())return;if(guideFeedback()){e.preventDefault();return;}if(appBusy()){e.preventDefault();finishPresentation(presentation);return;}
@@ -1941,7 +1999,7 @@ window.HexSessionStore.boot(function startApp(session) {
     }}
     if(actualResetCost>pendingResetLifeCost){pendingResetLifeCost=actualResetCost;if($('reset-description'))$('reset-description').textContent=`Koşullar değişti. Açık denemelerin silinecek ve ${actualResetCost} can harcanacak. Tamamlanan bölümler ve ödüllerin korunur. Canların yeniden doldurulmaz; Test Altının ve işlem kayıtların korunur.`;toast('Can koşulları değişti. Yeni bilgiyi kontrol edip tekrar onayla.');return;}
     if(!lifeCommit(lifeReset))return;
-    for(let index=0;index<levels.length;index++){if(campaignCleared(index))continue;discardStage(index,'progress_reset');delete saved.boards[index];delete saved.attempts[index];delete saved.attemptStats[index];delete saved.records[index];}
+    for(let index=0;index<levels.length;index++){if(campaignCleared(index))continue;discardStage(index,'progress_reset');delete saved.boards[index];if(devStory)delete saved.story.states[index];delete saved.attempts[index];delete saved.attemptStats[index];delete saved.records[index];}
     cancelPresentation();cancelHint();closeAllDialogs();saved.done=saved.done.filter(index=>campaignCleared(index));saved.guideAcks=[];saved.current=nextCampaignIndex()??0;active=saved.current;engine=null;activeAttempt=null;attemptPending=true;loadLevel(active);showScreen('home',{replace:true});toast('Açık denemeler silindi. Tamamlanan bölümlerin ve bütün ödüllerin korundu.');
   });
   on($('settings-full-reset'),'click',()=>openModal('full-reset-dialog'));
@@ -1950,7 +2008,7 @@ window.HexSessionStore.boot(function startApp(session) {
     lessonDemo.stop();cancelPresentation();cancelHint();cancelAssistance();stopPointer();clearTimeout(terminalTimer);epoch++;
     let reset,freshGame,freshEnergy;
     try{
-      freshGame=window.HexGameSave.defaults();
+      freshGame=window.HexGameSave.defaults();if(devStory)freshGame.story=storyAdapter.create();
       freshEnergy=freshLifeFeature(window.HexLives.createManager(window.HEX_LIVES_CONFIG,{clock:lifeClock}));
       reset=session.resetForTesting(freshGame,freshEnergy);
     }catch(_){toast('Sıfırlama kaydedilemedi. Mevcut verilerin korundu. Tekrar deneyebilirsin.');return;}
@@ -1958,7 +2016,7 @@ window.HexSessionStore.boot(function startApp(session) {
     // navigation can fire pagehide, blur, provider or observation handlers.
     fullResetPending=true;sessionDirty=false;sessionPlaytestDirty=false;
     for(const timer of recurringTimers.splice(0))window.clearInterval(timer);
-    disposeIdleHints();stateEffects.destroy();appState.destroy();try{tavikDialogue?.destroy();}catch(_){}
+    disposeIdleHints();storyPresenter?.destroy();stateEffects.destroy();appState.destroy();try{tavikDialogue?.destroy();}catch(_){}
     try{scenePresentation?.destroy();}catch(_){}
     saved=freshGame;lifeFeature=freshEnergy;engine=null;activeAttempt=null;attemptPending=true;
     pendingRescueReceipt=null;pendingLifeReceipt=null;eventState=null;playtest=null;
@@ -1980,6 +2038,7 @@ window.HexSessionStore.boot(function startApp(session) {
     if(event.ctrlKey||event.metaKey||event.altKey||event.repeat)return;
     if(event.key==='Escape'){
       if(assistanceMode&&!topDialog()){event.preventDefault();cancelAssistance();return;}
+      if(topDialog()?.id==='story-dialog'){event.preventDefault();pauseGame();return;}
       if(topDialog()){event.preventDefault();closeModal(topDialog());return;}
       if(appScreen()==='game'){event.preventDefault();pauseGame();return;}
       if(appScreen()!=='home'){event.preventDefault();showScreen('home');}return;
@@ -2000,7 +2059,9 @@ window.HexSessionStore.boot(function startApp(session) {
     document.addEventListener('visibilitychange',()=>{syncPlaytestActivity();persistPlaytest();});
     window.addEventListener('pagehide',()=>{if(fullResetPending||!playtest)return;playtest.setActivity({playing:false,attemptId:activeAttempt?.attemptId||null});persistPlaytest();});
   }
-  sessionAction(()=>{try{initializeRescue();initializeEconomy();}catch(error){economyIssue='invalid';throw error;}initializeLives();bindLivesUI();bindRescueUI();hydrateRecords();renderSound();loadLevel(active);showScreen(developerMode?'journey':'home',{replace:true});bindPlaytest();});
+  if(devStory)storyPresenter=window.HexStoryPresentation.create({dialog:$('story-dialog'),document,window,onAction:action=>sessionAction(()=>storyAction(action)),reducedMotion:reduceMotion});
+  sessionAction(()=>{try{initializeRescue();initializeEconomy();}catch(error){economyIssue='invalid';throw error;}initializeLives();bindLivesUI();bindRescueUI();hydrateRecords();renderSound();loadLevel(active);showScreen(devStory&&activeAttempt&&storyAdapter.relevant(active)?'game':developerMode?'journey':'home',{replace:true});bindPlaytest();});
+  storyReady=true;queueStoryPump();
   bindIdleHintLifecycle();mountIdleHints();
   // Explicit pre-boot diagnostic harness only; ordinary gameplay has no manual
   // button, shortcut or exported hint request. Pure solver APIs stay available.

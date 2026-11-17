@@ -10,6 +10,7 @@
  const freeze=value=>{if(value&&typeof value==='object'&&!Object.isFrozen(value)){for(const child of Object.values(value))freeze(child);Object.freeze(value);}return value;};
  const MODALS=freeze({
   'help-dialog':{screens:ALL,parents:[]},
+  'story-dialog':{screens:['game'],parents:[],story:true},
   'win-dialog':{screens:['game'],parents:[],status:'won'},
   'lose-dialog':{screens:['game'],parents:[],status:'lost'},
   'inventory-dialog':{screens:['game'],parents:[],status:'playing'},
@@ -72,7 +73,7 @@
  const changed=(state,effects=[])=>result(freeze(copy(state)),true,true,'changed',effects);
  function normalizeFacts(facts){
   if(!map(facts))return null;const view=Object.create(null);
-  for(const key of ['gameAvailable','recovery','blocked','engineStatus']){
+  for(const key of ['gameAvailable','recovery','blocked','engineStatus','storyAvailable']){
    const descriptor=Object.getOwnPropertyDescriptor(facts,key);if(!descriptor)continue;
    if(!Object.prototype.hasOwnProperty.call(descriptor,'value'))return null;
    const value=descriptor.value;if(key==='engineStatus'?value!==null&&!['playing','won','lost'].includes(value):typeof value!=='boolean')return null;
@@ -95,10 +96,11 @@
  }
  function modalAllowed(state,id,facts){
   const policy=MODALS[id],parent=topModalId(state);
+  if(policy.story&&facts.storyAvailable!==true)return false;
   // Recovery is a verified delivery already owned by the existing provider;
   // the UI may expose its retry even after the original caller has gone away.
   if(policy.recovery&&facts.recovery===true)return true;
-  if(!policy.screens.includes(state.navigation.screen)||policy.status&&facts.engineStatus!==policy.status)return false;
+  if(!policy.screens.includes(state.navigation.screen)||policy.status&&facts.engineStatus!==policy.status&&!(id==='pause-dialog'&&facts.storyAvailable===true))return false;
   return parent?policy.parents.includes(parent):policy.root!==false&&(!policy.rootScreens||policy.rootScreens.includes(state.navigation.screen));
  }
  function transition(state,event,facts={}){
@@ -182,7 +184,7 @@
    if(disposed)return reject(state,'disposed');
    // Validate before queuing and copy only validated plain event data.
    const validation=transition(state,event,facts);if(validation.reason.startsWith('invalid_'))return validation;
-   const factCopy={};for(const key of ['gameAvailable','engineStatus','recovery','blocked'])if(Object.prototype.hasOwnProperty.call(facts,key))factCopy[key]=facts[key];
+   const factCopy={};for(const key of ['gameAvailable','engineStatus','recovery','blocked','storyAvailable'])if(Object.prototype.hasOwnProperty.call(facts,key))factCopy[key]=facts[key];
    const item={event:freeze(copy(event)),facts:freeze(factCopy),result:null};queue.push(item);
    if(draining)return freeze({accepted:null,changed:false,queued:true,reason:'queued',state,effects:[]});
    draining=true;

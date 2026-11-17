@@ -5,6 +5,8 @@
  function create(options={}){
   const doc=options.document||root.document,win=options.window||doc?.defaultView||root,state=options.state;
   if(!doc||!state||!['snapshot','preview','dispatch','subscribe'].every(name=>typeof state[name]==='function'))throw new TypeError('State effects require a document and state store');
+  const inlineDialogs=new Set(Array.isArray(options.inlineDialogs)?options.inlineDialogs:[]);
+  const showNative=(dialog,id)=>{const method=inlineDialogs.has(id)?'show':'showModal';if(typeof dialog[method]!=='function')throw new Error('Native modal API is unavailable');dialog[method]();};
   let disposed=false;const handles=new Map(),acknowledgements=new Map(),closeOptions=new Map(),nativeClosing=new Set(),failed=new Map(),listeners=[],temporaryFocus=new Map();
   const report=(type,error,modal)=>{try{options.onError?.({type,error,id:modal?.id||null,instance:modal?.instance||null});}catch(_){}};
   const facts=override=>{if(override!==undefined)return override;try{return options.getFacts?.()||{};}catch(error){report('facts.read',error);return {blocked:true};}};
@@ -55,7 +57,7 @@
     const error=new Error('Dialog element is unavailable');rememberFailure(modal,error);report('modal.open',error,modal);state.dispatch({type:'CLOSE_MODAL',id:modal.id,instance:modal.instance},facts());return;
    }
    const old=handles.get(dialog),handle={modal,opener:old?.opener||doc.activeElement,notified:false,opened:false};handles.set(dialog,handle);
-   try{if(!dialog.open){if(typeof dialog.showModal!=='function')throw new Error('Native modal API is unavailable');dialog.showModal();}if(!dialog.open)throw new Error('Native modal did not open');handle.opened=true;syncModalClass();}
+   try{if(!dialog.open){showNative(dialog,modal.id);}if(!dialog.open)throw new Error('Native modal did not open');handle.opened=true;syncModalClass();}
    catch(error){
     rememberFailure(modal,error);report('modal.open',error,modal);
     closeOptions.set(modal.instance,{notify:false,restoreFocus:false});state.dispatch({type:'CLOSE_MODAL',id:modal.id,instance:modal.instance},facts());
@@ -95,7 +97,7 @@
      acknowledgeLater(dialog,modal.instance);
      try{dialog.close();}catch(error){forgetAcknowledgement(dialog,modal.instance);throw error;}
     }
-    for(const modal of affected){const dialog=dialogFor(modal.id);if(!dialog)throw new Error('Dialog element is unavailable');if(!dialog.open)dialog.showModal();if(!dialog.open)throw new Error('Native modal did not open');const handle=handles.get(dialog);if(handle)handle.opened=true;}
+    for(const modal of affected){const dialog=dialogFor(modal.id);if(!dialog)throw new Error('Dialog element is unavailable');if(!dialog.open)showNative(dialog,modal.id);if(!dialog.open)throw new Error('Native modal did not open');const handle=handles.get(dialog);if(handle)handle.opened=true;}
     syncModalClass();const top=topDialog();if(top?.contains(active)&&focusable(active))focus(active);else if(top&&!top.contains(doc.activeElement))focusContainer(top);return true;
    }catch(error){report('modal.native_restore',error,affected[0]);syncModalClass();return false;}
   }

@@ -26,20 +26,21 @@ check('invalid navigation has no cancellation, modal, subscription or other effe
  const before=store.snapshot();eq(unchanged(store,{type:'NAVIGATE',screen:'home'},{blocked:true}).accepted,false);eq(store.snapshot(),before);eq(notifications,0);eq(Core.isPaused(store.snapshot()),true);
  const home=Core.create();eq(unchanged(home,{type:'NAVIGATE',screen:'game'},{}).reason,'game_unavailable');eq(home.snapshot().navigation.screen,'home');
 });
-check('all15 declared modal identities match the real DOM and real result guards',()=>{
- const html=fs.readFileSync(__dirname+'/dist/index.html','utf8');eq(Object.keys(Core.MODALS).sort(),[...html.matchAll(/<dialog\b[^>]*\bid="([^"]+)"/g)].map(m=>m[1]).sort());eq(Object.keys(Core.MODALS).length,15);
+check('all16 declared modal identities match the real DOM and real result guards',()=>{
+ const html=fs.readFileSync(__dirname+'/dist/index.html','utf8');eq(Object.keys(Core.MODALS).sort(),[...html.matchAll(/<dialog\b[^>]*\bid="([^"]+)"/g)].map(m=>m[1]).sort());eq(Object.keys(Core.MODALS).length,16);
  const routes={
-  'help-dialog':[], 'win-dialog':[], 'lose-dialog':[], 'inventory-dialog':[], 'assistance-dialog':[],
+  'story-dialog':[], 'help-dialog':[], 'win-dialog':[], 'lose-dialog':[], 'inventory-dialog':[], 'assistance-dialog':[],
   'rescue-provider-dialog':['lose-dialog'],'pregame-dialog':[],'pause-dialog':[],'settings-dialog':[],
   'install-dialog':['settings-dialog'],'lives-dialog':[],'life-provider-dialog':['lives-dialog'],
   'restart-dialog':[],'full-reset-dialog':['settings-dialog'],'reset-dialog':['settings-dialog']
  };
- for(const [id,parents]of Object.entries(routes)){const store=game(),status=['win-dialog'].includes(id)?'won':['lose-dialog','rescue-provider-dialog'].includes(id)?'lost':'playing';for(const parent of parents)eq(open(store,parent,{engineStatus:status}).accepted,true,id+' parent');eq(open(store,id,{engineStatus:status}).accepted,true,id);eq(Core.topModalId(store.snapshot()),id);eq(recursivelyFrozen(store.snapshot()),true);}
+ for(const [id,parents]of Object.entries(routes)){const store=game(),status=['win-dialog'].includes(id)?'won':['lose-dialog','rescue-provider-dialog'].includes(id)?'lost':'playing';for(const parent of parents)eq(open(store,parent,{engineStatus:status}).accepted,true,id+' parent');eq(open(store,id,{engineStatus:status,storyAvailable:id==='story-dialog'}).accepted,true,id);eq(Core.topModalId(store.snapshot()),id);eq(recursivelyFrozen(store.snapshot()),true);}
  for(const [id,status]of [['win-dialog','won'],['lose-dialog','lost'],['pause-dialog','playing']])for(const wrong of ['playing','won','lost',null].filter(v=>v!==status)){const store=game();eq(open(store,id,{engineStatus:wrong}).accepted,false,id+' requires exact engine outcome');eq(store.snapshot().overlays.modals,[]);}
 });
+check('story is an explicit safe game overlay with no implicit availability',()=>{for(const status of ['playing','won','lost']){const store=game();eq(open(store,'story-dialog',{engineStatus:status}).accepted,false);eq(open(store,'story-dialog',{engineStatus:status,storyAvailable:true}).accepted,true);eq(Core.topModalId(store.snapshot()),'story-dialog');}const home=Core.create();eq(open(home,'story-dialog',{storyAvailable:true}).accepted,false);});
 check('finite nesting permits current flows and rejects every unrelated modal pairing',()=>{
  const routes={
-  'help-dialog':['help-dialog'],'win-dialog':['win-dialog'],'lose-dialog':['lose-dialog'],
+  'story-dialog':['story-dialog'],'help-dialog':['help-dialog'],'win-dialog':['win-dialog'],'lose-dialog':['lose-dialog'],
   'inventory-dialog':['inventory-dialog'],'assistance-dialog':['assistance-dialog'],
   'rescue-provider-dialog':['lose-dialog','rescue-provider-dialog'],'pregame-dialog':['pregame-dialog'],
   'pause-dialog':['pause-dialog'],'settings-dialog':['settings-dialog'],'install-dialog':['install-dialog'],
@@ -54,7 +55,7 @@ check('finite nesting permits current flows and rejects every unrelated modal pa
  ]);
  for(const [parent,route]of Object.entries(routes))for(const child of Object.keys(Core.MODALS)){
   if(route.includes(child))continue;
-  const store=game();for(const id of route){const status=id==='win-dialog'?'won':id==='lose-dialog'||id==='rescue-provider-dialog'?'lost':'playing';eq(open(store,id,{engineStatus:status,recovery:id==='rescue-provider-dialog'}).accepted,true,'fixture '+id);}
+  const store=game();for(const id of route){const status=id==='win-dialog'?'won':id==='lose-dialog'||id==='rescue-provider-dialog'?'lost':'playing';eq(open(store,id,{engineStatus:status,recovery:id==='rescue-provider-dialog',storyAvailable:id==='story-dialog'}).accepted,true,'fixture '+id);}
   const result=open(store,child,{engineStatus:child==='win-dialog'?'won':child==='lose-dialog'||child==='rescue-provider-dialog'?'lost':'playing'});eq(result.accepted,permitted.has(parent+'>'+child),parent+'>'+child);
   if(!result.accepted)eq(result.effects,[]);
  }

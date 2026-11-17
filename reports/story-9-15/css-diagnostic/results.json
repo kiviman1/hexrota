@@ -1,0 +1,18 @@
+{
+  "browser": "chromium",
+  "checks": 0,
+  "results": [],
+  "routes": [],
+  "actions": [],
+  "measurements": [],
+  "lifecycle": [],
+  "errors": [],
+  "physicalIPhone": false,
+  "unityEditor": false,
+  "input": {
+    "tap": "native touchscreen",
+    "drag": "compositor-native touch drag with preventFling"
+  },
+  "clocks": "production clocks unchanged",
+  "storyContact": "one compositor-native touch tap,100ms contact"
+}
