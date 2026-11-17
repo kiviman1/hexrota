@@ -5,6 +5,10 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Hexrota.Gameplay;
 using Hexrota.Hints;
+using Hexrota.Catalog;
+using Hexrota.Commands;
+using Hexrota.Contracts;
+using Hexrota.ParitySupport;
 
 internal static class Program
 {
@@ -87,9 +91,21 @@ internal static class Program
     }
     private static object Execute(JsonElement request)
     {
-        LevelConfig level = Level(Required(request, "level", JsonValueKind.Object));
-        JsonElement snapshot; var game = request.TryGetProperty("snapshot", out snapshot) && snapshot.ValueKind != JsonValueKind.Null ? new HexMatch(level, Snapshot(snapshot)) : new HexMatch(level);
-        string before = JsonSerializer.Serialize(game.Snapshot(), Json);
+        JsonElement levelSource = Required(request, "level", JsonValueKind.Object), snapshot, assistance;
+        LevelConfig level = Level(levelSource);
+        bool hasSnapshot = request.TryGetProperty("snapshot", out snapshot) && snapshot.ValueKind != JsonValueKind.Null;
+        AssistedGame assisted = null; HexMatch game;
+        if (request.TryGetProperty("assisted", out assistance))
+        {
+            level = CatalogWire.ReadLevel(WireJson.Read(levelSource));
+            JsonElement limits;
+            assisted = new AssistedGame(level, Required(assistance, "attemptId", JsonValueKind.String).GetString(),
+                assistance.TryGetProperty("limits", out limits) ? WireJson.Read(limits) : null, hasSnapshot ? WireJson.Read(snapshot) : null);
+            game = assisted.Model;
+        }
+        else game = hasSnapshot ? new HexMatch(level, Snapshot(snapshot)) : new HexMatch(level);
+        Func<object> currentSnapshot = () => assisted == null ? (object)game.Snapshot() : assisted.Snapshot();
+        string before = JsonSerializer.Serialize(currentSnapshot(), Json), sourceBefore = JsonSerializer.Serialize(level, Json);
         JsonElement routes, flag;
         HintRoutes certified = null;
         if (request.TryGetProperty("routes", out routes) && routes.ValueKind == JsonValueKind.Object)
@@ -100,24 +116,30 @@ internal static class Program
             {
                 if (solutions != null && solutions.Length > 0 && solutions[0].Length > 0) solutions[0][0][0] = -1;
                 if (solution != null && solution.Length > 0) solution[0][0] = -1;
+                if (alternatives != null && alternatives.Length > 0 && alternatives[0].Length > 0) alternatives[0][0][0] = -1;
             }
         }
-        if (request.TryGetProperty("certifyOnly", out flag) && flag.ValueKind == JsonValueKind.True) return new { routesAccepted = true, unchanged = before == JsonSerializer.Serialize(game.Snapshot(), Json) };
+        if (request.TryGetProperty("certifyOnly", out flag) && flag.ValueKind == JsonValueKind.True) return new { routesAccepted = true, unchanged = before == JsonSerializer.Serialize(currentSnapshot(), Json) };
         var clock = new Clock(); JsonElement step; if (request.TryGetProperty("clockStep", out step)) clock.step = step.GetDouble();
-        HintResult hint = HintSolver.Find(game, certified, Options(request), clock);
+        // This is the same composition used by the application: assistance has
+        // changed the board, so authored swap-only certificates are not supplied.
+        HintRoutes activeRoutes = assisted != null && assisted.Assisted ? null : certified;
+        HintResult hint = HintSolver.Find(game, activeRoutes, Options(request), clock);
         if (request.TryGetProperty("assertNoClockRead", out flag) && flag.ValueKind == JsonValueKind.True && clock.reads != 0) throw new InvalidOperationException("Node-limited hints read a platform clock");
         if (request.TryGetProperty("repeatAndMutate", out flag) && flag.ValueKind == JsonValueKind.True && hint != null)
         {
             string expected = JsonSerializer.Serialize(hint, Json); hint.pair[0] = -1; if (hint.continuation != null && hint.continuation.Length > 0) hint.continuation[0][0] = -1;
-            clock.reads = 0; hint = HintSolver.Find(game, certified, Options(request), clock);
+            clock.reads = 0; hint = HintSolver.Find(game, activeRoutes, Options(request), clock);
             if (JsonSerializer.Serialize(hint, Json) != expected) throw new InvalidOperationException("A returned hint mutated the source route or game");
         }
-        if (before != JsonSerializer.Serialize(game.Snapshot(), Json)) throw new InvalidOperationException("Hint search mutated gameplay");
-        var answer = new Dictionary<string, object> { { "hint", hint }, { "unchanged", true }, { "snapshot", game.Snapshot() } };
+        if (before != JsonSerializer.Serialize(currentSnapshot(), Json)) throw new InvalidOperationException("Hint search mutated gameplay or assisted command state");
+        if (sourceBefore != JsonSerializer.Serialize(level, Json)) throw new InvalidOperationException("Hint search mutated source configuration");
+        var answer = new Dictionary<string, object> { { "hint", hint }, { "unchanged", true }, { "snapshot", currentSnapshot() } };
         if (request.TryGetProperty("playSuggested", out flag) && flag.ValueKind == JsonValueKind.True)
         {
             if (hint == null) answer["played"] = null;
-            else { SwapResult swap = game.Swap(hint.pair[0], hint.pair[1]); answer["played"] = new { ok = swap.ok, reason = swap.reason, snapshot = game.Snapshot(), status = game.Status }; }
+            else if (assisted == null) { SwapResult swap = game.Swap(hint.pair[0], hint.pair[1]); answer["played"] = new { ok = swap.ok, reason = swap.reason, snapshot = currentSnapshot(), status = game.Status }; }
+            else { object swap = assisted.Swap(hint.pair[0], hint.pair[1]); answer["played"] = new { ok = Wire.Get(swap, "ok"), reason = Wire.Get(swap, "reason"), snapshot = currentSnapshot(), status = assisted.Status }; }
         }
         return answer;
     }

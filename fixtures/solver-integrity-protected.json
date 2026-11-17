@@ -1,0 +1,16 @@
+{
+  "baseline": "11b0161e913904199198ca61f477f47bb11ad390",
+  "scope": "Reviewed 9.9c strict offline budgets, verified bounded hint certificates, native parity harness and additive offline termination reporting. Original gameplay/data/golden and 9.9b protection remain frozen.",
+  "sha256": {
+    "dist/engine.js": "fbf8b8918abaef6d3104507e1832e7ca9458e09c69ce0258bf20a6010fb9a06c",
+    "lib/level-analysis.cjs": "472982b6fb999ff84db712c5993d63f78c9e3f7ae1100e92f24c453d17a4e621",
+    "unity/Hints/HintSolver.cs": "e6fe2cc44258f27dfb0a9b6bd6ad4ba0d37fcac770543e46e15201d8a877a113",
+    "unity/HintParityHarness/Program.cs": "befe5003866148e5911dce2a0b63fbe34b7e3bd6f8781ef9a97ed73cf849e65f",
+    "unity/HintParityHarness/Hexrota.HintParity.csproj": "13f8a3b6845f6ff4f99876d156e911027ecb955681b25ea5b586a77f0926f390",
+    "audit-observable.cjs": "287a7f9adbf05c13f7101458298128aba56563d10d69ee0e20854885826580e3",
+    "audit-solvability-9-9.cjs": "64cac0a784e868d1f6c301e95f1999c4dab74cb6f8649fb219c6b308477eb8e2"
+  },
+  "reportSourceHashes": {
+    "reports/observable-difficulty.json": "b5343471d8524b46a864357c62e35a1aa13cc2d7849f8bdf9b6a0969fa250ac7"
+  }
+}

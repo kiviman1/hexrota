@@ -173,6 +173,19 @@ jobs:
         env:
           HEXROTA_BROWSER: ${{ matrix.browser }}
           HEXROTA_BOARD_RECOVERY_SCREENSHOT_DIR: test-results/board-recovery-${{ matrix.browser }}
+      - name: Verify real hint worker certificates, fallback and stale-response safety
+        run: npm run test:hint-integrity-browser
+        env:
+          HEXROTA_BROWSER: ${{ matrix.browser }}
+          HEXROTA_HINT_INTEGRITY_SCREENSHOT_DIR: test-results/hint-integrity-${{ matrix.browser }}
+      - name: Keep verified hint worker and fallback evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: hint-integrity-${{ matrix.browser }}
+          path: test-results/hint-integrity-${{ matrix.browser }}
+          if-no-files-found: warn
+          retention-days: 7
       - name: Keep recovery fault, retry and reload evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

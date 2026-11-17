@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "levelDataVersion": "variants-v1",
   "rulesVersion": "classic-v4",
-  "sourceHash": "212f0da8520b30fee508d030ff4a2942bf7540f253f9e7dd3554d025e2550d49",
+  "sourceHash": "8716cf8aee01fc49b6623d9b5e91d97570e18446a54c2f4e82c643d47fba7ebc",
   "method": {
     "trialsPerVariantPolicy": 8,
     "decisionSeed": 1831565813,
@@ -22,9 +22,10 @@
     "decisionSeedFormula": "Same deterministic mix32 formula used by existing audit-observable.cjs; policy/trial/turn only. Actual RNG, routes and future refills never enter a player decision.",
     "certificateScope": "Every current published campaign variant route plus original legacy route; deterministic exact replay, score and ground goals, current move budget.",
     "proofScope": "Classic-v4 swaps only from the current state and remaining move budget. No booster, extra-move rescue or metagame economy is part of impossibility claims.",
-    "searchClassification": "Existing bounded solve: a returned, replay-verified win is proven_winnable; null is unknown_within_search_budget. Exhaustive legal outcomes at one remaining move may prove the current unaided state unwinnable; this does not prove the initial level impossible.",
+    "searchClassification": "The existing solverProbes.classification field is a compatibility summary: a replay-verified route is proven_winnable; no route remains unknown_within_search_budget as in the historical report. The additive solverProbes.search object is the current solveWithReport result: classification, independent limitation flags, exact termination reason, prefix replay and actual child budget. An unpruned exhaustive search may prove only the current unaided state unwinnable; a beam-pruned or budget-limited search stays unknown.",
     "hintSelection": "At most one first off-certificate playing state at turn>=2 per variant/policy; node budget ignores wall-clock. Hint is measured, never used to choose policy moves.",
-    "performance": "Offline development tool only, no runtime/browser worker integration. Work is fixed at1280 episodes, at most160 strict-node hint probes and40 existing bounded solver calls. The existing solve maxNodes is a requested soft bound: actual expansions are measured; terminal children can skip its check. No runtime solver is added."
+    "hintWorkAccounting": "Hint searchedNodes counts search child expansions; authored continuation replay on a clone is separate verification work. These probes are off-certificate states, so no matching authored continuation is verified. Hint decisions and their existing fields retain the same semantics.",
+    "performance": "Offline development tool only, no runtime/browser worker integration. Work is fixed at1280 episodes, at most160 strict-node hint probes and40 existing bounded solver calls. solveWithReport checks maxNodes before every child, including terminal wins and losses. Independently instrumented swap counts exclude prefix replay, must equal searchedNodes and cannot exceed the requested bound. historicalSoftBudgetReference preserves the old A-01 overrun as historical evidence. No runtime solver is added."
   },
   "summary": {
     "variants": 40,
@@ -63,7 +64,24 @@
     "solverActualSearchExpansions": 49325,
     "solverRequestedBudgetExceeded": 0,
     "solverProvenWinnable": 36,
-    "solverUnknown": 4
+    "solverUnknown": 4,
+    "solverSearchClassifications": {
+      "proven_winnable": 36,
+      "proven_unwinnable": 0,
+      "unknown": 4
+    },
+    "solverTerminationReasons": {
+      "solution_found": 36,
+      "node_budget_exhausted": 0,
+      "depth_limit": 0,
+      "beam_pruned": 4,
+      "search_exhausted": 0,
+      "invalid_prefix": 0
+    },
+    "solverNodeBudgetCutoffs": 0,
+    "solverDepthLimited": 0,
+    "solverBeamPruned": 39,
+    "solverExhaustive": 0
   },
   "levels": [
     {
@@ -34005,7 +34023,23 @@
           3,
           1
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 279,
+        "prefixMoves": 2,
+        "depth": 4,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 8,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 1,
@@ -34039,7 +34073,23 @@
           11,
           14
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 285,
+        "prefixMoves": 2,
+        "depth": 3,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 8,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 1,
@@ -34077,7 +34127,23 @@
           8,
           13
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 245,
+        "prefixMoves": 2,
+        "depth": 4,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 8,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 1,
@@ -34111,7 +34177,23 @@
           3,
           6
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 214,
+        "prefixMoves": 2,
+        "depth": 3,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 8,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 2,
@@ -34149,7 +34231,23 @@
           4,
           9
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 434,
+        "prefixMoves": 2,
+        "depth": 4,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 8,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 2,
@@ -34191,7 +34289,23 @@
           1,
           4
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 198,
+        "prefixMoves": 4,
+        "depth": 3,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 6,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 2,
@@ -34229,7 +34343,23 @@
           6,
           11
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 442,
+        "prefixMoves": 2,
+        "depth": 4,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 8,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 2,
@@ -34271,7 +34401,23 @@
           4,
           7
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 716,
+        "prefixMoves": 2,
+        "depth": 5,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 8,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 3,
@@ -34313,7 +34459,23 @@
           5,
           10
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 586,
+        "prefixMoves": 2,
+        "depth": 5,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 7,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 3,
@@ -34355,7 +34517,23 @@
           5,
           10
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 579,
+        "prefixMoves": 2,
+        "depth": 5,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 7,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 3,
@@ -34397,7 +34575,23 @@
           7,
           10
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 597,
+        "prefixMoves": 2,
+        "depth": 5,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 7,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 3,
@@ -34435,7 +34629,23 @@
           0,
           4
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 404,
+        "prefixMoves": 2,
+        "depth": 4,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 7,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 4,
@@ -34481,7 +34691,23 @@
           10,
           13
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 1125,
+        "prefixMoves": 2,
+        "depth": 6,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 7,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 4,
@@ -34527,7 +34753,23 @@
           5,
           3
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 1061,
+        "prefixMoves": 2,
+        "depth": 6,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 7,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 4,
@@ -34569,7 +34811,23 @@
           5,
           8
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 816,
+        "prefixMoves": 2,
+        "depth": 5,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 7,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 4,
@@ -34607,7 +34865,23 @@
           20,
           22
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 13,
+        "prefixMoves": 5,
+        "depth": 1,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 4,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": false,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 5,
@@ -34645,7 +34919,23 @@
           3,
           2
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 442,
+        "prefixMoves": 2,
+        "depth": 4,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 6,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 5,
@@ -34687,7 +34977,23 @@
           14,
           17
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 647,
+        "prefixMoves": 2,
+        "depth": 5,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 6,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 5,
@@ -34729,7 +35035,23 @@
           10,
           8
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 998,
+        "prefixMoves": 2,
+        "depth": 5,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 6,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 5,
@@ -34775,7 +35097,23 @@
           10,
           8
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 1077,
+        "prefixMoves": 2,
+        "depth": 6,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 6,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 6,
@@ -34817,7 +35155,23 @@
           5,
           3
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 432,
+        "prefixMoves": 3,
+        "depth": 4,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 5,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 6,
@@ -34863,7 +35217,23 @@
           6,
           9
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 868,
+        "prefixMoves": 2,
+        "depth": 6,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 6,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 6,
@@ -34905,7 +35275,23 @@
           10,
           8
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 924,
+        "prefixMoves": 2,
+        "depth": 5,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 6,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 6,
@@ -34951,7 +35337,23 @@
           6,
           9
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 835,
+        "prefixMoves": 2,
+        "depth": 6,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 6,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 7,
@@ -34989,7 +35391,23 @@
           6,
           11
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 872,
+        "prefixMoves": 2,
+        "depth": 4,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 6,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 7,
@@ -35027,7 +35445,23 @@
           11,
           16
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 879,
+        "prefixMoves": 2,
+        "depth": 4,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 6,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 7,
@@ -35065,7 +35499,23 @@
           4,
           9
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 780,
+        "prefixMoves": 2,
+        "depth": 4,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 6,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 7,
@@ -35107,7 +35557,23 @@
           19,
           24
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 1325,
+        "prefixMoves": 2,
+        "depth": 5,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 6,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 8,
@@ -35120,7 +35586,23 @@
       "actualSearchExpansions": 1076,
       "requestedBudgetExceeded": false,
       "classification": "unknown_within_search_budget",
-      "route": null
+      "route": null,
+      "search": {
+        "classification": "unknown",
+        "terminationReason": "beam_pruned",
+        "searchedNodes": 1076,
+        "prefixMoves": 2,
+        "depth": 6,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 6,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 8,
@@ -35166,7 +35648,23 @@
           0,
           4
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 952,
+        "prefixMoves": 2,
+        "depth": 6,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 6,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 8,
@@ -35179,7 +35677,23 @@
       "actualSearchExpansions": 1391,
       "requestedBudgetExceeded": false,
       "classification": "unknown_within_search_budget",
-      "route": null
+      "route": null,
+      "search": {
+        "classification": "unknown",
+        "terminationReason": "beam_pruned",
+        "searchedNodes": 1391,
+        "prefixMoves": 2,
+        "depth": 6,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 6,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 8,
@@ -35192,7 +35706,23 @@
       "actualSearchExpansions": 1193,
       "requestedBudgetExceeded": false,
       "classification": "unknown_within_search_budget",
-      "route": null
+      "route": null,
+      "search": {
+        "classification": "unknown",
+        "terminationReason": "beam_pruned",
+        "searchedNodes": 1193,
+        "prefixMoves": 2,
+        "depth": 6,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 6,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 9,
@@ -35246,7 +35776,23 @@
           7,
           11
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 2633,
+        "prefixMoves": 2,
+        "depth": 8,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 10,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 9,
@@ -35308,7 +35854,23 @@
           3,
           7
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 3387,
+        "prefixMoves": 2,
+        "depth": 10,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 10,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 9,
@@ -35366,7 +35928,23 @@
           32,
           35
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 2943,
+        "prefixMoves": 2,
+        "depth": 9,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 10,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 9,
@@ -35428,7 +36006,23 @@
           29,
           26
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 3098,
+        "prefixMoves": 2,
+        "depth": 10,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 10,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 10,
@@ -35441,7 +36035,23 @@
       "actualSearchExpansions": 3863,
       "requestedBudgetExceeded": false,
       "classification": "unknown_within_search_budget",
-      "route": null
+      "route": null,
+      "search": {
+        "classification": "unknown",
+        "terminationReason": "beam_pruned",
+        "searchedNodes": 3863,
+        "prefixMoves": 2,
+        "depth": 12,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 12,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 10,
@@ -35507,7 +36117,23 @@
           2,
           8
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 3543,
+        "prefixMoves": 2,
+        "depth": 11,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 12,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 10,
@@ -35573,7 +36199,23 @@
           8,
           5
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 3652,
+        "prefixMoves": 2,
+        "depth": 11,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 12,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     },
     {
       "levelId": 10,
@@ -35635,7 +36277,23 @@
           21,
           28
         ]
-      ]
+      ],
+      "search": {
+        "classification": "proven_winnable",
+        "terminationReason": "solution_found",
+        "searchedNodes": 3521,
+        "prefixMoves": 2,
+        "depth": 10,
+        "limits": {
+          "maxNodes": 6000,
+          "maxDepth": 12,
+          "width": 20
+        },
+        "nodeBudgetCutoff": false,
+        "depthLimited": false,
+        "beamPruned": true,
+        "exhaustive": false
+      }
     }
   ],
   "provenUnwinnableWitnesses": [
@@ -38076,7 +38734,7 @@
   ],
   "terminalZeroLegalWitnesses": [],
   "historicalObservableReference": {
-    "sourceHash": "0e1e58969d4286a7254259c296de582e5431e6bb372f5a73bc99390cc3f7e8e4",
+    "sourceHash": "b5343471d8524b46a864357c62e35a1aa13cc2d7849f8bdf9b6a0969fa250ac7",
     "trialsPerVariantPolicy": 64,
     "notReproducedByThisTool": true,
     "warning": "Simulation policy rates are not human win rates. Failure of bounded recovery search does not prove a state unsolvable. Alternative openings are plausible visible deviations, not objectively proven mistakes.",
@@ -38432,5 +39090,61 @@
         "sampledAlternativeOpeningDifference": 1.1719
       }
     ]
+  },
+  "historicalSoftBudgetReference": {
+    "baselineCommit": "11b0161e913904199198ca61f477f47bb11ad390",
+    "reportSourceHash": "212f0da8520b30fee508d030ff4a2942bf7540f253f9e7dd3554d025e2550d49",
+    "reportSha256": "4902d75e2a031aa2443486c42fb051d06e9297fe9f7dd0da57789bfed527445b",
+    "notReproducedByThisTool": true,
+    "scope": "Historical A-01: the old solve skipped its budget check for terminal losing children. These saved counts describe the old implementation, not current measurements.",
+    "counterexample": {
+      "levelId": 1,
+      "variantId": "v1",
+      "prefix": [
+        [
+          8,
+          11
+        ],
+        [
+          12,
+          17
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          8,
+          11
+        ],
+        [
+          13,
+          16
+        ],
+        [
+          9,
+          14
+        ],
+        [
+          3,
+          6
+        ],
+        [
+          7,
+          10
+        ],
+        [
+          18,
+          17
+        ]
+      ],
+      "width": 20,
+      "requestedMaxNodes": 1,
+      "actualSearchExpansions": 4,
+      "prefixReplayExcluded": true,
+      "returnedRoute": null,
+      "terminalLegalMoves": 4,
+      "allTerminalMovesLost": true
+    }
   }
 }

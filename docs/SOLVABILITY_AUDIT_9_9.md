@@ -1,5 +1,7 @@
 # Hexrota 9.9 — Çözülebilirlik ve ipucu denetimi
 
+> **9.9c güncel takip:** A-01 katı düğüm bütçesi, H-01 gerçek klon devam doğrulaması ve H-02 açık offline bitiş/kanıt metadata'sı uygulandı; özgün karşı örnekler yeni sağlıklı regresyonlarda geçti. [SOLVER_INTEGRITY_9_9C.md](SOLVER_INTEGRITY_9_9C.md) ve [SOLVER_BUDGET_AND_HINT_REPORT.md](SOLVER_BUDGET_AND_HINT_REPORT.md) güncel sözleşme/kanıttır. Aşağıdaki 9.9/9.9a/9.9b bulguları tarihsel baseline olarak korunur.
+
 > **9.9b takip durumu:** R-02 güvenli yapı/kurtarma doğrulamasıyla giderildi; özgün fixture korunur ve güncel sağlıklı diagnostik exit 0 döner. [BOARD_VALIDATION_9_9B.md](BOARD_VALIDATION_9_9B.md) güncel sözleşme ve test kanıtıdır. Aşağıdaki 9.9/9.9a gözlemleri tarihseldir; H-01/H-02 ve A-01 açık kalır.
 
 > 9.9a, bu audit'i ve yayın verilerini yeniden yazmaz. R-01 için yeni komut reddi, tarihsel v1 replay ve kazanılmış reklam hakkı korumasının güncel durumu [RESCUE_SAFETY_9_9A.md](RESCUE_SAFETY_9_9A.md) içindedir. R-02, H-01/H-02 ve A-01 bu takip işinde çözülmüş sayılmaz.
@@ -142,6 +144,14 @@ H-02 karşı örneği: rota alanlarını yalnız klonda kaldırıp `maxNodes=100
 A-01 karşı örneği: L1/v1 için `[[8,11],[12,17],[1,0],[8,11],[13,16],[9,14],[3,6],[7,10],[18,17]]` geçerli prefix'ini oyna. Bir hamle, dört yasal takas kalır ve hepsi kayıptır. Mevcut `solve(level,{prefix,width:20,maxNodes:1})`, prefix tekrarları hariç **4 arama takası** yapıp `null` döner. Sayım yalnız mevcut `swap` çağrılarını gözler; kuralı değiştirmez. Bu belirli son-hamle durumu ayrıca tüketici ispatla kazanılamazdır; genel `solve=null` aynı kanıtı vermez.
 
 Kurtarma sonrası özel tahtada deadlock ve çözülemeyen palet/geometri sınırları ayrı Dead-board raporunun bulgularıdır. Bunlar bu belgeye “40 varyant bozuk” şeklinde taşınmaz. Güvenli hata sınırı ve JS/C# eşliği o raporun kabul kriterleridir.
+
+## 9.9c bulgu kabul durumu
+
+- **A-01 giderildi:** özgün node1 isteği 4 yerine1 gerçek çocuk genişletir, 9 prefix takası bütçe dışıdır; null sonucu unknown kalır. Node4 ile bütün dört kayıp çocuk gerçekten tüketildiğinde yalnız kalan mevcut durum için proof mümkündür.
+- **H-01 giderildi:** özgün iki sahte tek-hamle rotası artık proven_route/true üretemez. Klon replay won olmadıkça garanti verilmez; raw level nesnesi katalog güvenini atlayamaz. Published680 çıktı korunur.
+- **H-02 giderildi:** runtime truncated alanı korunur; additive solveWithReport node/depth/beam sınırlarını ve unknown/kanıt ayrımını açıklar. Depth/beam budanmış arama tüketilse de imkânsızlık iddiası yoktur. Özgün40 runtime örneği belirsiz kalır.
+
+Bu durum oyunların evrensel kazanılabilirliği değildir; güçlü booster/rescue veya keyfi oyuncu hatalarının geri alınabilirliği için kanıt verilmez. Tam final test/CI durumu takip raporundadır.
 
 ## Kalıcı testler ve çalıştırma kanıtı
 

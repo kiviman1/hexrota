@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "baselineCommit": "11b0161e913904199198ca61f477f47bb11ad390",
+  "notice": "Historical red evidence, not desired current behavior. Original published data and 9.9 audit fixtures are unchanged.",
+  "a01": {
+    "kind": "A-01 unchanged baseline before edits",
+    "fileHash": "963622fa0be571bc2d074716587d002dca917fdffbedb143a4557d938a3435fe",
+    "levelId": 1,
+    "variantId": "v1",
+    "prefix": [
+      [
+        8,
+        11
+      ],
+      [
+        12,
+        17
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        8,
+        11
+      ],
+      [
+        13,
+        16
+      ],
+      [
+        9,
+        14
+      ],
+      [
+        3,
+        6
+      ],
+      [
+        7,
+        10
+      ],
+      [
+        18,
+        17
+      ]
+    ],
+    "width": 20,
+    "maxNodes": 1,
+    "movesLeft": 1,
+    "legalMoves": [
+      [
+        0,
+        4
+      ],
+      [
+        6,
+        11
+      ],
+      [
+        7,
+        5
+      ],
+      [
+        11,
+        16
+      ]
+    ],
+    "outcomes": [
+      {
+        "pair": [
+          0,
+          4
+        ],
+        "status": "lost"
+      },
+      {
+        "pair": [
+          6,
+          11
+        ],
+        "status": "lost"
+      },
+      {
+        "pair": [
+          7,
+          5
+        ],
+        "status": "lost"
+      },
+      {
+        "pair": [
+          11,
+          16
+        ],
+        "status": "lost"
+      }
+    ],
+    "route": null,
+    "swapCalls": 13,
+    "prefixSwaps": 9,
+    "actualSearchExpansions": 4
+  },
+  "h01": {
+    "catalogAccepted": true,
+    "routes": [
+      [
+        [
+          14,
+          18
+        ]
+      ],
+      [
+        [
+          13,
+          16
+        ]
+      ]
+    ],
+    "hint": {
+      "pair": [
+        14,
+        18
+      ],
+      "source": "proven_route",
+      "guaranteed": true,
+      "continuation": [
+        [
+          14,
+          18
+        ]
+      ],
+      "searchedNodes": 0,
+      "depth": 0,
+      "truncated": false
+    },
+    "continuationStatus": "playing",
+    "sourceUnchanged": true
+  },
+  "h02": {
+    "historicalRuntimeOptions": {
+      "maxNodes": 100000,
+      "maxDepth": 1,
+      "beamWidth": 1
+    },
+    "historicalResultMeaning": {
+      "source": "heuristic",
+      "guaranteed": false,
+      "continuation": null,
+      "truncated": false
+    },
+    "notice": "All40 published starts remain uncertain without route metadata. truncated=false is not an exhaustive proof; offline9.9c adds explicit termination metadata."
+  }
+}

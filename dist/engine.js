@@ -215,12 +215,27 @@
       options=options&&typeof options==='object'?options:{};
       const legal=this.legalMoves();if(!legal.length)return null;
       const same=(a,b)=>a&&b&&((a[0]===b[0]&&a[1]===b[1])||(a[0]===b[1]&&a[1]===b[0]));
-      const routes=[...(Array.isArray(this.level.solutions)?this.level.solutions:[]),this.level.solution,...(this.level.alternativeSolutions||[])].filter(route=>Array.isArray(route)&&route.length);
-      // Both independently certified openings remain useful after either route is chosen.
-      for(const route of routes){
-        if(this.history.length>=route.length||!this.history.every((pair,index)=>same(pair,route[index])))continue;
-        const pair=route[this.history.length];
-        if(legal.some(move=>same(move,pair)))return {pair:pair.slice(),source:'proven_route',guaranteed:true,continuation:route.slice(this.history.length).map(move=>move.slice()),searchedNodes:0,depth:0,truncated:false};
+      const solution=this.level.solution;
+      const routeGroups=[Array.isArray(this.level.solutions)?this.level.solutions:[],solution==null||(Array.isArray(solution)&&!solution.length)?[]:[solution],Array.isArray(this.level.alternativeSolutions)?this.level.alternativeSolutions:[]];
+      // Route metadata is untrusted, including on mutable levels outside the catalog.
+      // At most 64 candidate slots and 512 copied pairs / clone swap attempts.
+      // These separate proof limits do not alter search counters or truncated.
+      const maxRouteCandidates=64,maxRoutePairs=512;
+      let routeCandidates=0,routePairs=0;
+      candidates:for(const routes of routeGroups)for(let routeIndex=0;routeIndex<routes.length;routeIndex++){
+        if(routeCandidates>=maxRouteCandidates)break candidates;
+        routeCandidates++;const route=routes[routeIndex];
+        if(!Array.isArray(route)||this.history.length>=route.length||route.length>this.history.length+this.movesLeft||route.length>maxRoutePairs-routePairs)continue;
+        routePairs+=route.length;
+        if(!dense(route))continue;
+        const path=Array.from(route,pair=>Array.isArray(pair)&&pair.length===2&&dense(pair)?[pair[0],pair[1]]:null);
+        if(!path.every(pair=>pair&&pair.every(index=>Number.isInteger(index)&&index>=0&&index<this.total))||!this.history.every((pair,index)=>same(pair,path[index])))continue;
+        const continuation=path.slice(this.history.length),pair=continuation[0];
+        if(!legal.some(move=>same(move,pair)))continue;
+        // Never cache a proof of externally mutable routes, state or level data.
+        const proof=this.clone();let wins=false;
+        try{wins=continuation.every(move=>proof.swap(...move).ok)&&proof.status==='won';}catch(error){continue;}
+        if(wins)return {pair:pair.slice(),source:'proven_route',guaranteed:true,continuation,searchedNodes:0,depth:0,truncated:false};
       }
       const clock=()=>typeof performance!=='undefined'?performance.now():Date.now();
       const nodeLimited=Number.isInteger(options.maxNodes)&&options.maxNodes>0;
