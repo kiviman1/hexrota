@@ -34,7 +34,7 @@ for(const [relative,expected]of Object.entries(frozen.sha256)){
  const actual=fs.readFileSync(path.join(ROOT,relative));
  if(relative==='reports/observable-difficulty.json'){
   const current=JSON.parse(actual),original=fs.readFileSync(path.join(LAB,relative),'utf8'),prior=JSON.parse(original);
-  assert.equal(current.sourceHash,solverProtection.reportSourceHashes[relative],'observable report checksum must match the reviewed current engine');
+  assert.equal(current.sourceHash,obstacles.reportSourceHashes[relative]||solverProtection.reportSourceHashes[relative],'observable report checksum must match the reviewed current engine');
   const field='"sourceHash": "'+current.sourceHash+'"';assert.equal(actual.toString('utf8').split(field).length,2,'source checksum field occurs exactly once');
   assert.equal(actual.toString('utf8').replace(field,'"sourceHash": "'+prior.sourceHash+'"'),original,'every observable metric, trial, policy and byte outside sourceHash stays pinned');
   reviewedReportSourceHashes.push(relative);continue;

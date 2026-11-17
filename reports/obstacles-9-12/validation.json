@@ -1,0 +1,93 @@
+{
+  "date": "2026-11-17",
+  "branch": "feature/hexrota-blockers-regions-9-12",
+  "base": "a3b5640a3feea3e07d7eb918fc148c683242430d",
+  "node": "v24.22.1",
+  "dotnet": "8.0.428",
+  "csharpLanguage": "7.3",
+  "npmTest": {
+    "exitCode": 0,
+    "startedUtc": "12:42:01",
+    "finishedUtc": "12:46:53",
+    "existingChecksPreserved": true
+  },
+  "obstaclesJs": {
+    "groups": 26,
+    "levels": 3,
+    "certifiedRoutes": 6,
+    "certifiedPrefixes": 27
+  },
+  "obstaclesCSharp": {
+    "scenarios": 141,
+    "validSwaps": 592,
+    "resumes": 65,
+    "replays": 65,
+    "clones": 66,
+    "rejectedSnapshotAttempts": 86,
+    "alternativeLegalRuns": 36
+  },
+  "classicCSharp": {
+    "fullCertifiedRoutes": 80,
+    "validSwaps": 1916,
+    "resumes": 258,
+    "replays": 262,
+    "cloneChecks": 2177,
+    "rejectedSnapshots": 1050,
+    "additionalStructuralInputs": 74,
+    "additionalRecoveryCases": 17,
+    "otherNativeCommandsPassed": 9
+  },
+  "browsers": {
+    "chromium": {
+      "checks": 14,
+      "errors": [],
+      "viewports": [
+        [
+          320,
+          568
+        ],
+        [
+          390,
+          844
+        ],
+        [
+          430,
+          932
+        ]
+      ]
+    },
+    "webkit": {
+      "checks": 14,
+      "errors": [],
+      "viewports": [
+        [
+          320,
+          568
+        ],
+        [
+          390,
+          844
+        ],
+        [
+          430,
+          932
+        ]
+      ]
+    }
+  },
+  "existingBrowserRegression": {
+    "chromiumIntegration": 6,
+    "chromiumAnimation": 23,
+    "webkitAnimation": 23,
+    "chromiumLabIsolationGroups": 6,
+    "webkitLabIsolationGroups": 6
+  },
+  "physicalIPhoneTested": false,
+  "unityEditorTested": false,
+  "productionChanged": false,
+  "classicReportsOnlyDifferences": [
+    "observable.sourceHash",
+    "solvability.sourceHash",
+    "solvability.historicalObservableReference.sourceHash"
+  ]
+}

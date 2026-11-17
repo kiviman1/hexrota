@@ -168,9 +168,11 @@ Bu belge uygulama sözleşmesini tarif eder. Koşum sonuçları, komutların ger
 
 ## Doğrulama kaydı ve sınırlar
 
-2026-11-17 UTC yerel `node check-obstacles.cjs` **exit 0**: 25 grup, 3 bölüm, farklı ilk hamlelerden başlayan 6 tam kazanma yolu ve 27 replay/restore/clone prefix kontrolü. Bu sayılar yalnız bu JS komutunun çıktısıdır; diğer koşumların yerine geçmez.
+2026-11-17 UTC yerel `node check-obstacles.cjs` **exit 0**: 26 grup, 3 bölüm, farklı ilk hamlelerden başlayan 6 tam kazanma yolu ve 27 replay/restore/clone prefix kontrolü. Bu sayılar yalnız bu JS komutunun çıktısıdır; diğer koşumların yerine geçmez.
 
-Yeni engel parity komutu gerçek .NET 8 / C# 7.3 derlemesiyle **exit 0**: 139 senaryo; 6 sertifikalı yol ve 36 rota dışı yasal koşu; 590 geçerli takas, 63 resume, 63 replay, 64 clone ve 86 checkpoint reddi. Hasar/açılma, bütün düşüş/refill dalgaları, RNG ve sonuç JSON'ları JS ile karşılaştırıldı. Eski dokuz C# parity komutu ve ayrıca mevcut gameplay parity komutu da geçti; bunlar yeni test sayılarıyla tek bir toplamda birleştirilmez.
+Yeni engel parity komutu gerçek .NET 8 / C# 7.3 derlemesiyle **exit 0**: 141 senaryo; 6 sertifikalı yol ve 36 rota dışı yasal koşu; 592 geçerli takas, 65 resume, 65 replay, 66 clone ve 86 checkpoint reddi. Hasar/açılma, bütün düşüş/refill dalgaları, RNG ve sonuç JSON'ları JS ile karşılaştırıldı. Eski dokuz C# parity komutu ve ayrıca mevcut gameplay parity komutu da geçti; bunlar yeni test sayılarıyla tek bir toplamda birleştirilmez.
+
+Mevcut kampanyanın gerçek browser regresyonu da **exit 0**: `check-integration-browser.cjs` Chromium 6/6 grup, boş page-error ve dış istek dizileri; `check-animation-pipeline-browser.cjs` **Chromium 23/23 ve WebKit 23/23** grup, iki motorda da boş page-error dizisi. WebKit koşumunda eksik sistem kitaplıklarının yerel Playwright dizinine kurulmasından sonra gerçek WebKit çalıştırıldı; `PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=1` yalnız ön koşul denetimini atlar, browser veya assertion yedeği kullanmaz. İkinci test altı viewport, gerçek çok dalgalı düşüş/taş kimlikleri, tek canonical yazı, hata/iptal, geç callback ve reload durumlarını kapsar. Integration testi CDP kullanır ve Chromium'a özgüdür; WebKit'te çalışmış gibi sayılmaz.
 
 Bu geliştirme sırasında fiziksel iPhone testi veya Unity Editor/IL2CPP sahne testi yapılmış değildir. Browser viewport ve WebKit testi fiziksel iOS testi olarak sunulmaz. Unity Cloud kurulumu, hesap yetkilendirmesi veya yerel Blender dosyası istenmez. C# parity saf gameplay kuralları içindir; gelecekteki prefab görünümü veya native dokunma sürücüsünün testi değildir.
 
@@ -186,3 +188,27 @@ Gerçek WebKit koşumunda 390×844 görünümü; her bölümün başlangıç ve 
 | C — Çok Aşamalı Açılma | ![C başlangıç](../reports/obstacles-9-12/webkit/test-C-initial.png) | ![C açık](../reports/obstacles-9-12/webkit/test-C-opened.png) |
 
 Kaynak koruma: önceki hash fixture'ları ve davranış golden'ları değiştirilmez. `fixtures/obstacles-regions-protected.json` yalnız belirtilen on çekirdek/sunum/native host dosyasının yeni tam SHA-256 değerlerini main `a3b5640` tabanına bağlar. Eski koruma testleri bu dar overlay'i okur; katalog verileri, command sonuç goldeni ve eşikler aynıdır. Offline shell 48→49 ile güncellenir; `app.js`, `hint-worker.js`, ana HTML ve UI kit farkları yalnız cache query'sidir.
+
+
+### Birlikte doğrulama kanıtı
+
+| Gerçek koşum | Sonuç |
+|---|---|
+| `test:obstacles` | 26 JS grubu; 6 kazanma yolu, 27 replay/restore/clone prefix; dokuz sunum sınırında iptal |
+| `test:unity-obstacles` | 141 native senaryo; 592 takas, 65 resume, 65 replay, 66 clone, 86 bozuk snapshot denemesi; 36 rota dışı koşu |
+| `test:unity-gameplay` | 71 eski mekanik + 4 recovery + 80 tam sertifika + 120 rota dışı koşu; 1.916 geçerli takas, 258 resume, 262 replay, 2.177 clone kontrolü, 1.050 ret; ek 74 yapı girdisi ve 17 recovery karşılaştırması |
+| Diğer mevcut C# komutları | rewards, catalog, hints, reward-adapter, lives, economy, commands, rescue ve session: 9/9 komut exit 0; gerçek .NET **8.0.428**, C# **7.3** |
+| Yeni mobil browser | Chromium **14/14**, WebKit **14/14**; her iki motorda üç bölüm × üç boyut, gerçek tap/drag, reload, kazanma, iptal/arka plan, animasyon ve ilk çizim hatası, bozuk kayıt; pageErrors `[]` |
+| Mevcut kampanya browser | Chromium integration/offline **6/6**; Chromium animation **23/23**; WebKit animation **23/23**; pageErrors `[]` |
+| Mevcut pinned Balance Lab izolasyonu | Chromium **6 grup**, WebKit **6 grup**; her birinde 68 değişmez dosya ve 10 korunan kayıt anahtarı. Eski fixture yalnız ayrı detached test worktree'sinde okunur. |
+
+İlk tam npm denemesinde, paralel audit yükü altında mevcut reduced-motion testinin 180 ms duvar saati assertion'ı başarısız oldu. Değişmemiş score testi ayrı koşumda geçti; eşik veya assertion değiştirilmedi. Son tam `npm test` **exit 0**, 12:42:01–12:46:53 UTC (yaklaşık 292 saniye). Mevcut zincirin tamamı ve yeni 26 JS grubu birlikte geçti.
+
+Klasik observable ve solvability raporları gerçek araçlarla yeniden üretildi. Main ile tam JSON karşılaştırmasında yalnız `observable.sourceHash`, `solvability.sourceHash` ve `solvability.historicalObservableReference.sourceHash` farklıdır; bütün sertifikalar, kararlar, metrikler ve solver sonuçları aynıdır. Yeni hash'ler ek 9.12 fixture'ında sabitlenir; eski fixture'lar değiştirilmez.
+
+Canlı Preview `142bc39` runtime'ında 390×844 Chromium ile ilk A takası gerçek dokunma üzerinden yürütüldü: HP `[0]`, bölge `[true]`, turn `1`; reload snapshot'ı birebir aynı, pageErrors `[]`. Bu Preview feature dalıdır; Production değildir. Süreli paylaşım anahtarı kaynak koda veya bu belgeye yazılmaz.
+
+Ek checkpoint kontrolü gerçek takasla HP 2→1 kalan kutuyu kaydedip geri yükler ve sonraki hamleyi karşılaştırır; ayrıca bir hamlelik gerçek kayıp geçmişini restore/replay/clone ile doğrular. Bu iki native akış son 141 senaryoya dahildir.
+
+
+Son kaynak değişikliklerinden sonra `git diff --check`, PWA, architecture ve dar hash korumaları da geçti. Main ve Production'a yazılmadı; PR #34/#35 taşınmadı veya birleştirilmedi. Yerel test sonuçları uzak CI tamamlanmış gibi sunulmaz; uzak durum draft PR Checks ekranından izlenir.

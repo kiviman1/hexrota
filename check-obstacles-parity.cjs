@@ -43,6 +43,10 @@ for(const level of levels)for(let trial=0;trial<12;trial++){
 const a=copy(levels[0]),b=copy(levels[1]),c=copy(levels[2]);
 let g=new Engine(a),neighbors=g.neighbors[a.obstacles.blockers[0].cell];
 const hp2=copy(a);hp2.obstacles.blockers[0].hp=2;
+const chippedPair=new Engine(hp2).legalMoves().find(pair=>{const probe=new Engine(hp2);probe.swap(...pair);return probe.blockerHp[0]===1;});assert(chippedPair);
+add('actual HP2 chipped checkpoint resumes replays and clones',hp2,[{op:'swap',pair:chippedPair},{op:'resume'},{op:'replay'},{op:'clone'}]);
+const short=copy(a);short.moves=1;short.target=100000;
+add('actual terminal loss checkpoint resumes replays and clones',short,[{op:'swap',pair:new Engine(short).legalMoves()[0]},{op:'resume'},{op:'replay'},{op:'clone'},{op:'swap',pair:short.solutions[0][0]}]);
 add('two separate hits with multi-contact deduplication',hp2,[{op:'damage',matched:[neighbors[0],neighbors[1],neighbors[0]]},{op:'damage',matched:[neighbors[0]]},{op:'gravity',matched:[]},{op:'rng'}]);
 add('all required boxes and region opening',b,b.obstacles.blockers.map(box=>({op:'damage',matched:new Engine(b).neighbors[box.cell].filter(i=>new Engine(b).isPlayable(i))})).concat([{op:'gravity',matched:[]}]));
 add('hidden box immune before region exposure',c,[{op:'damage',matched:new Engine(c).neighbors[c.obstacles.blockers[2].cell]}]);

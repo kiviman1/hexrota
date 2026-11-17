@@ -12,5 +12,9 @@
     "unity/HintParityHarness/Program.cs": "cda59a6048185b2e63674cf1640e58a7bcbe1f5282578e91c92adbe058e683c8",
     "unity/Hints/HintSolver.cs": "cdf553651d0358fe5de7b281c4a0957100d84369b49e553ebff39129b5a654f5",
     "unity/RewardAdapterParityHarness/Program.cs": "d688798a2f49ae3b8ff5450f95dce7616fbd76154335401a35dabf3bf3c30abc"
+  },
+  "reportSourceHashes": {
+    "reports/observable-difficulty.json": "d5bbb3bd3a4dc11098b7cca8becd90f7eeced0d9a8eea679638d700b58e1fd20",
+    "reports/solvability-9-9.json": "d51ad3e6e3e76fba0e62b28b129c40d5dada8c02c380194da2d62ab707ba0d42"
   }
 }

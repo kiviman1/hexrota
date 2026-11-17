@@ -31,6 +31,14 @@ test('bad coordinates overlap dependencies unreachable boxes and inactive initia
 test('classic snapshots retain v4 contract and reject all null initial stones',()=>{const l={cells:[{q:0,r:0,layers:0}],initial:[1],palette:[1],seed:1,moves:1,target:1};const g=new Engine(l);assert.equal(g.layers[0],1);assert.equal(g.snapshot().version,4);assert.equal(g.snapshot().rulesVersion,'classic-v4');assert(!('blockerHp' in g.snapshot()));assert.throws(()=>new Engine({...l,initial:[null]}));});
 
 
+test('real chipped HP2 and terminal loss checkpoints resume and replay exactly',()=>{
+ const chipped=copy(catalog.levels[0]);chipped.obstacles.blockers[0].hp=2;
+ const pair=new Engine(chipped).legalMoves().find(pair=>{const probe=new Engine(chipped);probe.swap(...pair);return probe.blockerHp[0]===1;});assert(pair);
+ const damage=new Engine(chipped);assert(damage.swap(...pair).ok);assert.equal(damage.blockerHp[0],1);assert.equal(damage.regionOpen[0],false);
+ const checkpoint=damage.snapshot(),restored=new Engine(chipped,copy(checkpoint));assert.deepEqual(restored.snapshot(),checkpoint);const next=damage.legalMoves()[0];assert.deepEqual(restored.swap(...next),damage.swap(...next));assert.deepEqual(restored.snapshot(),damage.snapshot());
+ const short=copy(catalog.levels[0]);short.moves=1;short.target=100000;
+ const lost=new Engine(short);assert(lost.swap(...lost.legalMoves()[0]).ok);assert.equal(lost.status,'lost');const saved=lost.snapshot(),resume=new Engine(short,saved);assert.equal(resume.status,'lost');assert.deepEqual(resume.snapshot(),saved);assert.equal(resume.swap(...short.solutions[0][0]).ok,false);assert.deepEqual(resume.snapshot(),saved);
+});
 const Pipeline=require('./dist/move-presentation.js');
 const visualMotion={swap:0,budget:3000,digit:0,spread:0,collectPulse:0,pop:0,hold:0,flight:0,count:0,arrival:0,burst:0,ring:0,particle:0,matchPause:0,fall:0,fallStagger:0,columnDelay:0};
 function visualInput(step){return copy({before:step.before,final:step.after,frames:step.result.frames,swap:step.pair,motion:visualMotion});}
