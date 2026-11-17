@@ -18,6 +18,9 @@ function mount(state,legacy,options={}){
  w.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};
  w.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');this.dispatchEvent(new w.Event('close'));};
  if(state)w.localStorage.setItem(key,JSON.stringify(state));
+ // This legacy shell suite keeps its acknowledgement/skip contract using an
+ // existing absent-policy record. Do not shadow the explicit migration inputs.
+ else if(![2,3,4].some(version=>options['v'+version]))w.localStorage.setItem(key,'{}');
  if(legacy)w.localStorage.setItem('hexrota-v1',JSON.stringify(legacy));
  for(const v of [2,3,4])if(options['v'+v])w.localStorage.setItem('hexrota-match-v'+v,JSON.stringify(options['v'+v]));
  if(options.Worker)w.Worker=options.Worker;

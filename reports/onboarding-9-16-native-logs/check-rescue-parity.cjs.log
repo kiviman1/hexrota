@@ -1,0 +1,1 @@
+Rescue parity: 376 real C# comparisons passed (.NET 8.0.428, C#7.3); 293 unchanged original comparisons, 83 retained-receipt comparisons in 10 groups; 12 frozen cases + 600 compiled lifecycle transitions. No Unity/IL2CPP/device claim.

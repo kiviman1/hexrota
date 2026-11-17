@@ -40,11 +40,15 @@ namespace Hexrota.Application
                 var shifted = W.Obj("current", W.IsInteger(W.Get(previous, "current")) ? W.Integer(previous["current"]) + tutorialCount : tutorialCount, "done", done, "boards", boards, "sound", W.Get(previous, "sound"));
                 if (W.Has(previous, "economy")) shifted["economy"] = W.Clone(previous["economy"]);
                 if (W.Has(previous, "rescue")) shifted["rescue"] = W.Clone(previous["rescue"]);
+                if (W.Has(previous, "onboarding")) shifted["onboarding"] = OnboardingPolicy.Validate(previous["onboarding"]);
                 raw = shifted;
             }
             var map = W.Map(raw);
             if (W.Has(map, "economy")) saved["economy"] = W.Clone(map["economy"]);
             if (W.Has(map, "rescue")) saved["rescue"] = W.Clone(map["rescue"]);
+            // Optional presentation policy. Missing historical fields remain missing;
+            // this marker never proves tutorial progress or grants a reward.
+            if (W.Has(map, "onboarding")) saved["onboarding"] = OnboardingPolicy.Validate(map["onboarding"]);
             if (W.IsMap(W.Get(map, "boards"))) foreach (var item in W.Map(map["boards"])) { int index; if (!int.TryParse(item.Key, out index) || index < 0 || index >= size || item.Key != index.ToString(System.Globalization.CultureInfo.InvariantCulture) || !W.IsMap(item.Value) && !W.IsList(item.Value)) throw new ProfileStorageException("invalid_game_save"); }
             var completed = W.Arr();
             if (W.IsList(W.Get(map, "done"))) foreach (object index in W.List(map["done"])) if (Index(index, size) && !completed.Any(x => W.Equal(x, index))) completed.Add(W.Integer(index));

@@ -1,0 +1,1 @@
+Material JS/C# parity passed: 196 scenarios; 6 certified routes/52 prefixes + 24 alternative legal runs; 501 valid swaps/1154 waves/269 material events; 166 exact resumes, 165 replays, 168 independent clones; 102 rejected checkpoints, 41 rejected definitions/objectives. Actual .NET8/C#7.3; event order, once-only grants, objectives, RNG, geometry and status agree.

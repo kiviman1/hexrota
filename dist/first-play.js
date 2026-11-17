@@ -116,6 +116,137 @@
     return Object.freeze({show,stop,isActive});
   }
 
-  const api=Object.freeze({copy,createDemo});root.HexFirstPlay=api;
+  // The 9.16 guide decorates the current board without moving, hiding or
+  // cloning a gem. Its host supplies the exact CURRENT matching sources and
+  // owns when teaching, a quiet second move, or an idle reprompt is appropriate.
+  function createGuide({board,gestureHost=null,reducedMotion=()=>false}={}){
+    const doc=board?.ownerDocument,view=doc?.defaultView,svgNS='http://www.w3.org/2000/svg';
+    let active=null,disposed=false;
+    const finite=n=>Number.isFinite(n),index=n=>Number.isSafeInteger(n)&&n>=0;
+    const element=(name,attributes={})=>{
+      const node=doc.createElementNS(svgNS,name);
+      for(const [name,value] of Object.entries(attributes))node.setAttribute(name,String(value));
+      return node;
+    };
+    function stop(){
+      const job=active;active=null;if(!job)return;
+      job.observer?.disconnect();
+      for(const animation of job.animations)try{animation.cancel();}catch(_){}
+      job.layer.remove();job.gesture?.remove();
+      for(const item of job.legacy){
+        if(item.style===null)item.node.removeAttribute('style');else item.node.setAttribute('style',item.style);
+      }
+    }
+    function intact(job){
+      return board.contains(job.layer)&&(!job.gesture||(gestureHost.isConnected&&gestureHost.contains(job.gesture)))&&board.getAttribute('viewBox')===job.viewBox&&job.sources.every(item=>
+        board.contains(item.tile)&&item.tile.querySelector(':scope > .gem')===item.gem&&
+        item.tile.querySelector(':scope > .floor-shape')===item.floor&&
+        item.gem.querySelector('.hex-number')===item.number&&item.number.textContent===item.value&&
+        item.tile.getAttribute('transform')===item.transform);
+    }
+    function isActive(){if(active&&!intact(active))stop();return !!active;}
+    function setup(layout,indices,mode){
+      if(disposed||!board||!doc||(gestureHost&&(!gestureHost.isConnected||gestureHost.ownerDocument!==doc||board.contains(gestureHost)))||!layout?.positions||!finite(layout.radius)||layout.radius<=0||!Array.isArray(indices)||!indices.length)return null;
+      const unique=[...new Set(indices)];if(!unique.every(i=>index(i)&&finite(layout.positions[i]?.x)&&finite(layout.positions[i]?.y)))return null;
+      const sources=unique.map(i=>{
+        const tile=board.querySelector(':scope > [data-index="'+i+'"]'),gem=tile?.querySelector(':scope > .gem'),floor=tile?.querySelector(':scope > .floor-shape'),number=gem?.querySelector('.hex-number');
+        return {index:i,tile,gem,floor,number,value:number?.textContent,transform:tile?.getAttribute('transform')};
+      });
+      if(sources.some(item=>!item.tile||!item.gem||!item.floor||!item.number||!/^\d+$/.test(item.value.trim())))return null;
+      const layer=element('g',{'class':'first-play-guide-layer','data-guide-mode':mode,'pointer-events':'none','aria-hidden':'true'});
+      layer.style.pointerEvents='none';
+      layer.setAttribute('data-reduced-motion',String(!!(reducedMotion()||view?.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches)));
+      return {layer,sources,gesture:null,legacy:[],animations:[],observer:null,viewBox:board.getAttribute('viewBox'),reduced:!!(reducedMotion()||view?.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches)};
+    }
+    function contour(job,layout,i,role){
+      const p=layout.positions[i],r=layout.radius*.89;
+      const group=element('g',{'class':'first-play-guide-cell','data-guide-role':role,'data-guide-index':i,transform:'translate('+p.x+','+p.y+')'});
+      group.append(element('polygon',{'class':'first-play-guide-contour',fill:'none',points:Array.from({length:6},(_,n)=>(r*Math.cos(n*Math.PI/3)).toFixed(3)+','+(r*Math.sin(n*Math.PI/3)).toFixed(3)).join(' ')}));
+      job.layer.append(group);return group;
+    }
+    function animate(job,node,frames,options){
+      if(job.reduced||typeof node.animate!=='function')return;
+      const animation=node.animate(frames,options);job.animations.push(animation);
+      const cancelled=()=>{if(active===job)stop();};
+      animation.addEventListener?.('cancel',cancelled,{once:true});
+      animation.finished?.catch(cancelled);
+    }
+    function mount(job){
+      for(const node of board.querySelectorAll(':scope > .tutorial-gesture')){
+        job.legacy.push({node,style:node.getAttribute('style')});node.style.setProperty('visibility','hidden');
+      }
+      active=job;board.insertBefore(job.layer,board.querySelector(':scope > .fx-layer'));if(job.gesture)gestureHost.append(job.gesture);
+      const Observer=view?.MutationObserver||root.MutationObserver;
+      if(Observer){
+        job.observer=new Observer(records=>{
+          const removed=records.some(record=>record.type==='childList'&&[...record.removedNodes].some(node=>node===job.layer||node.contains?.(job.layer)||job.gesture&&(node===job.gesture||node.contains?.(job.gesture))));
+          if(active===job&&(removed||!intact(job)))stop();
+        });
+        job.observer.observe(board,{childList:true,subtree:true,characterData:true,attributes:true});
+        if(job.gesture){job.observer.observe(gestureHost,{childList:true,subtree:true});if(gestureHost.parentNode)job.observer.observe(gestureHost.parentNode,{childList:true});}
+      }
+    }
+    function show({layout,pair,matchingSources,mode='teach'}={}){
+      stop();
+      try{
+        if(!Array.isArray(pair)||pair.length!==2||pair[0]===pair[1]||!pair.every(index)||!['teach','reprompt'].includes(mode)||!Array.isArray(matchingSources))return false;
+        const matches=[...new Set(matchingSources)];
+        if(matches.length<3||matches.length!==matchingSources.length||!matches.includes(pair[0])||matches.includes(pair[1]))return false;
+        const job=setup(layout,[...pair,...matches],mode);if(!job)return false;
+        const sourceValue=job.sources.find(item=>item.index===pair[0]).value.trim();
+        if(matches.some(i=>job.sources.find(item=>item.index===i)?.value.trim()!==sourceValue))return false;
+        contour(job,layout,pair[1],'target');
+        for(const i of matches)contour(job,layout,i,i===pair[0]?'source':'match');
+        const a=layout.positions[pair[0]],b=layout.positions[pair[1]],dx=b.x-a.x,dy=b.y-a.y,length=Math.hypot(dx,dy);
+        if(!finite(length)||length<=0)return false;
+        const ux=dx/length,uy=dy/length,offset=layout.radius*.87;
+        // Choose the edge corridor furthest from the other printed numbers.
+        // The hand and arrow stay beside the gems rather than over their digits.
+        const route=sign=>{
+          const ox=-uy*offset*sign,oy=ux*offset*sign;
+          let clearance=Infinity;
+          for(let n=0;n<=8;n++)for(const p of layout.positions){
+            const x=a.x+ox+dx*n/8+6,y=a.y+oy+dy*n/8+3;
+            clearance=Math.min(clearance,Math.hypot(x-p.x,y-p.y));
+          }
+          return {ox,oy,clearance};
+        };
+        const first=route(1),other=route(-1),chosen=other.clearance>first.clearance?other:first;
+        const ax=a.x+chosen.ox+ux*13,ay=a.y+chosen.oy+uy*13,bx=b.x+chosen.ox-ux*13,by=b.y+chosen.oy-uy*13;
+        job.layer.append(element('path',{'class':'first-play-guide-arrow',fill:'none',d:'M'+ax+' '+ay+' L'+bx+' '+by+' M'+(bx-ux*8-uy*4)+' '+(by-uy*8+ux*4)+' L'+bx+' '+by+' L'+(bx-ux*8+uy*4)+' '+(by-uy*8-ux*4)}));
+        const hand=element('g',{'class':'first-play-guide-hand'});let motionX=dx,motionY=dy;
+        // The v2 host reserves a separate coach column. Its entire hand gesture
+        // stays outside the board, including while the physical swap is shown.
+        if(gestureHost){
+          job.gesture=doc.createElement('div');job.gesture.className='first-play-gesture-slot';job.gesture.setAttribute('aria-hidden','true');job.gesture.style.pointerEvents='none';
+          const preview=element('svg',{'class':'first-play-gesture-preview',viewBox:'-28 -30 56 60',width:44,height:60,'aria-hidden':'true',focusable:'false','pointer-events':'none'});
+          motionX=ux*20;motionY=uy*20;
+          const x=-ux*10,y=-uy*10,tx=ux*10,ty=uy*10;
+          preview.append(element('path',{'class':'first-play-gesture-arrow',fill:'none',d:'M'+x+' '+y+' L'+tx+' '+ty+' M'+(tx-ux*7-uy*4)+' '+(ty-uy*7+ux*4)+' L'+tx+' '+ty+' L'+(tx-ux*7+uy*4)+' '+(ty-uy*7-ux*4)}));
+          const anchor=element('g',{transform:'translate('+x+','+y+')'});anchor.append(hand);preview.append(anchor);job.gesture.append(preview);
+        }else{
+          const anchor=element('g',{transform:'translate('+(a.x+chosen.ox)+','+(a.y+chosen.oy)+')'});anchor.append(hand);job.layer.append(anchor);
+        }
+        // Reuse the already authored tutorial hand, never a new character asset.
+        hand.append(element('path',{d:'M0 0 V-7 C0-10 5-10 5-7 V0 L7-3 C9-5 12-3 11-1 L12-2 C15-3 17-1 16 1 C19 0 21 3 19 6 L16 13 C15 15 13 16 10 16 H7 C5 16 4 15 3 13 L-4 6 C-6 3-3 0-1 2 L2 5',transform:gestureHost?'scale(.85)':'scale(.75)'}));
+        mount(job);
+        animate(job,hand,[{transform:'translate(0px,0px)',opacity:1,offset:0},{transform:'translate(0px,0px)',opacity:1,offset:.2},{transform:'translate('+motionX+'px,'+motionY+'px)',opacity:1,offset:.7},{transform:'translate('+motionX+'px,'+motionY+'px)',opacity:0,offset:.85},{transform:'translate(0px,0px)',opacity:0,offset:.9},{transform:'translate(0px,0px)',opacity:1,offset:1}],{duration:1800,iterations:1,easing:'ease-in-out'});
+        for(const node of job.layer.querySelectorAll('[data-guide-role="source"],[data-guide-role="match"]'))animate(job,node,[{opacity:.68},{opacity:1,offset:.5},{opacity:.86}],{duration:1800,iterations:1,easing:'ease-in-out'});
+        return true;
+      }catch(_){stop();return false;}
+    }
+    function feedback({layout,cells}={}){
+      stop();
+      try{
+        const job=setup(layout,cells,'feedback');if(!job||job.sources.some(item=>!item.tile.classList.contains('floor-green')))return false;
+        for(const i of [...new Set(cells)])contour(job,layout,i,'green');mount(job);
+        animate(job,job.layer,[{opacity:.45},{opacity:1,offset:.35},{opacity:.7}],{duration:800,iterations:1,easing:'ease-out'});return true;
+      }catch(_){stop();return false;}
+    }
+    function destroy(){if(disposed)return;stop();disposed=true;}
+    return Object.freeze({show,feedback,stop,destroy,isActive});
+  }
+
+  const api=Object.freeze({copy,createDemo,createGuide});root.HexFirstPlay=api;
   if(typeof module==='object'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

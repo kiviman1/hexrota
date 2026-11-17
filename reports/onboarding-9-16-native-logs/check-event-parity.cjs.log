@@ -1,0 +1,1 @@
+C# event parity passed: 580 complete JSON comparisons (29 create, 423 validate, 58 state validation, 70 append), 462 exact rejection messages; input immutability for every success/rejection. Covers bounded buffer/order, duplicate terminal callbacks, typed IDs, token boundaries, PII/unknown fields and deterministic wire fuzz. C# 7.3 compiled with .NET SDK 8.0.428.

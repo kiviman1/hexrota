@@ -1,0 +1,1 @@
+C# session parity passed: 1362 full JSON comparisons; 36 real app.js flows; 63 native fault/guard scenarios; canonical profile/revision, provider receipts, migration and atomic rollback covered. Physical Unity/iOS/Android tests remain outside this harness.

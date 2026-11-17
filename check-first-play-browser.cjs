@@ -58,7 +58,9 @@ async function screenshot(page,name,locator){
 function changedPixels(a,b){assert.equal(a.width,b.width);assert.equal(a.height,b.height);let count=0;for(let i=0;i<a.data.length;i+=4)if(Math.abs(a.data[i]-b.data[i])+Math.abs(a.data[i+1]-b.data[i+1])+Math.abs(a.data[i+2]-b.data[i+2])>30)count++;return count;}
 async function open(size,{motion='reduce',saved}={}){
  const context=await browser.newContext({viewport:size,deviceScaleFactor:1,isMobile:true,hasTouch:true,reducedMotion:motion==='reduce'?'reduce':'no-preference',serviceWorkers:'block'});
- if(saved)await context.addInitScript(saved=>localStorage.setItem('hexrota-match-v5',JSON.stringify(saved)),saved);
+ // Retain every legacy geometry/feedback/demo assertion using an existing raw
+ // record with no policy field. Actual fresh v2 enrollment has its own runner.
+ await context.addInitScript(saved=>localStorage.setItem('hexrota-match-v5',JSON.stringify(saved)),saved===undefined?{}:saved);
  const page=await context.newPage();page.on('pageerror',error=>errors.push(error.message));
  await page.goto(url);await page.waitForFunction(()=>document.body.dataset.screen==='home'&&!!document.querySelector('#home-play-label')?.textContent.trim());
  return {context,page};

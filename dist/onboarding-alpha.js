@@ -1,0 +1,3 @@
+/* A fresh-user review scope. It uses the ordinary onboarding and locked journey,
+ * unlike the mechanic catalogs; only persistence/lock keys get a private prefix. */
+(function(root){'use strict';let enabled=false;try{enabled=new URLSearchParams(root.location?.search||'').get('dev')==='first-play-9-16';}catch(_){}const prefix='hexrota-onboarding-9-16:';function storage(backing){return Object.freeze({getItem:k=>backing.getItem(prefix+k),setItem:(k,v)=>backing.setItem(prefix+k,v),removeItem:k=>backing.removeItem(prefix+k)});}const api=Object.freeze({enabled,prefix,storage});root.HexOnboardingAlpha=api;if(typeof module==='object'&&module.exports)module.exports=api;})(typeof window!=='undefined'?window:globalThis);

@@ -25,7 +25,10 @@ function mount(state,{motion='reduce'}={}){
  if(motion==='full')w.Element.prototype.animate=function(keyframes,options){let finished,reject;const animation={get finished(){return finished||(finished=new Promise((_,no)=>{reject=no;}));},cancel(){reject?.(new w.DOMException('Animation cancelled','AbortError'));}};animations.push({node:this,keyframes,options,animation});return animation;};
  class AudioStub{configure(){}unlock(){return Promise.resolve();}setActive(){}move(){}victory(){}click(){}stop(){}dispose(){}}
  w.HexAudio=AudioStub;
- if(state)w.localStorage.setItem(key,JSON.stringify(state));
+ // This suite freezes the pre-9.16 presentation contract. A present raw record
+ // without an onboarding field remains legacy; genuinely absent records are
+ // exercised by check-first-play-v2-ui/browser instead.
+ w.localStorage.setItem(key,JSON.stringify(state==null?{}:state));
  loadGame(w,['engine.js','levels.js','tutorials.js','app.js'],source);
  const f={dom,w,d,animations,node(selector){const node=d.querySelector(selector);assert(node,selector+' exists');return node;},save(){return JSON.parse(w.localStorage.getItem(key));},close(){dom.window.close();}};
  f.click=selector=>f.node(selector).dispatchEvent(new w.MouseEvent('click',{bubbles:true,detail:0}));

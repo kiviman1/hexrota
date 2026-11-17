@@ -1,0 +1,1 @@
+C# life parity passed: 19 shared scenarios plus1long-run stress/460 transitions, 152 frozen v1 migrations, 172 extra strict/error/archive/receipt probes (102 rejections, 6 verified callback inspections). Every state, view, nullable time, result, ledger and waiver agrees; 344 compiled requests keep inputs unchanged. C#7.3/.NET8.0.428.
