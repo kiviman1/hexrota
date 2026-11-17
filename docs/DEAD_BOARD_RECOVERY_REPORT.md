@@ -1,5 +1,7 @@
 # Hexrota 9.9 — Hamlesiz tahta ve kurtarma raporu
 
+> **9.9a takip durumu:** Bu rapor 9.9 başlangıç davranışını ve dondurulmuş fixture'ı kaydeder. Yeni canlı `grant_moves` isteği artık `no_legal_swaps` ile reddedilir; eski v1 checkpoint'i tarihsel replay ile aynen korunur. Güncel diagnostik bu ikisini ayrı gösterir ve çözülmemiş R-02 nedeniyle hâlâ exit 1 döner. Makbuz saklama ve uyumluluk sözleşmesi: [RESCUE_SAFETY_9_9A.md](RESCUE_SAFETY_9_9A.md).
+
 ## Kapsam
 
 Denetim başlangıcı, PR #28'in birleştirildiği `deb948a701b5acc0dd1b3df7aea744cbb670f783` main commit'idir. Bu çalışma motoru, yardımlı komutları, bölüm verilerini veya C# uygulamasını değiştirmez. Adversarial girdiler `fixtures/dead-board-vectors-9-9.json` içinde ayrı `audit-*` kimlikleriyle tutulur; kampanya varyantı veya gerçek kullanıcı kaydı olarak eklenmez.

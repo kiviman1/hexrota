@@ -113,7 +113,7 @@ namespace Hexrota.Commands
             if (requestedLimits != null && !Wire.Equal(ReadLimits(requestedLimits), limits)) throw new ArgumentException("Assisted limits do not match the checkpoint");
             foreach (object command in Wire.List(Wire.Get(snapshot, "commands")))
             {
-                object result = Apply(command);
+                object result = ApplyInternal(command, true);
                 if (!Wire.Equal(Wire.Get(result, "ok"), true) || Wire.Equal(Wire.Get(result, "duplicate"), true)) throw new ArgumentException("Invalid assisted command history");
             }
             if (!Wire.Equal(Snapshot(), snapshot)) throw new ArgumentException("Assisted checkpoint does not match its command history");
@@ -128,6 +128,12 @@ namespace Hexrota.Commands
             return Apply(Wire.Obj("id", id ?? ("swap:" + (commands.Count + 1)), "type", "swap", "a", a, "b", b));
         }
         public object Apply(object input)
+        {
+            return ApplyInternal(input, false);
+        }
+        // Historical eligibility is private to checkpoint replay; clones and new
+        // requests always use the live policy through Apply.
+        private object ApplyInternal(object input, bool historicalReplay)
         {
             var command = Canonical(input); if (command == null) return Invalid(input, "invalid_command");
             string id = (string)command["id"], type = (string)command["type"]; object previous;
@@ -146,6 +152,7 @@ namespace Hexrota.Commands
             {
                 if (next.Status != "lost" || next.movesLeft != 0 || commands.Count == 0 || !Wire.Equal(Wire.Get(commands[commands.Count - 1], "type"), "swap")) return Invalid(command, "rescue_unavailable");
                 if (Used(nextUsage, "rescue") >= Used(limits, "rescue")) return Invalid(command, "rescue_limit");
+                if (!historicalReplay && next.LegalMoves().Count == 0) return Invalid(command, "no_legal_swaps");
                 nextUsage["rescue"] = Used(nextUsage, "rescue") + 1; bonus += 5; next.movesLeft += 5; mechanics = Empty();
             }
             else

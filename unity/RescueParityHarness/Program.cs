@@ -35,6 +35,8 @@ internal static class Program
             case "beginAd": return manager.BeginAd(state, context);
             case "completeAd": return manager.CompleteAd(state, id, options);
             case "applyAd": return manager.ApplyAd(state, context, receipt, proof);
+            case "retainAdReceipt": return manager.RetainAdReceipt(state, receipt, proof);
+            case "retainedReceiptFor": return manager.RetainedReceiptFor(state, W.IsMap(W.Get(request, "identity")) ? W.Map(W.Get(request, "identity")) : null);
             case "applyGold": return manager.ApplyGold(state, context, id, options);
             case "setAdAvailable": return manager.SetAdAvailable(state, W.Get(request, "available"));
             case "settlementFor": return manager.SettlementFor(state, id);

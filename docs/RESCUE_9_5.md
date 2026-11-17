@@ -10,6 +10,8 @@ Bu belge `dist/rescue.js` ile `unity/Rescue/RescueManager.cs` uygulamalarını a
 | `HexRescue.TestProvider` | `DevelopmentRescueProvider` | Açıkça TEST olan reklam isteği ve yerel makbuz |
 | Dışarıdan `verifyReceipt` | `IRescueReceiptVerifier` | Makbuz güven sınırı; varsayılan ret |
 | TEST doğrulama adaptörü | `DevelopmentRescueReceiptVerifier` | Yalnız geliştirme sağlayıcısının tam makbuz eşitliği |
+| `retainAdReceipt` | `RetainAdReceipt` | Doğrulanmış tamamlanmayı yalnız verilmiş hedef provider kaydında, henüz teslim edilmemiş hak olarak tutar; grant/settlement/kota/Altın üretmez |
+| `retainedReceiptFor` | `RetainedReceiptFor` | Sayısal kampanya Level ID ve özgün Attempt ID için doğrulanmış, işlenmemiş hakkın kopyasını döndürür |
 
 Modüller DOM, depolama, UnityEngine, SDK, ağ veya cihaz saati kullanmaz. Saat çağırandan gelir. JS `clock: () => utcMilliseconds`; C# `Func<long>`. Unity host'u mevcut `IUtcClock.NowUtcMilliseconds` metodunu bu delegate'e bağlayabilir. UTC sayıları 0 ile 9.007.199.254.740.991 arasında tam sayıdır. Etkin zaman, kayıtlı `lastSeenUtc` ve gözlenen saatin büyüğüdür. Host mevcut LifeManager'ın etkin zamanını da hesaba katmalıdır. Tam ve dışarıdan doğrulanmış bir tamamlanma makbuzunun `verifiedAtUtc` değeri de teslim sırasında zaman alt sınırı olur. Böylece kayıt hatasından sonra gece yarısı aşılmış ve cihaz saati geri alınmışsa reklam eski güne yazılıp ertesi gün ikinci kez kota açamaz. Bu alt sınır yalnız makbuz ve verilmiş hedef işlem tamamen doğrulandıktan sonra uygulanır; doğrulanmamış JSON saati ilerletemez. Yerel cihaz saati ve TEST JSON'u ticari makbuz doğrulaması değildir.
 
@@ -22,6 +24,7 @@ Modüller DOM, depolama, UnityEngine, SDK, ağ veya cihaz saati kullanmaz. Saat 
 - Uygun Altın alternatifi reklam bulunamadığında/kota dolduğunda açık kalır. 140'tan az Altınla ücretli kurtarma başlatılmaz. Saf yönetici cüzdana dokunmaz; harcamayı ekonomi yöneticisi önerir.
 - İlk kayıpta kesilmiş can iade edilmez. Aynı Attempt ID tekrar kaybederse mevcut LifeManager settlement geçmişi ikinci kesintiyi engeller; sonraki kazanma da ilk kesintiyi iade etmez.
 - Reklam otomatik açılmaz. Bekleyen isteğin yeniden yüklenmesi yeni izlenme gerektirmez ve kendiliğinden modal açmamalıdır. Oyuncu açıkça TEST işlemini sürdürür veya başka seçeneği kullanır.
+- 9.9a: tamamlanmış ve teslim edilmemiş reklam hakkı varsa aynı denemeye yeni reklam veya Altın satılmaz; özgün makbuz yeniden teslim edilir. Tahta uygun değilse hak mevcut provider kaydında saklanır, harcanmaz. Canlı komut da sıfır yasal takası reddeder; tarihsel v1 replay korunur. Ayrıntılar [RESCUE_SAFETY_9_9A.md](RESCUE_SAFETY_9_9A.md).
 
 Yapılandırma `data/economy-config-9-5.json` içindeki `rescue` nesnesidir:
 
@@ -144,7 +147,7 @@ Kalıcı yer: `hexrota-profile-v2` içindeki **`game.rescue`**. Ekonomi `game.ec
 
 `day = floor(lastSeenUtc / 86400000)`; örnekteki gün sayısı açıklama içindir, gerçek değer formülle üretilir. Aktif claim kaydı `{levelId,source,transactionId,atUtc}`; aktif transaction `{attemptId,levelId,source,atUtc,moves,costGold}`. Karşılıklı kimlik/tarih/kaynak ilişkisi doğrulanır. Son 128 zengin kayıt tutulur. Eski claim `[levelId,source,transactionId,atUtc]`, eski transaction `[attemptId,levelId,source,atUtc,costGold]` olarak kayıpsız arşivlenir; eski ID unutulmaz. Bu teknik sıkıştırma oyun kullanım kotası değildir.
 
-TEST provider bitmiş eski seri numaralarını birleşik kapalı aralıklara taşır. Bekleyen istekler kendiliğinden silinmez; başarısız commit sonrası kanıt yeniden sunulabilir. Tamamlanmamış isteği terk eden host, açık iptal sonucunu kayda geçirebilir. Aynı günün bekleyen/tamamlanmış ama teslim edilmemiş istekleri kota rezervasyonu sayılır; aynı anda üç istek başlatılamaz. Kota **başarılı teslim gününde** tüketilir. Gün aşan makbuzda güncel kota dolmuşsa teklif reddedilir; can sistemindeki bankalanmış can hakkına dönüştürülmez. Tek etkin denemeli normal akışta bu durum ikinci eşzamanlı oyun olarak açılmaz.
+TEST provider bitmiş eski seri numaralarını birleşik kapalı aralıklara taşır. 9.9a itibarıyla teslim edilmemiş tamamlanmış haklar bu sıkıştırmadan hariçtir; yalnız işlenmiş tamamlanmalar tombstone olabilir. Bekleyen istekler kendiliğinden silinmez; başarısız commit sonrası kanıt yeniden sunulabilir. Tamamlanmamış isteği terk eden host, açık iptal sonucunu kayda geçirebilir. Aynı günün bekleyen/tamamlanmış ama teslim edilmemiş istekleri kota rezervasyonu sayılır; aynı anda üç istek başlatılamaz. Kota **başarılı teslim gününde** tüketilir. Gün aşan makbuzda güncel kota dolmuşsa teklif reddedilir; can sistemindeki bankalanmış can hakkına dönüştürülmez. Tek etkin denemeli normal akışta bu durum ikinci eşzamanlı oyun olarak açılmaz.
 
 Makbuzun `provider:"development_rescue"`, `productId:"rescue_moves_5"`, Attempt ID, sayısal Level ID, stream/sequence, tam alan listesi ve sağlayıcıdaki tam makbuz karşılığı doğrulanır. Can sisteminin `development/ad_life` makbuzu bu sözleşmede geçmez. Varsayılan doğrulayıcı hiçbir makbuz kabul etmez.
 

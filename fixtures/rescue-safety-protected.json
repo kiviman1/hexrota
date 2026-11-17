@@ -1,0 +1,12 @@
+{
+  "baseline": "97d8d704d938dff28773b502938c943e89f92fb1",
+  "scope": "Reviewed 9.9a live rescue authorization, historical replay, receipt retention and test dispatch. No classic or authored-data override.",
+  "sha256": {
+    "dist/commands.js": "df12bf3624ec2d3e578025a593e4b55dccf09dbe3667c410cd04dc42f76f73ef",
+    "dist/rescue.js": "5303d1a8df5adabf1d4938c963b32999967aeae2ef251dab133e12546c367485",
+    "unity/Application/GameSessionController.Rescue.cs": "0df1942893becc0a7b5790666e0f828a2e9a20a58e7fe98a8d328b1fc4a64124",
+    "unity/Commands/AssistedGame.cs": "eaba4e05d8fa840786ec4633d6fce4d03ff96a900f64b4581c8bb0f4a203487f",
+    "unity/Rescue/RescueManager.cs": "94ab9758f7682592159f179f34dc724cabd30147c588b063a3128705173c7570",
+    "unity/RescueParityHarness/Program.cs": "2337db7175610f0e798adab3b6ef4568bebfebfdca43bcf0daf70ef7b4a7cc19"
+  }
+}

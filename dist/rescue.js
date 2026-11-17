@@ -57,7 +57,9 @@
  function compact(state){
   const claims=Object.entries(state.settledAttempts).map(([id,row])=>({id,atUtc:row.atUtc})).sort(sorted);for(const {id}of claims.slice(0,Math.max(0,claims.length-RETENTION))){const row=state.settledAttempts[id];state.settledArchive[id]=[row.levelId,row.source,row.transactionId,row.atUtc];delete state.settledAttempts[id];}
   const transactions=Object.entries(state.processedTransactions).map(([id,row])=>({id,atUtc:row.atUtc})).sort(sorted);for(const {id}of transactions.slice(0,Math.max(0,transactions.length-RETENTION))){const row=state.processedTransactions[id];state.transactionArchive[id]=[row.attemptId,row.levelId,row.source,row.atUtc,row.costGold];delete state.processedTransactions[id];}
-  const closed=Object.entries(state.provider.transactions).filter(([,row])=>row.status!=='pending').map(([id,row])=>({id,atUtc:row.createdAtUtc})).sort(sorted);for(const {id}of closed.slice(0,Math.max(0,closed.length-RETENTION)))state.provider=providerFinalize(state.provider,id);
+  // A completed but undelivered receipt is an earned entitlement, not a closed
+  // journal entry. Only processed completions may be compacted to tombstones.
+  const closed=Object.entries(state.provider.transactions).filter(([id,row])=>row.status!=='pending'&&(row.status!=='completed'||transactionFor(state,id))).map(([id,row])=>({id,atUtc:row.createdAtUtc})).sort(sorted);for(const {id}of closed.slice(0,Math.max(0,closed.length-RETENTION)))state.provider=providerFinalize(state.provider,id);
   return state;
  }
  function createManager(configuration,{clock,verifyReceipt}={}){
@@ -68,12 +70,31 @@
   function eligibility(state,input){validateContext(input);if(input.tutorial)return 'tutorial';if(input.cleared)return 'level_cleared';if(claimFor(state,input.attemptId)||input.rescuesUsed>=config.maxPerAttempt)return 'already_rescued';if(input.status!=='lost'||input.movesLeft!==0||input.turn<1||input.lastCommand!=='swap')return 'not_lost_after_swap';return null;}
   function pendingFor(state,input){return Object.values(state.provider.transactions).find(row=>row.attemptId===input.attemptId&&row.levelId===input.levelId&&row.status==='pending')||null;}
   function reserved(state){return Object.values(state.provider.transactions).filter(row=>['pending','completed'].includes(row.status)&&!claimFor(state,row.attemptId)&&Math.floor(row.createdAtUtc/DAY)===state.adUsage.day).length;}
-  function availabilityAt(state,input,gold){need(integer(gold,0,2147483647),'invalid_rescue_gold');const reason=eligibility(state,input),pending=reason?null:pendingFor(state,input),quotaLeft=Math.max(0,config.dailyAdLimit-state.adUsage.count),reservation=reserved(state);const adReason=reason||(!state.provider.adAvailable?'ad_unavailable':pending?'ad_pending':quotaLeft===0?'daily_limit':reservation>=quotaLeft?'daily_reserved':null),goldReason=reason||(gold<config.goldCost?'insufficient_gold':null);return {eligible:!reason,reason,attemptId:input.attemptId,moves:config.moves,costGold:config.goldCost,effectiveNowUtc:state.lastSeenUtc,ad:{allowed:!adReason,reason:adReason,remainingToday:quotaLeft,pendingTransactionId:pending?.transactionId||null},gold:{allowed:!goldReason,reason:goldReason,costGold:config.goldCost}};}
+  function availabilityAt(state,input,gold){need(integer(gold,0,2147483647),'invalid_rescue_gold');const reason=eligibility(state,input),held=reason?null:retainedReceiptFor(state,{attemptId:input.attemptId,levelId:input.levelId}),pending=reason?null:pendingFor(state,input),quotaLeft=Math.max(0,config.dailyAdLimit-state.adUsage.count),reservation=reserved(state);const adReason=reason||(held?'receipt_pending_delivery':!state.provider.adAvailable?'ad_unavailable':pending?'ad_pending':quotaLeft===0?'daily_limit':reservation>=quotaLeft?'daily_reserved':null),goldReason=reason||(held?'receipt_pending_delivery':gold<config.goldCost?'insufficient_gold':null);return {eligible:!reason,reason,attemptId:input.attemptId,moves:config.moves,costGold:config.goldCost,effectiveNowUtc:state.lastSeenUtc,ad:{allowed:!adReason,reason:adReason,remainingToday:quotaLeft,pendingTransactionId:held?.receipt.transactionId||pending?.transactionId||null},gold:{allowed:!goldReason,reason:goldReason,costGold:config.goldCost}};}
   function availability(state,input,{gold}={}){const next=reconcile(state);return availabilityAt(next,input,gold);}
   function result(state,applied,reason,grant=null,costGold=0,transactionId=null){return {state,applied,reason,grant,costGold,transactionId};}
   function beginAd(state,input){const next=reconcile(state),offer=availabilityAt(next,input,0);if(!offer.ad.allowed)return result(next,false,offer.ad.reason,null,0,offer.ad.pendingTransactionId);const begun=providerBegin(next.provider,{attemptId:input.attemptId,levelId:input.levelId,nowUtc:next.lastSeenUtc});next.provider=begun.state;return result(next,false,begun.reason,null,0,begun.transactionId);}
   function completeAd(state,id,{outcome='completed'}={}){const next=reconcile(state),completed=providerComplete(next.provider,id,{nowUtc:next.lastSeenUtc,outcome});next.provider=completed.state;return {...result(next,false,completed.reason,null,0,id),receipt:completed.receipt,completedProvider:copy(completed.state)};}
   function duplicate(state,input,id,source){const previous=transactionFor(state,id);if(!previous)return null;return result(state,false,previous.attemptId===input.attemptId&&previous.levelId===input.levelId&&previous.source===source?'duplicate_transaction':'transaction_conflict',null,0,id);}
+  function verifiedCompletion(state,receipt,proof){
+   try{validateProvider(proof);if(!object(receipt)||!token(receipt.transactionId))return false;const id=receipt.transactionId,issued=state.provider.transactions[id],completed=proof.transactions[id];return proof.namespace===state.provider.namespace&&!!issued&&!!completed&&issued.attemptId===receipt.attemptId&&issued.levelId===receipt.levelId&&issued.createdAtUtc===completed.createdAtUtc&&(issued.status==='pending'||issued.status==='completed'&&providerVerify(state.provider,receipt))&&providerVerify(proof,receipt)&&verify(copy(receipt),copy(proof))===true;}catch(_){return false;}
+  }
+  function receiptTimeFloor(state,receipt){
+   if(receipt.verifiedAtUtc>state.lastSeenUtc){state.lastSeenUtc=receipt.verifiedAtUtc;const day=Math.floor(state.lastSeenUtc/DAY);if(state.adUsage.day!==day)state.adUsage={day,count:0};}
+  }
+  function retainedReceiptFor(state,identity){
+   validateState(state);need(exact(identity,['attemptId','levelId'])&&token(identity.attemptId)&&integer(identity.levelId,1),'invalid_rescue_receipt_identity');
+   const candidates=Object.entries(state.provider.transactions).filter(([id,row])=>row.status==='completed'&&row.attemptId===identity.attemptId&&row.levelId===identity.levelId&&!transactionFor(state,id)).map(([id,row])=>({id,atUtc:row.createdAtUtc,row})).sort(sorted);
+   for(const {row}of candidates)if(verifiedCompletion(state,row.receipt,state.provider))return {receipt:copy(row.receipt),completedProvider:copy(state.provider)};
+   return null;
+  }
+  function retainAdReceipt(state,receipt,completedProvider=null){
+   const next=reconcile(state);if(!object(receipt)||!token(receipt.transactionId))return result(next,false,'unverified_receipt');const id=receipt.transactionId;
+   if(transactionFor(next,id))return result(next,false,'duplicate_transaction',null,0,id);
+   const proof=completedProvider||next.provider;if(!verifiedCompletion(next,receipt,proof))return result(next,false,'unverified_receipt',null,0,id);
+   receiptTimeFloor(next,receipt);next.provider.transactions[id]=copy(proof.transactions[id]);
+   return result(next,false,'receipt_retained',null,0,id);
+  }
   function claim(state,input,id,source,costGold){
    state.settledAttempts[input.attemptId]={levelId:input.levelId,source,transactionId:id,atUtc:state.lastSeenUtc};state.processedTransactions[id]={attemptId:input.attemptId,levelId:input.levelId,source,atUtc:state.lastSeenUtc,moves:config.moves,costGold};
    for(const [other,row]of Object.entries(state.provider.transactions))if(other!==id&&row.attemptId===input.attemptId&&row.status==='pending')row.status='cancelled';
@@ -83,17 +104,16 @@
   function applyAd(state,input,receipt,completedProvider=null){
    const next=reconcile(state);validateContext(input);if(!object(receipt)||!token(receipt.transactionId))return result(next,false,'unverified_receipt');const id=receipt.transactionId,repeat=duplicate(next,input,id,'ad');if(repeat)return repeat;
    const reason=eligibility(next,input);if(reason)return result(next,false,reason,null,0,id);
-   const proof=completedProvider||next.provider;let valid=false;
-   try{validateProvider(proof);const issued=next.provider.transactions[id],completed=proof.transactions[id];valid=receipt.attemptId===input.attemptId&&receipt.levelId===input.levelId&&proof.namespace===next.provider.namespace&&!!issued&&!!completed&&issued.attemptId===input.attemptId&&issued.levelId===input.levelId&&issued.createdAtUtc===completed.createdAtUtc&&(issued.status==='pending'||issued.status==='completed'&&providerVerify(next.provider,receipt))&&providerVerify(proof,receipt)&&verify(copy(receipt),copy(proof))===true;}catch(_){valid=false;}
+   const proof=completedProvider||next.provider,valid=receipt.attemptId===input.attemptId&&receipt.levelId===input.levelId&&verifiedCompletion(next,receipt,proof);
    if(!valid)return result(next,false,'unverified_receipt',null,0,id);
    // A verified completion observed before a failed save is a durable time floor
    // for redelivery. Backdating it across midnight must not restore daily rights.
-   if(receipt.verifiedAtUtc>next.lastSeenUtc){next.lastSeenUtc=receipt.verifiedAtUtc;const verifiedDay=Math.floor(next.lastSeenUtc/DAY);if(next.adUsage.day!==verifiedDay)next.adUsage={day:verifiedDay,count:0};}
+   receiptTimeFloor(next,receipt);
    if(next.adUsage.count>=config.dailyAdLimit)return result(next,false,'daily_limit',null,0,id);
    next.provider.transactions[id]=copy(proof.transactions[id]);next.adUsage.count++;return claim(next,input,id,'ad',0);
   }
   function setAdAvailable(state,available){const next=reconcile(state);next.provider=providerSetAvailable(next.provider,available);return next;}
-  return Object.freeze({createState,validate:validateState,restore:reconcile,reconcile,availability,beginAd,completeAd,applyAd,applyGold,setAdAvailable,settlementFor:(state,id)=>{validateState(state);need(token(id),'invalid_rescue_attempt_identity');const row=claimFor(state,id);return row?copy(row):null;},transactionFor:(state,id)=>{validateState(state);need(token(id),'invalid_rescue_transaction_identity');const row=transactionFor(state,id);return row?copy(row):null;}});
+  return Object.freeze({createState,validate:validateState,restore:reconcile,reconcile,availability,beginAd,completeAd,applyAd,applyGold,retainAdReceipt,retainedReceiptFor,setAdAvailable,settlementFor:(state,id)=>{validateState(state);need(token(id),'invalid_rescue_attempt_identity');const row=claimFor(state,id);return row?copy(row):null;},transactionFor:(state,id)=>{validateState(state);need(token(id),'invalid_rescue_transaction_identity');const row=transactionFor(state,id);return row?copy(row):null;}});
  }
  const api=Object.freeze({createManager,validateConfig,TestProvider});root.HexRescue=api;if(typeof module==='object'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

@@ -209,7 +209,8 @@ namespace Hexrota.Rescue
             foreach (var pair in RescueWire.Ordered(active, "atUtc").Take(Math.Max(0, W.Map(active).Count - Retention)).ToList()) { object row = pair.Value; W.Map(state["settledArchive"])[pair.Key] = W.Arr(W.Get(row, "levelId"), W.Get(row, "source"), W.Get(row, "transactionId"), W.Get(row, "atUtc")); W.Map(active).Remove(pair.Key); }
             active = state["processedTransactions"];
             foreach (var pair in RescueWire.Ordered(active, "atUtc").Take(Math.Max(0, W.Map(active).Count - Retention)).ToList()) { object row = pair.Value; W.Map(state["transactionArchive"])[pair.Key] = W.Arr(W.Get(row, "attemptId"), W.Get(row, "levelId"), W.Get(row, "source"), W.Get(row, "atUtc"), W.Get(row, "costGold")); W.Map(active).Remove(pair.Key); }
-            var closed = RescueWire.Ordered(W.Get(state["provider"], "transactions"), "createdAtUtc").Where(pair => !W.Equal(W.Get(pair.Value, "status"), "pending")).ToList();
+            // Undelivered completions remain earned entitlements, not tombstones.
+            var closed = RescueWire.Ordered(W.Get(state["provider"], "transactions"), "createdAtUtc").Where(pair => !W.Equal(W.Get(pair.Value, "status"), "pending") && (!W.Equal(W.Get(pair.Value, "status"), "completed") || Transaction(state, pair.Key) != null)).ToList();
             foreach (var pair in closed.Take(Math.Max(0, closed.Count - Retention))) state["provider"] = DevelopmentRescueProvider.Finalize(state["provider"], pair.Key);
             return state;
         }
@@ -234,11 +235,11 @@ namespace Hexrota.Rescue
         private static int Reserved(object state) { return RescueWire.Rows(W.Get(W.Get(state, "provider"), "transactions")).Count(pair => RescueWire.OneOf(W.Get(pair.Value, "status"), "pending", "completed") && ClaimFor(state, (string)W.Get(pair.Value, "attemptId")) == null && RescueWire.N(W.Get(pair.Value, "createdAtUtc")) / RescueWire.Day == RescueWire.N(W.Get(W.Get(state, "adUsage"), "day"))); }
         private Dictionary<string, object> AvailabilityAt(object state, object input, object gold)
         {
-            RescueWire.Need(RescueWire.Integer(gold, 0, int.MaxValue), "invalid_rescue_gold"); string reason = Eligibility(state, input); object pending = reason == null ? PendingFor(state, input) : null;
+            RescueWire.Need(RescueWire.Integer(gold, 0, int.MaxValue), "invalid_rescue_gold"); string reason = Eligibility(state, input); var held = reason == null ? RetainedReceiptFor(state, W.Obj("attemptId", W.Get(input, "attemptId"), "levelId", W.Get(input, "levelId"))) : null; object pending = reason == null ? PendingFor(state, input) : null;
             long quota = Math.Max(0, RescueWire.N(config["dailyAdLimit"]) - RescueWire.N(W.Get(W.Get(state, "adUsage"), "count"))); int reserved = Reserved(state);
-            string adReason = reason ?? (!(bool)W.Get(W.Get(state, "provider"), "adAvailable") ? "ad_unavailable" : pending != null ? "ad_pending" : quota == 0 ? "daily_limit" : reserved >= quota ? "daily_reserved" : null);
-            string goldReason = reason ?? (RescueWire.N(gold) < RescueWire.N(config["goldCost"]) ? "insufficient_gold" : null);
-            return W.Obj("eligible", reason == null, "reason", reason, "attemptId", W.Get(input, "attemptId"), "moves", config["moves"], "costGold", config["goldCost"], "effectiveNowUtc", W.Get(state, "lastSeenUtc"), "ad", W.Obj("allowed", adReason == null, "reason", adReason, "remainingToday", quota, "pendingTransactionId", pending == null ? null : W.Get(pending, "transactionId")), "gold", W.Obj("allowed", goldReason == null, "reason", goldReason, "costGold", config["goldCost"]));
+            string adReason = reason ?? (held != null ? "receipt_pending_delivery" : !(bool)W.Get(W.Get(state, "provider"), "adAvailable") ? "ad_unavailable" : pending != null ? "ad_pending" : quota == 0 ? "daily_limit" : reserved >= quota ? "daily_reserved" : null);
+            string goldReason = reason ?? (held != null ? "receipt_pending_delivery" : RescueWire.N(gold) < RescueWire.N(config["goldCost"]) ? "insufficient_gold" : null);
+            return W.Obj("eligible", reason == null, "reason", reason, "attemptId", W.Get(input, "attemptId"), "moves", config["moves"], "costGold", config["goldCost"], "effectiveNowUtc", W.Get(state, "lastSeenUtc"), "ad", W.Obj("allowed", adReason == null, "reason", adReason, "remainingToday", quota, "pendingTransactionId", held != null ? W.Get(held["receipt"], "transactionId") : pending == null ? null : W.Get(pending, "transactionId")), "gold", W.Obj("allowed", goldReason == null, "reason", goldReason, "costGold", config["goldCost"]));
         }
         public Dictionary<string, object> Availability(object state, Dictionary<string, object> context, Dictionary<string, object> options) { return AvailabilityAt(Reconcile(state), context, W.Get(options, "gold")); }
         private static Dictionary<string, object> Result(object state, bool applied, string reason, object grant = null, object costGold = null, object transactionId = null) { return W.Obj("state", state, "applied", applied, "reason", reason, "grant", grant, "costGold", costGold ?? 0, "transactionId", transactionId); }
@@ -258,6 +259,48 @@ namespace Hexrota.Rescue
             var previous = Transaction(state, id); if (previous == null) return null;
             return Result(state, false, W.Equal(previous["attemptId"], W.Get(input, "attemptId")) && W.Equal(previous["levelId"], W.Get(input, "levelId")) && W.Equal(previous["source"], source) ? "duplicate_transaction" : "transaction_conflict", null, 0, id);
         }
+        private bool VerifiedCompletion(object state, object receipt, object proof)
+        {
+            try
+            {
+                DevelopmentRescueProvider.Validate(proof);
+                if (!W.IsMap(receipt) || !RescueWire.Token(W.Get(receipt, "transactionId"))) return false;
+                string id = (string)W.Get(receipt, "transactionId"); object issued = W.Get(W.Get(W.Get(state, "provider"), "transactions"), id), completed = W.Get(W.Get(proof, "transactions"), id);
+                return W.Equal(W.Get(proof, "namespace"), W.Get(W.Get(state, "provider"), "namespace")) && issued != null && completed != null && W.Equal(W.Get(issued, "attemptId"), W.Get(receipt, "attemptId")) && W.Equal(W.Get(issued, "levelId"), W.Get(receipt, "levelId")) && W.Equal(W.Get(issued, "createdAtUtc"), W.Get(completed, "createdAtUtc")) && (W.Equal(W.Get(issued, "status"), "pending") || W.Equal(W.Get(issued, "status"), "completed") && DevelopmentRescueProvider.Verify(W.Get(state, "provider"), receipt)) && DevelopmentRescueProvider.Verify(proof, receipt) && verifier != null && verifier.Verify(W.Copy(receipt), W.Copy(proof));
+            }
+            catch { return false; }
+        }
+        private static void ReceiptTimeFloor(Dictionary<string, object> state, object receipt)
+        {
+            long verified = RescueWire.N(W.Get(receipt, "verifiedAtUtc"));
+            if (verified > RescueWire.N(state["lastSeenUtc"]))
+            {
+                state["lastSeenUtc"] = verified; long day = verified / RescueWire.Day;
+                if (RescueWire.N(W.Get(state["adUsage"], "day")) != day) state["adUsage"] = W.Obj("day", day, "count", 0);
+            }
+        }
+        public Dictionary<string, object> RetainedReceiptFor(object state, Dictionary<string, object> identity)
+        {
+            Validate(state); RescueWire.Need(RescueWire.Exact(identity, "attemptId", "levelId") && RescueWire.Token(W.Get(identity, "attemptId")) && RescueWire.Integer(W.Get(identity, "levelId"), 1), "invalid_rescue_receipt_identity");
+            foreach (var pair in RescueWire.Ordered(W.Get(W.Get(state, "provider"), "transactions"), "createdAtUtc"))
+            {
+                object row = pair.Value;
+                if (W.Equal(W.Get(row, "status"), "completed") && W.Equal(W.Get(row, "attemptId"), W.Get(identity, "attemptId")) && W.Equal(W.Get(row, "levelId"), W.Get(identity, "levelId")) && Transaction(state, pair.Key) == null && VerifiedCompletion(state, W.Get(row, "receipt"), W.Get(state, "provider")))
+                    return W.Obj("receipt", W.Clone(W.Get(row, "receipt")), "completedProvider", W.Clone(W.Get(state, "provider")));
+            }
+            return null;
+        }
+        public Dictionary<string, object> RetainAdReceipt(object state, object receipt, object completedProvider = null)
+        {
+            var next = Reconcile(state);
+            if (!W.IsMap(receipt) || !RescueWire.Token(W.Get(receipt, "transactionId"))) return Result(next, false, "unverified_receipt");
+            string id = (string)W.Get(receipt, "transactionId");
+            if (Transaction(next, id) != null) return Result(next, false, "duplicate_transaction", null, 0, id);
+            object proof = completedProvider ?? next["provider"];
+            if (!VerifiedCompletion(next, receipt, proof)) return Result(next, false, "unverified_receipt", null, 0, id);
+            ReceiptTimeFloor(next, receipt); W.Map(W.Get(next["provider"], "transactions"))[id] = W.Clone(W.Get(W.Get(proof, "transactions"), id));
+            return Result(next, false, "receipt_retained", null, 0, id);
+        }
         private Dictionary<string, object> Claim(Dictionary<string, object> state, object input, string id, string source, object cost)
         {
             string attempt = (string)W.Get(input, "attemptId"); object level = W.Get(input, "levelId"); W.Map(state["settledAttempts"])[attempt] = W.Obj("levelId", level, "source", source, "transactionId", id, "atUtc", state["lastSeenUtc"]); W.Map(state["processedTransactions"])[id] = W.Obj("attemptId", attempt, "levelId", level, "source", source, "atUtc", state["lastSeenUtc"], "moves", config["moves"], "costGold", cost);
@@ -273,22 +316,11 @@ namespace Hexrota.Rescue
         {
             var next = Reconcile(state); ValidateContext(context); if (!W.IsMap(receipt) || !RescueWire.Token(W.Get(receipt, "transactionId"))) return Result(next, false, "unverified_receipt"); string id = (string)W.Get(receipt, "transactionId"); var duplicate = Duplicate(next, context, id, "ad"); if (duplicate != null) return duplicate;
             string reason = Eligibility(next, context); if (reason != null) return Result(next, false, reason, null, 0, id);
-            object proof = completedProvider ?? next["provider"]; bool valid = false;
-            try
-            {
-                DevelopmentRescueProvider.Validate(proof); object issued = W.Get(W.Get(next["provider"], "transactions"), id), completed = W.Get(W.Get(proof, "transactions"), id);
-                valid = W.Equal(W.Get(receipt, "attemptId"), W.Get(context, "attemptId")) && W.Equal(W.Get(receipt, "levelId"), W.Get(context, "levelId")) && W.Equal(W.Get(proof, "namespace"), W.Get(next["provider"], "namespace")) && issued != null && completed != null && W.Equal(W.Get(issued, "attemptId"), W.Get(context, "attemptId")) && W.Equal(W.Get(issued, "levelId"), W.Get(context, "levelId")) && W.Equal(W.Get(issued, "createdAtUtc"), W.Get(completed, "createdAtUtc")) && (W.Equal(W.Get(issued, "status"), "pending") || W.Equal(W.Get(issued, "status"), "completed") && DevelopmentRescueProvider.Verify(next["provider"], receipt)) && DevelopmentRescueProvider.Verify(proof, receipt) && verifier != null && verifier.Verify(W.Copy(receipt), W.Copy(proof));
-            }
-            catch { valid = false; }
+            object proof = completedProvider ?? next["provider"]; bool valid = W.Equal(W.Get(receipt, "attemptId"), W.Get(context, "attemptId")) && W.Equal(W.Get(receipt, "levelId"), W.Get(context, "levelId")) && VerifiedCompletion(next, receipt, proof);
             if (!valid) return Result(next, false, "unverified_receipt", null, 0, id);
             // Only trusted completion can carry the time floor across a failed
             // save and rollback; unverified provider JSON cannot advance quota.
-            long verifiedTime = RescueWire.N(W.Get(receipt, "verifiedAtUtc"));
-            if (verifiedTime > RescueWire.N(next["lastSeenUtc"]))
-            {
-                next["lastSeenUtc"] = verifiedTime; long verifiedDay = verifiedTime / RescueWire.Day;
-                if (RescueWire.N(W.Get(next["adUsage"], "day")) != verifiedDay) next["adUsage"] = W.Obj("day", verifiedDay, "count", 0);
-            }
+            ReceiptTimeFloor(next, receipt);
             if (RescueWire.N(W.Get(next["adUsage"], "count")) >= RescueWire.N(config["dailyAdLimit"])) return Result(next, false, "daily_limit", null, 0, id);
             W.Map(W.Get(next["provider"], "transactions"))[id] = W.Clone(W.Get(W.Get(proof, "transactions"), id)); W.Map(next["adUsage"])["count"] = RescueWire.N(W.Get(next["adUsage"], "count")) + 1; return Claim(next, context, id, "ad", 0);
         }

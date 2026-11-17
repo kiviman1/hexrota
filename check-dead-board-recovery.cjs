@@ -17,23 +17,24 @@ const neighbor=(a,b)=>Math.max(Math.abs(a.q-b.q),Math.abs(a.r-b.r),Math.abs(a.q+
 // Red audit diagnostics are deliberately separate from the green regression
 // contract. Exit 1 means a known unfixed safety requirement is violated.
 if(process.argv.includes('--diagnose')){
- const findings=[];
+ const findings=[],historicalCharacterizations=[];
  for(const entry of fixture.diagnosticCases){
   if(entry.request){
    const win=new Engine(entry.level);for(const pair of entry.winningRoute)assert(win.swap(...pair).ok);assert.equal(win.status,'won','the adversarial initial configuration really is solvable');
    const game=new Assisted(entry.level,{attemptId:entry.request.attemptId});for(const pair of entry.losingRoute)assert(game.swap(...pair).ok);
    assert.deepEqual(plain(game.snapshot()),entry.before);const before=plain(game.snapshot()),grant=game.apply({id:'rescue:1',type:'grant_moves',moves:5}),after=plain(game.snapshot()),resumed=new Assisted(entry.level,{attemptId:entry.request.attemptId},after);
-   assert.deepEqual(after,entry.after);assert.deepEqual(plain(resumed.snapshot()),after);
-   for(const key of ['values','layers','score','rngState','turn','history'])assert.deepEqual(after[key],before[key],'rescue preserves '+key);
-   const healthy=game.status!=='playing'||game.legalMoves().length>0;
+   assert.deepEqual(plain(resumed.snapshot()),after);
+   const healthy=grant.ok===false&&grant.reason==='no_legal_swaps'&&JSON.stringify(after)===JSON.stringify(before);
    findings.push({id:entry.id,scope:entry.classification,issueObserved:!healthy,healthGuarantee:healthy,initialWinningRoute:entry.winningRoute,alternateLosingRoute:entry.losingRoute,grantAccepted:grant.ok,remainingMoves:game.movesLeft,status:game.status,legalSwapCount:game.legalMoves().length,hint:plain(game.hint({maxNodes:16})),restores:true,publishedReachability:entry.publishedReachability});
+   const historical=new Assisted(entry.level,{attemptId:entry.request.attemptId},entry.after);assert.deepEqual(plain(historical.snapshot()),entry.after);const duplicate=historical.apply({id:'rescue:1',type:'grant_moves',moves:5});assert.equal(duplicate.duplicate,true);assert.deepEqual(plain(historical.snapshot()),entry.after);
+   historicalCharacterizations.push({id:entry.id,contract:'assisted-v1/commands-v1',restoresVerbatim:true,duplicateGrantsNoMoves:true,status:historical.status,remainingMoves:historical.movesLeft,legalSwapCount:historical.legalMoves().length,healthGuarantee:false,currentCommandAuthorization:false,note:'Previously committed checkpoints remain unchanged; they are not counted as newly authorized dead-board rescues.'});
   }else{
    const vector=entry.gameplayVector,game=inject(vector),result=game._ensurePlayable(),invalid=game.values.flatMap((value,index)=>game.level.palette.includes(value)?[]:[index]);
    const healthy=result===true&&invalid.length===0&&game.findMatches().length===0&&game.legalMoves().length>0;
    findings.push({id:entry.id,scope:entry.classification,issueObserved:!healthy,healthGuarantee:healthy,returned:result,invalidIndices:invalid,legalSwapCount:game.legalMoves().length,rngState:game.rngState});
   }
  }
- const open=findings.filter(item=>item.issueObserved).length;console.log(JSON.stringify({kind:'unfixed-audit-safety-diagnostics',healthyAcceptance:open===0,openFindings:open,findings},null,2));process.exit(open?1:0);
+ const open=findings.filter(item=>item.issueObserved).length;console.log(JSON.stringify({kind:'unfixed-audit-safety-diagnostics',healthyAcceptance:open===0,openFindings:open,findings,historicalCharacterizations},null,2));process.exit(open?1:0);
 }
 
 test('audit vectors are separate from all published level and snapshot identities',()=>{assert.equal(fixture.schemaVersion,1);assert.equal(fixture.rulesVersion,'classic-v4');assert.equal(fixture.baselineCommit,'deb948a701b5acc0dd1b3df7aea744cbb670f783');assert.equal(fixture.cases.length,4);assert.equal(fixture.failureCases.length,1);assert.equal(fixture.assistedCases.length,1);assert(fixture.cases.every(c=>String(c.level.id).startsWith('audit-')));});

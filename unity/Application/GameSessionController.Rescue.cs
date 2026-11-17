@@ -30,7 +30,17 @@ namespace Hexrota.Application
         }
         private bool RecoverableLoss(Entry entry)
         {
-            return entry != null && entry.index >= tutorialCount && entry.engine.Status == "lost" && !Discarded(entry) && entry.engine.LegalMoves().Count > 0 && W.Equal(rescue.Availability(game["rescue"], RescueContext(entry), W.Obj("gold", W.Get(game["economy"], "gold")))["eligible"], true);
+            return entry != null && entry.index >= tutorialCount && entry.engine.Status == "lost" && !Discarded(entry) && (RetainedRescueDelivery(entry) != null || entry.engine.LegalMoves().Count > 0 && W.Equal(rescue.Availability(game["rescue"], RescueContext(entry), W.Obj("gold", W.Get(game["economy"], "gold")))["eligible"], true));
+        }
+        private Dictionary<string, object> RetainedRescueDelivery()
+        {
+            return RetainedRescueDelivery(CurrentEntry());
+        }
+        private Dictionary<string, object> RetainedRescueDelivery(Entry entry)
+        {
+            if (entry == null || entry.metadata == null || entry.index < tutorialCount) return null;
+            var held = rescue.RetainedReceiptFor(game["rescue"], W.Obj("attemptId", entry.metadata["attemptId"], "levelId", entry.level["id"]));
+            return held == null ? null : W.Obj("receipt", held["receipt"], "provider", held["completedProvider"]);
         }
         private void CancelPendingRescue(string attemptId)
         {
@@ -59,6 +69,7 @@ namespace Hexrota.Application
             var denied = Guard(command); if (denied != null) return denied; var context = RescueContext(); if (context == null) return Result(false, "no_attempt");
             if (engine.Status == "lost" && engine.LegalMoves().Count == 0) return Result(false, "no_legal_swaps");
             var proposal = rescue.BeginAd(game["rescue"], context);
+            if (W.Equal(proposal["reason"], "receipt_pending_delivery")) return Result(false, "receipt_pending_delivery");
             return Execute(() => { game["rescue"] = proposal["state"]; return W.Obj("ok", proposal["transactionId"] != null && W.Equal(proposal["reason"], "pending"), "reason", proposal["reason"], "transactionId", proposal["transactionId"]); }, command);
         }
         private Dictionary<string, object> CommitRescue(Dictionary<string, object> proposal, object paidEconomy = null, SessionCommand command = null)
@@ -85,27 +96,53 @@ namespace Hexrota.Application
         }
         public Dictionary<string, object> ApplyRescueReceipt(object receipt, object completedProvider = null, SessionCommand command = null)
         {
-            var denied = Guard(command); if (denied != null) return denied; var context = RescueContext(); if (context == null) return Result(false, "no_attempt");
-            if (engine.Status == "lost" && engine.LegalMoves().Count == 0) return Result(false, "no_legal_swaps");
+            var denied = Guard(command); if (denied != null) return denied;
+            // Completion proof is independent of the board's current eligibility.
+            // Prepare a verified, single-row merge first, without granting moves
+            // or committing ahead of the ordinary atomic rescue transaction.
+            var retained = rescue.RetainAdReceipt(game["rescue"], receipt, completedProvider);
+            if (!W.Equal(retained["reason"], "receipt_retained"))
+            {
+                if (W.Equal(retained["reason"], "duplicate_transaction") && pendingRescueDelivery != null && W.Equal(W.Get(pendingRescueDelivery["receipt"], "transactionId"), W.Get(receipt, "transactionId")) && rescue.TransactionFor(game["rescue"], W.Get(receipt, "transactionId")) != null) pendingRescueDelivery = null;
+                return Result(false, retained["reason"] as string);
+            }
+            var delivery = W.Obj("receipt", W.Copy(receipt), "provider", W.Copy(completedProvider ?? W.Get(retained["state"], "provider")));
+            var context = RescueContext();
+            if (context == null || active < tutorialCount || !CanOpen(active) || Discarded(CurrentEntry()) || !W.Equal(W.Get(receipt, "attemptId"), W.Get(context, "attemptId")) || !W.Equal(W.Get(receipt, "levelId"), W.Get(context, "levelId")) || engine.Status == "lost" && engine.LegalMoves().Count == 0)
+                return CommitRetainedRescueReceipt(retained, delivery, command);
             var proposal = rescue.ApplyAd(game["rescue"], context, receipt, completedProvider);
             if (!W.Equal(proposal["applied"], true))
             {
-                if (W.Equal(proposal["reason"], "duplicate_transaction") && rescue.TransactionFor(game["rescue"], W.Get(receipt, "transactionId")) != null) pendingRescueDelivery = null;
-                return Result(false, proposal["reason"] as string);
+                if (W.Equal(proposal["reason"], "duplicate_transaction") && pendingRescueDelivery != null && W.Equal(W.Get(pendingRescueDelivery["receipt"], "transactionId"), W.Get(receipt, "transactionId")) && rescue.TransactionFor(game["rescue"], W.Get(receipt, "transactionId")) != null) pendingRescueDelivery = null;
+                return CommitRetainedRescueReceipt(retained, delivery, command);
             }
             var result = CommitRescue(proposal, null, command);
             if (W.Equal(result["ok"], true)) pendingRescueDelivery = null;
-            else if (new[] { "storage", "stale_profile", "read_only", "revision_exhausted" }.Contains(result["reason"] as string)) pendingRescueDelivery = W.Obj("receipt", W.Copy(receipt), "provider", W.Copy(completedProvider ?? W.Get(proposal["state"], "provider")));
+            else if (new[] { "storage", "stale_profile", "read_only", "revision_exhausted" }.Contains(result["reason"] as string)) pendingRescueDelivery = delivery;
+            else return CommitRetainedRescueReceipt(retained, delivery, command);
+            return result;
+        }
+        private Dictionary<string, object> CommitRetainedRescueReceipt(Dictionary<string, object> retained, Dictionary<string, object> delivery, SessionCommand command)
+        {
+            // A durable unclaimed row is not an unsaved-delivery navigation
+            // barrier. Only a failed receipt write needs the existing memory latch.
+            if (W.Equal(game["rescue"], retained["state"])) { pendingRescueDelivery = null; return Result(false, "receipt_retained"); }
+            pendingRescueDelivery = delivery;
+            var result = Execute(() => { game["rescue"] = retained["state"]; return Result(false, "receipt_retained"); }, command);
+            if (W.Equal(result["reason"], "receipt_retained")) pendingRescueDelivery = null;
             return result;
         }
         public Dictionary<string, object> RetryPendingRescueDelivery(SessionCommand command = null)
         {
-            if (!HasPendingRescueDelivery) return Result(false, "no_pending_rescue_delivery");
-            return ApplyRescueReceipt(pendingRescueDelivery["receipt"], pendingRescueDelivery["provider"], command);
+            var delivery = pendingRescueDelivery ?? RetainedRescueDelivery();
+            if (delivery == null) return Result(false, "no_pending_rescue_delivery");
+            return ApplyRescueReceipt(delivery["receipt"], delivery["provider"], command);
         }
         public Dictionary<string, object> CompleteRescueAd(string transactionId, string outcome = "completed", SessionCommand command = null)
         {
             if (HasPendingRescueDelivery) return outcome == "completed" && W.Equal(W.Get(pendingRescueDelivery["receipt"], "transactionId"), transactionId) ? RetryPendingRescueDelivery(command) : Result(false, "pending_rescue_delivery");
+            var held = RetainedRescueDelivery();
+            if (held != null && W.Equal(W.Get(held["receipt"], "transactionId"), transactionId)) return outcome == "completed" ? ApplyRescueReceipt(held["receipt"], held["provider"], command) : Result(false, "receipt_retained");
             var denied = Guard(command); if (denied != null) return denied; var completed = rescue.CompleteAd(game["rescue"], transactionId, W.Obj("outcome", outcome));
             if (completed["receipt"] != null)
             {
