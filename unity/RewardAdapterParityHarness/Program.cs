@@ -9,6 +9,18 @@ using Hexrota.ParitySupport;
 
 internal static class Program
 {
+    static Program()
+    {
+        var resolver = new System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver();
+        resolver.Modifiers.Add(info => {
+            if (info.Type == typeof(GameSnapshot) || info.Type == typeof(WaveFrame) || info.Type == typeof(LevelConfig))
+                foreach (var property in info.Properties)
+                    if (property.Name == "obstacles" || property.Name == "obstacleVersion" || property.Name == "blockerHp" || property.Name == "regionOpen" || property.Name == "blockerHits" || property.Name == "brokenBlockers" || property.Name == "openedRegions")
+                        property.ShouldSerialize = (instance, value) => value != null;
+        });
+        Json.TypeInfoResolver = resolver;
+    }
+
     private static readonly JsonSerializerOptions Json = new JsonSerializerOptions
     {
         IncludeFields = true,

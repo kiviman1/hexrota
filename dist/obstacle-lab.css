@@ -1,0 +1,50 @@
+/* Temporary original procedural assets. Prefab keys are documented in 9.12. */
+.obstacle-lab{min-height:100svh;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0);background:#183d32;color:#243f32}
+.obstacle-lab .lab-shell{max-width:580px;margin:auto;padding:0 12px 12px}
+.obstacle-lab .lab-header{height:58px;display:flex;align-items:center;justify-content:space-between;color:#e6f3c6;gap:10px}
+.obstacle-lab .lab-header>span{font-size:9px;letter-spacing:1px}
+.obstacle-lab .brand{font-size:27px;gap:0}
+.obstacle-lab .game-card{border:2px solid #829761;border-radius:20px;box-shadow:0 4px 0 #0b2d21}
+.obstacle-lab .lab-topbar{padding:13px 14px;background:linear-gradient(#204b38,#173f30)}
+.obstacle-lab .lab-topbar>label{color:#c6d8a1;font-size:10px;font-weight:700}
+.obstacle-lab #level-select{display:block;width:100%;margin:5px 0 11px;padding:9px 10px;min-height:40px;border:1px solid #8ba26e;border-radius:9px;font:600 13px inherit;background:#f7f6e9;color:#284a35}
+.obstacle-lab .scoreboard{grid-template-columns:1.4fr .8fr 1fr;gap:8px}
+.obstacle-lab .metric{min-height:64px;padding:10px 6px;text-align:center;border:1px solid #bdcea0;border-radius:12px;background:linear-gradient(#fffdf0,#edf0d2);box-shadow:0 3px 0 #103426}
+.obstacle-lab .metric>span{font-size:8px;letter-spacing:.4px;justify-content:center;margin-bottom:7px;color:#657c4b}
+.obstacle-lab .metric>strong{font-size:25px;letter-spacing:-1px;color:#355d29}
+.obstacle-lab .score-pair{display:flex;justify-content:center;align-items:baseline;gap:4px;white-space:nowrap}
+.obstacle-lab .score-pair strong{font-size:25px;font-weight:750;letter-spacing:-1px;line-height:1}
+.obstacle-lab .score-pair #target{font-size:17px;color:#7e9062}
+.obstacle-lab .moves-badge{background:linear-gradient(#d7eea9,#bfdf89)}
+.obstacle-lab .lab-instruction{padding:11px 14px;background:#dceac3}
+.obstacle-lab h1{font-size:17px;font-weight:700;margin:0 0 4px}
+.obstacle-lab .lab-instruction p{font-size:11px;line-height:1.5;margin:0;color:#5c7448}
+.obstacle-lab .board-stage{min-height:0;flex:none;overflow:hidden}
+.obstacle-lab .lab-status{padding:9px 12px 0;display:flex;justify-content:space-between;gap:8px;color:#c6d9ad;font-size:10px;min-height:24px}
+.obstacle-lab .lab-board-wrap{position:relative;width:100%;height:clamp(260px,44svh,420px);display:grid;place-items:center}
+.obstacle-lab #board{width:100%;height:100%;min-height:0;min-width:0;max-width:none;max-height:none;overflow:visible;touch-action:none;user-select:none;-webkit-user-select:none}
+.obstacle-lab .lab-controls{display:flex;gap:6px;padding:10px 10px 0}
+.obstacle-lab .secondary-button{flex:1;min-width:0;min-height:42px;padding:8px 5px;font-size:11px;border:1px solid #c4cfb4;border-radius:10px;background:#edf2df}
+.obstacle-lab #lab-message{font-size:11px;line-height:1.5;padding:0 12px;margin:10px 0;min-height:33px;color:#60724e}
+.obstacle-lab #lab-result{padding:13px;text-align:center;font-size:18px;font-weight:750;background:#d5e9b4;border-top:1px solid #abc584}
+.obstacle-lab #lab-result[data-status="lost"]{background:#f1dab9}
+.obstacle-lab .lab-footnote{color:#a6bf95;font-size:10px;line-height:1.6;margin:11px 3px 0}
+.obstacle-lab .obstacle-cell{cursor:default}
+.obstacle-lab .obstacle-closed>.floor-shape{fill:#657e76;stroke:#425e55;opacity:.65}
+.obstacle-lab .obstacle-empty>.floor-shape{opacity:.8}
+.obstacle-lab .crate-body{fill:#b77b40;stroke:#654024;stroke-width:3;stroke-linejoin:round}
+.obstacle-lab .crate-grain{stroke:#88552c;stroke-width:1.5;fill:none;opacity:.8}
+.obstacle-lab .crate-brace{stroke:#e0b072;stroke-width:6;fill:none;stroke-linecap:round}
+.obstacle-lab .crate-crack{stroke:#432e23;stroke-width:3;fill:none}
+.obstacle-lab .crate-hp-badge{fill:#583d29;stroke:#f3cf8a;stroke-width:1.2}
+.obstacle-lab .crate-hp{fill:#fff0c6;stroke:none;font:bold 17px Arial,sans-serif}
+.obstacle-lab .blocker-reinforced .crate-body{fill:#b28b5a;stroke:#736958;stroke-width:4}
+.obstacle-lab .blocker-reinforced .crate-brace{stroke:#d1c5a2}
+.obstacle-lab .region-cover>polygon{fill:#b8d3d0;stroke:#e2efdf;stroke-width:1.5;opacity:.45}
+.obstacle-lab .region-cover>path{fill:#9ab8ad;stroke:#dce9d8;stroke-width:2;stroke-linejoin:round}
+.obstacle-lab .region-cover>circle{fill:#dce9d8}
+.obstacle-lab .crate-fragment{fill:#c18b4e;stroke:#79522e;stroke-width:1;pointer-events:none}
+.obstacle-lab .paused #board{opacity:.5}
+@media(max-height:650px){.obstacle-lab .lab-shell{padding:0 7px 8px}.obstacle-lab .lab-header{height:42px}.obstacle-lab .lab-topbar{padding:8px 10px}.obstacle-lab #level-select{min-height:32px;padding:6px 8px;margin-bottom:8px}.obstacle-lab .metric{min-height:52px;padding:7px 4px}.obstacle-lab .metric>span{margin-bottom:5px}.obstacle-lab .metric>strong,.obstacle-lab .score-pair strong{font-size:22px}.obstacle-lab .lab-instruction{padding:7px 10px}.obstacle-lab h1{font-size:15px}.obstacle-lab .lab-board-wrap{height:265px}.obstacle-lab .lab-status{padding-top:6px;min-height:21px;font-size:9px}.obstacle-lab .lab-controls{padding-top:7px}.obstacle-lab .secondary-button{min-height:36px;font-size:10px}.obstacle-lab #lab-message{margin:7px 0;font-size:10px;min-height:29px}.obstacle-lab .lab-footnote{font-size:9px;margin-top:7px}}
+@media(prefers-reduced-motion:reduce){.obstacle-lab *{animation:none!important;transition:none!important}}
+@media(max-height:650px){.obstacle-lab .lab-shell{height:100svh;display:flex;flex-direction:column;padding-bottom:4px}.obstacle-lab .lab-header{height:34px;flex:0 0 34px}.obstacle-lab .game-card{flex:1;min-height:0}.obstacle-lab .board-stage{flex:1;min-height:170px}.obstacle-lab .lab-board-wrap{flex:1;height:auto;min-height:0}.obstacle-lab .lab-footnote{display:none}.obstacle-lab .lab-topbar,.obstacle-lab .lab-instruction,.obstacle-lab .lab-controls,.obstacle-lab #lab-message{flex-shrink:0}}

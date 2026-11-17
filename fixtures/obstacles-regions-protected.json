@@ -1,0 +1,16 @@
+{
+  "baseline": "a3b5640a3feea3e07d7eb918fc148c683242430d",
+  "scope": "9.12 reviewed opt-in classic-v5 obstacles and portable core; classic-v4 authored data, command output goldens and all old source fixtures remain frozen.",
+  "sha256": {
+    "dist/engine.js": "e620ddb4414db7025a41e62c1e8c9c5f16f1c30c110f7947ec475ba9cd125596",
+    "dist/board-view.js": "c2c80fd0908f9ff4bb29b9f555ecfdcef88ddaec7ce13bf8a05647e5c839fca9",
+    "dist/move-presentation.js": "698071ce6b66b8b374cabe0f8d640c625d1208f2d0e5b21f24f167c212abde4d",
+    "unity/Gameplay/GameplayTypes.cs": "e3889f98e2be80d854a374a5b2305c07858b963451c7545c8a385c982ca20e6a",
+    "unity/Gameplay/HexMatch.cs": "a7ccc2be24ce604a6ad3dd83dc0db9e71c878cc2d36fd25baa8ed129de41387f",
+    "unity/Gameplay/HexMatch.Obstacles.cs": "f0eac1c644818673452c3da8ba90d2843ddc01b572159659da4c5db9cd313bfc",
+    "unity/GameplayParityHarness/Program.cs": "d20928c1cc932c8d67edb84ce3876e51440e9d3e7fd807e193f868657c6852ed",
+    "unity/HintParityHarness/Program.cs": "cda59a6048185b2e63674cf1640e58a7bcbe1f5282578e91c92adbe058e683c8",
+    "unity/Hints/HintSolver.cs": "cdf553651d0358fe5de7b281c4a0957100d84369b49e553ebff39129b5a654f5",
+    "unity/RewardAdapterParityHarness/Program.cs": "d688798a2f49ae3b8ff5450f95dce7616fbd76154335401a35dabf3bf3c30abc"
+  }
+}

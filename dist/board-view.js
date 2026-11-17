@@ -31,6 +31,18 @@
     }
     return `<defs><filter id="tile-shadow" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="0" dy="2" stdDeviation="1" flood-color="#3d5031" flood-opacity=".06"/></filter><marker id="tutorial-arrow" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0 0 L6 3.5 L0 7 Z"/></marker></defs>${level.cells.map((c,i)=>{
       const left=state.layers[i],green=left===0,partial=left>0&&left<(c.layers||1);
+      // Obstacle layers are read-only engine projections. Empty gem containers
+      // keep the same reconciler/identity contract as ordinary occupied cells.
+      if(level.rulesVersion==='classic-v5'&&level.obstacles){
+        const definitions=level.obstacles,blockerIndex=definitions.blockers.findIndex(b=>b.cell===i);
+        const hp=blockerIndex<0?0:state.blockerHp[blockerIndex];
+        const locked=definitions.regions.some((region,index)=>!state.regionOpen[index]&&region.cells.includes(i));
+        if(hp>0||locked||state.values[i]===null){
+          const p=positions[i],kind=hp>0?'blocked':locked?'closed':'empty';
+          const crate=hp>0?`<g data-asset="${hp===1?'crate-wood-cracked':'crate-wood-intact'}" class="blocker-visual ${hp===1?'blocker-cracked':'blocker-reinforced'}" aria-hidden="true"><polygon class="crate-body" points="${inner}"/><path class="crate-grain" d="M-23 -14 H23 M-29 0 H29 M-23 14 H23 M-8 -26 V26 M12 -26 V26"/><path class="crate-brace" d="M-22 -15 22 15 M-22 15 22 -15"/>${hp===1?'<path class="crate-crack" d="m4-26-8 12 9 7-10 12 6 21"/>':''}<rect class="crate-hp-badge" x="-13" y="-11" width="26" height="22" rx="7"/><text class="crate-hp" text-anchor="middle" x="0" y="5">${hp}</text></g>`:'';
+          return `<g transform="translate(${p.x},${p.y})" class="hex-tile obstacle-cell obstacle-${kind} ${green?'floor-green':'floor-untouched'}" data-index="${i}" data-cell-state="${kind}" role="button" tabindex="-1" aria-disabled="true" aria-label="${hp>0?'Ahşap kutu, '+hp+' dayanıklılık':locked?'Kapalı bölge':'Boş hücre'}"><polygon class="floor-shape" points="${outer}"/><g class="gem"></g>${crate}${locked?`<g data-asset="region-closed" class="region-cover" aria-hidden="true"><polygon points="${inner}"/><path d="M-7-3v-5a7 7 0 0 1 14 0v5m-18 0h22v18h-22Z"/><circle cx="0" cy="5" r="2"/></g>`:''}</g>`;
+        }
+      }
       const classes=['hex-tile',`value-${state.values[i]}`,green?'floor-green':partial?'floor-partial':'floor-untouched',c.layers===2?'layered':'',selected===i?'selected':'',hinted?.includes(i)?'hinted':'',selected!==null&&selectedNeighbors.includes(i)?'neighbor':'',matched.has(i)?'matching':'',dropped.has(i)?'falling':'',pair.includes(i)?'tutorial-focus':'',support.includes(i)?'tutorial-support':'',pair[0]===i?'tutorial-source':'',pair[1]===i?'tutorial-target':'',pair.length&&!pair.includes(i)&&!support.includes(i)?'tutorial-muted':''].filter(Boolean).join(' ');
       const p=positions[i],ground=green?'altı yeşil':`${left} eşleşme gerekiyor`;
       const pips=c.layers===2&&!green?`<g class="layer-pips" aria-hidden="true">${Array.from({length:left},(_,dot)=>`<circle class="layer-pip" cx="${left===2?(dot?4:-4):0}" cy="31" r="2.5"/>`).join('')}</g>`:'';

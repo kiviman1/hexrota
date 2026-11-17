@@ -12,6 +12,39 @@ namespace Hexrota.Gameplay
     }
 
     [Serializable]
+    public sealed class BlockerConfig
+    {
+        public string id;
+        public int cell;
+        public int hp;
+        public string regionId;
+        public bool? required;
+    }
+    [Serializable]
+    public sealed class RegionConfig
+    {
+        public string id;
+        public int[] cells;
+        public string[] requires;
+        public bool? required;
+    }
+    [Serializable]
+    public sealed class ObstaclesConfig
+    {
+        public string version;
+        public BlockerConfig[] blockers;
+        public RegionConfig[] regions;
+    }
+    [Serializable]
+    public sealed class BlockerHit
+    {
+        public string id;
+        public int cell;
+        public int beforeHp;
+        public int hp;
+    }
+
+    [Serializable]
     public sealed class LevelConfig
     {
         // Campaign IDs are numbers; tutorial IDs are strings. The host JSON adapter
@@ -25,6 +58,7 @@ namespace Hexrota.Gameplay
         public int moves;
         public int target;
         public string targetMode;
+        public ObstaclesConfig obstacles;
     }
 
     [Serializable]
@@ -39,6 +73,9 @@ namespace Hexrota.Gameplay
         public int turn;
         public uint rngState;
         public int[][] history;
+        public string obstacleVersion;
+        public int[] blockerHp;
+        public bool[] regionOpen;
     }
 
     [Serializable]
@@ -73,6 +110,11 @@ namespace Hexrota.Gameplay
     [Serializable]
     public sealed class WaveFrame
     {
+        public BlockerHit[] blockerHits;
+        public string[] brokenBlockers;
+        public string[] openedRegions;
+        public int[] blockerHp;
+        public bool[] regionOpen;
         public int[] matched;
         public int?[] before;
         public int?[] after;

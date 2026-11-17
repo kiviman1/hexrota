@@ -520,3 +520,35 @@ jobs:
           path: test-results/f01-browser-${{ matrix.browser }}
           if-no-files-found: warn
           retention-days: 7
+
+  obstacles-and-regions:
+    name: Obstacles 9.12 / ${{ matrix.browser }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.2'
+          cache: npm
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: npm ci
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - run: npm run test:obstacles
+      - run: npm run test:unity-obstacles
+      - run: npm run test:obstacles-browser
+        env:
+          HEXROTA_BROWSER: ${{ matrix.browser }}
+          HEXROTA_OBSTACLES_SCREENSHOT_DIR: test-results/obstacles-${{ matrix.browser }}
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: obstacles-9-12-${{ matrix.browser }}
+          path: test-results/obstacles-${{ matrix.browser }}
+          if-no-files-found: warn
