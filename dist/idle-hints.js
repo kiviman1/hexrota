@@ -2,7 +2,7 @@
  * and engine; this module owns only clocks, session limits and presentation. */
 (function(root){
   'use strict';
-  const CONFIG=Object.freeze({firstDelay:20000,nextDelay:35000,minInterval:60000,maxPerAttempt:2,duration:900});
+  const CONFIG=Object.freeze({firstDelay:20000,nextDelay:35000,minInterval:60000,maxPerAttempt:2,duration:900,repeatDelay:4000});
   const integer=value=>Number.isSafeInteger(value)&&value>=0;
   const identity=value=>typeof value==='string'&&value.length>0;
   const pair=value=>Array.isArray(value)&&value.length===2&&value.every(integer)&&value[0]!==value[1];
@@ -38,6 +38,8 @@
   // exclusively from visible board facts by the caller. False eligibility
   // resets the full idle delay; the page-runtime minimum interval keeps
   // elapsing across attempts. Quota, disarm and previous pairs stay per attempt.
+  // An untouched hint cycle repeats the same cue after each quiet repeatDelay;
+  // repeats consume no quota and never advance the minimum-interval timestamp.
   // choosePair receives those same facts plus previousPair for this attempt.
   // subscribe(sync), when supplied, returns an unsubscribe function. config
   // may override CONFIG fields for one instance; defaults remain immutable.
@@ -45,9 +47,10 @@
     if(![read,choosePair,onShow,onHide,now,scheduleTimeout,cancelTimeout].every(value=>typeof value==='function')||subscribe!==undefined&&typeof subscribe!=='function')throw new TypeError('invalid_idle_hint_dependencies');
     if(!config||typeof config!=='object'||Array.isArray(config)||Object.keys(config).some(key=>!Object.prototype.hasOwnProperty.call(CONFIG,key)))throw new TypeError('invalid_idle_hint_config');
     const limits=Object.freeze({...CONFIG,...config});
-    if(!Object.entries(limits).every(([key,value])=>integer(value)&&(key!=='maxPerAttempt'||value>0)))throw new TypeError('invalid_idle_hint_config');
+    if(!Object.entries(limits).every(([key,value])=>integer(value)&&(!['maxPerAttempt','repeatDelay'].includes(key)||value>0)))throw new TypeError('invalid_idle_hint_config');
     const attempts=new Map();
     let disposed=false,current=null,idleSince=null,idleTimer=null,idleDue=null,hideTimer=null,visible=null,revision=0,presentationRevision=0,lastTime=-Infinity,lastShownAt=null,unsubscribe=null;
+    let cycle=null,repeatTimer=null,repeatDue=null,repeatRevision=0;
     function time(){const value=now();if(typeof value!=='number'||!Number.isFinite(value))throw new TypeError('invalid_idle_hint_clock');lastTime=Math.max(lastTime,value);return lastTime;}
     function view(){
       let value;try{value=read();}catch(_){value=null;}
@@ -60,6 +63,7 @@
       return attempts.get(current.attemptId);
     }
     function cancelIdle(){if(idleTimer!==null)cancelTimeout(idleTimer);idleTimer=null;idleDue=null;revision++;}
+    function cancelRepeat(){if(repeatTimer!==null)cancelTimeout(repeatTimer);repeatTimer=null;repeatDue=null;cycle=null;repeatRevision++;}
     function hide(reason){
       if(hideTimer!==null)cancelTimeout(hideTimer);hideTimer=null;presentationRevision++;
       const previous=visible;visible=null;
@@ -67,7 +71,7 @@
     }
     function apply(next,at){
       if(same(current,next))return false;
-      cancelIdle();hide('state_changed');current=next;idleSince=next.eligible?at:null;entry();return true;
+      cancelIdle();cancelRepeat();hide('state_changed');current=next;idleSince=next.eligible?at:null;entry();return true;
     }
     function deadline(){
       const active=entry();
@@ -82,6 +86,40 @@
       // Browser timers cap at a signed 32-bit delay. Long configured waits use
       // bounded wakeups so overflow cannot turn them into immediate retries.
       idleTimer=scheduleTimeout(()=>fire(token),Math.min(2147483647,Math.max(0,due-time())));
+    }
+    function scheduleRepeat(activeCycle){
+      if(disposed||cycle!==activeCycle||!same(current,activeCycle.view))return;
+      const at=time(),next=view();
+      if(!same(next,activeCycle.view)){apply(next,at);schedule();return;}
+      repeatDue=at+limits.repeatDelay;armRepeat(activeCycle);
+    }
+    function armRepeat(activeCycle){
+      const token=++repeatRevision;
+      repeatTimer=scheduleTimeout(()=>repeat(token,activeCycle),Math.min(2147483647,Math.max(0,repeatDue-time())));
+    }
+    function repeat(token,activeCycle){
+      if(disposed||token!==repeatRevision||cycle!==activeCycle||repeatDue===null)return;
+      repeatTimer=null;const at=time(),next=view();
+      if(!same(next,activeCycle.view)){apply(next,at);schedule();return;}
+      if(at<repeatDue){armRepeat(activeCycle);return;}
+      repeatDue=null;repeatRevision++;
+      showCue(Object.freeze({...activeCycle.payload,repeated:true}),at,activeCycle);
+    }
+    function showCue(payload,shownAt,activeCycle){
+      visible=payload;
+      const expiresAt=shownAt+limits.duration;
+      function armHide(){
+        const presentationToken=++presentationRevision;
+        hideTimer=scheduleTimeout(()=>expire(presentationToken),Math.min(2147483647,Math.max(0,expiresAt-time())));
+      }
+      function expire(presentationToken){
+        if(disposed||presentationToken!==presentationRevision)return;
+        hideTimer=null;const remaining=expiresAt-time();
+        if(remaining>0)armHide();
+        else{hide('elapsed');scheduleRepeat(activeCycle);}
+      }
+      armHide();
+      try{onShow(payload);}catch(_){cancelRepeat();hide('presentation_error');}
     }
     function fire(token){
       if(disposed||token!==revision)return;
@@ -98,34 +136,26 @@
       if(!pair(selected)){idleSince=null;return;}
       const active=entry();if(deadline()===null)return;
       const shownAt=time();active.shown++;active.armed=false;lastShownAt=shownAt;active.lastBoard=current.boardKey;
-      cancelIdle();hide('replaced');
+      cancelIdle();cancelRepeat();hide('replaced');
       active.lastPair=Object.freeze(selected.slice());
-      const payload=Object.freeze({pair:active.lastPair,attemptId:current.attemptId,generation:current.generation,boardKey:current.boardKey,duration:limits.duration,ordinal:active.shown});
-      visible=payload;const presentationToken=++presentationRevision;
-      const expiresAt=shownAt+limits.duration;
-      function expire(){
-        if(disposed||presentationToken!==presentationRevision)return;
-        hideTimer=null;const remaining=expiresAt-time();
-        if(remaining>0)hideTimer=scheduleTimeout(expire,Math.min(2147483647,remaining));
-        else hide('elapsed');
-      }
-      hideTimer=scheduleTimeout(expire,Math.min(2147483647,Math.max(0,expiresAt-time())));
-      try{onShow(payload);}catch(_){hide('presentation_error');}
+      const payload=Object.freeze({pair:active.lastPair,attemptId:current.attemptId,generation:current.generation,boardKey:current.boardKey,duration:limits.duration,ordinal:active.shown,repeated:false});
+      const activeCycle={view:current,payload};cycle=activeCycle;
+      showCue(payload,shownAt,activeCycle);
     }
     function sync(){if(disposed)return;apply(view(),time());schedule();}
     function interaction(){
-      if(disposed)return;const at=time();apply(view(),at);cancelIdle();hide('interaction');idleSince=current.eligible?at:null;schedule();
+      if(disposed)return;const at=time();apply(view(),at);cancelIdle();cancelRepeat();hide('interaction');idleSince=current.eligible?at:null;schedule();
     }
     // Called only after an authoritative, persisted PLAYER swap succeeds.
     // Presentation can still make eligibility false; settling starts the idle
     // delay later. Invalid swaps, boosters and manual hints never call this.
     function playerMoveSucceeded(){
-      if(disposed)return;const at=time();apply(view(),at);cancelIdle();hide('player_move');
+      if(disposed)return;const at=time();apply(view(),at);cancelIdle();cancelRepeat();hide('player_move');
       const active=entry();if(active&&active.lastBoard!==current.boardKey)active.armed=true;
       idleSince=current.eligible?at:null;schedule();
     }
     function dispose(){
-      if(disposed)return;disposed=true;cancelIdle();hide('disposed');const remove=unsubscribe;unsubscribe=null;
+      if(disposed)return;disposed=true;cancelIdle();cancelRepeat();hide('disposed');const remove=unsubscribe;unsubscribe=null;
       try{if(remove)remove();}finally{attempts.clear();current=null;idleSince=null;}
     }
     try{

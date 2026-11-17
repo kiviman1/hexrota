@@ -1,19 +1,29 @@
 {
   "baseline": "616c66389d1aca7c225b56641f27bc901e5a9012",
   "sourceSha256": {
-    "dist/app.js": "f9cd1219b50454cdc2718426600d1973ca655107e334e0c0e1d4f801934fd600",
-    "dist/idle-hints.js": "a70d02b32a461f3b79854ca8f4e220425dc07159488ab07c5d169ceefcf05ba0",
+    "dist/app.js": "9c2a2d3bc55d18823d01f391ef425f29e7cf68ebf3444a72f5964711f538a8a5",
+    "dist/idle-hints.js": "aeefbef83443ab04baec9d05a72be9357db4294926e5dac1fc1ee69e073e34b0",
     "dist/idle-hint-view.js": "f0142073f632b1675a10caef9f782abd06d8e63da6eb6e9c928a9fd45724f570",
-    "dist/index.html": "610e8247537d1d3d5de447fb36f627300c15dd9166d89e44df3201309c076b18",
+    "dist/index.html": "5e40f9e2aa953666fd8a095e41b0530b992507b92df01be2500831e221ac090d",
     "dist/style.css": "007515b533fdf9e57300193b9276e4dba17b1e6cbb725fa96cd0e74955097c0a",
-    "dist/sw.js": "e785741ebf0110a52317206d5be38dc2a75f9677007355a0ed2b799a5fb1a114",
-    "check-idle-hints-browser.cjs": "a3cf9d0eca3d5441d740a6aeb5a953c5bfb4a220e1a9a1bf9355b424de19abb5"
+    "dist/sw.js": "bd706e3d9cef446c6717b03add4f7d9421c5c02b3fec4efe27c57df96dcded93",
+    "check-idle-hints-browser.cjs": "8352e79ef84ec36158c97015a53fa0348f329a8b93f192248bd0b0c421cb76ca"
   },
   "evidenceSha256": {
-    "docs/evidence/smart-idle-hints-9-10/after-390x844.png": "b8646f2ea1e6c57c90232eb25755545e1b10741e8a52ca42179a27f6b91fe7ac",
-    "docs/evidence/smart-idle-hints-9-10/before-390x844.png": "ee6e22846ce284a34ce07da9a85555e7fbab96c7e7c6dc9a3a9becff1f83b0a8",
-    "docs/evidence/smart-idle-hints-9-10/cue-peak-390x844.png": "6d5241e050f10ca5abc68ac7baaebc406d29c155439117ec582f338d372dae0c",
-    "docs/evidence/smart-idle-hints-9-10/cue-start-390x844.png": "2bc25b465c2ae1726c76e6706206193b032f5566241913587276c858636da282"
+    "docs/evidence/smart-idle-hints-9-10/after-390x844.png": "4784b53e5716fb66b13e3fb635fd6ba088ba470957bfa188e33c97dbd88b12ea",
+    "docs/evidence/smart-idle-hints-9-10/before-390x844.png": "3fc4ed9d4722e055c241f173a55074d4c5c3ee8b92f0bad1fcf345c78247e435",
+    "docs/evidence/smart-idle-hints-9-10/cue-peak-390x844.png": "aeb449aed125bbafa66127305039741491373b463a7cb66344a7b7255c670c3e",
+    "docs/evidence/smart-idle-hints-9-10/cue-start-390x844.png": "56da7695838f7e8d931f8e4ba56d29c135dfe8a490880e11d6a76f8d85257233",
+    "docs/evidence/smart-idle-hints-9-10/repeat-peak-390x844.png": "3d3db1ef8de60c20b94ad1b9125842daad94a24fe281200594b52197839404a5",
+    "docs/evidence/smart-idle-hints-9-10/repeat-start-390x844.png": "aab29f8c89fd27b016e05c3a1cd8a37c398f2dfe1938bc98961414cdc233d27d"
   },
-  "physicalDevicesTested": false
+  "physicalDevicesTested": false,
+  "repeatPolicy": {
+    "quietGapMs": 4000,
+    "cueMs": 900,
+    "firstCueAtMs": 20000,
+    "firstRepeatAtMs": 24900,
+    "samePair": true,
+    "countsAsNewCycle": false
+  }
 }

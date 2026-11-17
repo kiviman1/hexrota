@@ -1,7 +1,7 @@
 {
   "browser": "chromium",
   "success": true,
-  "passed": 23,
+  "passed": 30,
   "results": [
     {
       "name": "320x568 baseline board geometry, native cue and reachable toolbar",
@@ -52,6 +52,25 @@
         }
       ],
       "changedPixels": 1946,
+      "repeat": {
+        "at": 24900,
+        "pair": [
+          4,
+          7
+        ],
+        "ordinal": 1,
+        "shifts": [
+          {
+            "dx": 2.165069580078125,
+            "dy": 1.25
+          },
+          {
+            "dx": -2.1650543212890625,
+            "dy": -1.249969482421875
+          }
+        ],
+        "changedPixels": 1946
+      },
       "controls": [
         {
           "id": "game-home",
@@ -169,6 +188,25 @@
         }
       ],
       "changedPixels": 2512,
+      "repeat": {
+        "at": 24900,
+        "pair": [
+          4,
+          7
+        ],
+        "ordinal": 1,
+        "shifts": [
+          {
+            "dx": 2.1650543212890625,
+            "dy": 1.250030517578125
+          },
+          {
+            "dx": -2.165069580078125,
+            "dy": -1.25
+          }
+        ],
+        "changedPixels": 2512
+      },
       "controls": [
         {
           "id": "game-home",
@@ -286,6 +324,25 @@
         }
       ],
       "changedPixels": 2926,
+      "repeat": {
+        "at": 24900,
+        "pair": [
+          4,
+          7
+        ],
+        "ordinal": 1,
+        "shifts": [
+          {
+            "dx": 2.165069580078125,
+            "dy": 1.25
+          },
+          {
+            "dx": -2.1650543212890625,
+            "dy": -1.25
+          }
+        ],
+        "changedPixels": 2926
+      },
       "controls": [
         {
           "id": "game-home",
@@ -403,6 +460,25 @@
         }
       ],
       "changedPixels": 2395,
+      "repeat": {
+        "at": 24900,
+        "pair": [
+          4,
+          7
+        ],
+        "ordinal": 1,
+        "shifts": [
+          {
+            "dx": 2.165069580078125,
+            "dy": 1.2500076293945312
+          },
+          {
+            "dx": -2.165069580078125,
+            "dy": -1.2499847412109375
+          }
+        ],
+        "changedPixels": 2395
+      },
       "controls": [
         {
           "id": "game-home",
@@ -520,6 +596,25 @@
         }
       ],
       "changedPixels": 2733,
+      "repeat": {
+        "at": 24900,
+        "pair": [
+          4,
+          7
+        ],
+        "ordinal": 1,
+        "shifts": [
+          {
+            "dx": 2.1650390625,
+            "dy": 1.25
+          },
+          {
+            "dx": -2.16510009765625,
+            "dy": -1.25
+          }
+        ],
+        "changedPixels": 2733
+      },
       "controls": [
         {
           "id": "game-home",
@@ -637,6 +732,25 @@
         }
       ],
       "changedPixels": 2915,
+      "repeat": {
+        "at": 24900,
+        "pair": [
+          4,
+          7
+        ],
+        "ordinal": 1,
+        "shifts": [
+          {
+            "dx": 2.16510009765625,
+            "dy": 1.25
+          },
+          {
+            "dx": -2.16510009765625,
+            "dy": -1.25
+          }
+        ],
+        "changedPixels": 2915
+      },
       "controls": [
         {
           "id": "game-home",
@@ -706,9 +820,9 @@
       ]
     },
     {
-      "name": "20 then successful move, 35 idle, 60 interval, no unchanged repeat and maximum two",
+      "name": "same-pair repetitions retain one cycle, next35/60 and maximum two distinct cycles",
       "passed": true,
-      "firstAndSecond": [
+      "cycles": [
         {
           "at": 20000,
           "payload": {
@@ -720,7 +834,8 @@
             "generation": 4,
             "boardKey": "[1,[1,4,3,3,2,3,3,3,3,2,1,2,1,1,4,2,3,3,2],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],0,10]",
             "duration": 900,
-            "ordinal": 1
+            "ordinal": 1,
+            "repeated": false
           }
         },
         {
@@ -734,10 +849,12 @@
             "generation": 5,
             "boardKey": "[1,[2,3,4,3,2,3,3,3,3,1,1,4,1,1,4,2,3,3,2],[1,1,0,1,0,1,0,0,0,0,1,0,1,1,1,1,1,1,1],18,9]",
             "duration": 900,
-            "ordinal": 2
+            "ordinal": 2,
+            "repeated": false
           }
         }
-      ]
+      ],
+      "repeatedAppearances": 24
     },
     {
       "name": "a quick successful move cannot bypass the 60 second minimum interval",
@@ -754,7 +871,8 @@
             "generation": 4,
             "boardKey": "[1,[1,4,3,3,2,3,3,3,3,2,1,2,1,1,4,2,3,3,2],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],0,10]",
             "duration": 900,
-            "ordinal": 1
+            "ordinal": 1,
+            "repeated": false
           }
         },
         {
@@ -768,10 +886,101 @@
             "generation": 5,
             "boardKey": "[1,[2,3,4,3,2,3,3,3,3,1,1,4,1,1,4,2,3,3,2],[1,1,0,1,0,1,0,0,0,0,1,0,1,1,1,1,1,1,1],18,9]",
             "duration": 900,
-            "ordinal": 2
+            "ordinal": 2,
+            "repeated": false
           }
         }
       ]
+    },
+    {
+      "name": "quiet-gap native keyboard interaction cancels repetition and rejects stale callbacks",
+      "passed": true
+    },
+    {
+      "name": "successful native swap stops a visible repeat without moving the global60 anchor",
+      "passed": true,
+      "shows": [
+        {
+          "at": 20000,
+          "payload": {
+            "pair": [
+              4,
+              7
+            ],
+            "attemptId": "a-1-7-0041abca",
+            "generation": 4,
+            "boardKey": "[1,[1,4,3,3,2,3,3,3,3,2,1,2,1,1,4,2,3,3,2],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],0,10]",
+            "duration": 900,
+            "ordinal": 1,
+            "repeated": false
+          }
+        },
+        {
+          "at": 24900,
+          "payload": {
+            "pair": [
+              4,
+              7
+            ],
+            "attemptId": "a-1-7-0041abca",
+            "generation": 4,
+            "boardKey": "[1,[1,4,3,3,2,3,3,3,3,2,1,2,1,1,4,2,3,3,2],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],0,10]",
+            "duration": 900,
+            "ordinal": 1,
+            "repeated": true
+          }
+        },
+        {
+          "at": 80000,
+          "payload": {
+            "pair": [
+              9,
+              14
+            ],
+            "attemptId": "a-1-7-0041abca",
+            "generation": 5,
+            "boardKey": "[1,[2,3,4,3,2,3,3,3,3,1,1,4,1,1,4,2,3,3,2],[1,1,0,1,0,1,0,0,0,0,1,0,1,1,1,1,1,1,1],18,9]",
+            "duration": 900,
+            "ordinal": 2,
+            "repeated": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "repeated cue pause cleanup cancels quiet-gap deadlines and stale delivery",
+      "passed": true,
+      "action": "pause",
+      "appearances": 2,
+      "cycles": 1
+    },
+    {
+      "name": "repeated cue hidden cleanup cancels quiet-gap deadlines and stale delivery",
+      "passed": true,
+      "action": "hidden",
+      "appearances": 2,
+      "cycles": 1
+    },
+    {
+      "name": "repeated cue Home cleanup cancels quiet-gap deadlines and stale delivery",
+      "passed": true,
+      "action": "Home",
+      "appearances": 2,
+      "cycles": 1
+    },
+    {
+      "name": "repeated cue pagehide cleanup cancels quiet-gap deadlines and stale delivery",
+      "passed": true,
+      "action": "pagehide",
+      "appearances": 2,
+      "cycles": 1
+    },
+    {
+      "name": "repeated cue attempt cleanup cancels quiet-gap deadlines and stale delivery",
+      "passed": true,
+      "action": "attempt",
+      "oldAppearances": 2,
+      "newCycleAt": 80000
     },
     {
       "name": "an actual resolving move cancels visible paint and cannot show during native animation",

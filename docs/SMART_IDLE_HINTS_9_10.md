@@ -1,6 +1,6 @@
 # Hexrota 9.10 — pasif bekleme ipuçları
 
-Bu değişiklik, kampanya tahtasında uzun süre giriş olmadığında kısa bir komşu taş önerisi gösterir. Üretim arayüzündeki manuel ipucu düğmesi ve **H** ipucu kısayolu kaldırılmıştır. Öğreticilerin mevcut yönlendirmesi korunur. Öneri, görünen ilk eşleşmenin yararını değerlendirir; kazanma rotası veya kazanma garantisi vermez.
+Bu değişiklik, kampanya tahtasında uzun süre giriş olmadığında kısa bir komşu taş önerisi gösterir. Oyuncu giriş yapmadan aynı uygun tahtada beklemeye devam ederse aynı çift, gösterimler arasında dört saniye sessiz kalarak yeniden belirir. Üretim arayüzündeki manuel ipucu düğmesi ve **H** ipucu kısayolu kaldırılmıştır. Öğreticilerin mevcut yönlendirmesi korunur. Öneri, görünen ilk eşleşmenin yararını değerlendirir; kazanma rotası veya kazanma garantisi vermez.
 
 Geliştirme tabanı `616c663`, dal `feature/hexrota-smart-idle-hints-9-10`'dur. Mevcut 9.8 committed-hamle sunumu ve 9.9c solver sınırı korunur; yeni bir gameplay yöneticisi veya kalıcı durum alanı eklenmez.
 
@@ -9,13 +9,13 @@ Geliştirme tabanı `616c663`, dal `feature/hexrota-smart-idle-hints-9-10`'dur. 
 | Sorumluluk | Sahip | Sınır |
 | --- | --- | --- |
 | Canlı uygunluk, giriş/yaşam döngüsü bağlantıları, attempt/epoch/projeksiyon kimliği ve kanonik motor çağrıları | [`dist/app.js`](../dist/app.js), özellikle `idleHintFacts`, `mountIdleHints`, `bindIdleHintLifecycle` | Mevcut `HexAppState`/selector otoritesini kullanır; policy'nin uygunluk kararı üretmesini beklemez. |
-| Görünen bilgilerle aday sıralama, bekleme saatleri, attempt başına geçici kota ve yeniden kurulma | [`dist/idle-hints.js`](../dist/idle-hints.js) | Yalnız bağımlılıklarla verilen bilgi ve saatleri kullanır; DOM, storage veya domain komutu sahibi değildir. |
+| Görünen bilgilerle aday sıralama, bekleme/tekrar saatleri, attempt başına geçici öneri kotası ve yeniden kurulma | [`dist/idle-hints.js`](../dist/idle-hints.js) | Yalnız bağımlılıklarla verilen bilgi ve saatleri kullanır; DOM, storage veya domain komutu sahibi değildir. |
 | Altıgen komşuluk, yasal hamle ve eşleşme kuralları | Mevcut [`dist/engine.js`](../dist/engine.js) `legalMoves`/`findMatches` | İkinci bir eşleşme veya gameplay motoru eklenmez. |
 | Geçici taş kopyaları, hareket/statik çizgi ve görsel kaynak temizliği | [`dist/idle-hint-view.js`](../dist/idle-hint-view.js) | Gerçek taşları taşımaz; gameplay/policy saati veya attempt otoritesi değildir. |
 | Gerçek SVG hücreleri, taş kimlikleri ve yeniden uzlaştırma | Mevcut [`dist/board-view.js`](../dist/board-view.js) | Görsel overlay, `render` öncesinde kaldırılır; yeni bir board render akışı eklenmez. |
 | Görsel stil ve derleme sırası | [`src/styles/09-idle-hints.css`](../src/styles/09-idle-hints.css), [`manifest.json`](../src/styles/manifest.json) | Üretilmiş `dist/style.css` mevcut stil senkronizasyonuyla hazırlanır. |
 
-`app.js`, policy'yi `appState.subscribe` ile günceller ve `performance.now()` monoton saatiyle besler. Policy, `read` sonucunu süre dolduğunda ve aday seçildikten sonra yeniden doğrular. Host, `onShow` içinde attempt ID, epoch ve tahta anahtarını bir kez daha kontrol eder. Görsel adaptör yalnız bu kontrolden geçen çifti alır.
+`app.js`, policy'yi `appState.subscribe` ile günceller ve `performance.now()` monoton saatiyle besler. Policy, `read` sonucunu süre dolduğunda, aday seçildikten sonra ve her tekrar görünümünden önce yeniden doğrular. Host, `onShow` içinde attempt ID, epoch ve tahta anahtarını bir kez daha kontrol eder. Görsel adaptör yalnız bu kontrolden geçen çifti alır.
 
 ## Zamanlama ve attempt sınırı
 
@@ -23,19 +23,28 @@ Varsayılanlar, dondurulmuş `HexIdleHints.CONFIG` içinde tek yerde tanımlıd�
 
 | Alan | Varsayılan | Anlamı |
 | --- | --- | --- |
-| `firstDelay` | 20.000 ms | İlk gösterim için kesintisiz uygun bekleme. |
-| `nextDelay` | 35.000 ms | Yeniden kurulmuş sonraki gösterim için kesintisiz uygun bekleme. |
-| `minInterval` | 60.000 ms | Aynı sayfa çalışma ömründeki tüm gösterimler arasında, attempt değişse bile, asgari süre. |
-| `maxPerAttempt` | 2 | Aynı yüklenmiş uygulamada bir attempt için en fazla iki gösterim. |
-| `duration` | 900 ms | Bir önerinin görünür kalma süresi. |
+| `firstDelay` | 20.000 ms | İlk yeni öneri için kesintisiz uygun bekleme. |
+| `nextDelay` | 35.000 ms | Yeniden kurulmuş sonraki yeni öneri için kesintisiz uygun bekleme. |
+| `minInterval` | 60.000 ms | Aynı sayfa çalışma ömründeki yeni öneri başlangıçları arasında, attempt değişse bile, asgari süre. |
+| `maxPerAttempt` | 2 | Aynı yüklenmiş uygulamada bir attempt için en fazla iki yeni öneri döngüsü; aynı çiftin görsel tekrarları kota tüketmez. |
+| `duration` | 900 ms | Her bir görünümün süresi. |
+| `repeatDelay` | 4.000 ms | Görünüm bittikten sonraki sessiz aralık; ardından aynı çift tekrar gösterilir. |
 
-Sonraki son tarih, `max(uygun bekleme başlangıcı + 35 saniye, önceki gösterim başlangıcı + 60 saniye)` olur. İlk öneri için 20 saniye kullanılır. Duraklatma/görünmezlik gibi uygun olmayan süreler bekleme biriktirmez; dönüşte 20 veya 35 saniyenin tamamı yeniden beklenir. Gösterimler arası 60 saniyelik monoton süre bu arada ilerleyebilir.
+Burada **öneri döngüsü**, bir kez seçilmiş çiftin ilk görünümü ve kesintisiz bekleme boyunca aynı çifti hatırlatan tekrarlarıdır. Yeni döngünün son tarihi, `max(uygun bekleme başlangıcı + 35 saniye, önceki yeni döngü başlangıcı + 60 saniye)` olur. İlk öneri için 20 saniye kullanılır. 60 saniye sınırı aynı çiftin tekrar görünmesine uygulanmaz; tekrarlar bu zaman damgasını güncellemez.
 
-Bir gösterim, mevcut tahtayı hemen yeniden kurulamaz hale getirir. Düğmeye dokunmak, seçimi kaldırmak, menüye gidip dönmek veya daha uzun beklemek aynı tahtada tekrar öneri üretmez. Yalnız **başarılı ve kalıcı commit'i tamamlanmış gerçek oyuncu swap'ı**, görünür tahta anahtarı değişmişse `playerMoveSucceeded()` ile yeniden kurar. Geçersiz swap, envanter güçlendiricisi ve tanılama ipucu bu çağrıyı yapmaz. Commit sırasında çözüm animasyonu sürdüğünden 35 saniyelik bekleme, sunum bitip tahta tekrar uygun olduğunda başlar.
+Varsayılan örnek: ilk görünüm `20.000–20.900 ms`, dört saniyelik sessizlikten sonra aynı çiftin tekrarı `24.900–25.800 ms` olur. Oyuncu aynı uygun tahtada giriş yapmadan bekledikçe tekrarlar sürer. Her tekrar aynı çift ve `ordinal` değerini kullanır; yeni aday seçmez, ek kota harcamaz ve 35/60 saniyelik yeni öneri koşullarını yeniden kurmaz.
 
-Kota, son gösterilen tahta/çift ve yeniden kurulma bilgisi policy'nin bellekteki attempt ID haritasındadır. Aynı uygulama ömründe başka bölüme veya ana menüye gidip dönmek bu bilgiyi silmez. Yeni attempt ID bağımsız kota alır; ilk 20 saniye yine beklenir ve aynı sayfadaki önceki gösterimden kalan 60 saniyelik genel aralık da korunur. **Tam reload kalıcı sayacı geri yüklemez:** geçici policy yeniden oluşur, iki gösterimlik kota ve ilk 20 saniyelik bekleme yeniden başlar. Bu sınır kayıt şemasına eklenmez. BFCache'de host korunuyorsa policy korunur; `pagehide` görsel adaptörü yok eder ve `pageshow` onu yeniden kurar. SessionStore'un gerçek persisted dönüşte uyguladığı mevcut reload/yazıcı kilidi politikası ayrıca geçerlidir.
+`onShow`, dondurulmuş `{pair, attemptId, generation, boardKey, duration, ordinal, repeated}` bildirimi alır. Yeni döngünün ilk görünümünde `repeated: false`, aynı çiftin sonraki görünümlerinde `repeated: true` olur; `ordinal` attempt'teki yeni döngü numarasıdır. `onHide`, aynı alanlara temizleme nedenini ekler. `HexIdleHints.create(…)` yine yalnız `config`, `sync()`, `interaction()`, `playerMoveSucceeded()` ve `dispose()` sunar; tekrar planlamak için host'un çağıracağı yeni bir yöntem eklenmez.
 
-`create({…, config})`, bilinen alanlar için instance'a özel, kopyalanmış ve dondurulmuş override kabul eder. Süreler negatif olmayan güvenli tamsayı, kota pozitif güvenli tamsayı olmalıdır. Üretim host'u override vermez. Policy ve view, büyük beklemelerde tarayıcının işaretli 32-bit timer sınırını aşmadan parçalı zamanlayıcı kullanır. Host `cue.duration` değerini view'a geçirir; örneğin 1.200 ms iki 600 ms hareket üretir. `duration: 0`, önceki görseli hemen temizler ve yeni hareket/gizli taş oluşturmaz.
+Bu tekrar, önceki “aynı tahtada tekrar gösterme” kuralının yalnız **kesintisiz uygun bekleme** için tanımlanan istisnasıdır. İlk görünüm mevcut tahtada yeni öneri seçimini hemen kapatır. Herhangi bir etkileşim veya uygunluk kaybı görünür öneriyi ve bekleyen tekrarını iptal eder. Düğmeye dokunmak, seçimi kaldırmak, modal açıp kapamak, menüye gidip dönmek veya daha uzun beklemek aynı tahtanın iptal edilmiş döngüsünü yeniden başlatmaz.
+
+Yalnız **başarılı ve kalıcı commit'i tamamlanmış gerçek oyuncu swap'ı**, görünür tahta anahtarı değişmişse `playerMoveSucceeded()` ile sonraki yeni döngüyü kurar. Geçersiz swap, envanter güçlendiricisi ve tanılama ipucu bu çağrıyı yapmaz. Commit sırasında çözüm animasyonu sürdüğünden 35 saniyelik bekleme, sunum bitip tahta tekrar uygun olduğunda başlar. İki yeni döngü kotası dolduğunda üçüncüsü seçilmez; kesintisiz uygun beklemedeki ikinci döngünün aynı çift tekrarları bu kotadan bağımsızdır.
+
+Duraklatma/görünmezlik gibi uygun olmayan süreler bekleme biriktirmez. Henüz başlamamış ve hâlâ kurulmuş yeni döngü için dönüşte 20 veya 35 saniyenin tamamı yeniden beklenir; iptal edilmiş tekrarlar dönüşte devam etmez. Yeni döngüler arasındaki 60 saniyelik monoton süre bu arada ilerleyebilir.
+
+Kota, son önerilen tahta/çift ve yeniden kurulma bilgisi policy'nin bellekteki attempt ID haritasındadır; aktif tekrar da yalnız geçici policy durumudur. Aynı uygulama ömründe başka bölüme veya ana menüye gidip dönmek kota bilgisini silmez. Yeni attempt ID bağımsız kota alır; ilk 20 saniye yine beklenir ve aynı sayfadaki önceki yeni döngüden kalan 60 saniyelik genel aralık da korunur. **Tam reload kalıcı sayacı geri yüklemez:** geçici policy yeniden oluşur, iki yeni döngülük kota ve ilk 20 saniyelik bekleme yeniden başlar. Bu sınırlar veya tekrar alanları kayıt şemasına eklenmez. BFCache'de host korunuyorsa policy kotası korunur, `pagehide` aktif tekrarı iptal edip görsel adaptörü yok eder ve `pageshow` onu yeniden kurar. SessionStore'un gerçek persisted dönüşte uyguladığı mevcut reload/yazıcı kilidi politikası ayrıca geçerlidir.
+
+`create({…, config})`, bilinen alanlar için instance'a özel, kopyalanmış ve dondurulmuş override kabul eder. `firstDelay`, `nextDelay`, `minInterval` ve `duration` negatif olmayan güvenli tamsayı; `maxPerAttempt` ve `repeatDelay` pozitif güvenli tamsayı olmalıdır. Pozitif sessiz aralık, sıfır süreli görünüm yapılandırmasında da timer döngüsünün aralıksız dönmesini engeller. Üretim host'u override vermez. Policy ve view, büyük beklemelerde tarayıcının işaretli 32-bit timer sınırını aşmadan parçalı zamanlayıcı kullanır. Host `cue.duration` değerini view'a geçirir; örneğin 1.200 ms iki 600 ms hareket üretir. `duration: 0`, önceki görseli hemen temizler ve yeni hareket/gizli taş oluşturmaz.
 
 ## Uygunluk ve iptal
 
@@ -51,9 +60,9 @@ Host ayrıca şu koşulları ister:
 
 Tahta anahtarı yalnız `[levelId, values, layers, score, movesLeft]` görünür alanlarından türetilir. `renderedIdleBoardKey`, bu anahtarın **geçici bir çizim önbelleğidir; gameplay veya kayıt otoritesi değildir**. `render` başında temizlenir, bütün projeksiyon başarıyla tamamlandıktan sonra doldurulur. Ara dalga projeksiyonu canlı motorla uyuşmazsa veya yeniden çizim hata verirse öneri kapısı kapalı kalır. Bu, committed sonuç ilerlemişken eski SVG üstünde yanlış taşların önerilmesini engeller.
 
-Document capture aşamasındaki `pointerdown`, `click` ve `keydown` mevcut öneriyi kaldırır ve beklemeyi yeniden başlatır. Pointer bitiş/iptalinden sonra mikro görevle tekrar uygunluk okunur. Blur/focus, visibility, resize/orientation, visual viewport resize, navigation, modal açma/kapama, yükleme, gerçek swap başlangıcı ve page yaşam döngüsü mevcut host bağlantılarıyla senkronize edilir. Yalnız mouse hover/move bekleme sıfırlamaz. H tuşu artık ipucu istemez; diğer tuşlar gibi genel giriş olarak beklemeyi sıfırlayabilir.
+Document capture aşamasındaki `pointerdown`, `click` ve `keydown` mevcut öneriyi ve bekleyen tekrarını kaldırır; henüz başlamamış, kurulmuş yeni döngünün beklemesini yeniden başlatır. Daha önce gösterilmiş tahtanın kapanmış döngüsünü tekrar kurmaz. Pointer bitiş/iptalinden sonra mikro görevle tekrar uygunluk okunur. Blur/focus, visibility, resize/orientation, visual viewport resize, navigation, modal açma/kapama, yükleme, gerçek swap başlangıcı ve page yaşam döngüsü mevcut host bağlantılarıyla senkronize edilir. Yalnız mouse hover/move bekleme sıfırlamaz. H tuşu artık ipucu istemez; diğer tuşlar gibi genel giriş olarak beklemeyi sıfırlayabilir.
 
-Süre dolumları revision/attempt/epoch/tahta kontrolleriyle emekli edilir; eski callback daha yeni bir öneriyi gösteremez veya kaldıramaz. Aday yoksa, seçim hata verirse veya biçimi geçersizse kota harcanmaz ve sıfır süreli tekrar döngüsü kurulmaz. `dispose`, policy timer'larını/aboneliğini temizler; tam sıfırlama ayrıca host'un giriş dinleyicilerini ve view'ı kaldırır.
+Yeni öneri, görünüm bitişi ve tekrar süre dolumları revision/attempt/epoch/tahta kontrolleriyle emekli edilir; eski callback daha yeni bir öneriyi gösteremez veya kaldıramaz. Sessiz aralıkta gelen etkileşim de bekleyen tekrarın ömrünü bitirir. Aday yoksa, seçim hata verirse veya biçimi geçersizse kota harcanmaz ve sıfır süreli tekrar döngüsü kurulmaz. `dispose`, policy'nin bekleme/gizleme/tekrar timer'larını ve aboneliğini temizler; tam sıfırlama ayrıca host'un giriş dinleyicilerini ve view'ı kaldırır.
 
 ## Görünen bilgilerle seçim
 
@@ -69,7 +78,7 @@ Sıralama mevcut görünür-kapsama davranışını kullanır:
 + 0,1 × min(ilk eşleşmenin puanı, kalan görünür puan hedefi)
 ```
 
-Yalnız görünür ilk eşleşme hesaplanır; cascade, gravity, refill veya gelecekteki hamleler simüle edilmez. Aynı taş değerini değiştiren, sınır dışı/tekrarlı veya eşleşmesiz adaylar elenir. Önceki önerilen çiftin dışında yasal alternatif varsa önceki çift değerlendirme dışında tutulur; kalanlar arasında en yüksek puan, eşitlikte küçük sıralı indeks çifti seçilir. Tek seçenekse aynı çift tekrar seçilebilir; buna zamanlama/kota/yeniden kurulma koşulları yine uygulanır.
+Yalnız görünür ilk eşleşme hesaplanır; cascade, gravity, refill veya gelecekteki hamleler simüle edilmez. Aynı taş değerini değiştiren, sınır dışı/tekrarlı veya eşleşmesiz adaylar elenir. Yeni döngü seçilirken önceki önerilen çiftin dışında yasal alternatif varsa önceki çift değerlendirme dışında tutulur; kalanlar arasında en yüksek puan, eşitlikte küçük sıralı indeks çifti seçilir. Tek seçenekse aynı çift yeni döngü için de seçilebilir; buna 20/35/60 zamanlama, kota ve yeniden kurulma koşulları yine uygulanır. Aktif döngünün dört saniye sessizlikten sonraki tekrarları bu seçiciyi çağırmaz, saklanan aynı çifti kullanır.
 
 Seçici seed, gerçek `rngState`, `initial`, authored `solution`/`solutions`, history, snapshot veya gizli geleceği okumaz. `solve`, `solveWithReport`, `engine.hint`, Worker veya klon üzerinde tam `swap` araması başlatmaz. Aynı görünen bilgiler aynı aday sonucunu verir; gerçek refill RNG'si seçimi değiştirmez. Hamle kalmamış, görünür hedefi tamamlamış veya exact hedefi aşmış durum öneri üretmez. Hamle kuralları ve nihai kazanma/kaybetme kararı mevcut motorda kalır.
 
@@ -81,7 +90,7 @@ Manuel ipucunun geçmiş Worker/fallback yolu kaynakta tanılama testleri için 
 
 ## Görsel sözleşme ve 9.8 hattı
 
-`HexIdleHintView.create({board, reducedMotion})`, `show({pair, layout, duration})`, `hide()` ve `destroy()` sunar. `show` kendi idempotent cleanup fonksiyonunu döndürür. Varsayılanda iki dekoratif taş kopyası komşusuna doğru **2,5 CSS piksel** yaklaşır ve yerine döner: iki adet 450 ms döngü, toplam 900 ms. SVG `getScreenCTM` yön ölçeği kullanılır; viewBox ölçeği hareketi büyütmez. Gerekirse gerçek SVG kutusu/layout boyutlarından güvenli ölçek türetilir.
+`HexIdleHintView.create({board, reducedMotion})`, `show({pair, layout, duration})`, `hide()` ve `destroy()` sunar. `show` kendi idempotent cleanup fonksiyonunu döndürür. Varsayılanda her görünümde iki dekoratif taş kopyası komşusuna doğru **2,5 CSS piksel** yaklaşır ve yerine döner: iki adet 450 ms hareket, toplam 900 ms. Ardından overlay tamamen kaldırılır; policy'nin dört saniyelik sessiz aralığı bittikten sonra aynı çift için yeni bir `show` çağrısı yapılabilir. View tekrar saati tutmaz. SVG `getScreenCTM` yön ölçeği kullanılır; viewBox ölçeği hareketi büyütmez. Gerekirse gerçek SVG kutusu/layout boyutlarından güvenli ölçek türetilir.
 
 Kopyalar, gerçek boyayı ve sayı rengini dondurulmuş computed style ile koruyan bir üst SVG overlay'de yaşar. Overlay ve bütün çocukları `pointer-events: none`, overlay `aria-hidden="true"` taşır. Gerçek hücre/grup, floor ve gem DOM kimlikleri; SVG hücre transform'ları, hit target, tabindex ve erişilebilir etiketler korunur. Tam harekette gerçek gem'in opaklığı geçici olarak sıfırlanarak çift görüntü önlenir; cleanup eski inline style'ı geri getirir ve daha yeni bir görsel sahibinin stilini ezmez.
 
@@ -93,7 +102,7 @@ Host her board `render` işleminden önce view'ı temizler; gerçek swap ve nati
 
 ## Paketleme ve doğrulama
 
-HTML iki yeni modülü `app.js` öncesinde `defer` sırasıyla yükler. Her ikisi PWA **v46** allowlist/preload kabuğundadır; `qa-fixtures.cjs` aynı runtime API'lerini yükler. Bu cache kuşağı değişikliği kayıt veya oyun kuralı sürümü değildir.
+HTML iki yeni modülü `app.js` öncesinde `defer` sırasıyla yükler. Her ikisi PWA **v47** allowlist/preload kabuğundadır; `qa-fixtures.cjs` aynı runtime API'lerini yükler. Bu cache kuşağı değişikliği kayıt veya oyun kuralı sürümü değildir.
 
 ```sh
 npm run test:idle-hints
@@ -101,7 +110,7 @@ npm run test:idle-hints-browser
 HEXROTA_BROWSER=webkit npm run test:idle-hints-browser
 ```
 
-Policy kontrolleri kontrollü monoton saatle zamanlama, rearm/kota, reload, eski callback'ler, büyük timer sınırı, görünür seçim ve gerçek motor snapshot eşitliğini sınar. View kontrolleri DOM kimliği/koordinatlar, 2,5 CSS piksel dönüşümü, özgün input hedefleri, static/reduced motion, configurable/zero süre, cleanup ve görsel hataları sınar. Tarayıcı harness'i ayrı idle saati kullanırken gerçek input, motor, storage ve SVG animasyonlarını çalıştırır. Nihai koşum sonuçları, ekran görüntüleri ve ortam sınırları ayrı teslim test raporunda tutulur; bu belge test sayısı veya fiziksel cihaz iddiası üretmez.
+Policy kontrolleri kontrollü monoton saatle yeni döngü zamanlaması, 900 ms görünüm + 4.000 ms sessizlik, aynı çift/ordinal tekrarı, etkileşim ve uygunlukta tekrar iptali, rearm/kota, reload, eski callback'ler, büyük timer sınırı, görünür seçim ve gerçek motor snapshot eşitliğini sınar. View kontrolleri DOM kimliği/koordinatlar, 2,5 CSS piksel dönüşümü, özgün input hedefleri, static/reduced motion, configurable/zero süre, cleanup ve görsel hataları sınar. Tarayıcı harness'i ayrı idle saati kullanırken gerçek input, motor, storage ve SVG animasyonlarını çalıştırır. Nihai koşum sonuçları, ekran görüntüleri ve ortam sınırları ayrı teslim test raporunda tutulur; bu belge test sayısı veya fiziksel cihaz iddiası üretmez.
 
 ## Commit'e sabitlenmiş davranış referansları
 
