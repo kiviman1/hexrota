@@ -1,6 +1,114 @@
 # Hexrota 9.12 — Kırılabilir kutular ve dinamik bölgeler
 
-## Kapsam ve uyumluluk
+> **Güncel kabul akışı — mevcut oyuna entegrasyon:** Son kullanıcı düzeltmesiyle asıl test girişi ayrı laboratuvar değil, normal `index.html` uygulamasının `?dev=flow-9-12` modudur. Bu modda on kampanya bölümü ilerleme doldurmadan seçilebilir; gerçek 6. bölüm aynı arayüz içinde kutu duvarı ve kaynak sütunlarından fiziksel akış kullanır. Aşağıdaki ilk teslim/laboratuvar sözleşmesi geriye uyum ve mekanik kapsamı için korunur. Güncel kaynak akışı ve kayıt ayrımı hemen aşağıdaki **“Mevcut oyundaki 6. bölüm — kaynak sütunu düzeltmesi”** bölümündedir. İlk teslimin CI sayıları sonraki düzeltmenin CI sonucu sayılmaz.
+
+## Mevcut oyundaki 6. bölüm — kaynak sütunu düzeltmesi
+
+Son kabul akışı mevcut normal uygulamadır: `/?dev=flow-9-12`. Ayrı HTML, farklı motor veya yeni bir arayüz düzeni bu akışın yerine geçmez. Menü, bölüm listesi/harita, oyun kartı, sayı taşları, HUD, molalar, sonuçlar ve reload mevcut `app.js` yaşam döngüsünü kullanır. `obstacles.html` önceki AND-geçit mekaniğini incelemek için tanısal bir ekran olarak kalır; bu düzeltmenin ana test adresi değildir.
+
+Geliştirme modu on kampanya bölümünü ilk açılışta seçilebilir yapar. Bunun için öğretici veya kampanya tamamlanmış gibi `done`, `clearedLevelIds`, yıldız ya da Altın üretilmez. Serbest seçim bir geliştirme giriş kuralıdır; gerçek oyun/ekonomi sonuçlarının kanıtı değildir. Normal URL'deki oyuncu ilerleme kilitleri ve eski kayıtlar korunur. Eski `classic-v4` 6. bölüm ve varyantları yeniden yorumlanmaz; yeni 6. bölüm `campaign-flow-v1` verisidir.
+
+### Ayrı geliştirme profili ve katalog
+
+`dist/campaign-flow.js` açık query modunu bulur ve `HexCampaignFlow` üzerinden `enabled`, `prefix`, `storage` ve `createCatalog` verir. Fiziksel kayıt anahtarları **`hexrota-flow-9-12:`** önekiyle ayrılır; örneğin geliştirme profili `hexrota-flow-9-12:hexrota-profile-v2`'dir. Mevcut SessionStore'un mantıksal anahtarları, revision/CAS zarfı ve atomik game+energy commit'i değişmez. Aynalar, eski anahtar aramaları, ses tercihi, olaylar, playtest ve reset temizliği de aynı prefiks adaptöründen geçer. Writer lock `hexrota-flow-9-12:hexrota-profile-writer-v2` olur; normal oyunla aynı yazıcı kilidini paylaşmaz. Üretim anahtarları için Storage.prototype değişikliği veya global yönlendirme yapılmaz.
+
+Yeni mod normal uygulamanın mevcut yolculuk haritasını açar. On kampanya düğümü ve iki öğretici seçilebilir; boş profil `done:[]` olarak kalır. Ekonomi tamamlanma/ödül şartları sahte ilerlemeyle aşılmaz. Mevcut can geliştirme bypass mekanizması yalnız izole profil için kullanılabilir; normal oyuncu canı değiştirilmez.
+
+Dev katalog yalnız sayısal 6 için `flow-v1` / `campaign-flow-v1` kimliğini çözümleyerek mevcut katalog üzerine eklenir. Diğer dokuz bölümün start/restore/resolve işlemleri eski kataloğa delege edilir. Yeni deneme ID'si aynı `a-6-{attemptSerial}-{8hex}` biçimindedir; seçim RNG'si mevcut `HexAttempts.randomStep` kullanır ve oyun RNG'sinden ayrıdır. Katalog kurulurken iki farklı ilk hamleye sahip tam yollar gerçek HexMatch ile kazanma durumuna kadar doğrulanır; ancak sonra yeni deneme başlatılır. Kimlik/snapshot restore'u aynı kanonik motorun strict replay kontrolünü kullanır. Yanlış veri/variant sürümü veya legacy L6 kimliği yeni flow kayıtlarına uygulanamaz.
+
+### L6 verisi ve fiziksel engeller
+
+Kanonik yeni veri `data/campaign-flow-levels-v1.json`, tarayıcı sarmalayıcısı `dist/campaign-flow-levels.js` / `HEX_CAMPAIGN_FLOW_LEVELS` içindedir. Yeni kayıt kimliği sayısal `6`, adı mevcut **İnce seçim**'dir. Orijinal L6'nın **23 axial hücresi, hücre sırası, zemin katları, `[1,2,3,4]` paleti, 160 puan hedefi ve 8 hamle bütçesi** korunur. Başlangıç taşları/seed, kutulu başlangıca uygun yeni sürümlü veridir. İki ayrı açılışla doğrulanmış yolların her biri 7 hamlede kazanır; yollar ve dalga olayları `reports/obstacles-9-12/flow-certificates.json` içindedir.
+
+Tahtanın `r=0` hattında beş kutu vardır. Q sütunları `-2,-1,0,1,2`; kutu hücreleri sırasıyla `[5,8,11,14,17]`'dir. Ortadaki kutu HP 2, diğerleri HP 1'dir. Bunlar seviye verisinin sonucudur; motor bu indeksleri bilmez. Üstteki açık taş alanı ile alttaki örtülü arazi arasındaki duvar bu kutulardan oluşur.
+
+### `column-flow-v1` aktivasyonu
+
+```json
+{
+  "obstacles": {
+    "version": "obstacles-v1",
+    "activation": "column-flow-v1",
+    "sources": [1,0,2,4,7],
+    "blockers": [{"id":"l6-crate-2","cell":11,"hp":2}],
+    "regions": [{"id":"l6-lower","cells":[10,13,15,16,18,19,20,21,22],"requires":[]}]
+  }
+}
+```
+
+Bu alanları gösteren şema parçasıdır; tam kutu listesi ve bütün hücreler kanonik bölüm JSON'undan alınır. `activation` olmayan önceki `obstacles-v1` bölümleri AND-geçit kurallarını kullanmayı sürdürür. `column-flow-v1` bu kurallara eklenen açık, sürümlü bir aktivasyon türüdür.
+
+Her source, kendi q sütununun tanımlı en üst hücresidir. Aynı q için iki source, geçersiz koordinat veya sütunun ortasına source yerleştirilmesi reddedilir. Source'dan yalnız **aynı q, r+1** yönünde gerçek bitişik hücrelere ulaşılır. İlk sağlam kutu veya bulunmayan koordinat yolu keser. Çapraz akış, başka sütuna geçiş ve void üzerinden atlama yoktur.
+
+`cellOpen: bool[n]`, bu kaynak yollarından halen erişilebilen hücreleri gösterir. Sağlam kutunun kendi hücresi ve arkasındaki arazi kapalıdır. Komşu gerçek eşleşme kutuyu kırınca HP kesinleşir; kaynak erişimi yeniden hesaplanır; yalnız yeni erişilen hücreler açılır; ardından aynı mevcut q/r düşüşü ve kontrollü refill çalışır. Başka q sütunundaki sağlam kutuların altındaki hücreler kapalı/null kalır. Bir kutunun kırılması bütün alt bölgeyi uzaktan açan bir anahtar değildir.
+
+Flow bölümlerinde `regions[].requires` boş olmak zorundadır; `blockers[].regionId` kullanılmaz ve reddedilir. Region yalnız alanın tamamının açılıp açılmadığını toplu raporlar: `regionOpen[i]`, bu grubun bütün `cellOpen` üyeleri true olduğunda true olur. Arazi **regionOpen=false iken de kısmen açılabilir ve oynanabilir**. Oynanabilirlik için yetkili alan `cellOpen`'dır. Böylece büyük bir region etiketi fiziksel sütun bağlantılarını küresel koşula dönüştürmez.
+
+Flow doğrulaması bütün kutular kaldırıldıktan sonra hedef hücrelerin bir source yolundan erişilebilir olmasını ister; erişilemeyen void sonrası segment veya kaynaksız hedef kabul edilmez. Hasar için yine gerçek altıgen komşuluk kullanılır. Bir sütunun kapalı olması, yan sütundaki oynanabilir komşu eşleşmenin o kutuya hasar vermesini engellemez.
+
+Snapshot v5, flow bölümlerinde zorunlu `cellOpen` dizisini de taşır. Her flow dalgası `cellOpen` ile yalnız o dalgada yeni erişilen sıralı `openedCells` indekslerini verir. `clone`, snapshot/restore ve replay bunları taşır/doğrular; restore aynı history'yi baştan oynatmadan sahte açık hücre kabul etmez. Yeniden çizim, HP veya cellOpen kararını vermez.
+
+### Kısmi açılmanın gerçek kanıtı
+
+İlk sertifikalı açılış `[3,6]` tek eşleşme dalgasında HP'yi `[1,0,1,0,0]` yapar. Yeni açılan hücreler `[8,13,14,17,18,19,21,22]`'dir. Alt alandaki `[10,15,16,20]` hala kapalı/null, toplu `regionOpen[0]` hala false'tur. Q `-2` ve `0` altına taş gelmez; açık üç geçitten oyun devam eder.
+
+İkinci sertifikalı açılış `[6,9]` HP'yi `[0,0,1,1,1]` yapar ve `[5,8,10,13,15,18]` hücrelerini açar. Alt `[16,19,20,21,22]` kapalı kalır. İki farklı ilk tercih gerçekten farklı fiziksel açıklıklar üretir. İki yolun bütün hamleleri gerçek motorla kazanma durumuna kadar yeniden oynatılır; arama bütçesi kazanma kanıtı yerine geçmez.
+
+### Mevcut sunum ve Unity aktarımı
+
+Numaralı taşların mevcut görünümü ve uygulamanın yerleşimi korunur. Flow alt arazisi opak toprak/çimen/taş örtüsü olarak `data-asset="terrain-covered"` kullanır; kilit simgesiyle uzaktan açılan bir kapı gösterilmez. Önceki AND-geçit laboratuvarının `region-closed` varlığı ayrı semantiğini korur. Blender/Unity için yeni `terrain-covered` arazi örtüsü kimliği, açılma sırasında yalnız `openedCells` hücrelerinde kaldırılacak görsel katmana bağlanmalıdır.
+
+Mevcut `HexMovePresentation` ve normal uygulama adaptörleri kutu hasarı/kırılması ile yeni açılan hücreleri gösterir. `REGION_UNLOCK`, flow'da `openedCells` olayını da gösterebilir; toplu region tamamlanmasını beklemez. Taş üretimi kendi gerçek kaynak segmentinin sınırında görsel olarak kırpılır; görsel taş kapalı komşu sütundan geliyor gibi çizilmez. Gerçek sonuç önce mevcut atomik kayıt/commit sınırında kesinleşir. Mola, arka plan, görsel hata veya iptal son kaydedilmiş durumu yeniden çizer.
+
+C# tarafı aynı `HexMatch` partial çekirdeğine `HexMatch.ColumnFlow.cs` ekler. `ObstaclesConfig.activation/sources`, `GameSnapshot.cellOpen` ve `WaveFrame.cellOpen/openedCells` JSON sözleşmesidir; Unity prefab veya fizik callback'i bunları değiştirmez. Unity import adaptörü kanonik yeni bölüm verisini yüklemeli ve metadata'da `campaign-flow-v1` kimliğini korumalıdır.
+
+### Düzeltmenin gerçek ekran görüntüleri
+
+Normal uygulama ve gerçek sayısal 6. bölüm, WebKit 390×844:
+
+| Başlangıç: beş kutu ve örtülü alt arazi | İlk hamle: yalnız bağlı sütunlar açık | Önceden örtülü alanda oyuna devam |
+| --- | --- | --- |
+| ![L6 başlangıç](../reports/flow-9-12/webkit/390-level6-initial.png) | ![L6 kısmi fiziksel akış](../reports/flow-9-12/webkit/390-level6-partial-flow.png) | ![L6 yeni alanda hamle](../reports/flow-9-12/webkit/390-level6-new-area-play.png) |
+
+320×568 ve 430×932 görünümleri ile aynı üç durumun Chromium görüntüleri `reports/flow-9-12/{chromium,webkit}/` içindedir; her browser için dokuz gerçek ekran görüntüsü vardır. Bunlar tanısal A/B/C sayfasının görüntüleri değildir.
+
+### Düzeltmenin doğrulaması
+
+`check-flow-campaign.cjs` gerçek prefix adaptörü, mevcut CAS/reset/writer lock, normal katalog delegasyonu, sertifika ve metadata/forged-checkpoint reddini kapsar. Yerel **exit 0: 10 grup, 36 delege edilen klasik varyant, iki gerçek flow yolunun 14 prefix restore kontrolü**.
+
+Yeni gerçek native koşumlar birbirinden ayrı raporlanır:
+
+| Komut | Gerçek .NET 8 / C# 7.3 sonucu |
+| --- | --- |
+| `check-obstacles-parity.cjs` — gated + source-flow çekirdek | **217 senaryo**; 716 geçerli takas, 105 resume, 105 replay, 110 clone, 126 checkpoint reddi. Gated altı yol + iki L6 flow yolu ve toplam 48 rota dışı yasal koşu. Typed/portable level okuma, kısmi `openedCells`, HP 2, kalan kapalı sütun, düşüş/refill/RNG ve bozuk source/void/cellOpen girdileri karşılaştırılır. |
+| `check-campaign-flow-parity.cjs` — yeni katalog adaptörü | **136 senaryo**; 26 seçim örneği, iki tam kazanma yolu / 14 checkpoint prefix'i ve 85 geçersiz override/kimlik/snapshot reddi. Aynı HexMatch ve CatalogWire kullanılır. |
+| Mevcut native gameplay regresyonu | 1.916 geçerli takas ve 80 klasik sertifikalı yol geçti. |
+| Mevcut native catalog regresyonu | 2.107 JSON karşılaştırması geçti. |
+
+Bu sayılar farklı gözlem türleridir; tek hayali test toplamına eklenmez. C# karşılaştırması Unity Editor veya fiziksel iPhone testi değildir.
+
+Yerel son yeni flow JS koşumu **16/16 grup** geçti. Yeni normal uygulama browser koşumu **Chromium 6/6 ve WebKit 6/6**, iki browser'da page-error dizileri boş: boş geliştirme profilinden bütün on gerçek bölüm seçimi; üç mobil boyutta kaynak sütunlarının kısmi açılması, ilk hamlede native sürükleme, sonraki gerçek dokunma hamleleriyle 7 hamlede kazanma, önceden kapalı alanda takas ve birebir reload; normal sunum aşamalarında tek önceden kesinleşmiş canonical yazı doğrulandı.
+
+`check-column-flow.cjs`, source doğrulaması, gerçek void aralığı, kutuların fiziksel kesmesi, farklı kısmi açılışlar, aynı q düşüşü, açılan alandaki doğal zincir, bozuk `cellOpen`, snapshot/replay/clone ve iki tam kazanma yolunu denetler. `check-flow-browser.cjs`, ayrı lab yerine gerçek normal uygulamayı açar; üç mobil viewport'ta gerçek dokunma/sürükleme, boş geliştirme profilinden serbest bölüm seçimi, örtülü hücre etkileşimsizliği, kısmi açılma, devam ve reload sonuçlarını doğrular. Gerçek koşum sayıları tamamlandığında bu düzeltme için ayrıca yazılır; yukarıdaki ilk teslim sayıları otomatik olarak bu değişikliklerin sonucu sayılmaz.
+
+
+---
+
+### Güncel birlikte doğrulama sonucu
+
+2026-11-17 UTC son tam `npm test` **exit 0**: 13:17:16–13:22:33. Mevcut zincir korunur; ek `test:column-flow` içinde 16 fiziksel akış ve 10 kampanya adaptörü grubu bulunur. Son v5 kayıp paneli koşulu düzeltildikten sonra klasik ikinci şans UI'sı ayrıca 15 grup / 169 gerçek takas / 22 kayıp / 4 reload ile; rescue-safety UI 8 grup ve actual-app animation 11 grup ile tekrar geçti. Yeni browser kontrolünün altıncı grubu gerçek sekiz hamlelik kayıp, checkpoint reload, yeni deneme ve native Retry'ı doğrular; Chromium ve WebKit 6/6, pageErrors `[]`.
+
+Güncel kaynakla mevcut integration Chromium 6/6; animation Chromium 23/23 ve WebKit 23/23; sabit Lab izolasyonu iki browser'da 6/6 geçti. Mevcut on native parity komutu da geçti; yeni fiziksel çekirdek ve kampanya adapter'ı gerçek .NET 8 / C# 7.3 ile ayrıca karşılaştırıldı.
+
+Klasik observable ve solvability raporları yeniden üretildi: main'e göre sadece üç kaynak parmak izi alanı değişir; bütün sertifika, karar, metrik ve solver sonuçları birebir aynıdır. Eski hash fixture'ları/golden'lar değiştirilmez. `fixtures/flow-integration-protected.json` bu düzeltmenin 21 açıkça listelenmiş kaynak dosyasını `a93c920` tabanına bağlar; eski kaynak korumaları bunun dışındaki dosyalarda aynı kalır. Stil manifestinin önceki sırası korunup yalnız `10-obstacle-flow.css` sona eklenir. Offline kabuk nesli 50, yeni kampanya modüllerini de önceden yükler.
+
+Bu düzeltme normal app içinde geliştirici query'siyle denendi; fiziksel iPhone veya Unity Editor/IL2CPP testi yapılmadı. Main ve Production'a yazılmaz. Uzak CI durumu draft PR Checks'ten izlenir; bu yerel sonuçlar bitmemiş uzak koşumu başarılı ilan etmez.
+
+## Önceki tanısal teslim — geriye uyum kaydı
+
+Aşağıdaki A/B/C laboratuvarı ve AND-geçit sözleşmesi, önceki tanısal uygulamanın belgesidir. Güncel kullanıcının istediği fiziksel L6 akışı ve asıl oynanabilir teslim yukarıdaki normal uygulama bölümüdür. Buradaki eski test/CI sayıları yeni düzeltmenin sonucunu temsil etmez.
+
+## İlk tanısal teslimin kapsamı ve uyumluluğu
 
 Bu özellik mevcut `dist/engine.js` / `unity/Gameplay/HexMatch.cs` motorlarını genişletir. Yeni bir demo motoru veya ikinci kalıcı oyun durumu yoktur. Yeni bölüm kuralları `classic-v5`, engel veri sözleşmesi `obstacles-v1`, motor checkpoint'i **snapshot v5** kullanır. Kampanya, öğreticiler, 40 varyant ve 80 sertifikalı yol `classic-v4` / snapshot v4 olarak kalır. Eski kayıtlar v5'e dönüştürülmez.
 
@@ -130,7 +238,7 @@ Sunum sırası gerektiğinde `SWAP → MATCH → BLOCKER_HIT → BLOCKER_BREAK �
 
 Host önce gerçek hamleyi çözer ve snapshot'ı kaydeder, sonra salt-okuma görsel planı oynatır. Gösterim sırasında giriş kilitlidir. Görsel hata, duraklatma, pagehide veya görünürlük kaybı gösterimi iptal eder; son kesinleşmiş gerçek checkpoint yeniden çizilir. Görsel callback ikinci kayıt, hasar veya ödül üretmez. Kayıt yazımı başarısız olursa host eski gerçek durumu korur ve hata gösterir.
 
-## Geliştirme bölümleri
+## Önceki tanısal A/B/C bölümleri
 
 | Bölüm | Geometri ve öğretim amacı |
 | --- | --- |
@@ -166,7 +274,7 @@ HP 1 başlangıç kutusu ve HP 2'den hasar almış kutu aynı HP 1 çatlak gör�
 
 Bu belge uygulama sözleşmesini tarif eder. Koşum sonuçları, komutların gerçek çıkışları ve sayılarıyla aşağıya eklenmelidir; testin yazılmış olması testin geçtiği anlamına gelmez. Yapısal kabul, yasal hamle ve kazanma ayrı iddialardır.
 
-## Doğrulama kaydı ve sınırlar
+## Önceki tanısal teslimin doğrulama kaydı ve sınırları
 
 2026-11-17 UTC yerel `node check-obstacles.cjs` **exit 0**: 26 grup, 3 bölüm, farklı ilk hamlelerden başlayan 6 tam kazanma yolu ve 27 replay/restore/clone prefix kontrolü. Bu sayılar yalnız bu JS komutunun çıktısıdır; diğer koşumların yerine geçmez.
 
@@ -177,7 +285,7 @@ Mevcut kampanyanın gerçek browser regresyonu da **exit 0**: `check-integration
 Bu geliştirme sırasında fiziksel iPhone testi veya Unity Editor/IL2CPP sahne testi yapılmış değildir. Browser viewport ve WebKit testi fiziksel iOS testi olarak sunulmaz. Unity Cloud kurulumu, hesap yetkilendirmesi veya yerel Blender dosyası istenmez. C# parity saf gameplay kuralları içindir; gelecekteki prefab görünümü veya native dokunma sürücüsünün testi değildir.
 
 
-## Ekran görüntüleri
+## Önceki tanısal A/B/C ekran görüntüleri
 
 Gerçek WebKit koşumunda 390×844 görünümü; her bölümün başlangıç ve ilk açılma durumu:
 

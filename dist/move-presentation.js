@@ -23,7 +23,7 @@
  }
  function freeze(value){if(value&&typeof value==='object'){for(const item of Object.values(value))freeze(item);Object.freeze(value);}return value;}
  function projection(value,count){
-  const obstacles=value?.obstacleVersion==='obstacles-v1'&&Array.isArray(value.blockerHp)&&value.blockerHp.every(integer)&&Array.isArray(value.regionOpen)&&value.regionOpen.every(n=>typeof n==='boolean');
+  const obstacles=value?.obstacleVersion==='obstacles-v1'&&Array.isArray(value.blockerHp)&&value.blockerHp.every(integer)&&Array.isArray(value.regionOpen)&&value.regionOpen.every(n=>typeof n==='boolean')&&(value.cellOpen===undefined||Array.isArray(value.cellOpen)&&value.cellOpen.length===value.values?.length&&value.cellOpen.every(n=>typeof n==='boolean'));
   if(!value||!Array.isArray(value.values)||!value.values.length||count!==undefined&&value.values.length!==count||!Array.isArray(value.layers)||value.layers.length!==value.values.length||!value.values.every(n=>obstacles&&n===null||Number.isSafeInteger(n)&&n>0)||!value.layers.every(integer)||!integer(value.score)||!integer(value.movesLeft))invalid('invalid_visual_projection');
  }
  function scoreDuration(motion){return motion.digit+motion.spread+motion.pop+motion.hold+motion.flight+motion.count;}
@@ -35,13 +35,13 @@
   if(swap!==null&&(!Array.isArray(swap)||swap.length!==2||!swap.every(index)||swap[0]===swap[1]))invalid('invalid_visual_swap');
   if(assistance!==null&&(!['greenBrush','colorKey'].includes(assistance.itemId)||!index(assistance.index)))invalid('invalid_visual_assistance');
   let score=before.score,layers=before.layers;
-  let obstacleState=before.obstacleVersion==='obstacles-v1'?{obstacleVersion:before.obstacleVersion,blockerHp:before.blockerHp,regionOpen:before.regionOpen}:null;
+  let obstacleState=before.obstacleVersion==='obstacles-v1'?{obstacleVersion:before.obstacleVersion,blockerHp:before.blockerHp,regionOpen:before.regionOpen,...(before.cellOpen?{cellOpen:before.cellOpen}:{})}:null;
   const scale=frames.length<=2?1:Math.min(1,Math.max(1,motion.budget-motion.swap-5-200)/Math.max(1,frames.length*scoreDuration(motion)));
   const paced={...motion};
   if(scale<1){for(const key of durations)paced[key]=motion[key]*scale;paced.fall=Math.max(280,paced.fall);}
   const waves=frames.map((frame,offset)=>{
    if(!frame||!Array.isArray(frame.matched)||!frame.matched.length||!frame.matched.every(index)||new Set(frame.matched).size!==frame.matched.length||!integer(frame.scoreGain)||!Array.isArray(frame.falls))invalid('invalid_visual_frame');
-   const nextObstacleState=obstacleState?{obstacleVersion:'obstacles-v1',blockerHp:frame.blockerHp,regionOpen:frame.regionOpen}:null;
+   const nextObstacleState=obstacleState?{obstacleVersion:'obstacles-v1',blockerHp:frame.blockerHp,regionOpen:frame.regionOpen,...(obstacleState.cellOpen?{cellOpen:frame.cellOpen}:{})}:null;
    projection({values:frame.before,layers,score,movesLeft:final.movesLeft,...obstacleState},count);
    projection({values:frame.after,layers:frame.layers,score:score+frame.scoreGain,movesLeft:final.movesLeft,...nextObstacleState},count);
    if(!frame.falls.every(fall=>fall&&index(fall.to)&&typeof fall.spawn==='boolean'&&(fall.spawn?fall.from===null:index(fall.from))))invalid('invalid_visual_fall');
@@ -75,7 +75,7 @@
      emit('MATCH');await wait(adapters.match(item));
      if(item.frame.blockerHits?.length){emit('BLOCKER_HIT');await wait(adapters.blockerHit?.(item));}
      if(item.frame.brokenBlockers?.length){emit('BLOCKER_BREAK');await wait(adapters.blockerBreak?.(item));}
-     if(item.frame.openedRegions?.length){emit('REGION_UNLOCK');await wait(adapters.regionUnlock?.(item));}
+     if(item.frame.openedRegions?.length||item.frame.openedCells?.length){emit('REGION_UNLOCK');await wait(adapters.regionUnlock?.(item));}
      emit('CLEAR');
      // Observe a rejection immediately while its score flight overlaps the
      // board clear/fall. Await it later; no unhandled decorative rejection.

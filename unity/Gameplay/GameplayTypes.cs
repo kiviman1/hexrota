@@ -32,6 +32,8 @@ namespace Hexrota.Gameplay
     public sealed class ObstaclesConfig
     {
         public string version;
+        public string activation;
+        public int[] sources;
         public BlockerConfig[] blockers;
         public RegionConfig[] regions;
     }
@@ -76,6 +78,7 @@ namespace Hexrota.Gameplay
         public string obstacleVersion;
         public int[] blockerHp;
         public bool[] regionOpen;
+        public bool[] cellOpen;
     }
 
     [Serializable]
@@ -113,8 +116,10 @@ namespace Hexrota.Gameplay
         public BlockerHit[] blockerHits;
         public string[] brokenBlockers;
         public string[] openedRegions;
+        public int[] openedCells;
         public int[] blockerHp;
         public bool[] regionOpen;
+        public bool[] cellOpen;
         public int[] matched;
         public int?[] before;
         public int?[] after;

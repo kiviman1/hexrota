@@ -1,0 +1,310 @@
+/* Generated from data/campaign-flow-levels-v1.json. L6 development override only. */
+window.HEX_CAMPAIGN_FLOW_LEVELS = [
+  {
+    "id": 6,
+    "rulesVersion": "classic-v5",
+    "name": "İnce seçim",
+    "subtitle": "Kutuların yanında eşleştir; kırılan her geçitten yalnız bağlı sütuna taşlar düşer.",
+    "cells": [
+      {
+        "q": -1,
+        "r": -2,
+        "layers": 1
+      },
+      {
+        "q": -2,
+        "r": -1,
+        "layers": 2
+      },
+      {
+        "q": 0,
+        "r": -2,
+        "layers": 1
+      },
+      {
+        "q": -1,
+        "r": -1,
+        "layers": 2
+      },
+      {
+        "q": 1,
+        "r": -2,
+        "layers": 1
+      },
+      {
+        "q": -2,
+        "r": 0,
+        "layers": 1
+      },
+      {
+        "q": 0,
+        "r": -1,
+        "layers": 1
+      },
+      {
+        "q": 2,
+        "r": -2,
+        "layers": 1
+      },
+      {
+        "q": -1,
+        "r": 0,
+        "layers": 1
+      },
+      {
+        "q": 1,
+        "r": -1,
+        "layers": 1
+      },
+      {
+        "q": -2,
+        "r": 1,
+        "layers": 1
+      },
+      {
+        "q": 0,
+        "r": 0,
+        "layers": 1
+      },
+      {
+        "q": 2,
+        "r": -1,
+        "layers": 2
+      },
+      {
+        "q": -1,
+        "r": 1,
+        "layers": 1
+      },
+      {
+        "q": 1,
+        "r": 0,
+        "layers": 2
+      },
+      {
+        "q": -2,
+        "r": 2,
+        "layers": 1
+      },
+      {
+        "q": 0,
+        "r": 1,
+        "layers": 2
+      },
+      {
+        "q": 2,
+        "r": 0,
+        "layers": 1
+      },
+      {
+        "q": -1,
+        "r": 2,
+        "layers": 1
+      },
+      {
+        "q": 1,
+        "r": 1,
+        "layers": 1
+      },
+      {
+        "q": 0,
+        "r": 2,
+        "layers": 1
+      },
+      {
+        "q": 2,
+        "r": 1,
+        "layers": 1
+      },
+      {
+        "q": 1,
+        "r": 2,
+        "layers": 1
+      }
+    ],
+    "initial": [
+      4,
+      4,
+      2,
+      4,
+      4,
+      null,
+      2,
+      1,
+      null,
+      4,
+      null,
+      null,
+      4,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "seed": 1057047055,
+    "palette": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "moves": 8,
+    "target": 160,
+    "levelDataVersion": "campaign-flow-v1",
+    "variantId": "flow-v1",
+    "obstacles": {
+      "version": "obstacles-v1",
+      "activation": "column-flow-v1",
+      "sources": [
+        1,
+        0,
+        2,
+        4,
+        7
+      ],
+      "blockers": [
+        {
+          "id": "l6-crate-0",
+          "cell": 5,
+          "hp": 1
+        },
+        {
+          "id": "l6-crate-1",
+          "cell": 8,
+          "hp": 1
+        },
+        {
+          "id": "l6-crate-2",
+          "cell": 11,
+          "hp": 2
+        },
+        {
+          "id": "l6-crate-3",
+          "cell": 14,
+          "hp": 1
+        },
+        {
+          "id": "l6-crate-4",
+          "cell": 17,
+          "hp": 1
+        }
+      ],
+      "regions": [
+        {
+          "id": "l6-lower",
+          "cells": [
+            10,
+            13,
+            15,
+            16,
+            18,
+            19,
+            20,
+            21,
+            22
+          ],
+          "requires": []
+        }
+      ]
+    },
+    "solutions": [
+      [
+        [
+          3,
+          6
+        ],
+        [
+          19,
+          22
+        ],
+        [
+          13,
+          18
+        ],
+        [
+          5,
+          8
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          6,
+          11
+        ]
+      ],
+      [
+        [
+          6,
+          9
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          10,
+          13
+        ],
+        [
+          14,
+          17
+        ],
+        [
+          13,
+          16
+        ],
+        [
+          4,
+          9
+        ]
+      ]
+    ],
+    "solution": [
+      [
+        3,
+        6
+      ],
+      [
+        19,
+        22
+      ],
+      [
+        13,
+        18
+      ],
+      [
+        5,
+        8
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        6,
+        11
+      ]
+    ],
+    "par": 7
+  }
+];

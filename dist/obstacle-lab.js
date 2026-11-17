@@ -53,7 +53,7 @@
   function particles(active,cell){
     if(!current(active))return Promise.resolve();const p=layout.positions[cell],fx=$('board').querySelector('.fx-layer'),parts=[];
     for(let i=0;i<7;i++){
-      const node=document.createElementNS('http://www.w3.org/2000/svg','path');node.setAttribute('class','crate-fragment');node.setAttribute('data-asset','crate-break');node.setAttribute('d','M-4-3 5-2 3 5-4 3Z');node.setAttribute('transform',`translate(${p.x},${p.y})`);fx.append(node);
+      const node=document.createElementNS('http://www.w3.org/2000/svg','path');node.setAttribute('class','crate-fragment');node.setAttribute('data-asset','crate-break');node.setAttribute('d',`M${p.x-4} ${p.y-3}l9 1-2 7-7-2Z`);fx.append(node);
       const angle=i*Math.PI*2/7,dx=Math.cos(angle)*50,dy=Math.sin(angle)*40;
       parts.push(animate(active,node,[{transform:'translate(0px,0px)',opacity:1},{transform:`translate(${dx}px,${dy}px) rotate(${i*47}deg)`,opacity:0}],{duration:300,easing:'ease-out'}).finally(()=>node.remove()));
     }

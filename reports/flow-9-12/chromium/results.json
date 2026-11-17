@@ -1,0 +1,343 @@
+{
+  "browser": "chromium",
+  "checks": 6,
+  "results": [
+    "all ten normal campaign levels enter from empty isolated profile without fabricated wins",
+    "320x568 normal level6 partial source flow, new-area moves and exact reload",
+    "390x844 normal level6 partial source flow, new-area moves and exact reload",
+    "430x932 normal level6 partial source flow, new-area moves and exact reload",
+    "normal move presentation sequences blocker and partial-terrain opening after durable commit",
+    "real v5 loss survives reload and explicit new attempts and retry restore a playable board"
+  ],
+  "measurements": [
+    {
+      "width": 320,
+      "height": 568,
+      "overflow": false,
+      "board": {
+        "x": 6,
+        "y": 154.1875,
+        "width": 308,
+        "height": 339.8125,
+        "top": 154.1875,
+        "right": 314,
+        "bottom": 494,
+        "left": 6
+      },
+      "cells": [
+        {
+          "index": 0,
+          "reachable": true
+        },
+        {
+          "index": 1,
+          "reachable": true
+        },
+        {
+          "index": 2,
+          "reachable": true
+        },
+        {
+          "index": 3,
+          "reachable": true
+        },
+        {
+          "index": 4,
+          "reachable": true
+        },
+        {
+          "index": 5,
+          "reachable": true
+        },
+        {
+          "index": 6,
+          "reachable": true
+        },
+        {
+          "index": 7,
+          "reachable": true
+        },
+        {
+          "index": 8,
+          "reachable": true
+        },
+        {
+          "index": 9,
+          "reachable": true
+        },
+        {
+          "index": 10,
+          "reachable": true
+        },
+        {
+          "index": 11,
+          "reachable": true
+        },
+        {
+          "index": 12,
+          "reachable": true
+        },
+        {
+          "index": 13,
+          "reachable": true
+        },
+        {
+          "index": 14,
+          "reachable": true
+        },
+        {
+          "index": 15,
+          "reachable": true
+        },
+        {
+          "index": 16,
+          "reachable": true
+        },
+        {
+          "index": 17,
+          "reachable": true
+        },
+        {
+          "index": 18,
+          "reachable": true
+        },
+        {
+          "index": 19,
+          "reachable": true
+        },
+        {
+          "index": 20,
+          "reachable": true
+        },
+        {
+          "index": 21,
+          "reachable": true
+        },
+        {
+          "index": 22,
+          "reachable": true
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "board": {
+        "x": 6,
+        "y": 170.796875,
+        "width": 378,
+        "height": 582.203125,
+        "top": 170.796875,
+        "right": 384,
+        "bottom": 753,
+        "left": 6
+      },
+      "cells": [
+        {
+          "index": 0,
+          "reachable": true
+        },
+        {
+          "index": 1,
+          "reachable": true
+        },
+        {
+          "index": 2,
+          "reachable": true
+        },
+        {
+          "index": 3,
+          "reachable": true
+        },
+        {
+          "index": 4,
+          "reachable": true
+        },
+        {
+          "index": 5,
+          "reachable": true
+        },
+        {
+          "index": 6,
+          "reachable": true
+        },
+        {
+          "index": 7,
+          "reachable": true
+        },
+        {
+          "index": 8,
+          "reachable": true
+        },
+        {
+          "index": 9,
+          "reachable": true
+        },
+        {
+          "index": 10,
+          "reachable": true
+        },
+        {
+          "index": 11,
+          "reachable": true
+        },
+        {
+          "index": 12,
+          "reachable": true
+        },
+        {
+          "index": 13,
+          "reachable": true
+        },
+        {
+          "index": 14,
+          "reachable": true
+        },
+        {
+          "index": 15,
+          "reachable": true
+        },
+        {
+          "index": 16,
+          "reachable": true
+        },
+        {
+          "index": 17,
+          "reachable": true
+        },
+        {
+          "index": 18,
+          "reachable": true
+        },
+        {
+          "index": 19,
+          "reachable": true
+        },
+        {
+          "index": 20,
+          "reachable": true
+        },
+        {
+          "index": 21,
+          "reachable": true
+        },
+        {
+          "index": 22,
+          "reachable": true
+        }
+      ]
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "overflow": false,
+      "board": {
+        "x": 6,
+        "y": 170.796875,
+        "width": 418,
+        "height": 670.203125,
+        "top": 170.796875,
+        "right": 424,
+        "bottom": 841,
+        "left": 6
+      },
+      "cells": [
+        {
+          "index": 0,
+          "reachable": true
+        },
+        {
+          "index": 1,
+          "reachable": true
+        },
+        {
+          "index": 2,
+          "reachable": true
+        },
+        {
+          "index": 3,
+          "reachable": true
+        },
+        {
+          "index": 4,
+          "reachable": true
+        },
+        {
+          "index": 5,
+          "reachable": true
+        },
+        {
+          "index": 6,
+          "reachable": true
+        },
+        {
+          "index": 7,
+          "reachable": true
+        },
+        {
+          "index": 8,
+          "reachable": true
+        },
+        {
+          "index": 9,
+          "reachable": true
+        },
+        {
+          "index": 10,
+          "reachable": true
+        },
+        {
+          "index": 11,
+          "reachable": true
+        },
+        {
+          "index": 12,
+          "reachable": true
+        },
+        {
+          "index": 13,
+          "reachable": true
+        },
+        {
+          "index": 14,
+          "reachable": true
+        },
+        {
+          "index": 15,
+          "reachable": true
+        },
+        {
+          "index": 16,
+          "reachable": true
+        },
+        {
+          "index": 17,
+          "reachable": true
+        },
+        {
+          "index": 18,
+          "reachable": true
+        },
+        {
+          "index": 19,
+          "reachable": true
+        },
+        {
+          "index": 20,
+          "reachable": true
+        },
+        {
+          "index": 21,
+          "reachable": true
+        },
+        {
+          "index": 22,
+          "reachable": true
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "physicalIPhone": false
+}

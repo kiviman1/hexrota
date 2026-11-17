@@ -23,6 +23,8 @@ namespace Hexrota.Gameplay
             const string error = "Invalid match-three level";
             ObstaclesConfig data = level.obstacles;
             if (data == null || data.version != "obstacles-v1" || data.blockers == null || data.regions == null) throw new ArgumentException(error);
+            bool flow = data.activation == "column-flow-v1";
+            if ((data.activation != null && !flow) || (!flow && data.sources != null)) throw new ArgumentException(error);
             var ids = new Dictionary<string, int>(); var occupied = new HashSet<int>();
             var regionIds = new HashSet<string>(); var closed = new HashSet<int>();
             for (int b = 0; b < data.blockers.Length; b++)
@@ -33,7 +35,7 @@ namespace Hexrota.Gameplay
             }
             foreach (RegionConfig region in data.regions)
             {
-                if (region == null || !ValidObstacleId(region.id) || !regionIds.Add(region.id) || region.cells == null || region.cells.Length == 0 || region.requires == null || region.requires.Length == 0) throw new ArgumentException(error);
+                if (region == null || !ValidObstacleId(region.id) || !regionIds.Add(region.id) || region.cells == null || region.cells.Length == 0 || region.requires == null || (!flow && region.requires.Length == 0) || (flow && region.requires.Length != 0)) throw new ArgumentException(error);
                 foreach (int cell in region.cells) if (cell < 0 || cell >= level.cells.Length || !closed.Add(cell)) throw new ArgumentException(error);
                 var requirements = new HashSet<string>();
                 foreach (string id in region.requires) if (id == null || !ids.ContainsKey(id) || !requirements.Add(id)) throw new ArgumentException(error);
@@ -41,10 +43,12 @@ namespace Hexrota.Gameplay
             foreach (BlockerConfig box in data.blockers)
                 if (box.regionId != null)
                 {
+                    if (flow) throw new ArgumentException(error);
                     bool linked = false;
-                    foreach (RegionConfig region in data.regions) if (region.id == box.regionId && Array.IndexOf(region.requires, box.id) >= 0) linked = true;
+                    foreach (RegionConfig region in data.regions) if (region.id == box.regionId && (flow || Array.IndexOf(region.requires, box.id) >= 0)) linked = true;
                     if (!linked) throw new ArgumentException(error);
                 }
+            if (flow) { ValidateColumnFlow(level); return; }
             for (int i = 0; i < level.initial.Length; i++)
             {
                 bool inactive = closed.Contains(i) || occupied.Contains(i);
@@ -81,6 +85,7 @@ namespace Hexrota.Gameplay
         {
             if (index < 0 || index >= values.Length) return false;
             if (!HasObstacles) return true;
+            if (HasColumnFlow) return cellOpen[index];
             for (int b = 0; b < blockerHp.Length; b++) if (blockerHp[b] > 0 && level.obstacles.blockers[b].cell == index) return false;
             for (int r = 0; r < regionOpen.Length; r++) if (!regionOpen[r] && Array.IndexOf(level.obstacles.regions[r].cells, index) >= 0) return false;
             return true;
@@ -118,7 +123,7 @@ namespace Hexrota.Gameplay
                 if (blockerHp[b] <= 0) continue;
                 BlockerConfig box = level.obstacles.blockers[b]; bool sealedRegion = false;
                 for (int r = 0; r < regionOpen.Length; r++) if (!regionOpen[r] && Array.IndexOf(level.obstacles.regions[r].cells, box.cell) >= 0) sealedRegion = true;
-                if (sealedRegion) continue;
+                if (!HasColumnFlow && sealedRegion) continue;
                 bool touching = false;
                 foreach (int index in matched) if (Adjacent(box.cell, index)) { touching = true; break; }
                 if (!touching) continue;
@@ -126,7 +131,16 @@ namespace Hexrota.Gameplay
                 hits.Add(new BlockerHit { id = box.id, cell = box.cell, beforeHp = before, hp = blockerHp[b] });
                 if (blockerHp[b] == 0) broken.Add(box.id);
             }
-            for (int r = 0; r < regionOpen.Length; r++)
+            if (HasColumnFlow)
+            {
+                bool[] previousCells = Duplicate(cellOpen), previousRegions = Duplicate(regionOpen);
+                RefreshColumnFlow();
+                var newlyOpened = new List<int>();
+                for (int i = 0; i < cellOpen.Length; i++) if (cellOpen[i] && !previousCells[i]) newlyOpened.Add(i);
+                for (int r = 0; r < regionOpen.Length; r++) if (regionOpen[r] && !previousRegions[r]) opened.Add(level.obstacles.regions[r].id);
+                frame.openedCells = newlyOpened.ToArray(); frame.cellOpen = Duplicate(cellOpen);
+            }
+            else for (int r = 0; r < regionOpen.Length; r++)
             {
                 if (regionOpen[r]) continue;
                 RegionConfig region = level.obstacles.regions[r]; bool ready = true;

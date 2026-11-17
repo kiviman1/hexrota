@@ -7,21 +7,53 @@
   const dense=value=>{if(!Array.isArray(value))return false;for(let i=0;i<value.length;i++)if(!Object.prototype.hasOwnProperty.call(value,i))return false;return true;};
   const obstacleRules=level=>level.rulesVersion==='classic-v5';
   const groundLayers=(level,cell)=>obstacleRules(level)?(cell.layers==null?1:cell.layers):(cell.layers==null||cell.layers===0?1:cell.layers);
+  const columnFlow=level=>obstacleRules(level)&&level.obstacles.activation==='column-flow-v1';
+  function flowCells(level,hp){
+    const open=level.cells.map(()=>false),byCoord=new Map(level.cells.map((c,i)=>[c.q+','+c.r,i])),boxes=new Map(level.obstacles.blockers.map((b,i)=>[b.cell,i]));
+    for(const source of level.obstacles.sources){let index=source;
+      while(index!==undefined){
+        const box=boxes.get(index);if(box!==undefined&&hp[box]>0)break;
+        open[index]=true;const cell=level.cells[index];index=byCoord.get(cell.q+','+(cell.r+1));
+      }
+    }
+    return open;
+  }
   function validateObstacles(level,invalid){
     const data=level.obstacles,n=level.cells.length,id=v=>typeof v==='string'&&/^[A-Za-z0-9_.-]{1,80}$/.test(v),index=v=>Number.isInteger(v)&&v>=0&&v<n;
     if(!data||data.version!=='obstacles-v1'||!dense(data.blockers)||!dense(data.regions))invalid();
+    const flow=data.activation==='column-flow-v1';
+    if(data.activation!==undefined&&!flow)invalid();
+    if(flow){
+      if(!dense(data.sources)||!data.sources.length||new Set(data.sources).size!==data.sources.length)invalid();
+      const columns=new Set();
+      for(const i of data.sources){if(!index(i)||columns.has(level.cells[i].q)||level.cells.some(c=>c.q===level.cells[i].q&&c.r<level.cells[i].r))invalid();columns.add(level.cells[i].q);}
+    }else if(data.sources!==undefined)invalid();
     const boxes=new Map(),regions=new Map(),occupied=new Set(),closed=new Set();
     for(const box of data.blockers){
       if(!box||!id(box.id)||boxes.has(box.id)||!index(box.cell)||occupied.has(box.cell)||![1,2].includes(box.hp)||(box.required!==undefined&&typeof box.required!=='boolean'))invalid();
       boxes.set(box.id,box);occupied.add(box.cell);
     }
     for(const region of data.regions){
-      if(!region||!id(region.id)||regions.has(region.id)||!dense(region.cells)||!region.cells.length||!dense(region.requires)||!region.requires.length||new Set(region.requires).size!==region.requires.length||(region.required!==undefined&&typeof region.required!=='boolean'))invalid();
+      if(!region||!id(region.id)||regions.has(region.id)||!dense(region.cells)||!region.cells.length||!dense(region.requires)||(flow?region.requires.length!==0:!region.requires.length)||new Set(region.requires).size!==region.requires.length||(region.required!==undefined&&typeof region.required!=='boolean'))invalid();
       for(const i of region.cells){if(!index(i)||closed.has(i))invalid();closed.add(i);}
       for(const key of region.requires)if(!boxes.has(key))invalid();
       regions.set(region.id,region);
     }
+    if(flow&&data.blockers.some(b=>b.regionId!==undefined))invalid();
     for(const box of data.blockers)if(box.regionId!==undefined&&(!regions.has(box.regionId)||!regions.get(box.regionId).requires.includes(box.id)))invalid();
+    if(flow){
+      const initialOpen=flowCells(level,data.blockers.map(b=>b.hp));
+      for(let i=0;i<n;i++)if(initialOpen[i]?(!int32(level.initial[i])||!level.palette.includes(level.initial[i])):level.initial[i]!==null)invalid();
+      if(!flowCells(level,data.blockers.map(()=>0)).every(Boolean))invalid();
+      // Every box must be exposable by real neighboring source-fed cells;
+      // exposing a physical hole never grants a separate remote key.
+      const hp=data.blockers.map(b=>b.hp);let changed=true;
+      while(changed){changed=false;const open=flowCells(level,hp);
+        data.blockers.forEach((b,j)=>{if(hp[j]>0&&level.cells.some((c,i)=>{const at=level.cells[b.cell],dq=c.q-at.q,dr=c.r-at.r;return open[i]&&Math.max(Math.abs(dq),Math.abs(dr),Math.abs(dq+dr))===1;})){hp[j]=0;changed=true;}});
+      }
+      if(hp.some(v=>v>0))invalid();
+      return;
+    }
     for(let i=0;i<n;i++)if(occupied.has(i)||closed.has(i)){if(level.initial[i]!==null)invalid();}else if(!int32(level.initial[i])||!level.palette.includes(level.initial[i]))invalid();
     // Structural reachability, not a solver proof: expose boxes next to active
     // axial cells, then regions whose full dependency set can be removed.
@@ -83,7 +115,7 @@
       validateLevel(this.level);
       this.values=this.level.initial.slice();this.layers=this.level.cells.map(c=>groundLayers(this.level,c));
       this.score=0;this.movesLeft=this.level.moves;this.turn=0;this.rngState=(this.level.seed>>>0)||0x9e3779b9;this.history=[];
-      if(obstacleRules(this.level)){this.blockerHp=this.level.obstacles.blockers.map(b=>b.hp);this.regionOpen=this.level.obstacles.regions.map(()=>false);}
+      if(obstacleRules(this.level)){this.blockerHp=this.level.obstacles.blockers.map(b=>b.hp);this.regionOpen=this.level.obstacles.regions.map(()=>false);if(columnFlow(this.level)){this.cellOpen=flowCells(this.level,this.blockerHp);this.regionOpen=this.level.obstacles.regions.map(r=>r.cells.every(i=>this.cellOpen[i]));}}
     }
     get total(){return this.values.length;}
     get covered(){return this.layers.reduce((n,v)=>n+Number(v===0),0);}
@@ -97,21 +129,24 @@
     isPlayable(index){
       if(!Number.isInteger(index)||index<0||index>=this.total)return false;
       if(!obstacleRules(this.level))return true;
+      if(columnFlow(this.level))return this.cellOpen[index];
       return !this.level.obstacles.blockers.some((b,i)=>b.cell===index&&this.blockerHp[i]>0)&&!this.level.obstacles.regions.some((r,i)=>!this.regionOpen[i]&&r.cells.includes(index));
     }
     _damageBlockers(matched){
-      const blockerHits=[],brokenBlockers=[],openedRegions=[];
+      const blockerHits=[],brokenBlockers=[],openedRegions=[],previousOpen=columnFlow(this.level)?this.cellOpen.slice():null;
       this.level.obstacles.blockers.forEach((box,i)=>{
-        if(this.blockerHp[i]>0&&this.level.obstacles.regions.every((r,j)=>this.regionOpen[j]||!r.cells.includes(box.cell))&&matched.some(index=>this.adjacent(index,box.cell))){
+        if(this.blockerHp[i]>0&&(columnFlow(this.level)||this.level.obstacles.regions.every((r,j)=>this.regionOpen[j]||!r.cells.includes(box.cell)))&&matched.some(index=>this.adjacent(index,box.cell))){
           const beforeHp=this.blockerHp[i];this.blockerHp[i]--;
           blockerHits.push({id:box.id,cell:box.cell,beforeHp,hp:this.blockerHp[i]});
           if(!this.blockerHp[i])brokenBlockers.push(box.id);
         }
       });
+      if(columnFlow(this.level))this.cellOpen=flowCells(this.level,this.blockerHp);
       this.level.obstacles.regions.forEach((region,i)=>{
+        if(columnFlow(this.level)){const open=region.cells.every(index=>this.cellOpen[index]);if(open&&!this.regionOpen[i])openedRegions.push(region.id);this.regionOpen[i]=open;return;}
         if(!this.regionOpen[i]&&region.requires.every(id=>this.blockerHp[this.level.obstacles.blockers.findIndex(b=>b.id===id)]===0)){this.regionOpen[i]=true;openedRegions.push(region.id);}
       });
-      return {blockerHits,brokenBlockers,openedRegions,blockerHp:this.blockerHp.slice(),regionOpen:this.regionOpen.slice()};
+      return {blockerHits,brokenBlockers,openedRegions,blockerHp:this.blockerHp.slice(),regionOpen:this.regionOpen.slice(),...(previousOpen?{cellOpen:this.cellOpen.slice(),openedCells:this.cellOpen.map((open,i)=>open&&!previousOpen[i]?i:-1).filter(i=>i>=0)}:{})};
     }
     _gravityColumns(){
       if(!obstacleRules(this.level))return this.topology.columns;
@@ -260,12 +295,12 @@
       const reshuffled=(this.status==='playing'?this._ensurePlayable():false)||safetyReset;
       return {ok:true,reason:null,frames,scoreGain:totalGain,reshuffled};
     }
-    snapshot(){return {version:obstacleRules(this.level)?5:4,rulesVersion:obstacleRules(this.level)?'classic-v5':'classic-v4',...(obstacleRules(this.level)?{obstacleVersion:'obstacles-v1',blockerHp:this.blockerHp.slice(),regionOpen:this.regionOpen.slice()}:{}),values:this.values.slice(),layers:this.layers.slice(),score:this.score,movesLeft:this.movesLeft,turn:this.turn,rngState:this.rngState,history:this.history.map(p=>p.slice())};}
+    snapshot(){return {version:obstacleRules(this.level)?5:4,rulesVersion:obstacleRules(this.level)?'classic-v5':'classic-v4',...(obstacleRules(this.level)?{obstacleVersion:'obstacles-v1',blockerHp:this.blockerHp.slice(),regionOpen:this.regionOpen.slice(),...(columnFlow(this.level)?{cellOpen:this.cellOpen.slice()}:{} )}:{}),values:this.values.slice(),layers:this.layers.slice(),score:this.score,movesLeft:this.movesLeft,turn:this.turn,rngState:this.rngState,history:this.history.map(p=>p.slice())};}
     clone(){
       const copy=Object.create(HexMatch.prototype);
       copy.level=this.level;copy.topology=this.topology;copy.neighbors=this.neighbors;
       copy.values=this.values.slice();copy.layers=this.layers.slice();copy.score=this.score;copy.movesLeft=this.movesLeft;copy.turn=this.turn;copy.rngState=this.rngState;copy.history=this.history.map(p=>p.slice());
-      if(obstacleRules(this.level)){copy.blockerHp=this.blockerHp.slice();copy.regionOpen=this.regionOpen.slice();}
+      if(obstacleRules(this.level)){copy.blockerHp=this.blockerHp.slice();copy.regionOpen=this.regionOpen.slice();if(columnFlow(this.level))copy.cellOpen=this.cellOpen.slice();}
       return copy;
     }
     _restore(s){
@@ -280,6 +315,7 @@
     _restoreObstacles(s){
       const invalid=()=>{throw new Error('Invalid match-three checkpoint');};
       if(!s||s.version!==5||s.rulesVersion!=='classic-v5'||s.obstacleVersion!=='obstacles-v1'||!dense(s.values)||s.values.length!==this.total||!dense(s.layers)||s.layers.length!==this.total||!dense(s.blockerHp)||s.blockerHp.length!==this.blockerHp.length||s.blockerHp.some((hp,i)=>!Number.isInteger(hp)||hp<0||hp>this.level.obstacles.blockers[i].hp)||!dense(s.regionOpen)||s.regionOpen.length!==this.regionOpen.length||s.regionOpen.some(v=>typeof v!=='boolean')||!int32(s.score)||s.score<0||!int32(s.movesLeft)||s.movesLeft<0||s.movesLeft>this.level.moves||s.turn!==this.level.moves-s.movesLeft||!Number.isInteger(s.rngState)||s.rngState<=0||s.rngState>0xffffffff||!dense(s.history)||s.history.length!==s.turn||s.history.some(p=>!dense(p)||p.length!==2||!this.adjacent(p[0],p[1])))invalid();
+      if(columnFlow(this.level)&&(!dense(s.cellOpen)||s.cellOpen.length!==this.total||s.cellOpen.some(v=>typeof v!=='boolean')))invalid();
       const replay=new HexMatch(this.level);
       for(const pair of s.history)if(!replay.swap(...pair).ok)invalid();
       const expected=replay.snapshot();
@@ -287,7 +323,7 @@
       // Replay is the authority: settled active cells must be full and inactive
       // cells null. No weaker v4 checkpoint validation is used for v5.
       if(!replay._validRecoveryValues()||replay.findMatches().length)invalid();
-      Object.assign(this,{values:replay.values,layers:replay.layers,score:replay.score,movesLeft:replay.movesLeft,turn:replay.turn,rngState:replay.rngState,history:replay.history,blockerHp:replay.blockerHp,regionOpen:replay.regionOpen});
+      Object.assign(this,{values:replay.values,layers:replay.layers,score:replay.score,movesLeft:replay.movesLeft,turn:replay.turn,rngState:replay.rngState,history:replay.history,blockerHp:replay.blockerHp,regionOpen:replay.regionOpen,...(columnFlow(this.level)?{cellOpen:replay.cellOpen}:{} )});
     }
     hint(options={}){
       if(this.status!=='playing')return null;

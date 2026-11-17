@@ -12,5 +12,7 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="../Gameplay/*.cs" />
+    <Compile Include="../Catalog/CatalogWire.cs" />
+    <Compile Include="../Contracts/Wire.cs" />
   </ItemGroup>
 </Project>

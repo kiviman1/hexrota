@@ -19,8 +19,8 @@ function execute(request){
    else if(s.op==='restore'){g._restore(copy(s.snapshot));result=true;resumes++;}
    else if(s.op==='resume'){g=new Engine(request.level,g.snapshot());result=true;resumes++;}
    else if(s.op==='replay'){const replay=new Engine(request.level);for(const pair of g.history)assert(replay.swap(...pair).ok);g=replay;result=true;replays++;}
-   else if(s.op==='clone'){const c=g.clone();result=observed(c);if(c.blockerHp.length)c.blockerHp[0]=-100;if(c.regionOpen.length)c.regionOpen[0]=!c.regionOpen[0];clones++;}
-   else if(s.op==='inject'){for(const k of ['values','layers','blockerHp','regionOpen','score','movesLeft'])if(k in s)g[k]=copy(s[k]);result=true;}
+   else if(s.op==='clone'){const c=g.clone();result=observed(c);if(c.blockerHp.length)c.blockerHp[0]=-100;if(c.regionOpen.length)c.regionOpen[0]=!c.regionOpen[0];if(c.cellOpen?.length)c.cellOpen[0]=!c.cellOpen[0];clones++;}
+   else if(s.op==='inject'){for(const k of ['values','layers','blockerHp','regionOpen','cellOpen','score','movesLeft'])if(k in s)g[k]=copy(s[k]);result=true;}
    else throw Error('Unknown obstacle step');
   }catch{error=true;rejects++;}
   rows.push({error,result,after:observed(g),legalMoves:copy(g.legalMoves())});
@@ -67,6 +67,33 @@ const mutations=[l=>l.cells[1]={...l.cells[0]},l=>l.cells[0].q=.5,l=>l.initial[0
 mutations.forEach((mutate,i)=>{const bad=copy(a);mutate(bad);construct('invalid level '+i,bad);assert.equal(expected.at(-1).error,true);});
 for(const kind of ['null','omitted','zero']){const level=copy(a);if(kind==='null')level.cells[0].layers=null;else if(kind==='omitted')delete level.cells[0].layers;else level.cells[0].layers=0;construct('v5 '+kind+' ground layers',level);}
 for(const level of levels)construct('exact valid initial '+level.id,level);
+// Physical source-fed L6 uses both typed DTO and portable CatalogWire loaders.
+const flowLevel=copy(require('./data/campaign-flow-levels-v1.json').levels[0]);
+function flowAdd(label,steps){for(const wire of [false,true]){const r=copy({operation:'obstacle',wire,level:flowLevel,steps});requests.push(r);expected.push(execute(r));labels.push('column flow '+label+(wire?' portable wire':' typed'));}}
+function flowConstruct(label,level){for(const wire of [false,true]){const r=copy({operation:'construct',wire,level});requests.push(r);expected.push(execute(r));labels.push('column flow '+label+(wire?' portable wire':' typed'));}}
+for(const [i,route]of flowLevel.solutions.entries()){
+ const probe=new Engine(flowLevel),steps=[];
+ for(const pair of probe.topology.pairs.filter(([a,b])=>!probe.isPlayable(a)||!probe.isPlayable(b)))steps.push({op:'swap',pair});
+ for(const pair of route){assert(probe.swap(...pair).ok);const bad=probe.snapshot();bad.cellOpen[0]=!bad.cellOpen[0];steps.push({op:'swap',pair},{op:'clone'},{op:'resume'},{op:'replay'},{op:'restore',snapshot:bad});}
+ assert.equal(probe.status,'won');flowAdd('certified route '+i,steps);
+}
+for(let trial=0;trial<6;trial++){
+ const probe=new Engine(flowLevel),steps=[];let seed=trial+1;
+ while(probe.status==='playing'){const legal=probe.legalMoves();assert(legal.length);seed=(Math.imul(seed,1664525)+1013904223)>>>0;const pair=copy(legal[seed%legal.length]);assert(probe.swap(...pair).ok);steps.push({op:'swap',pair});}
+ steps.push({op:'resume'},{op:'clone'},{op:'replay'});flowAdd('alternative legal run '+trial,steps);
+}
+const flowAt=(q,r)=>at(flowLevel,q,r),left=flowAt(-2,-1),center=flowAt(0,-1);
+flowAdd('one hole opens only same q and leaves remote lanes closed',[{op:'damage',matched:[left]},{op:'gravity',matched:[]},{op:'clone'}]);
+flowAdd('HP2 first hit remains closed and second opens its physical lane',[{op:'damage',matched:[center,center]},{op:'gravity',matched:[]},{op:'damage',matched:[center]},{op:'gravity',matched:[]}]);
+flowAdd('descriptive region reports complete only when all physical lanes open',flowLevel.obstacles.blockers.flatMap(box=>Array.from({length:box.hp},()=>({op:'damage',matched:[flowAt(flowLevel.cells[box.cell].q,-1)]}))).concat([{op:'gravity',matched:[]} ]));
+flowAdd('recovery preserves closed lanes and RNG parity',[{op:'inject',values:new Engine(flowLevel).values.map((v,i)=>new Engine(flowLevel).isPlayable(i)?1:null)},{op:'ensure'},{op:'clone'}]);
+flowAdd('stable generation honors physical source mask',[{op:'stable'},{op:'ensure'}]);
+const flowProbe=new Engine(flowLevel);flowProbe.swap(...flowLevel.solutions[0][0]);
+for(const mutate of [s=>delete s.cellOpen,s=>s.cellOpen[0]=!s.cellOpen[0],s=>s.cellOpen.pop(),s=>s.cellOpen[0]=1,s=>s.regionOpen[0]=!s.regionOpen[0],s=>s.values[0]=null]){const bad=copy(flowProbe.snapshot());mutate(bad);flowAdd('forged cell flow snapshot',[{op:'restore',snapshot:bad}]);}
+const flowMutations=[l=>l.obstacles.sources.push(l.obstacles.sources[0]),l=>l.obstacles.sources[0]=-1,l=>l.obstacles.sources[0]=.5,l=>l.obstacles.sources[0]=l.cells.length,l=>l.obstacles.sources=[],l=>l.obstacles.sources=null,l=>delete l.obstacles.sources,l=>l.obstacles.regions[0].requires=['l6-crate-0'],l=>l.obstacles.activation='column-flow-v2',l=>l.obstacles.activation=null,l=>l.obstacles.blockers[0].regionId=l.obstacles.regions[0].id,l=>l.obstacles.sources[0]=flowAt(-2,1),l=>l.obstacles.sources[0]=flowAt(-1,-1),l=>l.initial[flowAt(2,1)]=1,l=>l.cells[flowAt(-2,1)].r=10];
+flowMutations.forEach((mutate,i)=>{const bad=copy(flowLevel);mutate(bad);flowConstruct('invalid source geometry '+i,bad);assert.equal(expected.at(-1).error,true);});
+flowConstruct('exact published L6',flowLevel);
+for(const kind of ['null','omitted','zero']){const level=copy(flowLevel);if(kind==='null')level.cells[0].layers=null;else if(kind==='omitted')delete level.cells[0].layers;else level.cells[0].layers=0;flowConstruct(kind+' ground defaults',level);}
 let temp;try{
  const dotnet=[process.env.DOTNET_PATH,'dotnet','/workspace/scratch/dotnet/dotnet',path.join(os.homedir(),'.dotnet','dotnet')].filter(Boolean).find(bin=>{const r=spawnSync(bin,['--version'],{encoding:'utf8'});return r.status===0&&/^8\./.test(r.stdout.trim());});assert(dotnet,'actual .NET 8 is required');
  const run=(args,options={})=>{const r=spawnSync(dotnet,args,{cwd:__dirname,encoding:'utf8',timeout:180000,maxBuffer:128*1024*1024,...options});if(r.status!==0)throw Error(r.stdout+'\n'+r.stderr);return r.stdout;};
@@ -74,5 +101,5 @@ let temp;try{
  run(['build','unity/GameplayParityHarness/Hexrota.GameplayParity.csproj','--configuration','Release','--nologo','--verbosity','quiet','--output',output,'-p:BaseIntermediateOutputPath='+path.join(temp,'obj')+path.sep,'-p:RestoreConfigFile='+path.join(__dirname,'unity/GameplayParityHarness/NuGet.Config')]);
  const rows=run([path.join(output,'Hexrota.GameplayParity.dll')],{input:requests.map(r=>JSON.stringify(r)).join('\n')+'\n'}).trim().split(/\r?\n/).map(line=>JSON.parse(line));
  assert.equal(rows.length,requests.length);for(let i=0;i<rows.length;i++){if(expected[i].error)assert.equal(rows[i].error,true,labels[i]);else assert.deepEqual(rows[i],expected[i],labels[i]);}
- console.log(`Obstacles JS/C# parity passed: ${requests.length} scenarios; 6 certified routes + 36 alternative legal runs; ${swaps} valid swaps, ${resumes} resumes, ${replays} replays, ${clones} clone checks, ${rejects} rejected snapshot attempts; full damage/unlock/fall/refill/RNG/status JSON. Actual .NET 8, C# 7.3.`);
+ console.log(`Obstacles JS/C# parity passed: ${requests.length} scenarios; 6 gated certified routes + 2 flow routes in typed/portable loaders + 48 alternative legal runs; ${swaps} valid swaps, ${resumes} resumes, ${replays} replays, ${clones} clone checks, ${rejects} rejected snapshot attempts; full damage/unlock/fall/refill/RNG/status JSON. Actual .NET 8, C# 7.3.`);
 }catch(error){console.error(error.stack||error);process.exitCode=1;}finally{if(temp)fs.rmSync(temp,{recursive:true,force:true});}

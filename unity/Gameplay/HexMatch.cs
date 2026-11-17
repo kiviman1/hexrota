@@ -12,6 +12,8 @@ namespace Hexrota.Gameplay
         public int[] layers;
         public int[] blockerHp;
         public bool[] regionOpen;
+        public bool[] cellOpen;
+        public bool HasColumnFlow { get { return HasObstacles && level.obstacles.activation == "column-flow-v1"; } }
         public bool HasObstacles { get { return level.rulesVersion == "classic-v5"; } }
         public int score;
         public int movesLeft;
@@ -63,12 +65,13 @@ namespace Hexrota.Gameplay
             ValidateLevel(level);
             values = Duplicate(level.initial); layers = new int[level.cells.Length];
             for (int i = 0; i < layers.Length; i++) layers[i] = InitialLayers(level.cells[i]);
-            blockerHp = null; regionOpen = null;
+            blockerHp = null; regionOpen = null; cellOpen = null;
             if (HasObstacles)
             {
                 blockerHp = new int[level.obstacles.blockers.Length];
                 for (int i = 0; i < blockerHp.Length; i++) blockerHp[i] = level.obstacles.blockers[i].hp;
                 regionOpen = new bool[level.obstacles.regions.Length];
+                if (HasColumnFlow) RefreshColumnFlow();
             }
             score = 0; movesLeft = level.moves; turn = 0;
             rngState = XorShift32.InitialState(level.seed); history = new List<int[]>();
@@ -301,7 +304,7 @@ namespace Hexrota.Gameplay
                 foreach (int index in matched) layers[index] = Math.Max(0, layers[index] - 1);
                 WaveFrame obstacle = DamageBlockers(matched);
                 score += gain; totalGain += gain; GravityResult refill = Gravity(matched);
-                frames.Add(new WaveFrame { blockerHits = obstacle.blockerHits, brokenBlockers = obstacle.brokenBlockers, openedRegions = obstacle.openedRegions, blockerHp = obstacle.blockerHp, regionOpen = obstacle.regionOpen, matched = Duplicate(matched), before = before, after = Duplicate(values), layers = Duplicate(layers), scoreGain = gain, compacted = refill.compacted, refill = refill.refill, falls = refill.falls });
+                frames.Add(new WaveFrame { cellOpen = obstacle.cellOpen, openedCells = obstacle.openedCells, blockerHits = obstacle.blockerHits, brokenBlockers = obstacle.brokenBlockers, openedRegions = obstacle.openedRegions, blockerHp = obstacle.blockerHp, regionOpen = obstacle.regionOpen, matched = Duplicate(matched), before = before, after = Duplicate(values), layers = Duplicate(layers), scoreGain = gain, compacted = refill.compacted, refill = refill.refill, falls = refill.falls });
                 matched = FindMatches();
                 if (frames.Count >= 32 && matched.Length != 0) { StableBoard(); safetyReset = true; break; }
             }
@@ -313,12 +316,13 @@ namespace Hexrota.Gameplay
         {
             var route = new int[history.Count][];
             for (int i = 0; i < route.Length; i++) route[i] = Duplicate(history[i]);
-            return new GameSnapshot { version = HasObstacles ? 5 : 4, rulesVersion = HasObstacles ? "classic-v5" : "classic-v4", obstacleVersion = HasObstacles ? "obstacles-v1" : null, blockerHp = HasObstacles ? Duplicate(blockerHp) : null, regionOpen = HasObstacles ? Duplicate(regionOpen) : null, values = Duplicate(values), layers = Duplicate(layers), score = score, movesLeft = movesLeft, turn = turn, rngState = rngState, history = route };
+            return new GameSnapshot { version = HasObstacles ? 5 : 4, rulesVersion = HasObstacles ? "classic-v5" : "classic-v4", obstacleVersion = HasObstacles ? "obstacles-v1" : null, cellOpen = HasColumnFlow ? Duplicate(cellOpen) : null, blockerHp = HasObstacles ? Duplicate(blockerHp) : null, regionOpen = HasObstacles ? Duplicate(regionOpen) : null, values = Duplicate(values), layers = Duplicate(layers), score = score, movesLeft = movesLeft, turn = turn, rngState = rngState, history = route };
         }
         public HexMatch Clone()
         {
             var clone = new HexMatch(level, topology, false);
             clone.values = Duplicate(values); clone.layers = Duplicate(layers);
+            clone.cellOpen = HasColumnFlow ? Duplicate(cellOpen) : null;
             clone.blockerHp = HasObstacles ? Duplicate(blockerHp) : null; clone.regionOpen = HasObstacles ? Duplicate(regionOpen) : null;
             clone.score = score; clone.movesLeft = movesLeft; clone.turn = turn; clone.rngState = rngState;
             clone.history = new List<int[]>(history.Count);
@@ -340,6 +344,7 @@ namespace Hexrota.Gameplay
             if (snapshot == null || snapshot.version != (HasObstacles ? 5 : 4) || snapshot.rulesVersion != (HasObstacles ? "classic-v5" : "classic-v4") || snapshot.values == null || snapshot.values.Length != n || snapshot.layers == null || snapshot.layers.Length != n || snapshot.score < 0 || snapshot.movesLeft < 0 || snapshot.movesLeft > level.moves || snapshot.turn != level.moves - snapshot.movesLeft || snapshot.rngState == 0 || snapshot.history == null || snapshot.history.Length != snapshot.turn)
                 throw new ArgumentException("Invalid match-three checkpoint");
             if (HasObstacles && (snapshot.obstacleVersion != "obstacles-v1" || snapshot.blockerHp == null || snapshot.blockerHp.Length != blockerHp.Length || snapshot.regionOpen == null || snapshot.regionOpen.Length != regionOpen.Length)) throw new ArgumentException("Invalid match-three checkpoint");
+            if (HasColumnFlow && (snapshot.cellOpen == null || snapshot.cellOpen.Length != Total)) throw new ArgumentException("Invalid match-three checkpoint");
             for (int i = 0; i < n; i++)
             {
                 if ((!HasObstacles && !snapshot.values[i].HasValue) || (snapshot.values[i].HasValue && Array.IndexOf(level.palette, snapshot.values[i].Value) < 0) || snapshot.layers[i] < 0 || snapshot.layers[i] > InitialLayers(level.cells[i]))
@@ -357,9 +362,10 @@ namespace Hexrota.Gameplay
                 for (int i = 0; i < blockerHp.Length && same; i++) same = replay.blockerHp[i] == snapshot.blockerHp[i];
                 for (int i = 0; i < regionOpen.Length && same; i++) same = replay.regionOpen[i] == snapshot.regionOpen[i];
             }
+            if (HasColumnFlow) for (int i = 0; i < Total && same; i++) same = replay.cellOpen[i] == snapshot.cellOpen[i];
             if (HasObstacles && (!replay.IsValidRecoveryValues() || replay.FindMatches().Length != 0)) same = false;
             if (!same) throw new ArgumentException("Checkpoint does not match its history");
-            blockerHp = replay.blockerHp; regionOpen = replay.regionOpen;
+            blockerHp = replay.blockerHp; regionOpen = replay.regionOpen; cellOpen = replay.cellOpen;
             values = replay.values; layers = replay.layers; score = replay.score;
             movesLeft = replay.movesLeft; turn = replay.turn; rngState = replay.rngState; history = replay.history;
         }
