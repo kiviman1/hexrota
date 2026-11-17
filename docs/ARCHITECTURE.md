@@ -44,10 +44,10 @@ Görsel olaylar oyun kuralı değildir. Hamlenin kanonik sonucu önce kesinleşi
 | `data/scene-config-v1.json` → `dist/scene-config.json` / `.js` | Sunum şeması v2: öğretici aşamaları, sayaç tanımları, yerel yollar ve sunum ayarları | İkinci kalıcı ilerleme sayacı veya yeni kayıt sürümü tanımlamak |
 | `dist/score-presentation.js` | Enjekte edilen görünüm bağımlılıklarıyla puan animasyonunun yaşam döngüsü | Kalıcı skor, Altın, hamle veya RNG değiştirmek |
 | `dist/engine.js` | `classic-v4` takas/eşleşme/düşüş/üretim ve replay | Ekonomi veya DOM |
-| `dist/commands.js` | `assisted-v1` yardımlı komut geçmişi | Klasik v4 geçmişini sessizce yeniden yorumlamak |
+| `dist/commands.js` | `assisted-v1` yardımlı komut geçmişi; yeni istek uygunluğu ve yalnız restore için private tarihsel replay | Klasik v4 geçmişini sessizce yeniden yorumlamak |
 | `dist/attempts.js` | Katalog, seçim RNG'si, sürümlü varyant/deneme kimliği | Oyun RNG'sini veya fiyatları okumak |
 | `dist/economy.js` | Kalıcı tamamlama, Altın, yıldız, stok ve ödül hakları | Tekrar oynayarak yeni hak oluşturmak |
-| `dist/lives.js`, `dist/rescue.js` | Can ve aynı denemede ikinci şans kuralları | Doğrulanmamış callback'i ödeme/reklam kanıtı saymak |
+| `dist/lives.js`, `dist/rescue.js` | Can ve aynı denemede ikinci şans kuralları; kazanılmış teslim edilmemiş makbuzun mevcut provider kaydında saklanması | Doğrulanmamış callback'i ödeme/reklam kanıtı saymak |
 | `dist/rewards.js`, `dist/reward-adapter.js` | Gerçek hamle verisinden sunum yoğunluğu | Skor veya kazanma olasılığını değiştirmek |
 | `dist/events.js`, `dist/playtest.js` | Yerel olay ve isteğe bağlı gözlem sözleşmeleri | Otomatik kişisel veri gönderimi |
 | `dist/garden.js`, `dist/audio.js` | Kalıcı yıldızlardan görünüm; kullanıcı tercihiyle ses | Yeni ödül üretmek |
@@ -94,7 +94,7 @@ Başarılı `resetForTesting` sonrasında full-reset bariyeri önce etkinleşir,
 
 `src/styles/manifest.json` kaynak bölümlerinin sırasını belirler. `npm run styles:sync`, bunları **aynı sırada tek `dist/style.css`** dosyasına birleştirir. Tarayıcıda `@import` zinciri veya ek CSS isteği yoktur. Mevcut çizgi roman temasından sonra hazır `dist/assets/scenes/coop-v1/tavik-motion.css`, `src/styles/07-coop-scene.css` ve son olarak `src/styles/08-tavik-dialogue.css` gelir. Hazır hareket CSS'i varlık hash sözleşmesinin parçasıdır; değiştirilmez. Yeni sahne yerleşimi `07-coop-scene.css`, koç içi portre yerleşimi `08-tavik-dialogue.css` içinde düzenlenir; üretilmiş çıktı da commit edilir.
 
-`dist/index.html` bağımlılıkları `defer` sırasıyla yükler. Yeni runtime betiği eklenince `dist/sw.js` allowlist/önbellek listesi, HTML, Worker query ve `qa-fixtures.cjs` birlikte güncellenir. Güncel uygulama **PWA v42** kullanır; `app-state.js`, `state-selectors.js`, `state-effects.js`, `move-presentation.js` de app boot öncesi yüklenip aynı çevrimdışı kabuğa alınır. Bu yalnız runtime/CSS önbellek kuşağıdır; kayıt formatının veya oyun kurallarının sürümünü değiştirmez. Hareket adaptörü, yapılandırma ve sahne modülü çevrimdışı kabuğa dahildir. Üç yeni JPEG ihtiyaçla yüklenir; ilk çevrimdışı fallback için `foundation.jpg` ve mevcut `idle.webp` ayrıca ısıtılır: toplam 276.693 byte. Hazır eski varlıklar korunur; yeni akış eski yatay arka planları istemez. Kaynak PNG'ler ve bağımsız prova sayfası bu kapsamda değildir. JPEG/WebP içerik türü doğrulanır; görsel hatası oyunu veya kayıtları engellemez.
+`dist/index.html` bağımlılıkları `defer` sırasıyla yükler. Yeni runtime betiği eklenince `dist/sw.js` allowlist/önbellek listesi, HTML, Worker query ve `qa-fixtures.cjs` birlikte güncellenir. Güncel uygulama **PWA v43** kullanır; `app-state.js`, `state-selectors.js`, `state-effects.js`, `move-presentation.js` de app boot öncesi yüklenip aynı çevrimdışı kabuğa alınır. Bu yalnız runtime/CSS önbellek kuşağıdır; kayıt formatının veya oyun kurallarının sürümünü değiştirmez. Hareket adaptörü, yapılandırma ve sahne modülü çevrimdışı kabuğa dahildir. Üç yeni JPEG ihtiyaçla yüklenir; ilk çevrimdışı fallback için `foundation.jpg` ve mevcut `idle.webp` ayrıca ısıtılır: toplam 276.693 byte. Hazır eski varlıklar korunur; yeni akış eski yatay arka planları istemez. Kaynak PNG'ler ve bağımsız prova sayfası bu kapsamda değildir. JPEG/WebP içerik türü doğrulanır; görsel hatası oyunu veya kayıtları engellemez.
 
 ## Tavik sahnesinin sunum sözleşmesi
 

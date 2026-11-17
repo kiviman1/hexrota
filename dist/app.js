@@ -242,6 +242,13 @@ window.HexSessionStore.boot(function startApp(session) {
     if(!entry?.metadata||!entry.game)return null;
     return {attemptId:entry.metadata.attemptId,levelId:entry.level.id,tutorial:index<tutorialCount,cleared:campaignCleared(index),status:entry.game.status,movesLeft:entry.game.movesLeft,turn:entry.game.turn,lastCommand:entry.game.commands?.at(-1)?.type||(entry.game.history.length?'swap':'none'),rescuesUsed:validCounter(entry.game.usage?.rescue)};
   }
+  // An earned receipt remains bound to its original attempt even when its
+  // board cannot currently accept +5. Querying it never grants or pays.
+  function retainedRescueReceipt(index=active){
+    if(!rescueManager||!saved.rescue||index<tutorialCount)return null;
+    const identity=lifeStageIdentity(index);if(!identity)return null;
+    try{return rescueManager.retainedReceiptFor(saved.rescue,{attemptId:identity.attemptId,levelId:identity.levelId});}catch(_){return null;}
+  }
   function rescueOffer(index=active){
     if(!rescueManager||!saved.rescue||index<tutorialCount||!canOpen(index)||lifeDiscarded(index))return null;
     try{
@@ -252,7 +259,12 @@ window.HexSessionStore.boot(function startApp(session) {
       return offer;
     }catch(_){return null;}
   }
-  function recoverableLoss(index){return rescueOffer(index)?.eligible===true;}
+  function recoverableLoss(index){
+    const offer=rescueOffer(index);if(!offer)return false;
+    if(offer.eligible)return true;
+    // Read-only review of a stored right is not grant eligibility.
+    return validCheckpoint(index)?.status==='lost'&&!!retainedRescueReceipt(index);
+  }
   function resumeSecondChance(index){
     if(!campaignEntryAllowed(index)||!recoverableLoss(index))return false;
     if(!loadLevel(index,false,{activate:false}))return false;
@@ -280,12 +292,12 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   function renderRescue(){
     if(!rescueManager||!saved.rescue)return;
-    const offer=rescueOffer(),lost=active>=tutorialCount&&!attemptPending&&!saveBlocked&&engine?.status==='lost';
+    const offer=rescueOffer(),held=retainedRescueReceipt(),lost=active>=tutorialCount&&!attemptPending&&!saveBlocked&&engine?.status==='lost';
     $('second-chance-panel').hidden=!lost;
-    $('second-chance-ad').disabled=!offer?.eligible||!(offer.ad.allowed||offer.ad.pendingTransactionId);
+    $('second-chance-ad').disabled=!(pendingRescueReceipt||held)&&(!offer?.eligible||!(offer.ad.allowed||offer.ad.pendingTransactionId));
     $('second-chance-gold').disabled=!offer?.gold.allowed||lifeWriteFailed||!!pendingRescueReceipt;
     $('second-chance-gold').textContent=`${window.HEX_ECONOMY_CONFIG.rescue.goldCost} Altın · +5 hamle`;
-    $('second-chance-ad').textContent=pendingRescueReceipt?'Kazandığın +5 hamleyi kaydet':offer?.ad.pendingTransactionId?'Yarım kalan TEST reklamını aç':'TEST reklamı · +5 hamle';
+    $('second-chance-ad').textContent=pendingRescueReceipt?'Kazandığın +5 hamleyi kaydet':held?offer?.eligible?'Saklanan +5 hamleyi kullan':'Saklanan ödülü kontrol et':offer?.ad.pendingTransactionId?'Yarım kalan TEST reklamını aç':'TEST reklamı · +5 hamle';
     $('setting-rescue-ad').checked=saved.rescue.provider.adAvailable;
     const reason=offer?.reason||offer?.ad.reason;
     let message;
@@ -298,19 +310,22 @@ window.HexSessionStore.boot(function startApp(session) {
     else message=`İkinci şans reklamı: bugün ${offer.ad.remainingToday} hak kaldı. Can reklamlarından ayrıdır.`;
     if(offer?.eligible&&!offer.gold.allowed)message+=' Altın seçeneği için bakiyen yetersiz.';
     else if(offer?.gold.allowed&&['ad_unavailable','daily_limit','daily_reserved'].includes(reason))message+=' Altınla devam edebilirsin.';
-    if(pendingRescueReceipt)message='Ödülü zaten kazandın. Altın harcamadan kaydetmeyi tekrar dene; yeni reklam gerekmez.';
+    if(held)message=offer?.eligible?'Reklam ödülün saklandı. Yeni reklam izlemeden veya Altın harcamadan kullanabilirsin.':reason==='no_legal_swaps'?'Reklam ödülün saklandı. Bu tahtada eşleşme yapacak hamle yok; ödül şu an uygulanamıyor. Menüye dönebilir veya yeni bir deneme başlatabilirsin.':'Reklam ödülün saklandı. Bu denemede şu an kullanılamıyor. Menüye dönebilirsin; hak kaybolmaz.';
+    if(pendingRescueReceipt)message='Ödülün henüz kaydedilemedi. Altın harcamadan kaydetmeyi tekrar dene; yeni reklam gerekmez.';
     $('second-chance-status').textContent=message;
   }
   function showRescueProvider(id){
-    pendingRescueProvider=id;const proof=pendingRescueReceipt?.receipt.transactionId===id;
-    $('rescue-provider-title').textContent=proof?'Ödülün kaydedilmeyi bekliyor':'TEST reklamı: +5 hamle';
-    $('rescue-provider-description').textContent=proof?'Tamamlanan TEST işleminin doğrulanmış ödülü henüz kaydedilemedi. Aynı ödülü kaydetmeyi tekrar dene; yeni reklam başlatılmaz.':'Bu yerel test gerçek reklam göstermez. Yalnız tamamladığında aynı tahtana 5 hamle eklenir.';
+    pendingRescueProvider=id;const pending=pendingRescueReceipt?.receipt.transactionId===id,held=retainedRescueReceipt()?.receipt.transactionId===id,proof=pending||held;
+    $('rescue-provider-title').textContent=pending?'Ödülün kaydedilmeyi bekliyor':held?'Saklanan reklam ödülün':'TEST reklamı: +5 hamle';
+    $('rescue-provider-description').textContent=pending?'Tamamlanan TEST işleminin doğrulanmış ödülü henüz kaydedilemedi. Aynı ödülü kaydetmeyi tekrar dene; yeni reklam başlatılmaz.':held?'Bu ödül kaydedildi. Aynı denemen uygunsa +5 hamleyi kullanabilirsin. Yeni reklam izlemen veya Altın harcaman gerekmez.':'Bu yerel test gerçek reklam göstermez. Yalnız tamamladığında aynı tahtana 5 hamle eklenir.';
     $('rescue-provider-confirm').hidden=!!proof;$('rescue-receipt-retry').hidden=!proof;
+    $('rescue-receipt-retry').textContent=pending?'Kaydetmeyi tekrar dene':'Ödülü kullanmayı dene';
     openModal('rescue-provider-dialog');
   }
   function beginRescueAd(){
     if(pendingRescueReceipt){showRescueProvider(pendingRescueReceipt.receipt.transactionId);return {applied:false,reason:'pending_rescue_delivery'};}
     if(appScreen()!=='game'||!$('lose-dialog').open||appBusy()||appPaused()||lifeWriteFailed)return {applied:false,reason:'unavailable'};
+    const held=retainedRescueReceipt();if(held){showRescueProvider(held.receipt.transactionId);return {applied:false,reason:'receipt_pending_delivery'};}
     const offer=rescueOffer();if(!offer?.eligible)return {applied:false,reason:'unavailable'};
     if(offer.ad.pendingTransactionId){showRescueProvider(offer.ad.pendingTransactionId);return {applied:false,reason:'ad_pending'};}
     if(!offer.ad.allowed){renderRescue();return {applied:false,reason:offer.ad.reason};}
@@ -345,20 +360,52 @@ window.HexSessionStore.boot(function startApp(session) {
     pendingRescueProvider=null;pendingRescueReceipt=null;closeAllDialogs();render();renderLevels();updateMenus();renderLives();renderRescue();
     toast('Aynı tahtana 5 hamle eklendi.');return {applied:true,reason:'rescued'};
   }
+  function retainRescueDelivery(retained){
+    // Failed grant persistence is handled by applyRescueGrant, never by a
+    // second automatic write here. This path only records an unfulfilled right.
+    const durable=session.current()?.game?.rescue;
+    saved.rescue=retained.state;
+    if(JSON.stringify(durable)!==JSON.stringify(retained.state)){
+      persist();if(!commitSession()){if(pendingRescueReceipt)showRescueProvider(pendingRescueReceipt.receipt.transactionId);return {applied:false,reason:'storage'};}
+    }
+    pendingRescueProvider=null;pendingRescueReceipt=null;closeModal($('rescue-provider-dialog'));
+    renderRescue();updateMenus();toast('Reklam ödülün saklandı. Bu tahtaya şu anda uygulanamıyor; menüye dönebilirsin.');
+    return {applied:false,reason:'receipt_retained'};
+  }
   function applyRescueReceipt(receipt,completedProvider){
-    if(!rescueManager||!activeAttempt||attemptPending||saveBlocked||active<tutorialCount||!canOpen(active)||lifeDiscarded(active)||receipt?.attemptId!==activeAttempt.attemptId||receipt?.levelId!==activeLevel.id)return {applied:false,reason:'attempt_changed'};
-    try{
-      if(engine.status==='lost'&&!engine.legalMoves().length)return {applied:false,reason:'no_legal_swaps'};
-      const result=rescueManager.applyAd(saved.rescue,rescueContext(),receipt,completedProvider);
-      if(!result.applied)return {applied:false,reason:result.reason};
-      pendingRescueReceipt={receipt:lifeClone(receipt),completedProvider:lifeClone(completedProvider||saved.rescue.provider)};
-      return applyRescueGrant(result,saved.economy);
-    }catch(_){return {applied:false,reason:'invalid'};}
+    if(!rescueManager||!saved.rescue)return {applied:false,reason:'unavailable'};
+    let retained;
+    try{retained=rescueManager.retainAdReceipt(saved.rescue,receipt,completedProvider);}catch(_){return {applied:false,reason:'invalid'};}
+    if(retained.reason!=='receipt_retained')return {applied:false,reason:retained.reason};
+    const proof=rescueManager.retainedReceiptFor(retained.state,{attemptId:receipt.attemptId,levelId:receipt.levelId});
+    if(!proof)return {applied:false,reason:'unverified_receipt'};
+    pendingRescueReceipt=lifeClone(proof);
+    const sameAttempt=activeAttempt&&!attemptPending&&!saveBlocked&&active>=tutorialCount&&canOpen(active)&&!lifeDiscarded(active)&&receipt.attemptId===activeAttempt.attemptId&&receipt.levelId===activeLevel.id;
+    // The existing offer owns zero-legal-swap and all other board eligibility.
+    // A verified but presently ineligible proof is retained without a grant.
+    if(sameAttempt&&rescueOffer()?.eligible){
+      try{
+        const result=rescueManager.applyAd(saved.rescue,rescueContext(),receipt,proof.completedProvider);
+        if(result.applied){
+          const applied=applyRescueGrant(result,saved.economy);
+          if(applied.applied||applied.reason==='storage')return applied;
+        }
+      }catch(_){
+        // A presentation failure after the atomic grant cannot turn a consumed
+        // receipt back into an unclaimed right. Otherwise roll back before hold.
+        const durable=session.current()?.game?.rescue;
+        try{if(durable&&rescueManager.transactionFor(durable,receipt.transactionId)?.attemptId===receipt.attemptId){pendingRescueProvider=null;pendingRescueReceipt=null;return {applied:true,reason:'rescued'};}}catch(_){}
+        sessionDirty=false;eventState=sessionEventBaseline;restoreDurable();
+      }
+    }
+    return retainRescueDelivery(retained);
   }
   function finishRescueProvider(){
     if(pendingRescueReceipt)return applyRescueReceipt(pendingRescueReceipt.receipt,pendingRescueReceipt.completedProvider);
     const id=pendingRescueProvider;
     if(!id||!$('rescue-provider-dialog').open)return {applied:false,reason:'unavailable'};
+    const held=retainedRescueReceipt();
+    if(held?.receipt.transactionId===id)return applyRescueReceipt(held.receipt,held.completedProvider);
     const result=rescueManager.completeAd(saved.rescue,id,{outcome:'completed'});
     if(!result.receipt)return {applied:false,reason:'unverified_receipt'};
     return applyRescueReceipt(result.receipt,result.completedProvider);
@@ -366,6 +413,7 @@ window.HexSessionStore.boot(function startApp(session) {
   function rescueWithGold(){
     if(pendingRescueReceipt){showRescueProvider(pendingRescueReceipt.receipt.transactionId);return {applied:false,reason:'pending_rescue_delivery'};}
     if(appScreen()!=='game'||!$('lose-dialog').open||appBusy()||appPaused()||lifeWriteFailed)return {applied:false,reason:'unavailable'};
+    const held=retainedRescueReceipt();if(held){showRescueProvider(held.receipt.transactionId);return {applied:false,reason:'receipt_pending_delivery'};}
     const offer=rescueOffer();if(!offer?.gold.allowed)return {applied:false,reason:offer?.gold.reason||'unavailable'};
     const operationId=`rescue:${activeAttempt.attemptId}`,result=rescueManager.applyGold(saved.rescue,rescueContext(),operationId,{gold:economyView().gold});
     if(!result.applied)return {applied:false,reason:result.reason};
@@ -943,7 +991,7 @@ window.HexSessionStore.boot(function startApp(session) {
     renderEconomy();
     document.body.dataset.firstOpening=String(firstOpening);
     $('home-play-label').textContent=next?(next.rescue?'Tahtanı aç':next.resume?'Devam et':next.index===0?'Birlikte başlayalım':'Oyna'):'Bahçeni gör';
-    $('home-play-detail').textContent=next?next.rescue?`${stageLabel(next.index)} · İkinci şans seçeneklerini gör`:next.resume?`${stageLabel(next.index)} · ${validCheckpoint(next.index).movesLeft} hamle kaldı`:next.index===0?'Aynı sayıları eşleştir, puan kazan.':`${stageLabel(next.index)} · ${levels[next.index].name}`:'Yeni bölümler yakında';
+    $('home-play-detail').textContent=next?next.rescue?`${stageLabel(next.index)} · ${retainedRescueReceipt(next.index)&&!rescueOffer(next.index)?.eligible?'Saklanan reklam ödülünü gör':'İkinci şans seçeneklerini gör'}`:next.resume?`${stageLabel(next.index)} · ${validCheckpoint(next.index).movesLeft} hamle kaldı`:next.index===0?'Aynı sayıları eşleştir, puan kazan.':`${stageLabel(next.index)} · ${levels[next.index].name}`:'Yeni bölümler yakında';
     if(firstOpening){$('home-play-label').textContent='Başlayalım';$('home-play-detail').textContent='İlk hamleyi birlikte yapalım';}
     $('home-title').innerHTML=firstOpening?(scenePresentation?'Tavik’in<br><span>ilk kümesi.</span>':'Birlikte<br><span>yeşertelim.</span>'):'Aynı sayıları<br><span>eşleştir.</span>';
     document.querySelector('.home-description').textContent=firstOpening?(scenePresentation?'Eşleştir, ilerle ve kümesi birlikte kur.':'Tavik ile ilk alanı yeşertmeye hazır mısın?'):'Yan yana iki taşın yerini değiştir. Aynı sayıdan en az 3 taş bir sıra oluştursun.';
@@ -1021,14 +1069,14 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   function requestStage(index){
     if(!Number.isInteger(index)||index<0||index>=levels.length||!canOpen(index)||!stateEffects.canOpen('pregame-dialog',modalFacts('pregame-dialog')))return;
-    const recovering=recoverableLoss(index);
+    const recovering=recoverableLoss(index),held=retainedRescueReceipt(index),heldOnly=held&&!rescueOffer(index)?.eligible;
     const level=levels[index],checkpoint=validCheckpoint(index),resume=checkpoint?.status==='playing'&&(checkpoint.turn>0||checkpoint.assisted)&&!lifeDiscarded(index),blocked=!!saved.boards[index]&&!checkpoint;
     pendingStage=index;
     $('pregame-dialog').dataset.learning=index===0?'first':index<tutorialCount?'goals':'';
     if($('pregame-lesson'))$('pregame-lesson').hidden=index!==0;
     $('pregame-dialog').querySelector('.pregame-goals').hidden=index===0;
     $('pregame-tag').textContent=stageLabel(index);$('pregame-title').textContent=level.name;
-    $('pregame-description').textContent=recovering?'Taşların, yeşil alanların ve puanın korunuyor. İkinci şans seçeneklerini görebilir veya yeni bir deneme başlatabilirsin.':blocked?'Bu kayıt açılamadı ve korundu. Yeni deneme başlatırsan bu bölümdeki ilerlemen sıfırlanır.':resume?'Kaldığın yerden devam et.':index===0?'Parlayan 2 ile 1’in yerini değiştir.':`${level.target} puana ulaş ve her yeri yeşile boya. ${level.moves} hamlen var.`;
+    $('pregame-description').textContent=heldOnly?'Saklanan reklam ödülünü ve bu denemenin durumunu görebilirsin. Ödül otomatik kullanılmaz.':recovering?'Taşların, yeşil alanların ve puanın korunuyor. İkinci şans seçeneklerini görebilir veya yeni bir deneme başlatabilirsin.':blocked?'Bu kayıt açılamadı ve korundu. Yeni deneme başlatırsan bu bölümdeki ilerlemen sıfırlanır.':resume?'Kaldığın yerden devam et.':index===0?'Parlayan 2 ile 1’in yerini değiştir.':`${level.target} puana ulaş ve her yeri yeşile boya. ${level.moves} hamlen var.`;
     if($('pregame-note'))$('pregame-note').textContent=index===0?'Kaydırmak yerine iki taşa sırayla da dokunabilirsin.':'Bölümü bitirmek için puanın yeterli olmalı ve her yer yeşil olmalı.';
     $('pregame-target').textContent=level.target;$('pregame-ground').textContent=resume?`${checkpoint.covered} / ${level.cells.length}`:level.cells.length;
     $('pregame-moves').textContent=resume?checkpoint.movesLeft:level.moves;
@@ -1527,7 +1575,7 @@ window.HexSessionStore.boot(function startApp(session) {
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=42');
+            job.worker=new Worker('./hint-worker.js?v=43');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:activeLevel,snapshot:engine.snapshot()});

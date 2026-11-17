@@ -1,5 +1,7 @@
 # Hexrota 9.9 — Çözülebilirlik ve ipucu denetimi
 
+> 9.9a, bu audit'i ve yayın verilerini yeniden yazmaz. R-01 için yeni komut reddi, tarihsel v1 replay ve kazanılmış reklam hakkı korumasının güncel durumu [RESCUE_SAFETY_9_9A.md](RESCUE_SAFETY_9_9A.md) içindedir. R-02, H-01/H-02 ve A-01 bu takip işinde çözülmüş sayılmaz.
+
 ## Kapsam ve sonuç
 
 Başlangıç: PR #28 birleştirildikten sonraki main, `deb948a701b5acc0dd1b3df7aea744cbb670f783`. Denetim mevcut `classic-v4` motorunu, `variants-v1` verisini, mevcut çözücüleri ve görünür bilgi politikalarını kullanır. Yeni çözücü, tarayıcıda ağır arama veya oyun kuralı eklenmedi; yayımlanmış bölüm/veri, ekonomi ve kayıt sözleşmeleri değiştirilmedi.

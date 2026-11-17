@@ -1,6 +1,6 @@
 /* A scoped offline shell. Authentication pages and arbitrary requests are never cached. */
 'use strict';
-const CACHE='hexrota-shell-v42';
+const CACHE='hexrota-shell-v43';
 const BASE=new URL('./',self.location.href);
 const ASSETS=['assets/characters/tavik/front.webp','assets/ui/adventure-book.svg','assets/ui/adventure-backdrop.svg','assets/ui/hex-star-badge.svg','style.css','engine.js','levels.js','tutorials.js','variants.json','variants-data.js','difficulty-rules.json','attempts.js','events.js','lives-config.json','lives-config.js','lives.js','life-providers.js','playtest.js','reward-rules.json','reward-rules.js','rewards.js','reward-adapter.js','audio.js','session-store.js','economy-config.js','economy.js','commands.js','rescue.js','garden.js','game-save.js','board-view.js','board-input.js','score-presentation.js','move-presentation.js','first-play.js','scene-config.js','scene-config.json','assets/scenes/coop-v1/tavik-motion.js','scene-presentation.js','tavik-dialogue.js','app-state.js','state-selectors.js','state-effects.js','app.js','hint-worker.js','pwa.js','manifest.webmanifest','favicon.svg','icons/icon-192.png','icons/icon-512.png','icons/icon-maskable-512.png','icons/apple-touch-icon.png'];
 // Prepared scene art is allowlisted for demand caching, not decoded/downloaded
@@ -37,7 +37,7 @@ const WARM_SCENE_ASSETS=['assets/scenes/tutorial-coop-v1/backgrounds/foundation.
 const ALLOWED=new Set([...ASSETS,...OPTIONAL_SCENE_ASSETS].map(path=>new URL(path,BASE).pathname));
 const OPTIONAL_SCENE_PATHS=new Set(OPTIONAL_SCENE_ASSETS.map(path=>new URL(path,BASE).pathname));
 const HOME=new URL('./',BASE).href;
-const PRELOAD=[...ASSETS,...WARM_SCENE_ASSETS].map(path=>new URL(/\.(?:js|css)$/.test(path)?path+'?v=42':path,BASE).href);
+const PRELOAD=[...ASSETS,...WARM_SCENE_ASSETS].map(path=>new URL(/\.(?:js|css)$/.test(path)?path+'?v=43':path,BASE).href);
 function assetType(url,response){
   if(!response||response.status!==200||response.redirected||response.type==='opaqueredirect')return false;
   const type=(response.headers.get('content-type')||'').split(';')[0].trim().toLowerCase(),path=url.pathname;
@@ -95,7 +95,7 @@ self.addEventListener('fetch',event=>{
     })());return;
   }
   if(!ALLOWED.has(url.pathname))return;
-  if(url.search&&url.search!=='?v=42')return;
+  if(url.search&&url.search!=='?v=43')return;
   event.respondWith((async()=>{
     try{return await storeAsset(request,await fetch(request));}
     catch(_){

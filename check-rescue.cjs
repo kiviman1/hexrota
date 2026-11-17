@@ -14,6 +14,8 @@ function execute(request){
   case'beginAd':return manager.beginAd(state,context);
   case'completeAd':return manager.completeAd(state,id,options);
   case'applyAd':return manager.applyAd(state,context,receipt,completedProvider);
+  case'retainAdReceipt':return manager.retainAdReceipt(state,receipt,completedProvider);
+  case'retainedReceiptFor':return manager.retainedReceiptFor(state,request.identity);
   case'applyGold':return manager.applyGold(state,context,id,options);
   case'setAdAvailable':return manager.setAdAvailable(state,available);
   case'settlementFor':case'transactionFor':return manager[method](state,id);

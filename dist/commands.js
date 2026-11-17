@@ -31,6 +31,50 @@
   function invalid(command,reason,usage){
     return {ok:false,reason,frames:[],scoreGain:0,reshuffled:false,commandId:token(command?.id)?command.id:null,type:typeof command?.type==='string'?command.type:null,duplicate:false,movesSpent:0,layersRemoved:0,usage:clone(usage)};
   }
+  // Only checkpoint restore replays accepted v1 commands under their historical
+  // eligibility rules. New requests never inherit this replay-only context.
+  function applyCommand(input,historicalReplay){
+    const command=canonical(input);
+    if(!command)return invalid(input,'invalid_command',this.usage);
+    const previous=this._results.get(command.id);
+    if(previous)return equal(previous.command,command)?{...clone(previous.result),duplicate:true}:invalid(command,'command_id_conflict',this.usage);
+    if(this.commands.length>=MAX_COMMANDS)return invalid(command,'command_limit',this.usage);
+    const model=this._model.clone(),usage=clone(this.usage),beforeLayers=model.remainingLayers;let bonus=this.bonusMoves,mechanics;
+    if(command.type==='swap'){
+      mechanics=model.swap(command.a,command.b);if(!mechanics.ok)return invalid(command,mechanics.reason,usage);
+    }else if(command.type==='grant_moves'){
+      if(model.status!=='lost'||model.movesLeft!==0||this.commands.at(-1)?.type!=='swap')return invalid(command,'rescue_unavailable',usage);
+      if(usage.rescue>=this.limits.rescue)return invalid(command,'rescue_limit',usage);
+      if(!historicalReplay&&!model.legalMoves().length)return invalid(command,'no_legal_swaps',usage);
+      usage.rescue++;bonus+=5;model.movesLeft+=5;
+      mechanics={ok:true,reason:null,frames:[],scoreGain:0,reshuffled:false};
+    }else{
+      if(model.status!=='playing')return invalid(command,model.status,usage);
+      if(command.index>=model.total)return invalid(command,'invalid_target',usage);
+      if(command.type==='green_brush'){
+        if(model.layers[command.index]===0)return invalid(command,'ground_empty',usage);
+        if(usage.greenBrush>=this.limits.greenBrush)return invalid(command,'green_brush_limit',usage);
+        model.layers[command.index]--;usage.greenBrush++;
+        mechanics={ok:true,reason:null,frames:[],scoreGain:0,reshuffled:false};
+      }else{
+        if(!this.level.palette.includes(command.value)||model.values[command.index]===command.value)return invalid(command,'invalid_value',usage);
+        if(usage.colorKey>=this.limits.colorKey)return invalid(command,'color_key_limit',usage);
+        model.values[command.index]=command.value;usage.colorKey++;
+        const frames=[];let totalGain=0,safetyReset=false,matched=model.findMatches();
+        while(matched.length){
+          const before=model.values.slice(),scoreGain=matched.reduce((sum,index)=>sum+model.values[index],0);
+          for(const index of matched)model.layers[index]=Math.max(0,model.layers[index]-1);
+          model.score+=scoreGain;totalGain+=scoreGain;const refill=model._gravity(matched);
+          frames.push({matched:matched.slice(),before,after:model.values.slice(),layers:model.layers.slice(),scoreGain,...refill});
+          matched=model.findMatches();if(frames.length>=32&&matched.length){model._stableBoard();safetyReset=true;break;}
+        }
+        const reshuffled=(model.status==='playing'?model._ensurePlayable():false)||safetyReset;
+        mechanics={ok:true,reason:null,frames,scoreGain:totalGain,reshuffled};
+      }
+    }
+    const result={...mechanics,commandId:command.id,type:command.type,duplicate:false,movesSpent:command.type==='swap'?1:0,layersRemoved:beforeLayers-model.remainingLayers,usage:clone(usage)};
+    this._model=model;this.usage=usage;this.bonusMoves=bonus;this.commands.push(command);this._results.set(command.id,{command:clone(command),result:clone(result)});return clone(result);
+  }
   class AssistedGame {
     constructor(level,{attemptId,limits:requestedLimits}={},snapshot=null){
       if(!token(attemptId)||(!Number.isSafeInteger(level?.id)&&typeof level?.id!=='string'))fail('Invalid assisted identity');
@@ -89,54 +133,14 @@
       if(!exact(snapshot,snapshotKeys)||snapshot.version!==VERSION||snapshot.rulesVersion!==RULES||snapshot.commandsVersion!==COMMANDS_VERSION||snapshot.baseRulesVersion!=='classic-v4'||snapshot.attemptId!==this.attemptId||snapshot.levelId!==this.level.id||!Array.isArray(snapshot.commands)||snapshot.commands.length>MAX_COMMANDS)fail('Invalid assisted checkpoint');
       this.limits=limits(snapshot.limits);
       if(requestedLimits!==undefined&&!equal(limits(requestedLimits),this.limits))fail('Assisted limits do not match the checkpoint');
-      for(const command of snapshot.commands){const result=this.apply(command);if(!result.ok||result.duplicate)fail('Invalid assisted command history');}
+      for(const command of snapshot.commands){const result=applyCommand.call(this,command,true);if(!result.ok||result.duplicate)fail('Invalid assisted command history');}
       if(!equal(this.snapshot(),snapshot))fail('Assisted checkpoint does not match its command history');
     }
     preview(command){
       const copy=this.clone(),result=copy.apply(command);
       return {result,snapshot:copy.snapshot(),status:copy.status,covered:copy.covered,remainingLayers:copy.remainingLayers};
     }
-    apply(input){
-      const command=canonical(input);
-      if(!command)return invalid(input,'invalid_command',this.usage);
-      const previous=this._results.get(command.id);
-      if(previous)return equal(previous.command,command)?{...clone(previous.result),duplicate:true}:invalid(command,'command_id_conflict',this.usage);
-      if(this.commands.length>=MAX_COMMANDS)return invalid(command,'command_limit',this.usage);
-      const model=this._model.clone(),usage=clone(this.usage),beforeLayers=model.remainingLayers;let bonus=this.bonusMoves,mechanics;
-      if(command.type==='swap'){
-        mechanics=model.swap(command.a,command.b);if(!mechanics.ok)return invalid(command,mechanics.reason,usage);
-      }else if(command.type==='grant_moves'){
-        if(model.status!=='lost'||model.movesLeft!==0||this.commands.at(-1)?.type!=='swap')return invalid(command,'rescue_unavailable',usage);
-        if(usage.rescue>=this.limits.rescue)return invalid(command,'rescue_limit',usage);
-        usage.rescue++;bonus+=5;model.movesLeft+=5;
-        mechanics={ok:true,reason:null,frames:[],scoreGain:0,reshuffled:false};
-      }else{
-        if(model.status!=='playing')return invalid(command,model.status,usage);
-        if(command.index>=model.total)return invalid(command,'invalid_target',usage);
-        if(command.type==='green_brush'){
-          if(model.layers[command.index]===0)return invalid(command,'ground_empty',usage);
-          if(usage.greenBrush>=this.limits.greenBrush)return invalid(command,'green_brush_limit',usage);
-          model.layers[command.index]--;usage.greenBrush++;
-          mechanics={ok:true,reason:null,frames:[],scoreGain:0,reshuffled:false};
-        }else{
-          if(!this.level.palette.includes(command.value)||model.values[command.index]===command.value)return invalid(command,'invalid_value',usage);
-          if(usage.colorKey>=this.limits.colorKey)return invalid(command,'color_key_limit',usage);
-          model.values[command.index]=command.value;usage.colorKey++;
-          const frames=[];let totalGain=0,safetyReset=false,matched=model.findMatches();
-          while(matched.length){
-            const before=model.values.slice(),scoreGain=matched.reduce((sum,index)=>sum+model.values[index],0);
-            for(const index of matched)model.layers[index]=Math.max(0,model.layers[index]-1);
-            model.score+=scoreGain;totalGain+=scoreGain;const refill=model._gravity(matched);
-            frames.push({matched:matched.slice(),before,after:model.values.slice(),layers:model.layers.slice(),scoreGain,...refill});
-            matched=model.findMatches();if(frames.length>=32&&matched.length){model._stableBoard();safetyReset=true;break;}
-          }
-          const reshuffled=(model.status==='playing'?model._ensurePlayable():false)||safetyReset;
-          mechanics={ok:true,reason:null,frames,scoreGain:totalGain,reshuffled};
-        }
-      }
-      const result={...mechanics,commandId:command.id,type:command.type,duplicate:false,movesSpent:command.type==='swap'?1:0,layersRemoved:beforeLayers-model.remainingLayers,usage:clone(usage)};
-      this._model=model;this.usage=usage;this.bonusMoves=bonus;this.commands.push(command);this._results.set(command.id,{command:clone(command),result:clone(result)});return clone(result);
-    }
+    apply(input){return applyCommand.call(this,input,false);}
     swap(a,b,id=null){return this.apply({id:id===null?'swap:'+(this.commands.length+1):id,type:'swap',a,b});}
     hint(options={}){
       const model=this._model.clone();

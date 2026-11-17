@@ -67,6 +67,8 @@ Buradaki boş diziler yalnız şemayı gösterir; geçerli kayıt gerçek bölü
 
 Saf motor geçerli mekanik replay'i doğrular; kalıcı ekonomi/işlem defterleriyle yetki eşleştirmesi host sınırıdır. Kaydın `limits` alanı tarihsel kuralları dondurur; oturum desteklenen limit politikasını ayrıca kontrol etmelidir. Gelecekte limit/politika değişirse eski kabul edilen yapılandırmaların sürümlü arşivi gerekir.
 
+9.9a'da yeni public `apply/Apply`, `preview/Preview` ve clone üzerindeki `grant_moves`, sıfır yasal takası `no_legal_swaps` ile reddeder. Duplicate kimlik denetimi önce kalır. Yalnız kayıt yükleyicisi modül-private/private yürütücüyle eski v1 komutlarının tarihsel kabul davranışını kullanır ve tam snapshot eşitliğini yine doğrular. Çağıranın açabileceği replay/bypass seçeneği yoktur. Kabul edilmiş komutun dönüşümü veya JSON sürümü değişmez; tarihi takassız checkpoint de sessizce karıştırılmaz. [Uyumluluk ve makbuz sözleşmesi](RESCUE_SAFETY_9_9A.md).
+
 Eski v4 kayıt önce değiştirilmemiş gerçek v4 okuyucusunda doğrulanır. Geçmiş takaslar `legacy-swap:1`, `legacy-swap:2`, … kimlikleriyle yeniden oynatılır; eski son durumla bütün alanlar karşılaştırılır. Metadata/variant/dataVersion doğrulaması mevcut katalog katmanındadır. Yardım sonrası ham `Model.Snapshot()` kalıcılaştırılmaz: eski v4 hamle denklemini yanlış temsil eder. `ClassicSnapshot()` yardım sonrasında açıkça hata verir. Görselleştirme için sürüm etiketi olmayan `presentationSnapshot/PresentationSnapshot()` vardır.
 
 ## İpucu ve sunum
