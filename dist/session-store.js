@@ -12,16 +12,17 @@
  function validateEnvelope(value){
   if(!isMap(value)||value.schemaVersion!==2||!Number.isSafeInteger(value.revision)||value.revision<1||!isMap(value.game)||!isMap(value.energy))throw new Error('invalid_profile');
  }
- function createStore(storage,{writable=true}={}){
+ function createStore(storage,{writable=true,storyAdapter=null}={}){
+  const validateStory=game=>{if(storyAdapter)storyAdapter.restore(game.story,game);else if(Object.prototype.hasOwnProperty.call(game,'story'))throw new Error('invalid_story_scope');};
   let revision=0,durable=null;
   const parse=key=>{const raw=storage.getItem(key);return raw===null?null:JSON.parse(raw);};
   const canonicalRaw=storage.getItem(KEY);
   if(canonicalRaw!==null){
-   const existing=JSON.parse(canonicalRaw);validateEnvelope(existing);
+   const existing=JSON.parse(canonicalRaw);validateEnvelope(existing);validateStory(existing.game);
    revision=existing.revision;durable=copy(existing);
   }else{
    const game=parse(GAME),energy=parse(ENERGY);
-   if(game&&energy)durable={schemaVersion:2,revision:0,game:copy(game),energy:copy(energy)};
+   if(game&&energy){validateStory(game);durable={schemaVersion:2,revision:0,game:copy(game),energy:copy(energy)};}
   }
   function current(){return copy(durable);}
   function contains(key){return !!durable&&(key===GAME||key===ENERGY)||storage.getItem(key)!==null;}
@@ -34,9 +35,10 @@
    if(!writable)throw new Error('read_only');
    if(revision>=Number.MAX_SAFE_INTEGER)throw new Error('revision_exhausted');
    if(!isMap(game)||!isMap(energy))throw new Error('invalid_profile');
+   validateStory(game);
    const latestRaw=storage.getItem(KEY);let latestRevision=0;
    if(latestRaw!==null){
-    const latest=JSON.parse(latestRaw);validateEnvelope(latest);latestRevision=latest.revision;
+    const latest=JSON.parse(latestRaw);validateEnvelope(latest);validateStory(latest.game);latestRevision=latest.revision;
    }
    if(latestRevision!==revision)throw new Error('stale_profile');
    const next={schemaVersion:2,revision:revision+1,game:copy(game),energy:copy(energy)};
@@ -64,11 +66,12 @@
    }catch(_){cleanupFailures.push(key);}
    return {profile,cleanupFailures};
   }
-  return {read,contains,current,commit,resetForTesting,get revision(){return revision;},revoke(){writable=false;}};
+  return {read,contains,current,commit,resetForTesting,storyAdapter,get revision(){return revision;},revoke(){writable=false;}};
  }
  function boot(start){
-  const w=root,scope=w.HexMaterialAlpha?.enabled===true?w.HexMaterialAlpha:w.HexCampaignFlow?.enabled===true?w.HexCampaignFlow:null,storage=scope?scope.storage(w.localStorage):w.localStorage;
-  if(w.HexSessionTestMode?.isolated===true){start(createStore(storage));return;}
+  const w=root,scope=w.HexStoryAlpha?.enabled===true?w.HexStoryAlpha:w.HexMaterialAlpha?.enabled===true?w.HexMaterialAlpha:w.HexCampaignFlow?.enabled===true?w.HexCampaignFlow:null,storage=scope?scope.storage(w.localStorage):w.localStorage;
+  const storyAdapter=w.HexStoryAlpha?.enabled===true?w.HexStoryProfile.fromGlobals(w):null;
+  if(w.HexSessionTestMode?.isolated===true){start(createStore(storage,{storyAdapter}));return;}
   const blocked=(message,retry=true)=>{
    let panel=w.document.getElementById('session-lock-panel');
    if(!panel){panel=w.document.createElement('section');panel.id='session-lock-panel';panel.setAttribute('role','alert');panel.style.cssText='position:fixed;inset:0;z-index:10000;display:grid;place-content:center;gap:20px;padding:28px;text-align:center;background:#f5f5e9;color:#214f38;font:600 18px system-ui';w.document.body.append(panel);}
@@ -79,7 +82,7 @@
   w.navigator.locks.request(scope?scope.prefix+LOCK:LOCK,{ifAvailable:true},async lock=>{
    if(!lock){blocked('Oyun başka bir sekmede açık. Kaydını korumak için bu sekme bekliyor. Diğer sekmeyi kapatıp tekrar dene.');return;}
    let store;
-   try{store=createStore(storage);start(store);}catch(_){store?.revoke();blocked('Kayıt güvenle açılamadı. İlerlemen değiştirilmedi. Sayfayı yenileyip tekrar dene.');return;}
+   try{store=createStore(storage,{storyAdapter});start(store);}catch(_){store?.revoke();blocked('Kayıt güvenle açılamadı. İlerlemen değiştirilmedi. Sayfayı yenileyip tekrar dene.');return;}
    await new Promise(resolve=>w.addEventListener('pagehide',()=>{store.revoke();resolve();},{once:true}));
   }).catch(()=>blocked('Kayıt kilidi alınamadı. Mevcut kayıtların korundu. Tekrar dene.'));
   w.addEventListener('pageshow',event=>{if(event.persisted)w.location.reload();});

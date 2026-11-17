@@ -44,7 +44,7 @@
   function nativeModal(domain){return domain?.nativeModalOpen===true;}
   function anyModal(state,domain){return !!modals(state)?.length||nativeModal(domain);}
   function validInputFacts(domain){
-    return record(domain)&&['attemptReady','canOpen','writeBlocked','lifeDiscarded','resetPending'].every(key=>typeof domain[key]==='boolean')&&ENGINE_STATUSES.has(domain.engineStatus)&&(!own(domain,'nativeModalOpen')||typeof domain.nativeModalOpen==='boolean');
+    return record(domain)&&['attemptReady','canOpen','writeBlocked','lifeDiscarded','resetPending'].every(key=>typeof domain[key]==='boolean')&&ENGINE_STATUSES.has(domain.engineStatus)&&(!own(domain,'nativeModalOpen')||typeof domain.nativeModalOpen==='boolean')&&(!own(domain,'storyPending')||typeof domain.storyPending==='boolean');
   }
   function availableAttempt(state,domain){
     return validStateView(state)&&validInputFacts(domain)&&screen(state)==='game'&&!suspended(state)&&!isPaused(state)&&domain.attemptReady===true&&domain.canOpen===true&&domain.writeBlocked===false&&domain.lifeDiscarded===false&&domain.resetPending===false;
@@ -59,13 +59,13 @@
   function canRouteBoardInput(state,domain){
     // A resolving tap may reveal the already committed result. The move guard
     // below is deliberately narrower than this routing guard.
-    return availableAttempt(state,domain)&&!anyModal(state,domain);
+    return availableAttempt(state,domain)&&domain.storyPending!==true&&!anyModal(state,domain);
   }
   function canStartMove(state,domain){
     return canRouteBoardInput(state,domain)&&domain.engineStatus==='playing'&&!isResolving(state)&&domain.feedback===false;
   }
   function canUseInventory(state,domain){
-    if(!availableAttempt(state,domain)||domain.engineStatus!=='playing'||isResolving(state)||domain.tutorial!==false||!integer(domain.activeIndex)||!integer(domain.tutorialCount)||domain.activeIndex<domain.tutorialCount)return false;
+    if(!availableAttempt(state,domain)||domain.storyPending===true||domain.engineStatus!=='playing'||isResolving(state)||domain.tutorial!==false||!integer(domain.activeIndex)||!integer(domain.tutorialCount)||domain.activeIndex<domain.tutorialCount)return false;
     // The inventory and confirmation buttons operate inside their own modal.
     // An unrelated modal must not authorize a programmatic inventory command.
     const stack=modals(state);

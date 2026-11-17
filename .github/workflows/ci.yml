@@ -623,3 +623,35 @@ jobs:
           name: materials-9-14-${{ matrix.browser }}
           path: test-results/materials-9-14-${{ matrix.browser }}
           if-no-files-found: warn
+
+  story-engine-9-15:
+    name: Story and events 9.15 / ${{ matrix.browser }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.2'
+          cache: npm
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: npm ci
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - run: npm run test:story
+      - run: npm run test:unity-story
+      - run: npm run test:story-browser
+        env:
+          HEXROTA_BROWSER: ${{ matrix.browser }}
+          HEXROTA_STORY_SCREENSHOT_DIR: test-results/story-9-15-${{ matrix.browser }}
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: story-9-15-${{ matrix.browser }}
+          path: test-results/story-9-15-${{ matrix.browser }}
+          if-no-files-found: warn

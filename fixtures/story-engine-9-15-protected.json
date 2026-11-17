@@ -1,0 +1,41 @@
+{
+  "baseline": "8859d0924a3f2c7ac5771097274c09c6e0b82c22",
+  "scope": "Reviewed story-v1 reducer, strict canonical proof adapter, isolated alpha profile, same atomic game-and-energy persistence, safe inline Tavik presentation and cache generation. No gameplay, historical material/obstacle level, tutorial or economy source is overridden. All earlier source fixtures, acceptance checks, 52 view goldens, 40 variants/80 routes and audit metrics stay intact.",
+  "addedIds": [
+    "story-dialog",
+    "story-portrait",
+    "story-speaker",
+    "story-text",
+    "story-scene",
+    "story-actions"
+  ],
+  "sha256": {
+    "dist/app.js": "c2163a7dbb1202648638cfd2a7d5692625e8a8d70ab0546836a5c7aa49d7b15c",
+    "dist/app-state.js": "1365145508c05757fc0ea78c32fe93c91a7e0d479097fd8888bcc90d92bd7a49",
+    "dist/state-selectors.js": "525f638ec45aae76db83cdb0f9aa0c5100fc44524ba597b157d2c6cf3a7ede4e",
+    "dist/state-effects.js": "adf9f1405fd0a1896df6429a706fc6989d40f03d43c6ddf0ed25080e7dd0978a",
+    "dist/session-store.js": "5c3e1ba40f08cc7e525e9b8c730155373ef9829607a39c68104d270a584031f4",
+    "dist/game-save.js": "1cc8fd290d7246553dc8c7d60792ac9f35239c215a4a09580a78337d9c284fe5",
+    "dist/index.html": "08ab399d3b8ad3b35a110a8cfd09d738ee4108ea5f6026e0d26ae5d916991438",
+    "dist/style.css": "e24b16c6d9017225e275dfbb80f08f9c7c9f9a42467bee4ccbdab425940bc391",
+    "dist/sw.js": "611dd9327b09f791c944c9e9008d62c0667214671ac6fe78460a0409981a4815",
+    "dist/hint-worker.js": "f1f9718d0cdb9c9a7eb5e7b54606ac17f45e413f524ff7cdc2873d404a92fa7e",
+    "dist/obstacles.html": "a293688a99647a66db03273d7867fa65c7313dfea7307d40780537c07c7c0a73",
+    "dist/ui-kit.html": "96966a8b4103825f9738e9198909384a5bd994db54d7de67ad533caa89f7fc9c",
+    "src/styles/manifest.json": "60e336a9d2160ceef30ff34f425027b99b5fdce6b4d67af23bf28f3282a185f1",
+    "src/styles/12-story.css": "11625a4f44c88abe80e46b00e48c097f6a727e7ef0ab786e858614cc512e147d",
+    "dist/story-engine.js": "ba931628bcdb64b76b8ce5f7641296784df381252e1cf8faedf17e7ca12b070b",
+    "dist/story-events.js": "507646f85ada625688148742aaf1274101340d470338a1f29e4e374ee5f71bee",
+    "dist/story-profile.js": "b4b15502a38cb0a1d17719bdebc38b0719c88748c1031ae33d77507de082b459",
+    "dist/story-alpha.js": "f923ab1d2fe1d9539c573d2bf08659f785e771d3a1df1f68c48405f7ef410c03",
+    "dist/story-content.js": "8449fadbbdbf5fa9934274a163faefa382103f17f4e0d55cbe47078d434819c7",
+    "dist/story-presentation.js": "6377d159150f9f7b5d6f1e241224ae5256dd395d3055a9c4500ca89b7fda51f2",
+    "data/story-content-v1.json": "b87b1641f50505c97c726c6b1ef95e755ae41360e7e7aaf7f86e5ea68282cf72",
+    "scripts/generate-story-content.cjs": "cb3c6f0893efd226200dd393d50b6c45eb239cc5144b8e26aff271c7fb756874",
+    "unity/Story/StoryEngine.cs": "712e687802f15835a634655c5303355eb69ef24a933915299b7067e216a612e9",
+    "unity/StoryAdapter/CanonicalStoryFacts.cs": "01e0d5ba62b42783a15936214814d589c17b9ea27a3f0abeaea1840b174c196d",
+    "unity/StoryAdapter/StoryBindings.cs": "ff03d5a4c303631bb67a552cb690594802d93482c66d9ca848bac6c8fc4cf7ba",
+    "unity/StoryParityHarness/Program.cs": "f5d35cbe92b29398e95cd1dbffc8d5a8958ce89d3a4aa3ef593b2da0acf757ed",
+    "unity/StoryParityHarness/Hexrota.StoryParity.csproj": "7e64696cc911de4aa3a33194ba7af7f4bedd317578ca7087d22fa3ec33cd6de5"
+  }
+}

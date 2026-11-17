@@ -1,0 +1,355 @@
+/* Generated from data/story-content-v1.json. Narrative content only. */
+window.HEX_STORY_CONTENT = {
+  "schemaVersion": 1,
+  "contentVersion": "story-content-v1",
+  "speakers": [
+    {
+      "id": "tavik",
+      "name": "Tavik"
+    }
+  ],
+  "scenes": [
+    {
+      "id": "coop-clearing",
+      "asset": "assets/scenes/coop-v1/backgrounds/clearing-mobile.webp"
+    },
+    {
+      "id": "coop-frame",
+      "asset": "assets/scenes/coop-v1/backgrounds/frame-mobile.webp"
+    },
+    {
+      "id": "coop-roof",
+      "asset": "assets/scenes/coop-v1/backgrounds/roof-mobile.webp"
+    },
+    {
+      "id": "coop-finished",
+      "asset": "assets/scenes/coop-v1/backgrounds/finished-mobile.webp"
+    }
+  ],
+  "chapters": [
+    {
+      "id": "wood",
+      "levelId": 6
+    },
+    {
+      "id": "nails",
+      "levelId": 7
+    },
+    {
+      "id": "together",
+      "levelId": 8
+    }
+  ],
+  "nodes": [
+    {
+      "id": "a-intro",
+      "chapterId": "wood",
+      "speakerId": "tavik",
+      "text": "Şu kutulardaki tahtalar işimize yarayacak. Önce onları bir araya getirelim.",
+      "pose": "point",
+      "trigger": {
+        "event": "level_started",
+        "materialId": null,
+        "subject": null
+      },
+      "conditions": [],
+      "once": true,
+      "priority": 100,
+      "order": 0,
+      "next": null,
+      "choices": [],
+      "sceneId": null
+    },
+    {
+      "id": "a-first-wood",
+      "chapterId": "wood",
+      "speakerId": "tavik",
+      "text": "İlk tahtalar hazır! Sağlam parçaları onarım için saklayalım.",
+      "pose": "celebrate",
+      "trigger": {
+        "event": "material_collected",
+        "materialId": "wood",
+        "subject": null
+      },
+      "conditions": [],
+      "once": true,
+      "priority": 80,
+      "order": 1,
+      "next": null,
+      "choices": [],
+      "sceneId": null
+    },
+    {
+      "id": "a-wood-ready",
+      "chapterId": "wood",
+      "speakerId": "tavik",
+      "text": "Bütün tahtaları topladık. Kümesin eksik ahşap parçaları için artık hazırız.",
+      "pose": "celebrate",
+      "trigger": {
+        "event": "material_goal_completed",
+        "materialId": "wood",
+        "subject": null
+      },
+      "conditions": [],
+      "once": true,
+      "priority": 0,
+      "order": 2,
+      "next": null,
+      "choices": [],
+      "sceneId": "coop-frame"
+    },
+    {
+      "id": "b-intro",
+      "chapterId": "nails",
+      "speakerId": "tavik",
+      "text": "Tahtaları yerinde tutmak için çivilere ihtiyacımız var. İşaretli yerleri birlikte kontrol edelim.",
+      "pose": "point",
+      "trigger": {
+        "event": "level_started",
+        "materialId": null,
+        "subject": null
+      },
+      "conditions": [],
+      "once": true,
+      "priority": 100,
+      "order": 0,
+      "next": null,
+      "choices": [],
+      "sceneId": null
+    },
+    {
+      "id": "b-first-nail",
+      "chapterId": "nails",
+      "speakerId": "tavik",
+      "text": "Bir çivi bulduk! Küçük ama sağlam bir onarım için çok gerekli.",
+      "pose": "celebrate",
+      "trigger": {
+        "event": "material_collected",
+        "materialId": "nail",
+        "subject": null
+      },
+      "conditions": [],
+      "once": true,
+      "priority": 80,
+      "order": 1,
+      "next": null,
+      "choices": [],
+      "sceneId": null
+    },
+    {
+      "id": "b-nails-ready",
+      "chapterId": "nails",
+      "speakerId": "tavik",
+      "text": "Çiviler tamam. Kümesin gevşeyen bağlantılarını artık sağlamlaştırabiliriz.",
+      "pose": "celebrate",
+      "trigger": {
+        "event": "material_goal_completed",
+        "materialId": "nail",
+        "subject": null
+      },
+      "conditions": [],
+      "once": true,
+      "priority": 0,
+      "order": 2,
+      "next": null,
+      "choices": [],
+      "sceneId": "coop-roof"
+    },
+    {
+      "id": "c-intro",
+      "chapterId": "together",
+      "speakerId": "tavik",
+      "text": "Bu kez hem tahta hem çivi gerekiyor. Açılan yollardaki parçaları da gözden kaçırmayalım.",
+      "pose": "call",
+      "trigger": {
+        "event": "level_started",
+        "materialId": null,
+        "subject": null
+      },
+      "conditions": [],
+      "once": true,
+      "priority": 100,
+      "order": 0,
+      "next": null,
+      "choices": [],
+      "sceneId": null
+    },
+    {
+      "id": "c-region-found",
+      "chapterId": "together",
+      "speakerId": "tavik",
+      "text": "Geçidin altındaki alan açıldı! Artık oradaki parçalara da ulaşabiliyoruz.",
+      "pose": "point",
+      "trigger": {
+        "event": "region_opened",
+        "materialId": null,
+        "subject": null
+      },
+      "conditions": [],
+      "once": true,
+      "priority": 70,
+      "order": 1,
+      "next": null,
+      "choices": [],
+      "sceneId": "coop-clearing"
+    },
+    {
+      "id": "c-first-wood",
+      "chapterId": "together",
+      "speakerId": "tavik",
+      "text": "İlk tahtaları bulduk. Bunlarla eksik yerleri tamamlayabiliriz.",
+      "pose": "point",
+      "trigger": {
+        "event": "material_collected",
+        "materialId": "wood",
+        "subject": null
+      },
+      "conditions": [],
+      "once": true,
+      "priority": 80,
+      "order": 2,
+      "next": null,
+      "choices": [],
+      "sceneId": null
+    },
+    {
+      "id": "c-first-nail",
+      "chapterId": "together",
+      "speakerId": "tavik",
+      "text": "Çiviler de gelmeye başladı. Tahtaları sağlamca tutturmak için onları ayıralım.",
+      "pose": "point",
+      "trigger": {
+        "event": "material_collected",
+        "materialId": "nail",
+        "subject": null
+      },
+      "conditions": [],
+      "once": true,
+      "priority": 80,
+      "order": 3,
+      "next": null,
+      "choices": [],
+      "sceneId": null
+    },
+    {
+      "id": "c-plan-choice",
+      "chapterId": "together",
+      "speakerId": "tavik",
+      "text": "Tahta da çivi de bulduk. Sence onarıma nereden başlayalım?",
+      "pose": "idle",
+      "trigger": {
+        "event": "material_collected",
+        "materialId": null,
+        "subject": null
+      },
+      "conditions": [
+        {
+          "kind": "event_seen",
+          "event": "material_collected",
+          "materialId": "wood",
+          "subject": null
+        },
+        {
+          "kind": "event_seen",
+          "event": "material_collected",
+          "materialId": "nail",
+          "subject": null
+        }
+      ],
+      "once": true,
+      "priority": 50,
+      "order": 4,
+      "next": "c-plan-ready",
+      "choices": [
+        {
+          "id": "gate-first",
+          "text": "Önce geçidi güçlendirelim.",
+          "next": "c-gate-response"
+        },
+        {
+          "id": "coop-first",
+          "text": "Önce kümese bakalım.",
+          "next": "c-coop-response"
+        }
+      ],
+      "sceneId": null
+    },
+    {
+      "id": "c-gate-response",
+      "chapterId": "together",
+      "speakerId": "tavik",
+      "text": "Tamam, önce geçide bakacağız. Sağlam bir yol, geride kalan işleri de kolaylaştırır.",
+      "pose": "point",
+      "trigger": null,
+      "conditions": [],
+      "once": true,
+      "priority": 60,
+      "order": 5,
+      "next": "c-plan-ready",
+      "choices": [],
+      "sceneId": null
+    },
+    {
+      "id": "c-coop-response",
+      "chapterId": "together",
+      "speakerId": "tavik",
+      "text": "Olur, önce kümese bakacağız. Topladığımız parçalarla onu daha sağlam hâle getirebiliriz.",
+      "pose": "point",
+      "trigger": null,
+      "conditions": [],
+      "once": true,
+      "priority": 60,
+      "order": 6,
+      "next": "c-plan-ready",
+      "choices": [],
+      "sceneId": null
+    },
+    {
+      "id": "c-plan-ready",
+      "chapterId": "together",
+      "speakerId": "tavik",
+      "text": "Planımız belli. Gerekli parçaları hazırlayınca birlikte işe koyuluruz.",
+      "pose": "idle",
+      "trigger": null,
+      "conditions": [],
+      "once": true,
+      "priority": 40,
+      "order": 7,
+      "next": null,
+      "choices": [],
+      "sceneId": null
+    },
+    {
+      "id": "c-materials-ready",
+      "chapterId": "together",
+      "speakerId": "tavik",
+      "text": "Tahtalar da çiviler de tamam! Kümesin onarımı için gereken her şey hazır.",
+      "pose": "celebrate",
+      "trigger": {
+        "event": "material_goal_completed",
+        "materialId": null,
+        "subject": null
+      },
+      "conditions": [
+        {
+          "kind": "event_seen",
+          "event": "material_goal_completed",
+          "materialId": "wood",
+          "subject": null
+        },
+        {
+          "kind": "event_seen",
+          "event": "material_goal_completed",
+          "materialId": "nail",
+          "subject": null
+        }
+      ],
+      "once": true,
+      "priority": 0,
+      "order": 8,
+      "next": null,
+      "choices": [],
+      "sceneId": "coop-finished"
+    }
+  ]
+};

@@ -8,10 +8,14 @@
   const map = value => !!value && typeof value === 'object' && !Array.isArray(value);
   const clone = value => JSON.parse(JSON.stringify(value));
   function defaults() { return {current:0,done:[],boards:{},attempts:{},attemptStats:{},variantSelection:{seed:0,serial:0,counts:{},recent:{}},guideAcks:[],sound:false,preferences:{...DEFAULT_PREFERENCES},records:{}}; }
-  function normalize(raw, levels, tutorials) {
+  function normalize(raw, levels, tutorials, {story=null}={}) {
     if (!map(raw)) throw new Error('invalid_game_save');
+    const descriptor=Object.getOwnPropertyDescriptor(raw,'story');
+    if(descriptor&&!Object.prototype.hasOwnProperty.call(descriptor,'value')||descriptor&&!story)throw new Error('invalid_story_scope');
+    const restoredStory=story?story.restore(descriptor?descriptor.value:undefined,raw):undefined;
     raw = clone(raw);
     const saved = defaults();
+    if(story)saved.story=restoredStory;
     if(raw&&typeof raw==='object'){
       if(Object.prototype.hasOwnProperty.call(raw,'economy'))saved.economy=raw.economy;
       if(Object.prototype.hasOwnProperty.call(raw,'rescue'))saved.rescue=raw.rescue;
@@ -43,7 +47,7 @@
 
     return saved;
   }
-  function load({ read, contains, levels, tutorials }) {
+  function load({ read, contains, levels, tutorials, story=null }) {
     let sourceSaveKey = KEY, migrated = false, raw = null;
     // Missing is not the same as a present null/false/corrupt legacy document.
     if (contains(KEY)) {
@@ -69,7 +73,8 @@
         break;
       }
     }
-    const saved = raw === null ? defaults() : normalize(raw, levels, tutorials);
+    const saved = raw === null ? defaults() : normalize(raw, levels, tutorials,{story});
+    if(raw===null&&story)saved.story=story.create();
     // The old sound-only preference is not authoritative progression data.
     if (raw === null) try { saved.sound = read('hexrota-v1')?.sound === true; } catch (_) {}
     return { saved, sourceSaveKey, migrated };

@@ -1,0 +1,7 @@
+/* Canonical story content -> browser wrapper. Gameplay catalogs are read-only. */
+'use strict';
+const fs=require('node:fs'),path=require('node:path');
+const root=path.resolve(__dirname,'..'),source=path.join(root,'data/story-content-v1.json'),target=path.join(root,'dist/story-content.js');
+function generate(){const data=JSON.parse(fs.readFileSync(source,'utf8')),pack=JSON.parse(fs.readFileSync(path.join(root,'dist/assets/scenes/coop-v1/manifest.json'),'utf8')),approved=new Set(pack.backgrounds.flatMap(item=>['assets/scenes/coop-v1/backgrounds/'+item.id+'.webp','assets/scenes/coop-v1/backgrounds/'+item.id+'-mobile.webp']));for(const scene of data.scenes){const asset=path.resolve(root,'dist',scene.asset);if(!approved.has(scene.asset)||!scene.asset.startsWith('assets/')||!asset.startsWith(path.join(root,'dist/assets')+path.sep)||!fs.statSync(asset).isFile())throw new Error('Story scene must use an existing public asset');}return '/* Generated from data/story-content-v1.json. Narrative content only. */\nwindow.HEX_STORY_CONTENT = '+JSON.stringify(data,null,2)+';\n';}
+if(require.main===module){const result=generate();if(process.argv.includes('--check')){if(fs.readFileSync(target,'utf8')!==result)throw new Error('Story content browser wrapper drift');console.log('Story content source, existing scene assets and browser wrapper verified.');}else fs.writeFileSync(target,result);}
+module.exports={generate};
