@@ -166,5 +166,16 @@
   "sourceProtection": "../../fixtures/material-objectives-9-14-protected.json",
   "mainOrProductionChanged": false,
   "physicalIPhoneTested": false,
-  "unityEditorTested": false
+  "unityEditorTested": false,
+  "runtimeCommit": "c26b8d06e884434cb9a61cedc56cf96b4e7e5e0e",
+  "browserHarnessSha256": "60a1aafc63d443ff75f6916c51c63c8673701a33a618732b3f2f48f67523a943",
+  "browserPhysicalTargets": "Read-only floor polygon bounding rectangles and independent elementFromPoint checks; second tap remeasured after first tap. No SVG transform-list consolidation.",
+  "previewHosting": {
+    "setting": "VERCEL_PREVIEW_FEEDBACK_ENABLED",
+    "value": "0",
+    "environment": "preview",
+    "gitBranch": "feature/hexrota-material-objectives-9-14",
+    "purpose": "Prevent the external Preview Toolbar from covering material board touch targets.",
+    "productionOrOtherBranchesChanged": false
+  }
 }

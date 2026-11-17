@@ -262,3 +262,10 @@ V6 pasif ipucu kanıtları: [başlangıçtaki null hücreli B ve aynı önerinin
 Browser ekran görüntüsü ve çalışma raporu yalnız gerçek normal uygulama akışından alınmalıdır. JSDOM yerleşim/dokunma kanıtı değildir. Chromium ve masaüstü WebKit sonuçları ayrı kaydedilir; testin kendi kontrollü saati motor/RNG/kaydı sahteleştirmemelidir. C# parity, Unity sahne/prefab/cihaz entegrasyonunun yerine geçmez.
 
 **Fiziksel iPhone/iOS Safari ve Unity Editor/IL2CPP testi yapılmadı.** İnsanlarla alfa hedef okunabilirliği ve zorluk dengesi ayrıca değerlendirilmelidir.
+
+
+## Mobil Preview yerleşimi
+
+Vercel'in yüzen Preview Toolbar düğmesi canlı WebKit kontrolünde C senaryosunun sağ kenardaki 30. hücresini örttü; düğmeye dokunma dış araç çubuğunu açıp mevcut doğru blur→Pause davranışını tetikledi. Oyun kuralları veya giriş kilidi değiştirilmedi. [Vercel'in belgelenmiş dal ayarı](https://vercel.com/docs/vercel-toolbar/managing-toolbar) kullanılarak `VERCEL_PREVIEW_FEEDBACK_ENABLED=0` yalnız `feature/hexrota-material-objectives-9-14` dalının **Preview** ortamına tanımlandı. Production ve diğer dalların ayarları kapsam dışıdır; bu ayar sonraki Preview dağıtımında uygulanır.
+
+Yeni browser kabul sürücüsü, gerçek `.floor-shape.getBoundingClientRect()` merkezi ile `elementFromPoint` hit kontrolünü kullanır; ikinci dokunma ilk dokunmadan sonra yeniden ölçülür. SVG transform listesini `consolidate()` ile birleştirmez. Bu yalnız test sürücüsünün koordinat okumasıdır; oyun giriş adaptörü değişmedi. Bu sürücüyle 18/18 Chromium ve 18/18 WebKit yeniden geçti, aynı bütün kontroller/eşikler korundu. Canlı Preview doğrulaması kaynak dosyalarının hash'lerini ve gerçek oynanış/kayıt sonuçlarını ayrıca karşılaştırır.
