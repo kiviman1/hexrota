@@ -1,0 +1,133 @@
+{
+  "runtime": ".NET 8.0.428",
+  "languageVersion": "C# 7.3",
+  "command": "npm run test:unity-materials",
+  "exitCode": 0,
+  "core": {
+    "scenarios": 196,
+    "certifiedRoutes": 6,
+    "certifiedPrefixes": 52,
+    "offRouteGames": 24,
+    "validSwaps": 501,
+    "waves": 1154,
+    "materialEvents": 269,
+    "restores": 166,
+    "replays": 165,
+    "independentClones": 168,
+    "rejectedCheckpoints": 102,
+    "rejectedDefinitionsAndObjectives": 41
+  },
+  "alphaCatalog": {
+    "scenarios": 156,
+    "selectionCases": 30,
+    "fullWins": 6,
+    "checkpointPrefixes": 52,
+    "rejectedOverridesIdentitiesAndSnapshots": 89
+  },
+  "legacyNative": {
+    "passed": 14,
+    "total": 14,
+    "checks": [
+      {
+        "check": "check-reward-parity.cjs",
+        "ok": true,
+        "code": 0,
+        "signal": null,
+        "seconds": 4.442
+      },
+      {
+        "check": "check-gameplay-parity.cjs",
+        "ok": true,
+        "code": 0,
+        "signal": null,
+        "seconds": 8.953
+      },
+      {
+        "check": "check-catalog-parity.cjs",
+        "ok": true,
+        "code": 0,
+        "signal": null,
+        "seconds": 7.29
+      },
+      {
+        "check": "check-reward-adapter-parity.cjs",
+        "ok": true,
+        "code": 0,
+        "signal": null,
+        "seconds": 6.926
+      },
+      {
+        "check": "check-lives-parity.cjs",
+        "ok": true,
+        "code": 0,
+        "signal": null,
+        "seconds": 3.757
+      },
+      {
+        "check": "check-event-parity.cjs",
+        "ok": true,
+        "code": 0,
+        "signal": null,
+        "seconds": 1.657
+      },
+      {
+        "check": "check-hints-parity.cjs",
+        "ok": true,
+        "code": 0,
+        "signal": null,
+        "seconds": 16.738
+      },
+      {
+        "check": "check-economy-parity.cjs",
+        "ok": true,
+        "code": 0,
+        "signal": null,
+        "seconds": 2.077
+      },
+      {
+        "check": "check-session-parity.cjs",
+        "ok": true,
+        "code": 0,
+        "signal": null,
+        "seconds": 15.328
+      },
+      {
+        "check": "check-command-parity.cjs",
+        "ok": true,
+        "code": 0,
+        "signal": null,
+        "seconds": 13.157
+      },
+      {
+        "check": "check-obstacles-parity.cjs",
+        "ok": true,
+        "code": 0,
+        "signal": null,
+        "seconds": 4.411
+      },
+      {
+        "check": "check-campaign-flow-parity.cjs",
+        "ok": true,
+        "code": 0,
+        "signal": null,
+        "seconds": 2.127
+      },
+      {
+        "check": "check-rescue-parity.cjs",
+        "ok": true,
+        "code": 0,
+        "signal": null,
+        "seconds": 9.152
+      },
+      {
+        "check": "check-large-flow-parity.cjs",
+        "ok": true,
+        "code": 0,
+        "signal": null,
+        "seconds": 23.17
+      }
+    ]
+  },
+  "physicalIPhoneTested": false,
+  "unityEditorTested": false
+}

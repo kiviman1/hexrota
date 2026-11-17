@@ -83,16 +83,51 @@
     }
     return {active,cells,objectivesMet,preview};
   }
+  // V6 projects authored material tokens and current collection counters only.
+  // Source provenance is validated before a candidate is scanned; previews can
+  // count a visible matched token or a crate that this exact first hit breaks.
+  function visibleMaterials(input,obstacle){
+    const {materials:data,objectives:goals,materialCounts:counts,collectedSources:collected}=input;
+    const id=s=>typeof s==='string'&&/^[A-Za-z0-9_.-]{1,80}$/.test(s),positive=v=>int32(v)&&v>0;
+    const record=(value,keys)=>!!value&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).length===keys.length&&keys.every(key=>Object.prototype.hasOwnProperty.call(value,key));
+    if(!record(data,['version','definitions','sources'])||data.version!=='materials-v1'||!dense(data.definitions)||!dense(data.sources)||!record(goals,['version','score','ground','materials'])||goals.version!=='objectives-v1'||typeof goals.score!=='boolean'||typeof goals.ground!=='boolean'||!dense(goals.materials)||!goals.score&&!goals.ground&&!goals.materials.length||!dense(counts)||counts.length!==data.definitions.length||counts.some(v=>!int32(v)||v<0)||!dense(collected)||collected.length!==data.sources.length||collected.some(v=>typeof v!=='boolean'))return null;
+    const materialIds=new Map(),sourceIds=new Set(),boxIds=new Map(input.obstacles.blockers.map((b,i)=>[b.id,i])),boxCells=new Set(input.obstacles.blockers.map(b=>b.cell)),supply=counts.map(()=>0),actual=counts.map(()=>0);
+    const coordinates=new Set(obstacle.cells.map(coordinate));
+    const canMatch=cell=>[[1,0],[0,1],[1,-1]].some(([dq,dr])=>[-2,-1,0].some(start=>[0,1,2].every(step=>coordinates.has((cell.q+(start+step)*dq)+','+(cell.r+(start+step)*dr)))));
+    for(let i=0;i<data.definitions.length;i++){const definition=data.definitions[i];if(!record(definition,['id'])||!id(definition.id)||materialIds.has(definition.id))return null;materialIds.set(definition.id,i);}
+    for(let i=0;i<data.sources.length;i++){
+      const source=data.sources[i],crate=source?.kind==='crate-break';
+      if(!record(source,crate?['id','kind','materialId','quantity','cell','blockerId']:['id','kind','materialId','quantity','cell'])||!id(source.id)||sourceIds.has(source.id)||!['crate-break','matched-cell'].includes(source.kind)||!materialIds.has(source.materialId)||!positive(source.quantity)||!integer(source.cell)||source.cell>=input.values.length)return null;
+      sourceIds.add(source.id);const material=materialIds.get(source.materialId);
+      supply[material]+=source.quantity;if(!int32(supply[material]))return null;
+      if(crate){const box=boxIds.get(source.blockerId);if(box===undefined||input.obstacles.blockers[box].cell!==source.cell||collected[i]!== (input.blockerHp[box]===0))return null;}
+      else if(boxCells.has(source.cell)||!canMatch(obstacle.cells[source.cell])||collected[i]&&!obstacle.active[source.cell])return null;
+      if(collected[i])actual[material]+=source.quantity;
+    }
+    if(actual.some((value,i)=>value!==counts[i]))return null;
+    const targetIds=new Set(),remaining=counts.map(()=>0);
+    for(const target of goals.materials){if(!record(target,['materialId','quantity'])||!materialIds.has(target.materialId)||targetIds.has(target.materialId)||!positive(target.quantity))return null;const i=materialIds.get(target.materialId);if(target.quantity>supply[i])return null;targetIds.add(target.materialId);remaining[i]=Math.max(0,target.quantity-counts[i]);}
+    function preview(matched,hitCells){
+      const gain=counts.map(()=>0);
+      data.sources.forEach((source,i)=>{if(collected[i])return;const available=source.kind==='matched-cell'?obstacle.active[source.cell]&&matched.includes(source.cell):input.blockerHp[boxIds.get(source.blockerId)]===1&&hitCells.includes(source.cell);if(available)gain[materialIds.get(source.materialId)]+=source.quantity;});
+      return gain.reduce((sum,value,i)=>sum+Math.min(value,remaining[i]),0);
+    }
+    return {scoreEnabled:goals.score,groundEnabled:goals.ground,objectivesMet:remaining.every(value=>value===0),preview};
+  }
   function chooseVisibleHint(input,legalPairs,findMatches,avoidPair=null){
     try{return selectVisible(input,legalPairs,findMatches,avoidPair);}catch(_){return null;}
   }
   function selectVisible(input,legalPairs,findMatches,avoidPair,requireFocus=true){
     if(!input||typeof input!=='object'||!dense(input.values)||!dense(input.layers)||!input.values.length||input.layers.length!==input.values.length||!input.layers.every(integer)||!integer(input.score)||!integer(input.target)||!integer(input.movesLeft)||!Array.isArray(legalPairs)||typeof findMatches!=='function')return null;
-    const v5=input.rulesVersion==='classic-v5';
+    const v6=input.rulesVersion==='classic-v6',v5=input.rulesVersion==='classic-v5'||v6;
+    if(v6&&(!int32(input.score)||!int32(input.target)||!int32(input.movesLeft)||input.layers.some(value=>!int32(value))))return null;
     if(!v5&&(![undefined,null,'classic-v4'].includes(input.rulesVersion)||!input.values.every(Number.isInteger)))return null;
     const obstacle=v5&&dense(input.values)&&dense(input.layers)?visibleObstacles(input):null;if(v5&&!obstacle)return null;
+    const material=v6?visibleMaterials(input,obstacle):null;if(v6&&!material)return null;
     const values=input.values.slice(),layers=input.layers.slice(),score=input.score,target=input.target,movesLeft=input.movesLeft,targetMode=input.targetMode==='exact'?'exact':'minimum';
-    if(!movesLeft||layers.every(value=>value===0)&&(targetMode==='exact'?score===target:score>=target)&&(!v5||obstacle.objectivesMet)||targetMode==='exact'&&score>target)return null;
+    const scoreMet=targetMode==='exact'?score===target:score>=target,groundMet=layers.every(value=>value===0);
+    if(v6){if(!movesLeft||(!material.scoreEnabled||scoreMet)&&(!material.groundEnabled||groundMet)&&material.objectivesMet&&obstacle.objectivesMet||material.scoreEnabled&&targetMode==='exact'&&score>target)return null;}
+    else if(!movesLeft||groundMet&&scoreMet&&(!v5||obstacle.objectivesMet)||targetMode==='exact'&&score>target)return null;
     const choices=[],seen=new Set();
     for(const candidate of legalPairs){
       if(!pair(candidate)||candidate.some(index=>index>=values.length))continue;
@@ -103,7 +138,7 @@
       if(!dense(matched)||!matched.length||!matched.every(index=>integer(index)&&index<values.length&&(!v5||obstacle.active[index]))||new Set(matched).size!==matched.length)continue;
       const scoreGain=matched.reduce((sum,index)=>sum+swapped[index],0),layerGain=matched.filter(index=>layers[index]>0).length,greenGain=matched.filter(index=>layers[index]===1).length;
       const preview=v5?obstacle.preview(matched):{blockers:[],opened:0};
-      const rank=layerGain*100+greenGain*35+Math.min(scoreGain,Math.max(0,target-score))*.1+preview.blockers.length*120+preview.opened*25;
+      const rank=v6?(material.groundEnabled?layerGain*100+greenGain*35:0)+(material.scoreEnabled?Math.min(scoreGain,Math.max(0,target-score))*.1:0)+preview.blockers.length*120+preview.opened*25+material.preview(matched,preview.blockers)*250:layerGain*100+greenGain*35+Math.min(scoreGain,Math.max(0,target-score))*.1+preview.blockers.length*120+preview.opened*25;
       const focus=focusGroup([a,b],matched,swapped);if(requireFocus&&!focus)continue;
       choices.push({hint:descriptor([a,b],matched,preview.blockers,focus),rank});
     }

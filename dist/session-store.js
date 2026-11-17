@@ -67,7 +67,7 @@
   return {read,contains,current,commit,resetForTesting,get revision(){return revision;},revoke(){writable=false;}};
  }
  function boot(start){
-  const w=root,flow=w.HexCampaignFlow?.enabled===true,storage=flow?w.HexCampaignFlow.storage(w.localStorage):w.localStorage;
+  const w=root,scope=w.HexMaterialAlpha?.enabled===true?w.HexMaterialAlpha:w.HexCampaignFlow?.enabled===true?w.HexCampaignFlow:null,storage=scope?scope.storage(w.localStorage):w.localStorage;
   if(w.HexSessionTestMode?.isolated===true){start(createStore(storage));return;}
   const blocked=(message,retry=true)=>{
    let panel=w.document.getElementById('session-lock-panel');
@@ -76,7 +76,7 @@
    if(retry){const button=w.document.createElement('button');button.type='button';button.textContent='Tekrar dene';button.style.cssText='padding:16px;border-radius:16px;font:inherit';button.onclick=()=>w.location.reload();panel.append(button);}
   };
   if(!w.navigator.locks?.request){blocked('Bu tarayıcı güvenli kayıt kilidini desteklemiyor. Güncel bir tarayıcıda aç. Mevcut kayıtların korunuyor.',false);return;}
-  w.navigator.locks.request(flow?w.HexCampaignFlow.prefix+LOCK:LOCK,{ifAvailable:true},async lock=>{
+  w.navigator.locks.request(scope?scope.prefix+LOCK:LOCK,{ifAvailable:true},async lock=>{
    if(!lock){blocked('Oyun başka bir sekmede açık. Kaydını korumak için bu sekme bekliyor. Diğer sekmeyi kapatıp tekrar dene.');return;}
    let store;
    try{store=createStore(storage);start(store);}catch(_){store?.revoke();blocked('Kayıt güvenle açılamadı. İlerlemen değiştirilmedi. Sayfayı yenileyip tekrar dene.');return;}

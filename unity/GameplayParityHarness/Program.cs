@@ -47,7 +47,7 @@ internal static class Program
         resolver.Modifiers.Add(info => {
             if (info.Type == typeof(GameSnapshot) || info.Type == typeof(WaveFrame) || info.Type == typeof(LevelConfig))
                 foreach (var property in info.Properties)
-                    if (property.Name == "cellOpen" || property.Name == "openedCells" || property.Name == "obstacles" || property.Name == "obstacleVersion" || property.Name == "blockerHp" || property.Name == "regionOpen" || property.Name == "blockerHits" || property.Name == "brokenBlockers" || property.Name == "openedRegions")
+                    if (property.Name == "materials" || property.Name == "objectives" || property.Name == "materialVersion" || property.Name == "objectiveVersion" || property.Name == "materialCounts" || property.Name == "collectedSources" || property.Name == "materialEvents" || property.Name == "status" || property.Name == "cellOpen" || property.Name == "openedCells" || property.Name == "obstacles" || property.Name == "obstacleVersion" || property.Name == "blockerHp" || property.Name == "regionOpen" || property.Name == "blockerHits" || property.Name == "brokenBlockers" || property.Name == "openedRegions")
                         property.ShouldSerialize = (instance, value) => value != null;
         });
         result.TypeInfoResolver = resolver;
@@ -87,7 +87,8 @@ internal static class Program
 
     private static LevelConfig ReadLevel(JsonElement source)
     {
-        if (portableWire) return Hexrota.Catalog.CatalogWire.ReadLevel(PortableValue(source));
+        JsonElement version;
+        if (portableWire || (source.TryGetProperty("rulesVersion", out version) && version.ValueKind == JsonValueKind.String && version.GetString() == "classic-v6")) return Hexrota.Catalog.CatalogWire.ReadLevel(PortableValue(source));
         Required(source, "cells", JsonValueKind.Array);
         Required(source, "initial", JsonValueKind.Array);
         Required(source, "palette", JsonValueKind.Array);
@@ -136,7 +137,8 @@ internal static class Program
     // omitting a required field must not silently supply a valid zero/default.
     private static GameSnapshot ReadSnapshot(JsonElement source)
     {
-        if (portableWire) return Hexrota.Catalog.CatalogWire.ReadSnapshot(PortableValue(source));
+        JsonElement version;
+        if (portableWire || (source.TryGetProperty("version", out version) && version.ValueKind == JsonValueKind.Number && version.TryGetInt32(out int parsedVersion) && parsedVersion == 6)) return Hexrota.Catalog.CatalogWire.ReadSnapshot(PortableValue(source));
         foreach (string key in new[] { "version", "score", "movesLeft", "turn" })
         {
             int number;
@@ -313,6 +315,8 @@ internal static class Program
                 else if (op == "clone")
                 {
                     var clone = game.Clone(); result = Observed(clone);
+                    if (clone.materialCounts != null && clone.materialCounts.Length > 0) clone.materialCounts[0] = -99;
+                    if (clone.collectedSources != null && clone.collectedSources.Length > 0) clone.collectedSources[0] = !clone.collectedSources[0];
                     if (clone.blockerHp.Length > 0) clone.blockerHp[0] = -100;
                     if (clone.regionOpen.Length > 0) clone.regionOpen[0] = !clone.regionOpen[0];
                     if (clone.cellOpen != null && clone.cellOpen.Length > 0) clone.cellOpen[0] = !clone.cellOpen[0];
@@ -336,6 +340,8 @@ internal static class Program
                     JsonElement value;
                     if (step.TryGetProperty("values", out value)) game.values = Read<int?[]>(value);
                     if (step.TryGetProperty("layers", out value)) game.layers = Read<int[]>(value);
+                    if (step.TryGetProperty("materialCounts", out value)) game.materialCounts = Read<int[]>(value);
+                    if (step.TryGetProperty("collectedSources", out value)) game.collectedSources = Read<bool[]>(value);
                     if (step.TryGetProperty("blockerHp", out value)) game.blockerHp = Read<int[]>(value);
                     if (step.TryGetProperty("cellOpen", out value)) game.cellOpen = Read<bool[]>(value);
                     if (step.TryGetProperty("regionOpen", out value)) game.regionOpen = Read<bool[]>(value);
