@@ -1,0 +1,30 @@
+{
+  "success": true,
+  "command": "DOTNET_PATH=/workspace/scratch/dotnet/dotnet node check-story-parity.cjs",
+  "dotnetSdk": "8.0.428",
+  "languageVersion": "7.3",
+  "scenarios": 282,
+  "authoredScenarios": 10,
+  "certifiedWinningRoutes": 6,
+  "canonicalGameplayPrefixes": 116,
+  "actualCanonicalLossCases": 1,
+  "nativeFactProjectionRequests": 141,
+  "successfulReducerCalls": 1051,
+  "observeCalls": 405,
+  "acknowledgeAndChoiceCalls": 407,
+  "strictRestoreCalls": 123,
+  "snapshotIsolationCalls": 116,
+  "rejectedSchemaProgressIdentityAndActions": 125,
+  "physicalDeviceTested": false,
+  "unityEditorTested": false,
+  "baseline": "8859d09",
+  "log": "/workspace/scratch/story-native.log",
+  "protectedSourcesUnchanged": true,
+  "protectedSourcesCompared": 14,
+  "sourceSha256": {
+    "unity/Story/StoryEngine.cs": "712e687802f15835a634655c5303355eb69ef24a933915299b7067e216a612e9",
+    "unity/StoryAdapter/CanonicalStoryFacts.cs": "01e0d5ba62b42783a15936214814d589c17b9ea27a3f0abeaea1840b174c196d",
+    "unity/StoryAdapter/StoryBindings.cs": "ff03d5a4c303631bb67a552cb690594802d93482c66d9ca848bac6c8fc4cf7ba",
+    "check-story-parity.cjs": "37459e859cef2adaee1c1aebc2f5e44b25704777109aac542cae4d9e45d2728c"
+  }
+}

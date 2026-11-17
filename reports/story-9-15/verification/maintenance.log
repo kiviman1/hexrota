@@ -1,0 +1,17 @@
+
+> hexrota@9.2.0 test:maintenance
+> node scripts/sync-styles.cjs --check && node scripts/check-architecture.cjs && node check-maintenance.cjs
+
+Styles: 13 owned source sections; exact cascade and one payload verified.
+Architecture boundaries, 52 runtime syntax files, explicit script order and offline assets verified.
+PASS revision exhaustion rejects before changing durable memory or storage
+PASS commit validates both game/energy before writing an unloadable envelope
+PASS same-revision canonical corruption is not silently overwritten
+PASS present null inserted into an empty slot cannot masquerade as absence
+PASS contains distinguishes canonical mirrors, absent keys, and present null
+PASS strict progression loading rejects present null, malformed or falsy new/legacy records
+PASS actual application boot refuses a present null game rather than writing defaults
+PASS save normalization remains immutable and supports old indexed containers
+PASS all 52 authored boards preserve exact pre-refactor SVG, geometry and reciprocal paths
+PASS pure swipe classifier preserves six axes, jitter, contradictory paths and bounds
+{"groups":10,"additionalAssertions":512,"baseline":"7deb686e1f4cd79aedd9763522c381ff145d216d","physicalDevicesTested":false}

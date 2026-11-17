@@ -1,0 +1,87 @@
+{
+  "browser": "chromium",
+  "checks": 0,
+  "results": [],
+  "routes": [],
+  "actions": [
+    {
+      "nodeId": "c-intro",
+      "choiceId": null,
+      "skipped": false,
+      "levelId": 8,
+      "nativeInput": [
+        {
+          "type": "pointerdown",
+          "target": "story-ack",
+          "x": 60.6875,
+          "y": 322.796875,
+          "trusted": true,
+          "timeStamp": 868.8000000007451,
+          "now": 885,
+          "touches": null,
+          "defaultPrevented": false,
+          "instance": "a-8-1-9de8aef2/0/0/level_started/wave/node/c-intro"
+        },
+        {
+          "type": "touchstart",
+          "target": "story-ack",
+          "x": 60.6875,
+          "y": 322.796875,
+          "trusted": true,
+          "timeStamp": 868.8000000007451,
+          "now": 885.1999999992549,
+          "touches": 1,
+          "defaultPrevented": false,
+          "instance": "a-8-1-9de8aef2/0/0/level_started/wave/node/c-intro"
+        },
+        {
+          "type": "pointerup",
+          "target": "story-ack",
+          "x": 60.6875,
+          "y": 322.796875,
+          "trusted": true,
+          "timeStamp": 901.5,
+          "now": 918.1000000014901,
+          "touches": null,
+          "defaultPrevented": false,
+          "instance": "a-8-1-9de8aef2/0/0/level_started/wave/node/c-intro"
+        },
+        {
+          "type": "touchend",
+          "target": "story-ack",
+          "x": 60.6875,
+          "y": 322.796875,
+          "trusted": true,
+          "timeStamp": 901.5,
+          "now": 918.5,
+          "touches": 0,
+          "defaultPrevented": false,
+          "instance": "a-8-1-9de8aef2/0/0/level_started/wave/node/c-intro"
+        },
+        {
+          "type": "click",
+          "target": "story-ack",
+          "x": 61,
+          "y": 323,
+          "trusted": true,
+          "timeStamp": 901.5,
+          "now": 919.3000000007451,
+          "touches": null,
+          "defaultPrevented": false,
+          "instance": "a-8-1-9de8aef2/0/0/level_started/wave/node/c-intro"
+        }
+      ]
+    }
+  ],
+  "measurements": [],
+  "lifecycle": [],
+  "errors": [],
+  "physicalIPhone": false,
+  "unityEditor": false,
+  "input": {
+    "tap": "native touchscreen",
+    "drag": "compositor-native touch drag with preventFling"
+  },
+  "clocks": "production clocks unchanged",
+  "storyContact": "one compositor-native touch tap,100ms contact"
+}

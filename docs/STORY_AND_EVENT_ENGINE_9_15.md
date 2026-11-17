@@ -175,6 +175,8 @@ Reload, kanonik kaydı doğrulayıp mevcut hikâye görünümünü yeniden kurar
 
 Önceden uygulanan olaylar sırf görünüm yeniden açıldı diye tekrar tetiklenmez. Restore sırasında aynı hikâye/deneme/veri sürümleri korunur; mevcut oyun snapshot'ına hikâye alanları eklenmez. `HexGameSave.normalize`, `story-profile-v1` alanını story adaptörüyle mevcut `game` içinde açıkça korur ve doğrular; yalnız dosyaya yazılmış olmasına güvenilmez. Kanonik commit ve rollback aynı doğrulanmış zarfı kullanır. Gerçek mounted kabulü, başarısız hamle/onay/seçim yazımı ile reload durumlarını kapsar.
 
+İki sıfırlama farklıdır: `#settings-reset`, açık denemeleri ve bunlara ait story state'lerini temizleyen mevcut ilerleme sıfırlamasıdır. **`#settings-full-reset` → `#full-reset-confirm`**, gerçek `resetForTesting` yoludur: tek kanonik yazımla revision bir artar; varsayılan oyun/can verisi ile `{version:'story-profile-v1',states:{}}` kaydedilir, board ve attempt kayıtları temizlenir. Eski writer, host yeniden yüklenmeden önce revoke edilir; sahiplenilmiş eylem ve lifecycle callback'leri eski board/hikâyeyi geri yazamaz. Legacy/analitik temizlik ve uyumluluk aynaları yalnız story önekiyle çalışır. Normal, flow ve material profilleri, legacy v1 kayıtları dâhil korunur. Yeniden yüklenen geliştirici girişi boş veriyi korur; geliştirici modunun mevcut politikası gereği **`firstOpening:false`** kalır ve on bölüm serbest seçilir. Bu görünüm, sıfırlamanın eski veriyi koruduğu anlamına gelmez.
+
 Serbest geliştirici bölüm seçimi, önceki kampanya bölümlerini tamamlanmış saymaz. 9.14'teki gibi sıra dışı 6/7/8 kazanımı gerçek snapshot/rekor/terminal kaydı üretebilir; sıralı ekonominin kalıcı temizleme/Altın/yıldız uygunluğu mevcut sahibinde kalır. Hikâye tetiklenmesi bu ekonomi koşulunu aşan ödül kanıtı değildir.
 
 ## Diyalog, sahne ve yaşam döngüsü
@@ -184,6 +186,16 @@ Mevcut öğretici sayaçları kanonik öğretici checkpoint'inin turundan türet
 Mevcut sahne veri dosyası `data/scene-config-v1.json` sunum şeması 2 kullanır; `futureStory:{enabled:false,hooks:[]}` etkisiz bir uzantıdır. Yeni hikâye içeriği ayrı `story-content-v1` sözleşmesi / `HEX_STORY_CONTENT` girdisidir. Eski futureStory alanı tek başına uygulanmış hikâye motoru sayılmaz. Kanonik içerik `wood`/6, `nails`/7 ve `together`/8 chapter'larını; A ilk ahşap/hedef, B ilk çivi/hedef, C bölge/ilk kaynaklar/iki malzemeye bağlı plan seçimi/hedef akışını taşır. C'deki `gate-first` ve `coop-first` seçimleri anlatı yanıtını seçer; malzeme/ekonomi/tahta komutu değildir.
 
 Sahne bağları mevcut `coop-v1` clearing/frame/roof/finished mobile WebP dosyalarıdır. Çekirdek yalnız güvenli `assets/...` yolu ve izinli WebP/PNG/SVG uzantısını kabul eder; üretici public dosyanın varlığını denetler. Bu eşleme gelecekteki Unity prefab/Animator bağından ayrıdır; gerçek Unity varlık veya sahne entegrasyonu yapılmış sayılmaz.
+
+| İçerik sahne kimliği | Mevcut public görsel |
+| --- | --- |
+| `coop-clearing` | `assets/scenes/coop-v1/backgrounds/clearing-mobile.webp` |
+| `coop-frame` | `assets/scenes/coop-v1/backgrounds/frame-mobile.webp` |
+| `coop-roof` | `assets/scenes/coop-v1/backgrounds/roof-mobile.webp` |
+| `coop-finished` | `assets/scenes/coop-v1/backgrounds/finished-mobile.webp` |
+
+Gelecekteki Unity görsel adaptörü `sceneId` ve bu asset rolünü kendi prefab/renderer anahtarına; `pose` değerini mevcut `idle` / `point` / `call` / `celebrate` sunumuna bağlar. Bu bağlama anlatı tetikleyicisi veya yeni gameplay koşulu değildir. Blender dosyası, Unity Cloud kurulumu veya hesap yetkilendirmesi bu sürümün çalışması için gerekmez.
+
 
 Portre, dünya aktörü, diyalog kartı ve sahne geçişi aynı kabul edilmiş görünümden çizilmelidir. Inline native `#story-dialog`, kanonik `data-story-instance` ve `data-story-node` alanlarıyla açılır; `#story-ack`, `#story-skip` ve `[data-story-choice]` düğmeleri her node için yeniden kurulur. Düğme closure'ı deneme, diyalog örneği, AppState modal açılışı ve generation kimliğini taşır; koparılmış/eski düğme callback'i ilerleme üretemez. `#story-portrait`, sahiplenilmiş `HexTavikMotion` aktörünü veya mevcut görsel yedeğini barındırır; clear/destroy eski decode/animasyon sonuçlarını geçersiz kılar. Animasyon/tween bitişi hikâye komutu değildir. Sahne decode/asset hatası, azaltılmış hareket veya efekt yokluğu oyunu ve kesinleşmiş hikâye durumunu değiştiremez. Yerel görsel yedekler yalnız sunum sahibindedir.
 
@@ -197,24 +209,37 @@ Wire alanları, null değerleri, tamsayı sınırları ve hatalar aynı exact i�
 
 Oyun kuralları/snapshot'ları v4/v5/v6, `materials-v1`, `objectives-v1`, deneme zarfı 1 ve profil zarfı 2 kendi anlamlarını korur. Hikâye şema/içerik sürümü bunlarla karıştırılmamalıdır. Normal oyuncu, flow ve material geliştirme ad alanlarına sessiz hikâye kaydı veya yeni deneme yazılmamalıdır.
 
-## Doğrulama planı ve mevcut kanıt
+## Doğrulama ve mevcut kanıt
 
-Gerçek mounted uygulama kabulü `node check-story-ui.cjs` ile **14/14 grup, exit 0** geçti; yerel log `/workspace/scratch/story-ui.log` içindedir. Altı gerçek A/B/C kazanma yolu ve iki C seçimi; her checkpoint'in kanonik facts/journal restore'u; hamle/onay/seçim yazım hatasında atomik rollback; reload ve tekilleştirme; skip; mola/arka plan/Home, eski düğme ve yeni deneme; yalnız story namespace reset'i; normal hareket uçuşunun iptalinden sonra aynı kesinleşmiş hikâyenin sunumu; terminal bitişte Pause→Continue→onay→kazanım ve tam T1/T2 v4 sayaçları kapsanır. Bu JSDOM koşumu native yerleşim veya cihaz dokunma kanıtı değildir. Stock harness yalnız can hesabı için UTC'yi sabitler; hikâye veya oyun saati/RNG değiştirilmez.
+Gerçek mounted uygulama kabulü `node check-story-ui.cjs` ile **15/15 grup, exit 0** geçti; yerel log `/workspace/scratch/story-ui.log` içindedir. Altı gerçek A/B/C kazanma yolu ve iki C seçimi; her checkpoint'in kanonik facts/journal restore'u; hamle/onay/seçim yazım hatasında atomik rollback; reload ve tekilleştirme; skip; mola/arka plan/Home, eski düğme ve yeni deneme; yalnız story namespace içinde ilerleme reset'i ve gerçek tam veri reset'i; normal hareket uçuşunun iptalinden sonra aynı kesinleşmiş hikâyenin sunumu; terminal bitişte Pause→Continue→onay→kazanım ve tam T1/T2 v4 sayaçları kapsanır. Tam reset grubunda gerçek iki düğme, tek yazım/revision+1, boş story/board/attempt ve varsayılanlar, eski callback'in etkisizliği, korunan normal/flow/material/legacy v1 kayıtları ve reload birlikte doğrulanır. Bu JSDOM koşumu native yerleşim veya cihaz dokunma kanıtı değildir. Stock harness yalnız can hesabı için UTC'yi sabitler; hikâye veya oyun saati/RNG değiştirilmez.
 
-Tam `npm test` son kaynaklarla **exit 0** tamamlandı. Yeni `test:story` paketi **130 test/grup birimi** içerir: reducer 52, olay adaptörü 13, içerik 10, alfa 7, diyalog sunumu 17, profil 17 ve mounted 14. Bunlar rota/takas sayısı değildir. Yerel tam koşum `/workspace/scratch/story-npm-first.log` içindedir; 9.14 sonuçları 9.15 sonucu olarak kullanılmaz. Nihai Chromium/WebKit raporları kendi tamamlanmış kanıtlarıyla eklenecektir.
+Tam `npm test` son kaynaklarla **exit 0** tamamlandı. Yeni `test:story` paketi **131 test/grup birimi** içerir: reducer 52, olay adaptörü 13, içerik 10, alfa 7, diyalog sunumu 17, profil 17 ve mounted 15. Bunlar rota/takas sayısı değildir. [Kalıcı doğrulama özeti](../reports/story-9-15/validation.json), [tam npm koşum kaydı](../reports/story-9-15/verification/npm-test.log) ve aşağıdaki native/browser kanıtları aynı son teslimi belgeler; 9.14 sonuçları 9.15 sonucu olarak kullanılmaz.
 
 ### Tamamlanan koşumlar
 
 | Komut / ortam | Gerçek sonuç |
 | --- | --- |
-| `npm test` ve yeni `test:story` | **exit 0**; yeni yedi kontrolün toplam 130 test/grup birimi de geçer. Yerel log: `/workspace/scratch/story-npm-first.log`. |
-| `node check-story-ui.cjs` — gerçek uygulama, mounted JSDOM | **14/14 grup, exit 0.** Altı kazanma yolu, iki seçim dalı, atomik hata/rollback, strict restore, lifecycle/stale/reset ve tam T1/T2. Yerel log: `/workspace/scratch/story-ui.log`. |
-| `node check-story-parity.cjs` — .NET 8.0.428 / C# 7.3 | **280 senaryo geçti**; bütün altı kazanma yolunu kapsayan 10 authored rota/seçim/skip senaryosu ve bu senaryolarda 116 kanonik checkpoint gözlemi. 140 native fact-projection isteğinin 129'u başarılı kanonik projeksiyon, 11'i beklenen bozuk proof reddidir. 1.046 başarılı reducer çağrısı: 403 observe, 405 ack/choice (idempotent tekrarlar dâhil), 122 strict restore ve 116 snapshot izolasyonu. 125 şema/ilerleme/kimlik/eylem reddi. Son kaynaklarla `npm run test:unity-story` **exit 0**; yerel kanıt `/workspace/scratch/story-native-final.log` ve `/workspace/scratch/story-native-results.json` içindedir. |
-| Önceki 16 native parity komutu | **16/16 exit 0**, `/workspace/scratch/story-native-historical.log`. Oyun v4/v5/v6, katalog, ipucu, reward, can, session/event, ekonomi, commands ve rescue korunur. |
+| `npm test` ve yeni `test:story` | **exit 0**; yeni yedi kontrolün toplam **131 test/grup birimi** de geçer. [Tam koşum kaydı](../reports/story-9-15/verification/npm-test.log). |
+| `node check-story-ui.cjs` — gerçek uygulama, mounted JSDOM | **15/15 grup, exit 0.** Altı kazanma yolu, iki seçim dalı, atomik hata/rollback, strict restore, lifecycle/stale, ilerleme reset'i, gerçek tam veri reset'i ve tam T1/T2. [Son tam koşumdaki mounted sonuçlar](../reports/story-9-15/verification/npm-test.log). |
+| `node check-story-parity.cjs` — .NET 8.0.428 / C# 7.3 | **282 senaryo, exit 0**; bütün altı kazanma yolunu kapsayan 10 authored rota/seçim/skip senaryosu ve 116 kanonik checkpoint gözlemi. 141 native fact-projection isteğinin 130'u başarılı kanonik projeksiyon, 11'i beklenen bozuk proof reddidir. 1.051 başarılı reducer çağrısı: 405 observe, 407 ack/choice (idempotent tekrarlar dâhil), 123 strict restore ve 116 snapshot izolasyonu. 125 şema/ilerleme/kimlik/eylem reddi. Ayrıca bir gerçek `HexMatch` kaybı → kanonik facts → veriyle tanımlı kayıp repliği → strict restore akışı sınanır; bu senaryo yalnız test içeriği/tek hamleli HP 2 bölüm kopyası kullanır, yayımlanmış gameplay/içerik değiştirilmez. [Native JSON kanıtı](../reports/story-9-15/verification/native-story.json) ve [282 senaryoluk son log](../reports/story-9-15/verification/native-story.log). |
+| Önceki 16 native parity komutu | **16/16 exit 0**, [tarihsel native regresyon kaydı](../reports/story-9-15/verification/native-historical.log). Oyun v4/v5/v6, katalog, ipucu, reward, can, session/event, ekonomi, commands ve rescue korunur. |
+| `node check-story-browser.cjs` — gerçek Chromium | **29/29 grup, exit 0; errors `[]`.** [Sonuç raporu](../reports/story-9-15/chromium/results.json), [koşum kaydı](../reports/story-9-15/verification/browser-chromium.log). 18 tam kazanma koşusu, 156 route hamlesi, 115 doğrulanmış açık anlatı eylemi ve 57 PNG. |
+| `HEXROTA_BROWSER=webkit node check-story-browser.cjs` — gerçek WebKit | **29/29 grup, exit 0; errors `[]`.** [Sonuç raporu](../reports/story-9-15/webkit/results.json), [koşum kaydı](../reports/story-9-15/verification/browser-webkit.log). 18 tam kazanma koşusu, 156 route hamlesi, 115 doğrulanmış açık anlatı eylemi ve 57 PNG. |
 
-Nihai browser raporları bu ayrı sonuçlara eklenir; farklı gözlem türleri tek bir toplam olarak sunulmaz. Önceki oyun motoru, 9.14 bölüm verisi, öğreticiler ve sahne yapılandırması korunur. İzole Lab kontrolü de Chromium ve WebKit'te 6/6 grup geçti; ayrı loglar `/workspace/scratch/story-lab-*.log` içindedir.
+Browser başına 320×568, 390×844 ve 430×932'de altı gerçek A/B/C rota/seçim koşusu tamamlanır; C'nin iki seçim dalı da oynanır. Gerçek giriş, açık onay/seçim/skip, birebir checkpoint reload'u, yinelenmeyen olaylar/tepkiler, hamle/onay/seçim kota hatalarında rollback, kısmi ilerleme reset'i ve gerçek tam veri reset'i sınanır. Lifecycle, koparılmış eski düğme, yeni deneme, korunmuş namespace'ler, tam T1/T2 ve normal hamle sunumunun iptalinden sonraki diyalog da kapsamdadır. Terminal bitiş onayını beklerken Pause→Continue aynı örneği korur; ancak açık son onaydan sonra mevcut kazanma diyaloğu açılır.
 
-| Katman | Planlanan kabul kapsamı |
+Her CTA mevcut fiziksel bounding box ve hit target üzerinden doğrulanıp **bir native touchscreen dokunmasıyla** çalıştırılır; iki gerçek rAF ile boyama kontrol edilir. Otomatik tekrar dokunma yoktur. Chromium sürüklemeleri aynı fiziksel altıgen uçları arasında `Input.synthesizeScrollGesture` / `preventFling:true` ile compositor-native touch kullanır; WebKit sürüklemeleri native mouse/pointer fallback yoludur. İki browser'da bütün tap'ler native touchscreen input'tur. Production Date/timer veya yapılandırma değiştirilmez. İki motor aynı dondurulmuş test harness'iyle çalışmıştır.
+
+Toplam **114 PNG** vardır; browser başına 57. 390×844'te gerçek normal uygulamadan dört örnek:
+
+| Browser | A giriş | B çivi toplama | C seçim | C sahne bitişi |
+| --- | --- | --- | --- | --- |
+| Chromium | [Görüntü](../reports/story-9-15/chromium/390-A-route0-intro.png) | [Görüntü](../reports/story-9-15/chromium/390-B-route0-collection.png) | [Görüntü](../reports/story-9-15/chromium/390-C-route0-c-plan-choice.png) | [Görüntü](../reports/story-9-15/chromium/390-C-route0-scene-ending.png) |
+| WebKit | [Görüntü](../reports/story-9-15/webkit/390-A-route0-intro.png) | [Görüntü](../reports/story-9-15/webkit/390-B-route0-collection.png) | [Görüntü](../reports/story-9-15/webkit/390-C-route0-c-plan-choice.png) | [Görüntü](../reports/story-9-15/webkit/390-C-route0-scene-ending.png) |
+
+Farklı gözlem türleri tek bir toplam olarak sunulmaz. Önceki oyun motoru, 9.14 bölüm verisi, öğreticiler ve sahne yapılandırması korunur. İzole Lab kontrolü de Chromium ve WebKit'te 6/6 grup geçti; ayrı loglar `/workspace/scratch/story-lab-*.log` içindedir.
+
+| Katman | Doğrulanan kabul kapsamı |
 | --- | --- |
 | Saf reducer / veri | Şema/referans doğrulaması, stable olay kimliği, koşullar, deterministik sıra, idempotency, bozuk girdi reddi, immutable girdi |
 | JS/C# parity | Aynı içerik/olay/ack/choice dizisi, tam durum/görünüm/wire ve restore karşılaştırması; gerçek .NET 8 / C# 7.3 |

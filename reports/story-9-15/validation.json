@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "feature": "HEXROTA 9.15",
+  "baseline": "8859d0924a3f2c7ac5771097274c09c6e0b82c22",
+  "runtimeCommit": "a1adfe87e4e1a98aee0172d0368f9f8a20fd5822",
+  "npm": {
+    "command": "npm test",
+    "exitCode": 0,
+    "newTestAndGroupUnits": 131,
+    "groups": {
+      "reducer": 52,
+      "canonicalEvents": 13,
+      "content": 10,
+      "alphaCatalog": 7,
+      "presentation": 17,
+      "profile": 17,
+      "mountedApplication": 15
+    },
+    "log": "verification/npm-test.log"
+  },
+  "storyNative": {
+    "command": "npm run test:unity-story",
+    "exitCode": 0,
+    "dotnetSdk": "8.0.428",
+    "languageVersion": "7.3",
+    "scenarios": 282,
+    "authoredScenarios": 10,
+    "winningRoutes": 6,
+    "gameplayPrefixes": 116,
+    "projectionRequests": 141,
+    "successfulProjections": 130,
+    "rejectedProjectionInputs": 11,
+    "reducerCalls": 1051,
+    "observations": 405,
+    "acknowledgementsAndChoices": 407,
+    "strictRestores": 123,
+    "snapshotIsolationChecks": 116,
+    "rejectedInputs": 125,
+    "actualCanonicalLossCases": 1,
+    "evidence": "verification/native-story.json",
+    "log": "verification/native-story.log"
+  },
+  "historicalNative": {
+    "commands": 16,
+    "exitCode": 0,
+    "log": "verification/native-historical.log"
+  },
+  "browsers": {
+    "chromium": {
+      "checks": 29,
+      "winningRoutes": 18,
+      "routeMoves": 156,
+      "explicitNarrativeActions": 115,
+      "screenshots": 57,
+      "errors": [],
+      "input": {
+        "tap": "native touchscreen",
+        "drag": "compositor-native touch drag with preventFling"
+      },
+      "results": "chromium/results.json",
+      "log": "verification/browser-chromium.log"
+    },
+    "webkit": {
+      "checks": 29,
+      "winningRoutes": 18,
+      "routeMoves": 156,
+      "explicitNarrativeActions": 115,
+      "screenshots": 57,
+      "errors": [],
+      "input": {
+        "tap": "native touchscreen",
+        "drag": "native mouse/pointer fallback"
+      },
+      "results": "webkit/results.json",
+      "log": "verification/browser-webkit.log"
+    }
+  },
+  "viewports": [
+    {
+      "width": 320,
+      "height": 568
+    },
+    {
+      "width": 390,
+      "height": 844
+    },
+    {
+      "width": 430,
+      "height": 932
+    }
+  ],
+  "touchDriverRobustness": {
+    "chromiumTarget": "430x932 C route1",
+    "independentCompleteWins": 5,
+    "movesPerWin": 16,
+    "productionTimersChanged": false,
+    "automaticActionRetries": false
+  },
+  "legacy": {
+    "variants": 40,
+    "winningCertificates": 80,
+    "svgAndGeometryGoldens": 52,
+    "pinnedLab": {
+      "chromiumGroups": 6,
+      "webkitGroups": 6,
+      "immutableFiles": 66,
+      "protectedKeys": 10
+    },
+    "gameplaySourcesAndHistoricalDataChanged": false
+  },
+  "livePreview": {
+    "runtimeCommit": "a1adfe87e4e1a98aee0172d0368f9f8a20fd5822",
+    "chromium": {
+      "scenario": "A",
+      "won": true,
+      "routeMoves": 4,
+      "explicitAcknowledgements": 3,
+      "errors": []
+    },
+    "webkit": {
+      "scenario": "C",
+      "won": true,
+      "routeMoves": 16,
+      "branch": "gate-first",
+      "strictReload": true,
+      "errors": []
+    },
+    "runtimeFileHashes": {
+      "dist/app.js": "c2163a7dbb1202648638cfd2a7d5692625e8a8d70ab0546836a5c7aa49d7b15c",
+      "dist/story-engine.js": "ba931628bcdb64b76b8ce5f7641296784df381252e1cf8faedf17e7ca12b070b",
+      "dist/story-events.js": "507646f85ada625688148742aaf1274101340d470338a1f29e4e374ee5f71bee",
+      "dist/story-profile.js": "b4b15502a38cb0a1d17719bdebc38b0719c88748c1031ae33d77507de082b459",
+      "dist/story-presentation.js": "6377d159150f9f7b5d6f1e241224ae5256dd395d3055a9c4500ca89b7fda51f2",
+      "dist/story-content.js": "8449fadbbdbf5fa9934274a163faefa382103f17f4e0d55cbe47078d434819c7",
+      "dist/story-alpha.js": "f923ab1d2fe1d9539c573d2bf08659f785e771d3a1df1f68c48405f7ef410c03",
+      "dist/session-store.js": "5c3e1ba40f08cc7e525e9b8c730155373ef9829607a39c68104d270a584031f4",
+      "dist/game-save.js": "1cc8fd290d7246553dc8c7d60792ac9f35239c215a4a09580a78337d9c284fe5",
+      "dist/style.css": "e24b16c6d9017225e275dfbb80f08f9c7c9f9a42467bee4ccbdab425940bc391",
+      "dist/sw.js": "611dd9327b09f791c944c9e9008d62c0667214671ac6fe78460a0409981a4815"
+    },
+    "servedRuntimeHashesVerified": true,
+    "servedRuntimeHashCount": 11
+  },
+  "production": {
+    "changed": false,
+    "commit": "8859d0924a3f2c7ac5771097274c09c6e0b82c22"
+  },
+  "physicalIPhoneTested": false,
+  "unityEditorTested": false
+}
