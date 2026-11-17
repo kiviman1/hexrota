@@ -30,6 +30,8 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Verify Unity client source and published level sync
+        run: node scripts/sync-unity-client.cjs --check
       - name: Test gameplay, variants, lives, UI and data consistency
         run: npm test
 

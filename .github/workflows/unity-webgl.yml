@@ -1,0 +1,33 @@
+name: Hexrota Unity WebGL Build (manual)
+
+# A licensed Unity editor runner is needed; this is not the existing Vercel web app.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  webgl:
+    name: Unity 6 WebGL player
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build actual Unity WebGL player
+        uses: game-ci/unity-builder@v4
+        with:
+          projectPath: unity-client
+          unityVersion: 6000.6.9f1
+          targetPlatform: WebGL
+          buildMethod: Hexrota.Client.Editor.HexrotaBuild.BuildWeb
+      - name: Keep Unity WebGL output for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: hexrota-unity-webgl
+          path: unity-client/Builds/WebGL/
+          if-no-files-found: error

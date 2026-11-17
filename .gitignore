@@ -10,3 +10,14 @@ test-results/
 
 unity/**/bin/
 unity/**/obj/
+
+# Unity client (generated/editor-local)
+unity-client/Library/
+unity-client/Temp/
+unity-client/Obj/
+unity-client/Logs/
+unity-client/UserSettings/
+unity-client/Builds/
+unity-client/MemoryCaptures/
+unity-client/Recordings/
+unity-client/.vs/

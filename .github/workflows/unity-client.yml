@@ -1,0 +1,23 @@
+name: Hexrota Unity Client
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unity-content-adapter:
+    name: Unity C# content adapter
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Validate 10 levels and 40 variants against canonical C# gameplay
+        run: dotnet run --project unity-client/Tests/ContentHarness/ContentHarness.csproj --configuration Release

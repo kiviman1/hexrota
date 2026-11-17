@@ -173,3 +173,7 @@ Yeni özellik eklemeden önce [modül sahipliği rehberini](docs/ARCHITECTURE.md
 ## Comic Adventure görsel dili
 
 [Tasarım sistemi](docs/UI_VISUAL_LANGUAGE.md), [uygulama raporu](docs/UI_RESTYLE_9_6_REPORT.md) ve `/ui-kit.html` çalışan bileşen örnekleridir. Kit oyun kaydı veya ödül üretmez. `npm run test:comic-ui` ve `npm run test:comic-ui-browser` tasarım sınırlarını denetler.
+
+## Unity 6 client (9.11 — ayrı geliştirme hattı)
+
+Gerçek Unity proje başlangıcı unity-client/ klasöründedir. Kanonik C# kaynakları unity/ altında kalır; node scripts/sync-unity-client.cjs --check üretilmiş Unity kopyalarını ve 10 bölüm/40 varyant verisini denetler. Kurulum, sınırlar ve Blender prefab bağlantıları için [Unity 9.11 rehberi](docs/UNITY_CLIENT_9_11.md) bölümüne bak. Unity WebGL derlemesi doğrulanmadan mevcut Vercel oyununun yerine geçmez.
