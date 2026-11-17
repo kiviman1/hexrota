@@ -43,3 +43,6 @@ body[data-screen="game"][data-first-play-version="2"] .tutorial-coach[data-tavik
 /* These are the two v2 terminal transitions; the ordinary primary next button
    already exceeds44px. Preserve all legacy control dimensions. */
 body[data-screen="game"][data-first-play-version="2"] :is(#continue,#first-play-skip){min-width:44px;min-height:44px}
+/* The automatic receipt has no extra action; the earned result dialog supplies
+   the next transition after this brief committed feedback finishes. */
+body[data-screen="game"][data-first-play-version="2"][data-first-play-phase="result"] #continue{display:none}

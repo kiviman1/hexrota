@@ -16,7 +16,9 @@ const plain=value=>JSON.parse(JSON.stringify(value));
 async function check(name,run){if(process.env.HEXROTA_STATE_ONLY&&!name.includes(process.env.HEXROTA_STATE_ONLY))return;await run();results.push(name);console.log('PASS '+browserName+' '+name);}
 async function profile(page){return page.evaluate(key=>JSON.parse(localStorage.getItem(key)),PROFILE);}
 const activeBoard=p=>p.game.boards[p.game.current],activeAttempt=p=>p.game.attempts[p.game.current];
-async function open({size={width:390,height:844},saved,energy=lifePool(5),motion='reduce',routes,serviceWorkers='block'}={}){
+// Unspecified state freezes the existing absent-policy legacy shell. Genuine
+// no-record v2 enrollment is exercised by check-first-play-v2-browser.cjs.
+async function open({size={width:390,height:844},saved={},energy=lifePool(5),motion='reduce',routes,serviceWorkers='block'}={}){
  const context=await browser.newContext({viewport:size,deviceScaleFactor:1,isMobile:true,hasTouch:true,reducedMotion:motion==='reduce'?'reduce':'no-preference',serviceWorkers});
  await context.addInitScript(({saved,energy,motion,now})=>{if(location.protocol!=='http:')return;Date.now=()=>now;if(!localStorage.getItem('hexrota-profile-v2')&&!localStorage.getItem('hexrota-match-v5')){if(saved){saved.preferences={...saved.preferences,motion};localStorage.setItem('hexrota-match-v5',JSON.stringify(saved));}localStorage.setItem('hexrota-lives-v1',JSON.stringify(energy));}},{saved,energy,motion,now:NOW});
  if(routes)await routes(context);
