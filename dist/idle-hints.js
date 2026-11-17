@@ -2,7 +2,7 @@
  * and engine; this module owns only clocks, session limits and presentation. */
 (function(root){
   'use strict';
-  const CONFIG=Object.freeze({firstDelay:20000,nextDelay:35000,minInterval:60000,maxPerAttempt:2,duration:900,repeatDelay:4000});
+  const CONFIG=Object.freeze({firstDelay:10000,nextDelay:35000,minInterval:60000,maxPerAttempt:2,duration:900,repeatDelay:4000});
   const integer=value=>Number.isSafeInteger(value)&&value>=0;
   const identity=value=>typeof value==='string'&&value.length>0;
   const pair=value=>Array.isArray(value)&&value.length===2&&value.every(integer)&&value[0]!==value[1];

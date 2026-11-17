@@ -1,28 +1,28 @@
 {
   "baseline": "616c66389d1aca7c225b56641f27bc901e5a9012",
   "sourceSha256": {
-    "dist/app.js": "9c2a2d3bc55d18823d01f391ef425f29e7cf68ebf3444a72f5964711f538a8a5",
-    "dist/idle-hints.js": "aeefbef83443ab04baec9d05a72be9357db4294926e5dac1fc1ee69e073e34b0",
+    "dist/app.js": "18a88a6439e79dd2afee336e7fd436dfacb2e79a8af949c2cdf62b957fde8f66",
+    "dist/idle-hints.js": "57fbf833e341c97a26267fa1bbe148cd8db47eb0286692c2659f2703cc092688",
     "dist/idle-hint-view.js": "f0142073f632b1675a10caef9f782abd06d8e63da6eb6e9c928a9fd45724f570",
-    "dist/index.html": "5e40f9e2aa953666fd8a095e41b0530b992507b92df01be2500831e221ac090d",
+    "dist/index.html": "f453a05218cc46a481624e461c2ff6863f4397bb2f4de0c32259bf3de916106f",
     "dist/style.css": "007515b533fdf9e57300193b9276e4dba17b1e6cbb725fa96cd0e74955097c0a",
-    "dist/sw.js": "bd706e3d9cef446c6717b03add4f7d9421c5c02b3fec4efe27c57df96dcded93",
-    "check-idle-hints-browser.cjs": "8352e79ef84ec36158c97015a53fa0348f329a8b93f192248bd0b0c421cb76ca"
+    "dist/sw.js": "f9d60f57e365629b0a4d90e3529c327fb625937a0fdfe4a5270614d33f721699",
+    "check-idle-hints-browser.cjs": "b8884200c7f768fd1603bb1aecdb8aaf40edc643182ea44dd161895e27a626a7"
   },
   "evidenceSha256": {
-    "docs/evidence/smart-idle-hints-9-10/after-390x844.png": "4784b53e5716fb66b13e3fb635fd6ba088ba470957bfa188e33c97dbd88b12ea",
-    "docs/evidence/smart-idle-hints-9-10/before-390x844.png": "3fc4ed9d4722e055c241f173a55074d4c5c3ee8b92f0bad1fcf345c78247e435",
-    "docs/evidence/smart-idle-hints-9-10/cue-peak-390x844.png": "aeb449aed125bbafa66127305039741491373b463a7cb66344a7b7255c670c3e",
-    "docs/evidence/smart-idle-hints-9-10/cue-start-390x844.png": "56da7695838f7e8d931f8e4ba56d29c135dfe8a490880e11d6a76f8d85257233",
-    "docs/evidence/smart-idle-hints-9-10/repeat-peak-390x844.png": "3d3db1ef8de60c20b94ad1b9125842daad94a24fe281200594b52197839404a5",
-    "docs/evidence/smart-idle-hints-9-10/repeat-start-390x844.png": "aab29f8c89fd27b016e05c3a1cd8a37c398f2dfe1938bc98961414cdc233d27d"
+    "docs/evidence/smart-idle-hints-9-10/after-390x844.png": "97bd96e749d982d8ccb177845d2010826bc21d3b00be7b5da21d2e5cd93976c2",
+    "docs/evidence/smart-idle-hints-9-10/before-390x844.png": "ee6e22846ce284a34ce07da9a85555e7fbab96c7e7c6dc9a3a9becff1f83b0a8",
+    "docs/evidence/smart-idle-hints-9-10/cue-peak-390x844.png": "6ce66e5e7cf6a6337603faa4b0c40c0ca085261520ac91e26f669b0ec8d4c40b",
+    "docs/evidence/smart-idle-hints-9-10/cue-start-390x844.png": "a637f00a94196d6aba2c935fb608330f84d2952b824ecc63bd31fc0ab44ac4ab",
+    "docs/evidence/smart-idle-hints-9-10/repeat-peak-390x844.png": "add5dcaede713eba6efada8b843c4118f15dd3a171b467d504059b0e070aa0bc",
+    "docs/evidence/smart-idle-hints-9-10/repeat-start-390x844.png": "dfbab487f1c69213609c2bfed6f9cd14fad1669c7b633da49b119270d472e4e5"
   },
   "physicalDevicesTested": false,
   "repeatPolicy": {
     "quietGapMs": 4000,
     "cueMs": 900,
-    "firstCueAtMs": 20000,
-    "firstRepeatAtMs": 24900,
+    "firstCueAtMs": 10000,
+    "firstRepeatAtMs": 14900,
     "samePair": true,
     "countsAsNewCycle": false
   }

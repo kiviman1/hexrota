@@ -53,7 +53,7 @@
       ],
       "changedPixels": 1946,
       "repeat": {
-        "at": 24900,
+        "at": 14900,
         "pair": [
           4,
           7
@@ -189,7 +189,7 @@
       ],
       "changedPixels": 2512,
       "repeat": {
-        "at": 24900,
+        "at": 14900,
         "pair": [
           4,
           7
@@ -325,7 +325,7 @@
       ],
       "changedPixels": 2926,
       "repeat": {
-        "at": 24900,
+        "at": 14900,
         "pair": [
           4,
           7
@@ -461,7 +461,7 @@
       ],
       "changedPixels": 2395,
       "repeat": {
-        "at": 24900,
+        "at": 14900,
         "pair": [
           4,
           7
@@ -597,7 +597,7 @@
       ],
       "changedPixels": 2733,
       "repeat": {
-        "at": 24900,
+        "at": 14900,
         "pair": [
           4,
           7
@@ -733,7 +733,7 @@
       ],
       "changedPixels": 2915,
       "repeat": {
-        "at": 24900,
+        "at": 14900,
         "pair": [
           4,
           7
@@ -824,7 +824,7 @@
       "passed": true,
       "cycles": [
         {
-          "at": 20000,
+          "at": 10000,
           "payload": {
             "pair": [
               4,
@@ -839,7 +839,7 @@
           }
         },
         {
-          "at": 295900,
+          "at": 285900,
           "payload": {
             "pair": [
               9,
@@ -861,7 +861,7 @@
       "passed": true,
       "shows": [
         {
-          "at": 20000,
+          "at": 10000,
           "payload": {
             "pair": [
               4,
@@ -876,7 +876,7 @@
           }
         },
         {
-          "at": 80000,
+          "at": 70000,
           "payload": {
             "pair": [
               9,
@@ -901,7 +901,7 @@
       "passed": true,
       "shows": [
         {
-          "at": 20000,
+          "at": 10000,
           "payload": {
             "pair": [
               4,
@@ -916,7 +916,7 @@
           }
         },
         {
-          "at": 24900,
+          "at": 14900,
           "payload": {
             "pair": [
               4,
@@ -931,7 +931,7 @@
           }
         },
         {
-          "at": 80000,
+          "at": 70000,
           "payload": {
             "pair": [
               9,
@@ -980,14 +980,14 @@
       "passed": true,
       "action": "attempt",
       "oldAppearances": 2,
-      "newCycleAt": 80000
+      "newCycleAt": 70000
     },
     {
       "name": "an actual resolving move cancels visible paint and cannot show during native animation",
       "passed": true
     },
     {
-      "name": "native invalid bounce suppresses first cue and its natural end starts a full20 seconds",
+      "name": "native invalid bounce suppresses first cue and its natural end starts a full10 seconds",
       "passed": true
     },
     {
@@ -999,19 +999,19 @@
       "passed": true
     },
     {
-      "name": "pause cancels a pending cue and resumes a complete 20 second delay",
+      "name": "pause cancels a pending cue and resumes a complete 10 second delay",
       "passed": true
     },
     {
-      "name": "inventory cancels a pending cue and resumes a complete 20 second delay",
+      "name": "inventory cancels a pending cue and resumes a complete 10 second delay",
       "passed": true
     },
     {
-      "name": "settings cancels a pending cue and resumes a complete 20 second delay",
+      "name": "settings cancels a pending cue and resumes a complete 10 second delay",
       "passed": true
     },
     {
-      "name": "Home and reload retire old work and require 20 seconds in an eligible decision",
+      "name": "Home and reload retire old work and require 10 seconds in an eligible decision",
       "passed": true
     },
     {

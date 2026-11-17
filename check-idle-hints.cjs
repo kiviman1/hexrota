@@ -17,16 +17,17 @@ function fixture(options={}){
   const policy=Idle.create(deps);
   return {timer,shown,hidden,policy,get facts(){return facts;},set(patch,notify=true){facts={...facts,...patch};if(notify)policy.sync();},replace(next){facts=next;policy.sync();},get cycles(){return shown.filter(event=>!event.repeated);},get repeats(){return shown.filter(event=>event.repeated);},get chosen(){return chosen;},get removed(){return removed;},notify(){listener?.();}};
 }
-const showFirst=f=>{f.timer.advance(20000);assert.equal(f.cycles.length,1);};
+const FIRST_DELAY=10000;
+const showFirst=f=>{f.timer.advance(FIRST_DELAY);assert.equal(f.cycles.length,1);};
 const rearm=(f,key='board-1')=>{f.set({eligible:false,boardKey:key});f.policy.playerMoveSucceeded();f.set({eligible:true});};
 
 test('fixed product timings and dependency validation',()=>{
-  assert.deepEqual(Idle.CONFIG,{firstDelay:20000,nextDelay:35000,minInterval:60000,maxPerAttempt:2,duration:900,repeatDelay:4000});assert(Object.isFrozen(Idle.CONFIG));
+  assert.deepEqual(Idle.CONFIG,{firstDelay:10000,nextDelay:35000,minInterval:60000,maxPerAttempt:2,duration:900,repeatDelay:4000});assert(Object.isFrozen(Idle.CONFIG));
   assert.throws(()=>Idle.create(),/invalid_idle_hint_dependencies/);
 });
 test('per-instance timing and quota configuration is validated, copied and frozen',()=>{
   const config={firstDelay:10,nextDelay:20,minInterval:50,duration:3,maxPerAttempt:1},f=fixture({config});config.firstDelay=0;
-  assert(Object.isFrozen(f.policy.config));assert.equal(f.policy.config.firstDelay,10);assert.equal(Idle.CONFIG.firstDelay,20000);f.timer.advance(9);assert.equal(f.cycles.length,0);f.timer.advance(1);assert.equal(f.cycles.length,1);assert.equal(f.cycles[0].duration,3);f.timer.advance(3);assert.equal(f.hidden[0].reason,'elapsed');rearm(f);f.timer.advance(100);assert.equal(f.cycles.length,1);f.policy.dispose();
+  assert(Object.isFrozen(f.policy.config));assert.equal(f.policy.config.firstDelay,10);assert.equal(Idle.CONFIG.firstDelay,10000);f.timer.advance(9);assert.equal(f.cycles.length,0);f.timer.advance(1);assert.equal(f.cycles.length,1);assert.equal(f.cycles[0].duration,3);f.timer.advance(3);assert.equal(f.hidden[0].reason,'elapsed');rearm(f);f.timer.advance(100);assert.equal(f.cycles.length,1);f.policy.dispose();
   for(const bad of [null,[],{extra:1},{firstDelay:-1},{nextDelay:1.5},{minInterval:Infinity},{duration:NaN},{repeatDelay:0},{repeatDelay:-1},{repeatDelay:1.5},{maxPerAttempt:0},{maxPerAttempt:2.5},{firstDelay:Number.MAX_SAFE_INTEGER+1}])assert.throws(()=>fixture({config:bad}),/invalid_idle_hint_config/);
 });
 test('custom second delay and minimum interval both govern rearmed hints',()=>{
@@ -47,14 +48,14 @@ test('large hint durations wait through bounded chunks and dispose cancels the f
     else{timer.advance(1);assert.equal(hidden.length,1);assert.equal(hidden[0].reason,'elapsed');assert.equal(timer.count(),1,'one quiet repeat timer');p.dispose();assert.equal(timer.count(),0);}
   }
 });
-test('first hint waits 20 seconds then hides after 900ms',()=>{
-  const f=fixture();assert.equal(f.timer.count(),1);f.timer.advance(19999);assert.equal(f.chosen,0);f.timer.advance(1);
+test('first hint waits 10 seconds then hides after 900ms',()=>{
+  const f=fixture();assert.equal(f.timer.count(),1);f.timer.advance(9999);assert.equal(f.chosen,0);f.timer.advance(1);assert.equal(f.timer.now(),10000);
   assert.equal(f.cycles.length,1);assert.equal(f.chosen,1);assert.deepEqual(f.cycles[0],{pair:[0,1],attemptId:'a',generation:0,boardKey:'board-0',duration:900,ordinal:1,repeated:false});assert(Object.isFrozen(f.cycles[0]));assert(Object.isFrozen(f.cycles[0].pair));
   f.timer.advance(899);assert.equal(f.hidden.length,0);f.timer.advance(1);assert.equal(f.hidden[0].reason,'elapsed');assert.equal(f.timer.count(),1,'one quiet repeat timer');f.policy.dispose();
 });
 test('an untouched cycle repeats the identical pair after each full 4000ms quiet gap',()=>{
   const f=fixture();showFirst(f);const initial=f.shown[0];f.timer.advance(900);assert.equal(f.hidden.length,1);f.timer.advance(3999);assert.equal(f.shown.length,1);f.timer.advance(1);
-  assert.equal(f.shown.length,2);assert.equal(f.cycles.length,1);assert.equal(f.repeats.length,1);assert.equal(f.chosen,1,'the selected pair is reused without another chooser call');assert.deepEqual(f.shown[1],{...initial,repeated:true});assert.equal(f.shown[1].pair,initial.pair);assert(Object.isFrozen(f.shown[1]));
+  assert.equal(f.timer.now(),14900);assert.equal(f.shown.length,2);assert.equal(f.cycles.length,1);assert.equal(f.repeats.length,1);assert.equal(f.chosen,1,'the selected pair is reused without another chooser call');assert.deepEqual(f.shown[1],{...initial,repeated:true});assert.equal(f.shown[1].pair,initial.pair);assert(Object.isFrozen(f.shown[1]));
   f.timer.advance(899);assert.equal(f.hidden.length,1);f.timer.advance(1);assert.equal(f.hidden.length,2);f.timer.advance(4000);assert.equal(f.shown.length,3);assert.equal(f.shown[2].ordinal,1);assert.equal(f.shown[2].pair,initial.pair);f.policy.dispose();assert.equal(f.timer.count(),0);
 });
 test('unchanged sync notifications preserve the existing quiet repeat deadline',()=>{
@@ -120,14 +121,14 @@ test('large repeat delays use bounded timer chunks and cancellation retires ever
   }
 });
 test('meaningful interaction resets full first delay without polling',()=>{
-  const f=fixture();f.timer.advance(19000);f.policy.interaction();f.timer.advance(19999);assert.equal(f.cycles.length,0);f.timer.advance(1);assert.equal(f.cycles.length,1);f.policy.dispose();
+  const f=fixture();f.timer.advance(9000);f.policy.interaction();f.timer.advance(9999);assert.equal(f.cycles.length,0);f.timer.advance(1);assert.equal(f.cycles.length,1);f.policy.dispose();
 });
 test('ordinary repeated sync notifications keep the current deadline',()=>{
-  const f=fixture();f.timer.advance(10000);for(let i=0;i<100;i++)f.policy.sync();assert.equal(f.timer.count(),1);f.timer.advance(10000);assert.equal(f.cycles.length,1);f.policy.dispose();
+  const f=fixture();f.timer.advance(5000);for(let i=0;i<100;i++)f.policy.sync();assert.equal(f.timer.count(),1);f.timer.advance(5000);assert.equal(f.cycles.length,1);f.policy.dispose();
 });
 test('all ineligible periods reset idle instead of catching up on resume',()=>{
   for(const reason of ['pause','modal','hidden','navigation','resolving','tutorial','manual hint','reduced motion','pointer gesture']){
-    const f=fixture();f.timer.advance(19000);f.set({eligible:false});assert.equal(f.timer.count(),0,reason);f.timer.advance(120000);assert.equal(f.cycles.length,0,reason);f.set({eligible:true});f.timer.advance(19999);assert.equal(f.cycles.length,0,reason);f.timer.advance(1);assert.equal(f.cycles.length,1,reason);f.policy.dispose();
+    const f=fixture();f.timer.advance(9000);f.set({eligible:false});assert.equal(f.timer.count(),0,reason);f.timer.advance(120000);assert.equal(f.cycles.length,0,reason);f.set({eligible:true});f.timer.advance(9999);assert.equal(f.cycles.length,0,reason);f.timer.advance(1);assert.equal(f.cycles.length,1,reason);f.policy.dispose();
   }
 });
 test('repeated cues preserve cycle disarm and interaction ends unchanged-board repeats',()=>{
@@ -140,7 +141,7 @@ test('a claimed successful player move with unchanged board cannot rearm',()=>{
   const f=fixture();showFirst(f);f.policy.playerMoveSucceeded();f.timer.advance(100000);assert.equal(f.cycles.length,1);assert.equal(f.timer.count(),0);f.policy.dispose();
 });
 test('successful player move waits 35 idle seconds and 60 seconds since showing',()=>{
-  const f=fixture();showFirst(f);f.timer.advance(1000);rearm(f);f.timer.advance(35000);assert.equal(f.cycles.length,1,'35 idle seconds alone do not bypass minimum interval');f.timer.advance(23999);assert.equal(f.cycles.length,1);f.timer.advance(1);assert.equal(f.cycles.length,2);assert.equal(f.cycles[1].ordinal,2);f.policy.dispose();
+  const f=fixture();showFirst(f);f.timer.advance(1000);rearm(f);f.timer.advance(35000);assert.equal(f.cycles.length,1,'35 idle seconds alone do not bypass minimum interval');f.timer.advance(23999);assert.equal(f.timer.now(),69999);assert.equal(f.cycles.length,1);f.timer.advance(1);assert.equal(f.timer.now(),70000);assert.equal(f.cycles.length,2);assert.equal(f.cycles[1].ordinal,2);f.policy.dispose();
 });
 test('35 seconds starts after settling even when successful commit occurs during resolving',()=>{
   const f=fixture();showFirst(f);f.timer.advance(70000);f.set({eligible:false,boardKey:'board-1'});f.policy.playerMoveSucceeded();f.timer.advance(100000);assert.equal(f.timer.count(),0);f.set({eligible:true});f.timer.advance(34999);assert.equal(f.cycles.length,1);f.timer.advance(1);assert.equal(f.cycles.length,2);f.policy.dispose();
@@ -161,11 +162,11 @@ test('a fresh attempt waits for the page-runtime minimum interval as well as its
   const f=fixture();showFirst(f);f.set({attemptId:'b',boardKey:'b0'});f.timer.advance(20000);assert.equal(f.cycles.length,1,'a new attempt cannot bypass the previous hint cooldown');assert.equal(f.chosen,1);f.timer.advance(39999);assert.equal(f.cycles.length,1);f.timer.advance(1);assert.equal(f.cycles.length,2);assert.equal(f.cycles[1].attemptId,'b');assert.equal(f.cycles[1].ordinal,1,'quota remains per attempt');f.policy.dispose();
 });
 test('reload creates transient state and waits a fresh full first delay',()=>{
-  const f=fixture();showFirst(f);f.policy.dispose();const reload=fixture();reload.timer.advance(19999);assert.equal(reload.cycles.length,0);reload.timer.advance(1);assert.equal(reload.cycles.length,1);reload.policy.dispose();
+  const f=fixture();showFirst(f);f.policy.dispose();const reload=fixture();reload.timer.advance(9999);assert.equal(reload.cycles.length,0);reload.timer.advance(1);assert.equal(reload.cycles.length,1);reload.policy.dispose();
 });
 test('stale idle callbacks cannot show after interaction, generation, board or attempt change',()=>{
   for(const change of ['interaction','generation','board','attempt','ineligible','dispose']){
-    const f=fixture(),stale=f.timer.ids()[0];f.timer.advance(19000);
+    const f=fixture(),stale=f.timer.ids()[0];f.timer.advance(9000);
     if(change==='interaction')f.policy.interaction();else if(change==='dispose')f.policy.dispose();else f.set(change==='generation'?{generation:1}:change==='board'?{boardKey:'changed'}:change==='attempt'?{attemptId:'b'}:{eligible:false});
     f.timer.jump(1000);f.timer.run(stale);assert.equal(f.cycles.length,0,change);assert.equal(f.chosen,0,change);f.policy.dispose();
   }
@@ -176,7 +177,7 @@ test('late callbacks re-read eligibility and identity without a notification',()
   }
 });
 test('identity is checked again after synchronous selection',()=>{
-  let f;f=fixture({choose(){f.set({generation:1},false);return [0,1];}});f.timer.advance(20000);assert.equal(f.cycles.length,0);assert.equal(f.chosen,1);assert.equal(f.timer.count(),1);f.policy.dispose();
+  let f;f=fixture({choose(){f.set({generation:1},false);return [0,1];}});f.timer.advance(FIRST_DELAY);assert.equal(f.cycles.length,0);assert.equal(f.chosen,1);assert.equal(f.timer.count(),1);f.policy.dispose();
 });
 test('null, throwing or malformed selection creates no retry loop or quota use',()=>{
   for(const choose of [()=>null,()=>{throw Error('unavailable');},()=>[0,0],()=>[-1,0],()=>[1]]){
@@ -193,7 +194,7 @@ test('malformed read facts fail closed without timers',()=>{
   for(const facts of [null,{}, {eligible:true,attemptId:'a',generation:0,boardKey:''},{eligible:true,attemptId:'a',generation:-1,boardKey:'x'}]){const f=fixture();f.replace(facts);f.timer.advance(100000);assert.equal(f.cycles.length,0);assert.equal(f.timer.count(),0);f.policy.dispose();}
 });
 test('show callback may synchronously dispose without a timer leak',()=>{
-  let f;f=fixture({onShow(){f.policy.dispose();}});f.timer.advance(20000);assert.equal(f.cycles.length,1);assert.equal(f.hidden[0].reason,'disposed');assert.equal(f.timer.count(),0);
+  let f;f=fixture({onShow(){f.policy.dispose();}});f.timer.advance(FIRST_DELAY);assert.equal(f.cycles.length,1);assert.equal(f.hidden[0].reason,'disposed');assert.equal(f.timer.count(),0);
 });
 test('construction errors cancel synchronous subscription work and unsubscribe registered listeners',()=>{
   const timer=clock(),facts={eligible:true,attemptId:'a',generation:0,boardKey:'one'},deps={read:()=>facts,choosePair:()=>[0,1],onShow:()=>{},onHide:()=>{},now:timer.now,setTimeout:timer.setTimeout,clearTimeout:timer.clearTimeout};
@@ -204,7 +205,7 @@ test('construction errors cancel synchronous subscription work and unsubscribe r
 test('a backwards clock reading cannot shorten the minimum interval',()=>{
   const timer=clock();let fake=0,shows=0;const facts={eligible:true,attemptId:'a',generation:0,boardKey:'one'};
   const p=Idle.create({read:()=>facts,choosePair:()=>[0,1],onShow:()=>shows++,onHide:()=>{},now:()=>fake,setTimeout:timer.setTimeout,clearTimeout:timer.clearTimeout});
-  fake=20000;timer.advance(20000);assert.equal(shows,1);facts.boardKey='two';fake=100;p.playerMoveSucceeded();fake=79999;timer.advance(59999);assert.equal(shows,1);fake=80000;timer.advance(1);assert.equal(shows,2);p.dispose();
+  fake=10000;timer.advance(10000);assert.equal(shows,1);facts.boardKey='two';fake=100;p.playerMoveSucceeded();fake=69999;timer.advance(59999);assert.equal(shows,1);fake=70000;timer.advance(1);assert.equal(shows,2);p.dispose();
 });
 
 test('selector is deterministic, immutable and reuses the actual engine matching rule across published boards',()=>{
