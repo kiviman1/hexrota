@@ -303,7 +303,7 @@ jobs:
         with:
           dotnet-version: '8.0.x'
       - name: Compile C# 7.3 and compare catalogs, selections and replay saves
-        run: npm run test:unity-catalog
+        run: npm run test:unity-catalog && node check-campaign-flow-parity.cjs && node check-large-flow-parity.cjs
 
   csharp-hint-adapter-parity:
     name: C# hints and reward adapter parity
@@ -520,3 +520,74 @@ jobs:
           path: test-results/f01-browser-${{ matrix.browser }}
           if-no-files-found: warn
           retention-days: 7
+
+  obstacles-and-regions:
+    name: Obstacles 9.12 / ${{ matrix.browser }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.2'
+          cache: npm
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: npm ci
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - run: npm run test:obstacles
+      - run: npm run test:unity-obstacles
+      - run: npm run test:large-flow-browser
+        env:
+          HEXROTA_BROWSER: ${{ matrix.browser }}
+          HEXROTA_LARGE_FLOW_SCREENSHOT_DIR: test-results/large-flow-${{ matrix.browser }}
+      - run: npm run test:flow-browser
+        env:
+          HEXROTA_BROWSER: ${{ matrix.browser }}
+          HEXROTA_FLOW_SCREENSHOT_DIR: test-results/flow-${{ matrix.browser }}
+      - run: npm run test:obstacles-browser
+        env:
+          HEXROTA_BROWSER: ${{ matrix.browser }}
+          HEXROTA_OBSTACLES_SCREENSHOT_DIR: test-results/obstacles-${{ matrix.browser }}
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: obstacles-9-12-${{ matrix.browser }}
+          path: |
+            test-results/obstacles-${{ matrix.browser }}
+            test-results/flow-${{ matrix.browser }}
+            test-results/large-flow-${{ matrix.browser }}
+          if-no-files-found: warn
+
+  idle-hints-obstacle-compatibility:
+    name: Smart idle hints 9.12 / ${{ matrix.browser }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.2'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - run: npm run test:idle-hints
+      - run: npm run test:idle-hints-v5-browser
+        env:
+          HEXROTA_BROWSER: ${{ matrix.browser }}
+          HEXROTA_SMART_IDLE_SCREENSHOT_DIR: test-results/idle-hints-9-12-${{ matrix.browser }}
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: idle-hints-9-12-${{ matrix.browser }}
+          path: test-results/idle-hints-9-12-${{ matrix.browser }}
+          if-no-files-found: warn

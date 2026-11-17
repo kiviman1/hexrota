@@ -1,0 +1,152 @@
+{
+  "date": "2026-11-17",
+  "baseline": "a3bb1c83afbb1b73e709eda482c7de5ed0eeeb49",
+  "scope": "Only matching-group passive hint focus, one-way moved-source cue, vivid paint of existing gems/wood/green floor and PWA cache. No engine, gameplay, level, geometry, economy or save-schema changes.",
+  "npmTest": {
+    "command": "npm test",
+    "exitCode": 0,
+    "logSha256": "6cf1b1042eef108ed409030993ac8e32ad461d76ba27ef9cde9cc05678fe7da5",
+    "previousChecksAndThresholdsPreserved": true
+  },
+  "idleGroups": {
+    "policy": 58,
+    "view": 34,
+    "obstacleCompatibility": 16,
+    "mountedApp": 8,
+    "total": 116
+  },
+  "browser": {
+    "chromium": {
+      "legacyRegressionPassed": 30,
+      "focusedClassicV5Passed": 20,
+      "errors": [],
+      "viewports": [
+        [
+          320,
+          568
+        ],
+        [
+          390,
+          844
+        ],
+        [
+          430,
+          932
+        ]
+      ],
+      "screenshots": 17
+    },
+    "webkit": {
+      "legacyRegressionPassed": 30,
+      "focusedClassicV5Passed": 20,
+      "errors": [],
+      "viewports": [
+        [
+          320,
+          568
+        ],
+        [
+          390,
+          844
+        ],
+        [
+          430,
+          932
+        ]
+      ],
+      "screenshots": 17
+    }
+  },
+  "balanceLabIsolation": {
+    "chromium": 6,
+    "webkit": 6,
+    "immutableFiles": 66,
+    "protectedStorageKeys": 10,
+    "pageErrors": [],
+    "externalRequests": []
+  },
+  "nativeParity": {
+    "runtime": ".NET 8.0.428",
+    "languageVersion": "C# 7.3",
+    "passed": 14,
+    "total": 14,
+    "engineAnd41CSharpSourceHashesUnchanged": true,
+    "details": "native-parity.json"
+  },
+  "actualLevel6Example": {
+    "swapPair": [
+      1,
+      7
+    ],
+    "initialValues": [
+      4,
+      3
+    ],
+    "fullFirstWaveMatched": [
+      7,
+      15,
+      16
+    ],
+    "focusSources": [
+      1,
+      15,
+      16
+    ],
+    "movingSource": 1,
+    "movingTarget": 7,
+    "focusedValue": 4,
+    "untouchedPartnerValue": 3,
+    "crateVisuals": 0
+  },
+  "focusContract": {
+    "canonicalFullWaveAndRankingRetained": true,
+    "onlyOneSameValueGroupPainted": true,
+    "groupTieOrder": [
+      "largest first-wave same-value group",
+      "higher moved value",
+      "lower moving source index"
+    ],
+    "movingScale": 1.07,
+    "stationaryMatchScale": 1.05,
+    "movingDistanceCssPx": 2.5,
+    "otherSwapEndpointUntouched": true,
+    "crateMarkupUntouched": true
+  },
+  "timing": {
+    "firstMs": 10000,
+    "animationMs": 900,
+    "quietMs": 900,
+    "repeatStartsMs": [
+      10000,
+      11800,
+      13600,
+      15400
+    ],
+    "nextCycleIdleMs": 35000,
+    "newCycleMinIntervalMs": 60000,
+    "maxNewCyclesPerAttempt": 2,
+    "repeatConsumesQuota": false
+  },
+  "browserClockScope": "New focused browser suite controls only existing controller/view timer dependencies; native WAAPI is paused/sampled for assertions. Legacy suite controls controller time and samples native WAAPI. Production clocks/constants and engine/persistence are unchanged.",
+  "palette": {
+    "details": "palette.json",
+    "minimumNumeralContrast": 4.710177143566306,
+    "minimumFaceSaturation": 0.8,
+    "fiveValueHueIdentitiesPreserved": true,
+    "original52SvgAndGeometryGoldensRetained": true
+  },
+  "pwaCacheGeneration": 53,
+  "physicalIPhoneTested": false,
+  "unityEditorTested": false,
+  "mainOrProductionChanged": false,
+  "sourceHashes": {
+    "dist/app.js": "e0d36610aee6c758d2a77f55519d3438a271976406fa900ed767cd787cd90261",
+    "dist/idle-hints.js": "ff977c1eb86c51fc3880c5c93507803e7a446dc86c503ba5475fb929afdaeaed",
+    "dist/idle-hint-view.js": "83bfc66e5ff015383043cbcd0ce6e28a63ab42a480aa2032b33608c876fdf2b9",
+    "src/styles/03-presentation-and-learning.css": "5317d9c364a0967b788af50f9811eac1a0a0cdbdc80999fcab11ebda20c81c24",
+    "src/styles/09-idle-hints.css": "f222f20c01e4b52276297d947254607ad47a5d906575baf0689c6af3ccfe528e",
+    "src/styles/10-obstacle-flow.css": "fc880f40321d769dd1c427b70d92686ec8282e2649cc602357f952e620cb3cdd",
+    "dist/style.css": "423e30ad062b2267fb834128cc7cdb90c681df68efd8c723fa04d8ceb6983977",
+    "dist/sw.js": "b9f8ae956541fa02f92df343a833e5cf9413c4e3829470a0c9f28d1d325f351d"
+  }
+}

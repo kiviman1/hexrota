@@ -67,8 +67,8 @@
   return {read,contains,current,commit,resetForTesting,get revision(){return revision;},revoke(){writable=false;}};
  }
  function boot(start){
-  const w=root;
-  if(w.HexSessionTestMode?.isolated===true){start(createStore(w.localStorage));return;}
+  const w=root,flow=w.HexCampaignFlow?.enabled===true,storage=flow?w.HexCampaignFlow.storage(w.localStorage):w.localStorage;
+  if(w.HexSessionTestMode?.isolated===true){start(createStore(storage));return;}
   const blocked=(message,retry=true)=>{
    let panel=w.document.getElementById('session-lock-panel');
    if(!panel){panel=w.document.createElement('section');panel.id='session-lock-panel';panel.setAttribute('role','alert');panel.style.cssText='position:fixed;inset:0;z-index:10000;display:grid;place-content:center;gap:20px;padding:28px;text-align:center;background:#f5f5e9;color:#214f38;font:600 18px system-ui';w.document.body.append(panel);}
@@ -76,10 +76,10 @@
    if(retry){const button=w.document.createElement('button');button.type='button';button.textContent='Tekrar dene';button.style.cssText='padding:16px;border-radius:16px;font:inherit';button.onclick=()=>w.location.reload();panel.append(button);}
   };
   if(!w.navigator.locks?.request){blocked('Bu tarayıcı güvenli kayıt kilidini desteklemiyor. Güncel bir tarayıcıda aç. Mevcut kayıtların korunuyor.',false);return;}
-  w.navigator.locks.request(LOCK,{ifAvailable:true},async lock=>{
+  w.navigator.locks.request(flow?w.HexCampaignFlow.prefix+LOCK:LOCK,{ifAvailable:true},async lock=>{
    if(!lock){blocked('Oyun başka bir sekmede açık. Kaydını korumak için bu sekme bekliyor. Diğer sekmeyi kapatıp tekrar dene.');return;}
    let store;
-   try{store=createStore(w.localStorage);start(store);}catch(_){store?.revoke();blocked('Kayıt güvenle açılamadı. İlerlemen değiştirilmedi. Sayfayı yenileyip tekrar dene.');return;}
+   try{store=createStore(storage);start(store);}catch(_){store?.revoke();blocked('Kayıt güvenle açılamadı. İlerlemen değiştirilmedi. Sayfayı yenileyip tekrar dene.');return;}
    await new Promise(resolve=>w.addEventListener('pagehide',()=>{store.revoke();resolve();},{once:true}));
   }).catch(()=>blocked('Kayıt kilidi alınamadı. Mevcut kayıtların korundu. Tekrar dene.'));
   w.addEventListener('pageshow',event=>{if(event.persisted)w.location.reload();});

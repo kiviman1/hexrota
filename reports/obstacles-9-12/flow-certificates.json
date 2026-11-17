@@ -1,0 +1,425 @@
+{
+  "rulesVersion": "classic-v5",
+  "levelDataVersion": "campaign-flow-v1",
+  "activation": "column-flow-v1",
+  "levels": [
+    {
+      "id": 6,
+      "cells": 23,
+      "routes": [
+        {
+          "path": [
+            [
+              3,
+              6
+            ],
+            [
+              19,
+              22
+            ],
+            [
+              13,
+              18
+            ],
+            [
+              5,
+              8
+            ],
+            [
+              0,
+              3
+            ],
+            [
+              3,
+              2
+            ],
+            [
+              6,
+              11
+            ]
+          ],
+          "steps": [
+            {
+              "pair": [
+                3,
+                6
+              ],
+              "waves": 1,
+              "hits": [
+                {
+                  "id": "l6-crate-1",
+                  "cell": 8,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l6-crate-2",
+                  "cell": 11,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 0
+                },
+                {
+                  "id": "l6-crate-3",
+                  "cell": 14,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l6-crate-4",
+                  "cell": 17,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 8,
+                  "wave": 0
+                },
+                {
+                  "cell": 13,
+                  "wave": 0
+                },
+                {
+                  "cell": 14,
+                  "wave": 0
+                },
+                {
+                  "cell": 17,
+                  "wave": 0
+                },
+                {
+                  "cell": 18,
+                  "wave": 0
+                },
+                {
+                  "cell": 19,
+                  "wave": 0
+                },
+                {
+                  "cell": 21,
+                  "wave": 0
+                },
+                {
+                  "cell": 22,
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                19,
+                22
+              ],
+              "waves": 1,
+              "hits": [
+                {
+                  "id": "l6-crate-2",
+                  "cell": 11,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 11,
+                  "wave": 0
+                },
+                {
+                  "cell": 16,
+                  "wave": 0
+                },
+                {
+                  "cell": 20,
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                13,
+                18
+              ],
+              "waves": 2,
+              "hits": [
+                {
+                  "id": "l6-crate-0",
+                  "cell": 5,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 1
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 5,
+                  "wave": 1
+                },
+                {
+                  "cell": 10,
+                  "wave": 1
+                },
+                {
+                  "cell": 15,
+                  "wave": 1
+                }
+              ]
+            },
+            {
+              "pair": [
+                5,
+                8
+              ],
+              "waves": 4,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                0,
+                3
+              ],
+              "waves": 7,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                3,
+                2
+              ],
+              "waves": 1,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                6,
+                11
+              ],
+              "waves": 2,
+              "hits": [],
+              "openedCells": []
+            }
+          ],
+          "status": "won",
+          "score": 206,
+          "movesUsed": 7,
+          "movesLeft": 1,
+          "rngState": 1654855589
+        },
+        {
+          "path": [
+            [
+              6,
+              9
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              5,
+              3
+            ],
+            [
+              10,
+              13
+            ],
+            [
+              14,
+              17
+            ],
+            [
+              13,
+              16
+            ],
+            [
+              4,
+              9
+            ]
+          ],
+          "steps": [
+            {
+              "pair": [
+                6,
+                9
+              ],
+              "waves": 1,
+              "hits": [
+                {
+                  "id": "l6-crate-0",
+                  "cell": 5,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l6-crate-1",
+                  "cell": 8,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l6-crate-2",
+                  "cell": 11,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 0
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 5,
+                  "wave": 0
+                },
+                {
+                  "cell": 8,
+                  "wave": 0
+                },
+                {
+                  "cell": 10,
+                  "wave": 0
+                },
+                {
+                  "cell": 13,
+                  "wave": 0
+                },
+                {
+                  "cell": 15,
+                  "wave": 0
+                },
+                {
+                  "cell": 18,
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                1,
+                0
+              ],
+              "waves": 1,
+              "hits": [
+                {
+                  "id": "l6-crate-2",
+                  "cell": 11,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 11,
+                  "wave": 0
+                },
+                {
+                  "cell": 16,
+                  "wave": 0
+                },
+                {
+                  "cell": 20,
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                5,
+                3
+              ],
+              "waves": 1,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                10,
+                13
+              ],
+              "waves": 6,
+              "hits": [
+                {
+                  "id": "l6-crate-3",
+                  "cell": 14,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "l6-crate-4",
+                  "cell": 17,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 1
+                }
+              ],
+              "openedCells": [
+                {
+                  "cell": 14,
+                  "wave": 0
+                },
+                {
+                  "cell": 19,
+                  "wave": 0
+                },
+                {
+                  "cell": 22,
+                  "wave": 0
+                },
+                {
+                  "cell": 17,
+                  "wave": 1
+                },
+                {
+                  "cell": 21,
+                  "wave": 1
+                }
+              ]
+            },
+            {
+              "pair": [
+                14,
+                17
+              ],
+              "waves": 1,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                13,
+                16
+              ],
+              "waves": 6,
+              "hits": [],
+              "openedCells": []
+            },
+            {
+              "pair": [
+                4,
+                9
+              ],
+              "waves": 2,
+              "hits": [],
+              "openedCells": []
+            }
+          ],
+          "status": "won",
+          "score": 174,
+          "movesUsed": 7,
+          "movesLeft": 1,
+          "rngState": 2961943914
+        }
+      ]
+    }
+  ]
+}

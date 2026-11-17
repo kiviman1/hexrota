@@ -1,0 +1,63 @@
+{
+  "date": "2026-11-17",
+  "entry": "/?dev=flow-9-12",
+  "sameNormalApp": true,
+  "allCampaignLevelsSelectable": 10,
+  "fakeCompletionUsed": false,
+  "levelId": 6,
+  "geometryCells": 23,
+  "target": 160,
+  "moves": 8,
+  "certifiedRoutes": 2,
+  "routeLengths": [
+    7,
+    7
+  ],
+  "flowJsGroups": 16,
+  "campaignHostGroups": 10,
+  "coreCSharp": {
+    "scenarios": 217,
+    "validSwaps": 716,
+    "resumes": 105,
+    "replays": 105,
+    "clones": 110,
+    "rejectedSnapshots": 126
+  },
+  "campaignCSharp": {
+    "scenarios": 136,
+    "selections": 26,
+    "winningRoutes": 2,
+    "checkpointPrefixes": 14,
+    "rejections": 85
+  },
+  "npmTest": {
+    "exitCode": 0,
+    "startUtc": "13:17:16",
+    "endUtc": "13:22:33"
+  },
+  "postGuardClassicTests": {
+    "secondChanceUiGroups": 15,
+    "rescueSafetyUiGroups": 8,
+    "animationUiGroups": 11
+  },
+  "browser": {
+    "chromium": {
+      "checks": 6,
+      "errors": []
+    },
+    "webkit": {
+      "checks": 6,
+      "errors": []
+    }
+  },
+  "normalRegression": {
+    "chromiumIntegration": 6,
+    "chromiumAnimation": 23,
+    "webkitAnimation": 23,
+    "labIsolationPerBrowser": 6
+  },
+  "dotnet": "8.0.428",
+  "csharp": "7.3",
+  "physicalIPhoneTested": false,
+  "unityEditorTested": false
+}

@@ -30,15 +30,17 @@ body.reduce-motion .score-packet,body.reduce-motion .score-digit,body.reduce-mot
 .reward-goal-hit{filter:drop-shadow(0 0 8px #d8f69666)}
 body.reduce-motion .reward-goal-hit{filter:none}
 
-/* Teach the action first. Numerals identify stones; soil and pips describe the floor. */
-.hex-tile.value-1{--gem:#cab3ee;--gem-edge:#9e7bc6;--gem-back:#74569c;--number:#432d65}
-.hex-tile.value-2{--gem:#f6d37b;--gem-edge:#cda147;--gem-back:#9d7935;--number:#624713}
-.hex-tile.value-3{--gem:#f2ada1;--gem-edge:#cb7c70;--gem-back:#a8584c;--number:#6e332b}
-.hex-tile.value-4{--gem:#9ecfe9;--gem-edge:#6fabc9;--gem-back:#4d849d;--number:#244d66}
-.hex-tile.value-5{--gem:#e4a7d0;--gem-edge:#bb78ab;--gem-back:#91527f;--number:#612a54}
+/* Saturated faces keep the established value hues; dark ink keeps numerals legible.
+   Numerals identify stones; soil and pips describe the floor. */
+.hex-tile.value-1{--gem:#b365f2;--gem-edge:#d7a3ff;--gem-back:#7032a4;--number:#2c0e43}
+.hex-tile.value-2{--gem:#ffcf28;--gem-edge:#ffe995;--gem-back:#b77809;--number:#583300}
+.hex-tile.value-3{--gem:#ff6851;--gem-edge:#ffb39a;--gem-back:#b43127;--number:#551b10}
+.hex-tile.value-4{--gem:#279fed;--gem-edge:#8fddff;--gem-back:#1268af;--number:#092f53}
+.hex-tile.value-5{--gem:#f15cbd;--gem-edge:#ffb0df;--gem-back:#a32f80;--number:#4a133d}
 .hex-number{font-size:30px;font-weight:750}
 .floor-shape{fill:#534b3c;stroke:#8d7b5a}
 .floor-partial .floor-shape{fill:#867748;stroke:#dfc47f}
+.floor-green .floor-shape{fill:#76d943;stroke:#b7fa7e}
 .layered.floor-untouched .floor-shape{stroke:#d7bc7e}
 .layer-pips{pointer-events:none}
 .layer-pip{fill:#fff3c9;stroke:#615233;stroke-width:.65}
@@ -109,7 +111,7 @@ body[data-guide-feedback="true"] .tutorial-coach{border-color:#c3df8a;background
 body[data-screen="game"] .board-legend{font-size:10px;color:#b0c59b}
 .pregame-lesson{padding:18px 15px;margin:20px 0 12px;border:1px solid #d4dfbe;border-radius:15px;background:#f1f5e5}
 .lesson-example{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:15px}
-.demo-stone{display:grid;place-items:center;width:46px;height:43px;clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);background:#f6d37b;color:#624713;font-size:26px;font-weight:750}
+.demo-stone{display:grid;place-items:center;width:46px;height:43px;clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);background:#ffcf28;color:#583300;font-size:26px;font-weight:750}
 .demo-arrow{font-size:24px;color:#718c50;padding:0 3px}
 .lesson-example>strong{font-size:30px;line-height:1;color:#365e32;white-space:nowrap}
 .lesson-example small{display:block;font-size:12px;font-weight:500;margin-top:4px}

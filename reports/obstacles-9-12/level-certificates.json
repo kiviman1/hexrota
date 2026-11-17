@@ -1,0 +1,670 @@
+{
+  "rulesVersion": "classic-v5",
+  "dataVersion": "obstacles-v1",
+  "levels": [
+    {
+      "id": "obstacle-a",
+      "cells": 19,
+      "closedCells": 3,
+      "blockers": [
+        {
+          "id": "a-gate",
+          "hp": 1
+        }
+      ],
+      "routes": [
+        {
+          "path": [
+            [
+              2,
+              6
+            ],
+            [
+              14,
+              10
+            ],
+            [
+              4,
+              9
+            ],
+            [
+              7,
+              8
+            ],
+            [
+              1,
+              2
+            ]
+          ],
+          "steps": [
+            {
+              "pair": [
+                2,
+                6
+              ],
+              "waves": 2,
+              "reshuffled": false,
+              "damage": [
+                {
+                  "id": "a-gate",
+                  "cell": 9,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                }
+              ],
+              "opened": [
+                {
+                  "id": "a-garden",
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                14,
+                10
+              ],
+              "waves": 3,
+              "reshuffled": false,
+              "damage": [],
+              "opened": []
+            },
+            {
+              "pair": [
+                4,
+                9
+              ],
+              "waves": 5,
+              "reshuffled": false,
+              "damage": [],
+              "opened": []
+            },
+            {
+              "pair": [
+                7,
+                8
+              ],
+              "waves": 1,
+              "reshuffled": false,
+              "damage": [],
+              "opened": []
+            },
+            {
+              "pair": [
+                1,
+                2
+              ],
+              "waves": 1,
+              "reshuffled": false,
+              "damage": [],
+              "opened": []
+            }
+          ],
+          "status": "won",
+          "score": 91,
+          "movesUsed": 5,
+          "movesLeft": 30,
+          "rngState": 244103520,
+          "covered": 19
+        },
+        {
+          "path": [
+            [
+              3,
+              0
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              12,
+              13
+            ],
+            [
+              4,
+              1
+            ]
+          ],
+          "steps": [
+            {
+              "pair": [
+                3,
+                0
+              ],
+              "waves": 1,
+              "reshuffled": false,
+              "damage": [
+                {
+                  "id": "a-gate",
+                  "cell": 9,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                }
+              ],
+              "opened": [
+                {
+                  "id": "a-garden",
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                4,
+                5
+              ],
+              "waves": 7,
+              "reshuffled": false,
+              "damage": [],
+              "opened": []
+            },
+            {
+              "pair": [
+                12,
+                13
+              ],
+              "waves": 6,
+              "reshuffled": false,
+              "damage": [],
+              "opened": []
+            },
+            {
+              "pair": [
+                4,
+                1
+              ],
+              "waves": 1,
+              "reshuffled": false,
+              "damage": [],
+              "opened": []
+            }
+          ],
+          "status": "won",
+          "score": 145,
+          "movesUsed": 4,
+          "movesLeft": 31,
+          "rngState": 1684823864,
+          "covered": 19
+        }
+      ]
+    },
+    {
+      "id": "obstacle-b",
+      "cells": 19,
+      "closedCells": 7,
+      "blockers": [
+        {
+          "id": "b-left",
+          "hp": 1
+        },
+        {
+          "id": "b-center",
+          "hp": 1
+        },
+        {
+          "id": "b-right",
+          "hp": 1
+        }
+      ],
+      "routes": [
+        {
+          "path": [
+            [
+              3,
+              0
+            ],
+            [
+              9,
+              10
+            ],
+            [
+              1,
+              5
+            ],
+            [
+              16,
+              13
+            ],
+            [
+              7,
+              8
+            ]
+          ],
+          "steps": [
+            {
+              "pair": [
+                3,
+                0
+              ],
+              "waves": 1,
+              "reshuffled": false,
+              "damage": [
+                {
+                  "id": "b-left",
+                  "cell": 8,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "b-center",
+                  "cell": 9,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "b-right",
+                  "cell": 10,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                }
+              ],
+              "opened": [
+                {
+                  "id": "b-lower",
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                9,
+                10
+              ],
+              "waves": 3,
+              "reshuffled": false,
+              "damage": [],
+              "opened": []
+            },
+            {
+              "pair": [
+                1,
+                5
+              ],
+              "waves": 1,
+              "reshuffled": false,
+              "damage": [],
+              "opened": []
+            },
+            {
+              "pair": [
+                16,
+                13
+              ],
+              "waves": 2,
+              "reshuffled": false,
+              "damage": [],
+              "opened": []
+            },
+            {
+              "pair": [
+                7,
+                8
+              ],
+              "waves": 4,
+              "reshuffled": false,
+              "damage": [],
+              "opened": []
+            }
+          ],
+          "status": "won",
+          "score": 102,
+          "movesUsed": 5,
+          "movesLeft": 60,
+          "rngState": 2539955085,
+          "covered": 19
+        },
+        {
+          "path": [
+            [
+              5,
+              2
+            ],
+            [
+              5,
+              6
+            ],
+            [
+              6,
+              11
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              18,
+              15
+            ]
+          ],
+          "steps": [
+            {
+              "pair": [
+                5,
+                2
+              ],
+              "waves": 1,
+              "reshuffled": false,
+              "damage": [],
+              "opened": []
+            },
+            {
+              "pair": [
+                5,
+                6
+              ],
+              "waves": 1,
+              "reshuffled": false,
+              "damage": [
+                {
+                  "id": "b-right",
+                  "cell": 10,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                }
+              ],
+              "opened": []
+            },
+            {
+              "pair": [
+                6,
+                11
+              ],
+              "waves": 1,
+              "reshuffled": false,
+              "damage": [
+                {
+                  "id": "b-left",
+                  "cell": 8,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "b-center",
+                  "cell": 9,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                }
+              ],
+              "opened": [
+                {
+                  "id": "b-lower",
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                0,
+                4
+              ],
+              "waves": 10,
+              "reshuffled": false,
+              "damage": [],
+              "opened": []
+            },
+            {
+              "pair": [
+                18,
+                15
+              ],
+              "waves": 1,
+              "reshuffled": false,
+              "damage": [],
+              "opened": []
+            }
+          ],
+          "status": "won",
+          "score": 118,
+          "movesUsed": 5,
+          "movesLeft": 60,
+          "rngState": 302299229,
+          "covered": 19
+        }
+      ]
+    },
+    {
+      "id": "obstacle-c",
+      "cells": 37,
+      "closedCells": 15,
+      "blockers": [
+        {
+          "id": "c-first",
+          "hp": 1
+        },
+        {
+          "id": "c-side",
+          "hp": 1
+        },
+        {
+          "id": "c-reinforced",
+          "hp": 2
+        }
+      ],
+      "routes": [
+        {
+          "path": [
+            [
+              2,
+              3
+            ],
+            [
+              0,
+              5
+            ],
+            [
+              11,
+              12
+            ],
+            [
+              3,
+              8
+            ]
+          ],
+          "steps": [
+            {
+              "pair": [
+                2,
+                3
+              ],
+              "waves": 1,
+              "reshuffled": false,
+              "damage": [],
+              "opened": []
+            },
+            {
+              "pair": [
+                0,
+                5
+              ],
+              "waves": 4,
+              "reshuffled": false,
+              "damage": [
+                {
+                  "id": "c-first",
+                  "cell": 17,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "c-side",
+                  "cell": 19,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 1
+                },
+                {
+                  "id": "c-reinforced",
+                  "cell": 30,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 1
+                },
+                {
+                  "id": "c-reinforced",
+                  "cell": 30,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 3
+                }
+              ],
+              "opened": [
+                {
+                  "id": "c-west",
+                  "wave": 0
+                },
+                {
+                  "id": "c-east",
+                  "wave": 3
+                }
+              ]
+            },
+            {
+              "pair": [
+                11,
+                12
+              ],
+              "waves": 26,
+              "reshuffled": false,
+              "damage": [],
+              "opened": []
+            },
+            {
+              "pair": [
+                3,
+                8
+              ],
+              "waves": 1,
+              "reshuffled": false,
+              "damage": [],
+              "opened": []
+            }
+          ],
+          "status": "won",
+          "score": 346,
+          "movesUsed": 4,
+          "movesLeft": 91,
+          "rngState": 348691656,
+          "covered": 37
+        },
+        {
+          "path": [
+            [
+              2,
+              7
+            ],
+            [
+              7,
+              13
+            ],
+            [
+              28,
+              29
+            ],
+            [
+              0,
+              5
+            ]
+          ],
+          "steps": [
+            {
+              "pair": [
+                2,
+                7
+              ],
+              "waves": 1,
+              "reshuffled": false,
+              "damage": [
+                {
+                  "id": "c-first",
+                  "cell": 17,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                },
+                {
+                  "id": "c-side",
+                  "cell": 19,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 0
+                }
+              ],
+              "opened": [
+                {
+                  "id": "c-west",
+                  "wave": 0
+                }
+              ]
+            },
+            {
+              "pair": [
+                7,
+                13
+              ],
+              "waves": 18,
+              "reshuffled": false,
+              "damage": [
+                {
+                  "id": "c-reinforced",
+                  "cell": 30,
+                  "beforeHp": 2,
+                  "hp": 1,
+                  "wave": 4
+                },
+                {
+                  "id": "c-reinforced",
+                  "cell": 30,
+                  "beforeHp": 1,
+                  "hp": 0,
+                  "wave": 7
+                }
+              ],
+              "opened": [
+                {
+                  "id": "c-east",
+                  "wave": 7
+                }
+              ]
+            },
+            {
+              "pair": [
+                28,
+                29
+              ],
+              "waves": 18,
+              "reshuffled": false,
+              "damage": [],
+              "opened": []
+            },
+            {
+              "pair": [
+                0,
+                5
+              ],
+              "waves": 2,
+              "reshuffled": false,
+              "damage": [],
+              "opened": []
+            }
+          ],
+          "status": "won",
+          "score": 549,
+          "movesUsed": 4,
+          "movesLeft": 91,
+          "rngState": 689413734,
+          "covered": 37
+        }
+      ]
+    }
+  ]
+}

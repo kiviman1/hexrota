@@ -1,0 +1,50 @@
+/* Read-only obstacle and terrain projections share the existing numbered gems.
+   Future Blender prefab bindings use these stable data-asset keys. */
+body[data-obstacles="true"] .obstacle-cell{cursor:default}
+body[data-obstacles="true"] .obstacle-closed>.floor-shape{fill:#68756a;stroke:#4b5b4b;opacity:1}
+body[data-obstacles="true"] .obstacle-empty>.floor-shape{opacity:.8}
+body[data-obstacles="true"] .crate-body{fill:#dc9230;stroke:#7b451c;stroke-width:3;stroke-linejoin:round}
+body[data-obstacles="true"] .crate-grain{stroke:#ad641d;stroke-width:1.5;fill:none;opacity:.8}
+body[data-obstacles="true"] .crate-brace{stroke:#ffd17a;stroke-width:6;fill:none;stroke-linecap:round}
+body[data-obstacles="true"] .crate-crack{stroke:#432e23;stroke-width:3;fill:none}
+body[data-obstacles="true"] .crate-hp-badge{fill:#60381b;stroke:#ffe0a0;stroke-width:1.2}
+body[data-obstacles="true"] .crate-hp{fill:#fff0c6;stroke:none;font:bold 17px Arial,sans-serif}
+body[data-obstacles="true"] .blocker-reinforced .crate-body{fill:#ce8b2b;stroke:#8f641d;stroke-width:4}
+body[data-obstacles="true"] .blocker-reinforced .crate-brace{stroke:#ffe39b}
+body[data-obstacles="true"] .region-cover>polygon{fill:#b8d3d0;stroke:#e2efdf;stroke-width:1.5;opacity:.45}
+body[data-obstacles="true"] .region-cover>path{fill:#9ab8ad;stroke:#dce9d8;stroke-width:2;stroke-linejoin:round}
+body[data-obstacles="true"] .region-cover>circle{fill:#dce9d8}
+body[data-obstacles="true"] .crate-fragment{fill:#e5a346;stroke:#98581e;stroke-width:1;pointer-events:none}
+/* Source-connected terrain is opaque and unnumbered until the engine opens it.
+   A continuous earth/grass cover takes the place of generic gate/padlock icons. */
+body[data-obstacle-flow="true"] .flow-terrain>polygon{fill:#52633c;stroke:#52633c;stroke-width:1;opacity:1}
+body[data-obstacle-flow="true"] .flow-terrain>.terrain-grass{fill:none;stroke:#778b4b;stroke-width:3;stroke-linecap:round;opacity:.8}
+body[data-obstacle-flow="true"] .flow-terrain>.terrain-stone{fill:#718067;stroke:#849074;stroke-width:1;opacity:.8}
+body[data-obstacle-flow="true"] .obstacle-closed>.floor-shape{fill:#52633c;stroke:#52633c;opacity:1}
+/* An authored compact fit keeps large hex layouts in the same game shell.
+   It changes spare margins, never the board coordinates, tile art or input axes. */
+body[data-screen="game"][data-board-fit="compact"] .board-stage{padding-left:4px;padding-right:4px}
+body[data-screen="game"][data-board-fit="compact"] #board{min-width:0}
+@media(max-height:620px) and (orientation:portrait){
+ body[data-screen="game"][data-board-fit="compact"] .game-topbar{padding:calc(6px + env(safe-area-inset-top,0px)) 10px 7px}
+ body[data-screen="game"][data-board-fit="compact"] .game-context{gap:8px;margin-bottom:5px}
+ body[data-screen="game"][data-board-fit="compact"] #game-goal-title{font-size:13px;line-height:1.3}
+ body[data-screen="game"][data-board-fit="compact"] .scoreboard{grid-template-columns:minmax(0,1fr) 70px;gap:8px}
+ body[data-screen="game"][data-board-fit="compact"] .hud-score.metric{min-height:40px;padding:6px 28px 5px 9px;column-gap:7px}
+ body[data-screen="game"][data-board-fit="compact"] .hud-score>#score-goal-label{font-size:9px;letter-spacing:0}
+ body[data-screen="game"][data-board-fit="compact"] .score-pair strong{font-size:23px}
+ body[data-screen="game"][data-board-fit="compact"] .score-pair #target{font-size:17px}
+ body[data-screen="game"][data-board-fit="compact"] .score-track{margin-top:5px}
+ body[data-screen="game"][data-board-fit="compact"] .coverage.ground-goal{min-height:28px;padding:3px 28px 4px 9px;gap:7px}
+ body[data-screen="game"][data-board-fit="compact"] .ground-goal .mini-progress,body[data-screen="game"][data-board-fit="compact"] .ground-goal .mini-progress svg{width:18px;height:18px}
+ body[data-screen="game"][data-board-fit="compact"] .ground-goal #ground-label{font-size:10px}
+ body[data-screen="game"][data-board-fit="compact"] .ground-goal #coverage{font-size:13px}
+ body[data-screen="game"][data-board-fit="compact"] .moves-badge.metric{height:72px;padding:8px 4px}
+ body[data-screen="game"][data-board-fit="compact"] .moves-badge>span{font-size:8px;margin-bottom:5px}
+ body[data-screen="game"][data-board-fit="compact"] .moves-badge>strong{font-size:31px}
+ body[data-screen="game"][data-board-fit="compact"] .goal-check{right:7px;transform:scale(.8)}
+ body[data-screen="game"][data-board-fit="compact"] .hud-score>.goal-check{top:14px}
+ body[data-screen="game"][data-board-fit="compact"] .game-toolbar{gap:4px;padding:6px 10px calc(8px + env(safe-area-inset-bottom,0px))}
+ body[data-screen="game"][data-board-fit="compact"] .dock-button{min-height:53px;gap:3px;font-size:8px}
+ body[data-screen="game"][data-board-fit="compact"] .dock-button>.icon{width:39px;height:39px;min-width:39px;padding:9px}
+}

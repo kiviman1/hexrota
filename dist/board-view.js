@@ -6,11 +6,24 @@
   function geometry(level, tutorial = false) {
     const step=44,radius=40;
     let positions=level.cells.map(c=>({x:1.5*step*c.q,y:Math.sqrt(3)*step*(c.r+c.q/2)}));
-    const xs=positions.map(p=>p.x),ys=positions.map(p=>p.y);
+    const size=level.boardSize,framed=size?.layout==='odd-q'&&Number.isSafeInteger(size.columns)&&size.columns>0&&Number.isSafeInteger(size.rows)&&size.rows>0;
+    let bounds=positions;
+    if(framed){
+      // Capacity reserves visual room only. Omitted coordinates remain void:
+      // no floor, gem, hit target or objective is manufactured for these slots.
+      const qMin=Number.isSafeInteger(size.qMin)?size.qMin:-Math.floor(size.columns/2),rowMin=Number.isSafeInteger(size.rowMin)?size.rowMin:-Math.floor(size.rows/2);
+      const columns=[qMin,qMin+size.columns-1,...(size.columns>1?[qMin+1]:[])];
+      bounds=columns.flatMap(q=>[0,size.rows-1].map(row=>({x:1.5*step*q,y:Math.sqrt(3)*step*(rowMin+row+q/2-Math.floor(q/2))})));
+    }
+    const xs=bounds.map(p=>p.x),ys=bounds.map(p=>p.y);
     const cx=(Math.min(...xs)+Math.max(...xs))/2,cy=(Math.min(...ys)+Math.max(...ys))/2;
     positions=positions.map(p=>({x:p.x-cx,y:p.y-cy}));
-    const width=Math.max(tutorial?275:370,Math.max(...xs)-Math.min(...xs)+radius*2+24);
-    const height=Math.max(tutorial?260:300,Math.max(...ys)-Math.min(...ys)+radius*Math.sqrt(3)+26);
+    // Dense authored boards opt into a tighter outer margin. Cell spacing and
+    // every existing level's geometry remain the same; only spare viewport
+    // padding changes, with room for the terrain's outer edge and floor stroke.
+    const compact=level.presentation?.fit==='compact';
+    const width=Math.max(compact?1:tutorial?275:370,Math.max(...xs)-Math.min(...xs)+radius*2+(compact?12:24));
+    const height=Math.max(compact?1:tutorial?260:300,Math.max(...ys)-Math.min(...ys)+radius*Math.sqrt(3)+(compact?12:26));
     return {positions,radius,width,height};
   }
 
@@ -31,6 +44,18 @@
     }
     return `<defs><filter id="tile-shadow" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="0" dy="2" stdDeviation="1" flood-color="#3d5031" flood-opacity=".06"/></filter><marker id="tutorial-arrow" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0 0 L6 3.5 L0 7 Z"/></marker></defs>${level.cells.map((c,i)=>{
       const left=state.layers[i],green=left===0,partial=left>0&&left<(c.layers||1);
+      // Obstacle layers are read-only engine projections. Empty gem containers
+      // keep the same reconciler/identity contract as ordinary occupied cells.
+      if(level.rulesVersion==='classic-v5'&&level.obstacles){
+        const definitions=level.obstacles,blockerIndex=definitions.blockers.findIndex(b=>b.cell===i);
+        const hp=blockerIndex<0?0:state.blockerHp[blockerIndex];
+        const flow=Array.isArray(state.cellOpen),locked=hp<=0&&(flow?!state.cellOpen[i]:definitions.regions.some((region,index)=>!state.regionOpen[index]&&region.cells.includes(i)));
+        if(hp>0||locked||state.values[i]===null){
+          const p=positions[i],kind=hp>0?'blocked':locked?'closed':'empty';
+          const crate=hp>0?`<g data-asset="${hp===1?'crate-wood-cracked':'crate-wood-intact'}" class="blocker-visual ${hp===1?'blocker-cracked':'blocker-reinforced'}" aria-hidden="true"><polygon class="crate-body" points="${inner}"/><path class="crate-grain" d="M-23 -14 H23 M-29 0 H29 M-23 14 H23 M-8 -26 V26 M12 -26 V26"/><path class="crate-brace" d="M-22 -15 22 15 M-22 15 22 -15"/>${hp===1?'<path class="crate-crack" d="m4-26-8 12 9 7-10 12 6 21"/>':''}<rect class="crate-hp-badge" x="-13" y="-11" width="26" height="22" rx="7"/><text class="crate-hp" text-anchor="middle" x="0" y="5">${hp}</text></g>`:'';
+          return `<g transform="translate(${p.x},${p.y})" class="hex-tile obstacle-cell obstacle-${kind} ${green?'floor-green':'floor-untouched'}" data-index="${i}" data-cell-state="${kind}" role="button" tabindex="-1" aria-disabled="true" aria-label="${hp>0?'Ahşap kutu, '+hp+' dayanıklılık':locked?'Kapalı bölge':'Boş hücre'}"><polygon class="floor-shape" points="${outer}"/><g class="gem"></g>${crate}${locked?flow?`<g data-asset="terrain-covered" class="region-cover flow-terrain" aria-hidden="true"><polygon points="${poly(radius*1.12)}"/><path class="terrain-grass" d="m-20 12 3-9 4 10m18-18 3-8 4 9M8 22l4-10 4 10"/><path class="terrain-stone" d="m-20-13 6-5 9 2 2 7-12 2Z"/></g>`:`<g data-asset="region-closed" class="region-cover" aria-hidden="true"><polygon points="${inner}"/><path d="M-7-3v-5a7 7 0 0 1 14 0v5m-18 0h22v18h-22Z"/><circle cx="0" cy="5" r="2"/></g>`:''}</g>`;
+        }
+      }
       const classes=['hex-tile',`value-${state.values[i]}`,green?'floor-green':partial?'floor-partial':'floor-untouched',c.layers===2?'layered':'',selected===i?'selected':'',hinted?.includes(i)?'hinted':'',selected!==null&&selectedNeighbors.includes(i)?'neighbor':'',matched.has(i)?'matching':'',dropped.has(i)?'falling':'',pair.includes(i)?'tutorial-focus':'',support.includes(i)?'tutorial-support':'',pair[0]===i?'tutorial-source':'',pair[1]===i?'tutorial-target':'',pair.length&&!pair.includes(i)&&!support.includes(i)?'tutorial-muted':''].filter(Boolean).join(' ');
       const p=positions[i],ground=green?'altı yeşil':`${left} eşleşme gerekiyor`;
       const pips=c.layers===2&&!green?`<g class="layer-pips" aria-hidden="true">${Array.from({length:left},(_,dot)=>`<circle class="layer-pip" cx="${left===2?(dot?4:-4):0}" cy="31" r="2.5"/>`).join('')}</g>`:'';

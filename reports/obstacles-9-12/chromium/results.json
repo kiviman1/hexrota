@@ -1,0 +1,168 @@
+{
+  "browser": "chromium",
+  "checks": 14,
+  "results": [
+    "320x568 test A native input, unlock, win and reload",
+    "320x568 test B native input, unlock, win and reload",
+    "320x568 test C native input, unlock, win and reload",
+    "390x844 test A native input, unlock, win and reload",
+    "390x844 test B native input, unlock, win and reload",
+    "390x844 test C native input, unlock, win and reload",
+    "430x932 test A native input, unlock, win and reload",
+    "430x932 test B native input, unlock, win and reload",
+    "430x932 test C native input, unlock, win and reload",
+    "presentation cancellation never rolls back a committed box break or unlock",
+    "background interruption and reduced motion preserve the canonical result",
+    "animation API failure still paints and reloads the saved engine result",
+    "initial projection failure after commit recovers the canonical board and input lock",
+    "corrupt development save is retained until explicit restart"
+  ],
+  "measurements": [
+    {
+      "width": 320,
+      "height": 568,
+      "level": "obstacle-a",
+      "overflow": false,
+      "board": {
+        "x": 9,
+        "y": 241.5,
+        "width": 302,
+        "height": 233.5,
+        "top": 241.5,
+        "right": 311,
+        "bottom": 475,
+        "left": 9
+      }
+    },
+    {
+      "width": 320,
+      "height": 568,
+      "level": "obstacle-b",
+      "overflow": false,
+      "board": {
+        "x": 9,
+        "y": 241.5,
+        "width": 302,
+        "height": 233.5,
+        "top": 241.5,
+        "right": 311,
+        "bottom": 475,
+        "left": 9
+      }
+    },
+    {
+      "width": 320,
+      "height": 568,
+      "level": "obstacle-c",
+      "overflow": false,
+      "board": {
+        "x": 9,
+        "y": 241.5,
+        "width": 302,
+        "height": 233.5,
+        "top": 241.5,
+        "right": 311,
+        "bottom": 475,
+        "left": 9
+      }
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "level": "obstacle-a",
+      "overflow": false,
+      "board": {
+        "x": 14,
+        "y": 311.890625,
+        "width": 362,
+        "height": 371.359375,
+        "top": 311.890625,
+        "right": 376,
+        "bottom": 683.25,
+        "left": 14
+      }
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "level": "obstacle-b",
+      "overflow": false,
+      "board": {
+        "x": 14,
+        "y": 311.890625,
+        "width": 362,
+        "height": 371.359375,
+        "top": 311.890625,
+        "right": 376,
+        "bottom": 683.25,
+        "left": 14
+      }
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "level": "obstacle-c",
+      "overflow": false,
+      "board": {
+        "x": 14,
+        "y": 311.890625,
+        "width": 362,
+        "height": 371.359375,
+        "top": 311.890625,
+        "right": 376,
+        "bottom": 683.25,
+        "left": 14
+      }
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "level": "obstacle-a",
+      "overflow": false,
+      "board": {
+        "x": 14,
+        "y": 311.890625,
+        "width": 402,
+        "height": 410.078125,
+        "top": 311.890625,
+        "right": 416,
+        "bottom": 721.96875,
+        "left": 14
+      }
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "level": "obstacle-b",
+      "overflow": false,
+      "board": {
+        "x": 14,
+        "y": 311.890625,
+        "width": 402,
+        "height": 410.078125,
+        "top": 311.890625,
+        "right": 416,
+        "bottom": 721.96875,
+        "left": 14
+      }
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "level": "obstacle-c",
+      "overflow": false,
+      "board": {
+        "x": 14,
+        "y": 311.890625,
+        "width": 402,
+        "height": 410.078125,
+        "top": 311.890625,
+        "right": 416,
+        "bottom": 721.96875,
+        "left": 14
+      }
+    }
+  ],
+  "errors": [],
+  "physicalIPhone": false
+}

@@ -4,12 +4,17 @@ using System.Collections.Generic;
 namespace Hexrota.Gameplay
 {
     // Pure classic-v4 rules. The host supplies configurations and handles all I/O.
-    public sealed class HexMatch
+    public sealed partial class HexMatch
     {
         public readonly LevelConfig level;
         public readonly BoardTopology topology;
         public int?[] values;
         public int[] layers;
+        public int[] blockerHp;
+        public bool[] regionOpen;
+        public bool[] cellOpen;
+        public bool HasColumnFlow { get { return HasObstacles && level.obstacles.activation == "column-flow-v1"; } }
+        public bool HasObstacles { get { return level.rulesVersion == "classic-v5"; } }
         public int score;
         public int movesLeft;
         public int turn;
@@ -31,6 +36,7 @@ namespace Hexrota.Gameplay
 
         private static T[] Duplicate<T>(T[] source) { return (T[])source.Clone(); }
         private static int GroundLayers(Cell cell) { return cell.layers == 0 ? 1 : cell.layers; }
+        private int InitialLayers(Cell cell) { return HasObstacles ? cell.layers : GroundLayers(cell); }
 
         // Structural safety is separate from publication or solvability rules.
         // Typed DTO fields already constrain coordinates, values and seed ranges.
@@ -44,11 +50,13 @@ namespace Hexrota.Gameplay
             for (int i = 0; i < level.cells.Length; i++)
             {
                 Cell cell = level.cells[i];
-                if (cell == null || cell.layers < 0 || !coordinates.Add(new AxialCoordinate(cell.q, cell.r)) || !level.initial[i].HasValue || !palette.Contains(level.initial[i].Value))
+                if (cell == null || cell.layers < 0 || !coordinates.Add(new AxialCoordinate(cell.q, cell.r)) || (level.rulesVersion != "classic-v5" && (!level.initial[i].HasValue || !palette.Contains(level.initial[i].Value))))
                     throw new ArgumentException(message);
-                ground += GroundLayers(cell);
+                ground += level.rulesVersion == "classic-v5" ? cell.layers : GroundLayers(cell);
                 if (ground > int.MaxValue) throw new ArgumentException(message);
             }
+            if (level.rulesVersion == "classic-v5") ValidateObstacles(level);
+            else if (level.obstacles != null || (level.rulesVersion != null && level.rulesVersion != "classic-v4")) throw new ArgumentException(message);
             return true;
         }
 
@@ -56,7 +64,15 @@ namespace Hexrota.Gameplay
         {
             ValidateLevel(level);
             values = Duplicate(level.initial); layers = new int[level.cells.Length];
-            for (int i = 0; i < layers.Length; i++) layers[i] = GroundLayers(level.cells[i]);
+            for (int i = 0; i < layers.Length; i++) layers[i] = InitialLayers(level.cells[i]);
+            blockerHp = null; regionOpen = null; cellOpen = null;
+            if (HasObstacles)
+            {
+                blockerHp = new int[level.obstacles.blockers.Length];
+                for (int i = 0; i < blockerHp.Length; i++) blockerHp[i] = level.obstacles.blockers[i].hp;
+                regionOpen = new bool[level.obstacles.regions.Length];
+                if (HasColumnFlow) RefreshColumnFlow();
+            }
             score = 0; movesLeft = level.moves; turn = 0;
             rngState = XorShift32.InitialState(level.seed); history = new List<int[]>();
         }
@@ -75,7 +91,7 @@ namespace Hexrota.Gameplay
             get
             {
                 bool scoreMet = level.targetMode == "exact" ? score == level.target : score >= level.target;
-                if (Covered == Total && scoreMet) return "won";
+                if (Covered == Total && scoreMet && ObstaclesComplete()) return "won";
                 if (movesLeft <= 0 || (level.targetMode == "exact" && score > level.target)) return "lost";
                 return "playing";
             }
@@ -93,6 +109,7 @@ namespace Hexrota.Gameplay
         public int[] FindMatches(int?[] source = null)
         {
             source = source ?? values;
+            if (HasObstacles) { source = Duplicate(source); for (int i = 0; i < source.Length; i++) if (!IsPlayable(i)) source[i] = null; }
             var marked = new SortedSet<int>();
             foreach (int[] line in topology.lines)
             {
@@ -117,7 +134,7 @@ namespace Hexrota.Gameplay
             foreach (int[] pair in topology.pairs)
             {
                 int a = pair[0], b = pair[1];
-                if (values[a] == values[b]) continue;
+                if ((HasObstacles && (!IsPlayable(a) || !IsPlayable(b))) || values[a] == values[b]) continue;
                 Exchange(a, b); int[] matched = FindMatches(); Exchange(a, b);
                 if (matched.Length != 0) moves.Add(new[] { a, b });
             }
@@ -140,7 +157,7 @@ namespace Hexrota.Gameplay
             foreach (int[] column in topology.columns)
                 foreach (int index in column)
                 {
-                    if (values[index].HasValue) continue;
+                    if ((HasObstacles && !IsPlayable(index)) || values[index].HasValue) continue;
                     int minimum = int.MaxValue;
                     var choices = new List<int>();
                     foreach (int value in level.palette)
@@ -160,10 +177,10 @@ namespace Hexrota.Gameplay
             var removed = new HashSet<int>(matched);
             var falls = new List<FallTile>();
             var spawnOrders = new Dictionary<int, int[]>();
-            foreach (int[] column in topology.columns)
+            foreach (int[] column in GravityColumns())
             {
                 var survivors = new List<int>();
-                foreach (int index in column) if (!removed.Contains(index)) survivors.Add(index);
+                foreach (int index in column) if (!removed.Contains(index) && (!HasObstacles || values[index].HasValue)) survivors.Add(index);
                 int missing = column.Length - survivors.Count;
                 var next = new int?[column.Length];
                 for (int j = 0; j < survivors.Count; j++)
@@ -190,16 +207,20 @@ namespace Hexrota.Gameplay
             ValidateLevel(level);
             if (values == null || values.Length != level.cells.Length) throw new InvalidOperationException("Invalid recovery board");
             var palette = new HashSet<int>(level.palette);
-            foreach (int? value in values)
-                if (!value.HasValue || !palette.Contains(value.Value)) throw new InvalidOperationException("Invalid recovery board");
+            for (int i = 0; i < values.Length; i++)
+                if (HasObstacles && !IsPlayable(i) ? values[i].HasValue : (!values[i].HasValue || !palette.Contains(values[i].Value))) throw new InvalidOperationException("Invalid recovery board");
             if (palette.Count < 2) throw new InvalidOperationException("Recovery requires at least two distinct palette values");
+        }
+        private bool IsValidRecoveryValues()
+        {
+            if (values == null || values.Length != level.cells.Length) return false;
+            for (int i = 0; i < values.Length; i++)
+                if (HasObstacles && !IsPlayable(i) ? values[i].HasValue : (!values[i].HasValue || Array.IndexOf(level.palette, values[i].Value) < 0)) return false;
+            return true;
         }
         private bool IsPlayableSettledBoard()
         {
-            if (values == null || values.Length != level.cells.Length) return false;
-            foreach (int? value in values)
-                if (!value.HasValue || Array.IndexOf(level.palette, value.Value) < 0) return false;
-            return FindMatches().Length == 0 && LegalMoves().Count != 0;
+            return IsValidRecoveryValues() && FindMatches().Length == 0 && LegalMoves().Count != 0;
         }
         public bool StableBoard()
         {
@@ -222,7 +243,7 @@ namespace Hexrota.Gameplay
                             Cell cell = level.cells[i];
                             long combination = (long)coefficients[c, 0] * cell.q + (long)coefficients[c, 1] * cell.r + offset;
                             int normalized = (int)((combination % 4 + 4) % 4);
-                            values[i] = level.palette[normalized / 2];
+                            if (!HasObstacles || IsPlayable(i)) values[i] = level.palette[normalized / 2];
                         }
                         if (IsPlayableSettledBoard()) return true;
                     }
@@ -244,9 +265,11 @@ namespace Hexrota.Gameplay
                 for (int attempt = 0; attempt < 128; attempt++)
                 {
                     values = Duplicate(original);
-                    for (int i = values.Length - 1; i > 0; i--)
+                    var active = new List<int>();
+                    for (int i = 0; i < values.Length; i++) if (!HasObstacles || IsPlayable(i)) active.Add(i);
+                    for (int i = active.Count - 1; i > 0; i--)
                     {
-                        int j = (int)(Random() % (uint)(i + 1)); Exchange(i, j);
+                        int j = (int)(Random() % (uint)(i + 1)); Exchange(active[i], active[j]);
                     }
                     if (IsPlayableSettledBoard()) return true;
                 }
@@ -269,6 +292,7 @@ namespace Hexrota.Gameplay
             string status = Status;
             if (status != "playing") return Invalid(status);
             if (!Adjacent(a, b)) return Invalid("neighbor");
+            if (HasObstacles && (!IsPlayable(a) || !IsPlayable(b))) return Invalid("blocked");
             Exchange(a, b); int[] matched = FindMatches();
             if (matched.Length == 0) { Exchange(a, b); return Invalid("no-match"); }
             movesLeft--; turn++; history.Add(new[] { a, b });
@@ -278,8 +302,9 @@ namespace Hexrota.Gameplay
                 int?[] before = Duplicate(values); int gain = 0;
                 foreach (int index in matched) gain += values[index].Value;
                 foreach (int index in matched) layers[index] = Math.Max(0, layers[index] - 1);
+                WaveFrame obstacle = DamageBlockers(matched);
                 score += gain; totalGain += gain; GravityResult refill = Gravity(matched);
-                frames.Add(new WaveFrame { matched = Duplicate(matched), before = before, after = Duplicate(values), layers = Duplicate(layers), scoreGain = gain, compacted = refill.compacted, refill = refill.refill, falls = refill.falls });
+                frames.Add(new WaveFrame { cellOpen = obstacle.cellOpen, openedCells = obstacle.openedCells, blockerHits = obstacle.blockerHits, brokenBlockers = obstacle.brokenBlockers, openedRegions = obstacle.openedRegions, blockerHp = obstacle.blockerHp, regionOpen = obstacle.regionOpen, matched = Duplicate(matched), before = before, after = Duplicate(values), layers = Duplicate(layers), scoreGain = gain, compacted = refill.compacted, refill = refill.refill, falls = refill.falls });
                 matched = FindMatches();
                 if (frames.Count >= 32 && matched.Length != 0) { StableBoard(); safetyReset = true; break; }
             }
@@ -291,12 +316,14 @@ namespace Hexrota.Gameplay
         {
             var route = new int[history.Count][];
             for (int i = 0; i < route.Length; i++) route[i] = Duplicate(history[i]);
-            return new GameSnapshot { values = Duplicate(values), layers = Duplicate(layers), score = score, movesLeft = movesLeft, turn = turn, rngState = rngState, history = route };
+            return new GameSnapshot { version = HasObstacles ? 5 : 4, rulesVersion = HasObstacles ? "classic-v5" : "classic-v4", obstacleVersion = HasObstacles ? "obstacles-v1" : null, cellOpen = HasColumnFlow ? Duplicate(cellOpen) : null, blockerHp = HasObstacles ? Duplicate(blockerHp) : null, regionOpen = HasObstacles ? Duplicate(regionOpen) : null, values = Duplicate(values), layers = Duplicate(layers), score = score, movesLeft = movesLeft, turn = turn, rngState = rngState, history = route };
         }
         public HexMatch Clone()
         {
             var clone = new HexMatch(level, topology, false);
             clone.values = Duplicate(values); clone.layers = Duplicate(layers);
+            clone.cellOpen = HasColumnFlow ? Duplicate(cellOpen) : null;
+            clone.blockerHp = HasObstacles ? Duplicate(blockerHp) : null; clone.regionOpen = HasObstacles ? Duplicate(regionOpen) : null;
             clone.score = score; clone.movesLeft = movesLeft; clone.turn = turn; clone.rngState = rngState;
             clone.history = new List<int[]>(history.Count);
             foreach (int[] pair in history) clone.history.Add(Duplicate(pair));
@@ -314,21 +341,31 @@ namespace Hexrota.Gameplay
         public void Restore(GameSnapshot snapshot)
         {
             int n = Total;
-            if (snapshot == null || snapshot.version != 4 || snapshot.rulesVersion != "classic-v4" || snapshot.values == null || snapshot.values.Length != n || snapshot.layers == null || snapshot.layers.Length != n || snapshot.score < 0 || snapshot.movesLeft < 0 || snapshot.movesLeft > level.moves || snapshot.turn != level.moves - snapshot.movesLeft || snapshot.rngState == 0 || snapshot.history == null || snapshot.history.Length != snapshot.turn)
+            if (snapshot == null || snapshot.version != (HasObstacles ? 5 : 4) || snapshot.rulesVersion != (HasObstacles ? "classic-v5" : "classic-v4") || snapshot.values == null || snapshot.values.Length != n || snapshot.layers == null || snapshot.layers.Length != n || snapshot.score < 0 || snapshot.movesLeft < 0 || snapshot.movesLeft > level.moves || snapshot.turn != level.moves - snapshot.movesLeft || snapshot.rngState == 0 || snapshot.history == null || snapshot.history.Length != snapshot.turn)
                 throw new ArgumentException("Invalid match-three checkpoint");
+            if (HasObstacles && (snapshot.obstacleVersion != "obstacles-v1" || snapshot.blockerHp == null || snapshot.blockerHp.Length != blockerHp.Length || snapshot.regionOpen == null || snapshot.regionOpen.Length != regionOpen.Length)) throw new ArgumentException("Invalid match-three checkpoint");
+            if (HasColumnFlow && (snapshot.cellOpen == null || snapshot.cellOpen.Length != Total)) throw new ArgumentException("Invalid match-three checkpoint");
             for (int i = 0; i < n; i++)
             {
-                if (!snapshot.values[i].HasValue || Array.IndexOf(level.palette, snapshot.values[i].Value) < 0 || snapshot.layers[i] < 0 || snapshot.layers[i] > GroundLayers(level.cells[i]))
+                if ((!HasObstacles && !snapshot.values[i].HasValue) || (snapshot.values[i].HasValue && Array.IndexOf(level.palette, snapshot.values[i].Value) < 0) || snapshot.layers[i] < 0 || snapshot.layers[i] > InitialLayers(level.cells[i]))
                     throw new ArgumentException("Invalid match-three checkpoint");
             }
             foreach (int[] pair in snapshot.history)
                 if (pair == null || pair.Length != 2 || !Adjacent(pair[0], pair[1]))
                     throw new ArgumentException("Invalid match-three checkpoint");
-            if (FindMatches(snapshot.values).Length != 0) throw new ArgumentException("Invalid match-three checkpoint");
+            if (!HasObstacles && FindMatches(snapshot.values).Length != 0) throw new ArgumentException("Invalid match-three checkpoint");
             HexMatch replay = Replay(level, snapshot.history);
             bool same = replay.score == snapshot.score && replay.movesLeft == snapshot.movesLeft && replay.turn == snapshot.turn && replay.rngState == snapshot.rngState;
             for (int i = 0; i < n && same; i++) same = replay.values[i] == snapshot.values[i] && replay.layers[i] == snapshot.layers[i];
+            if (HasObstacles)
+            {
+                for (int i = 0; i < blockerHp.Length && same; i++) same = replay.blockerHp[i] == snapshot.blockerHp[i];
+                for (int i = 0; i < regionOpen.Length && same; i++) same = replay.regionOpen[i] == snapshot.regionOpen[i];
+            }
+            if (HasColumnFlow) for (int i = 0; i < Total && same; i++) same = replay.cellOpen[i] == snapshot.cellOpen[i];
+            if (HasObstacles && (!replay.IsValidRecoveryValues() || replay.FindMatches().Length != 0)) same = false;
             if (!same) throw new ArgumentException("Checkpoint does not match its history");
+            blockerHp = replay.blockerHp; regionOpen = replay.regionOpen; cellOpen = replay.cellOpen;
             values = replay.values; layers = replay.layers; score = replay.score;
             movesLeft = replay.movesLeft; turn = replay.turn; rngState = replay.rngState; history = replay.history;
         }

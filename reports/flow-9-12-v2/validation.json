@@ -1,0 +1,110 @@
+{
+  "date": "2026-11-17",
+  "entry": "/?dev=flow-9-12",
+  "maximumCanvas": [
+    9,
+    9
+  ],
+  "capacitySlots": 81,
+  "authoredLevels": [
+    {
+      "id": 6,
+      "cells": 43,
+      "voidSlots": 38,
+      "groundLayers": 43,
+      "moves": 16,
+      "target": 210,
+      "winningRouteLengths": [
+        8,
+        7
+      ]
+    },
+    {
+      "id": 7,
+      "cells": 49,
+      "voidSlots": 32,
+      "groundLayers": 53,
+      "moves": 18,
+      "target": 250,
+      "winningRouteLengths": [
+        9,
+        10
+      ]
+    },
+    {
+      "id": 8,
+      "cells": 53,
+      "voidSlots": 28,
+      "groundLayers": 59,
+      "moves": 20,
+      "target": 290,
+      "winningRouteLengths": [
+        16,
+        16
+      ]
+    },
+    {
+      "id": 9,
+      "cells": 61,
+      "voidSlots": 20,
+      "groundLayers": 69,
+      "moves": 22,
+      "target": 340,
+      "winningRouteLengths": [
+        18,
+        17
+      ]
+    },
+    {
+      "id": 10,
+      "cells": 65,
+      "voidSlots": 16,
+      "groundLayers": 75,
+      "moves": 24,
+      "target": 390,
+      "winningRouteLengths": [
+        15,
+        13
+      ]
+    }
+  ],
+  "firstFiveUnchanged": true,
+  "v1DataUnchanged": true,
+  "classicEngineUnchanged": true,
+  "npmTest": {
+    "exitCode": 0,
+    "startUtc": "13:43:52",
+    "endUtc": "13:49:18"
+  },
+  "pureRuleGroups": 14,
+  "archiveHostGroups": 9,
+  "csharp": {
+    "mechanicsScenarios": 50,
+    "catalogScenarios": 103,
+    "validSwaps": 329,
+    "waves": 826,
+    "resumes": 139,
+    "replays": 139,
+    "clones": 144,
+    "rejectedSavesOrIdentities": 48,
+    "v2CheckpointPrefixes": 129,
+    "v1CheckpointPrefixes": 14,
+    "dotnet": "8.0.428",
+    "language": "7.3"
+  },
+  "browser": {
+    "chromium": {
+      "checks": 9,
+      "errors": []
+    },
+    "webkit": {
+      "checks": 9,
+      "errors": []
+    }
+  },
+  "postV2RegressionCommandsPassed": 7,
+  "physicalIPhoneTested": false,
+  "unityEditorTested": false,
+  "merged": false,
+  "productionChanged": false
+}

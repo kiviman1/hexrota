@@ -30,6 +30,7 @@ internal sealed class FallTileConverter : JsonConverter<FallTile>
 internal static class Program
 {
     private static readonly JsonSerializerOptions Json = BuildJson();
+    private static bool portableWire;
     private static int cloneChecks;
     private static int swapCloneChecks;
 
@@ -41,6 +42,15 @@ internal static class Program
             PropertyNameCaseInsensitive = false,
             DefaultIgnoreCondition = JsonIgnoreCondition.Never
         };
+
+        var resolver = new System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver();
+        resolver.Modifiers.Add(info => {
+            if (info.Type == typeof(GameSnapshot) || info.Type == typeof(WaveFrame) || info.Type == typeof(LevelConfig))
+                foreach (var property in info.Properties)
+                    if (property.Name == "cellOpen" || property.Name == "openedCells" || property.Name == "obstacles" || property.Name == "obstacleVersion" || property.Name == "blockerHp" || property.Name == "regionOpen" || property.Name == "blockerHits" || property.Name == "brokenBlockers" || property.Name == "openedRegions")
+                        property.ShouldSerialize = (instance, value) => value != null;
+        });
+        result.TypeInfoResolver = resolver;
         result.Converters.Add(new FallTileConverter());
         return result;
     }
@@ -58,8 +68,26 @@ internal static class Program
         return JsonSerializer.Deserialize<T>(source.GetRawText(), Json);
     }
 
+    private static object PortableValue(JsonElement source)
+    {
+        if (source.ValueKind == JsonValueKind.Object)
+        {
+            var map = new Dictionary<string, object>(); foreach (JsonProperty p in source.EnumerateObject()) map.Add(p.Name, PortableValue(p.Value)); return map;
+        }
+        if (source.ValueKind == JsonValueKind.Array)
+        {
+            var list = new List<object>(); foreach (JsonElement value in source.EnumerateArray()) list.Add(PortableValue(value)); return list;
+        }
+        if (source.ValueKind == JsonValueKind.String) return source.GetString();
+        if (source.ValueKind == JsonValueKind.Number) return source.GetDouble();
+        if (source.ValueKind == JsonValueKind.True) return true;
+        if (source.ValueKind == JsonValueKind.False) return false;
+        return null;
+    }
+
     private static LevelConfig ReadLevel(JsonElement source)
     {
+        if (portableWire) return Hexrota.Catalog.CatalogWire.ReadLevel(PortableValue(source));
         Required(source, "cells", JsonValueKind.Array);
         Required(source, "initial", JsonValueKind.Array);
         Required(source, "palette", JsonValueKind.Array);
@@ -68,6 +96,39 @@ internal static class Program
             throw new ArgumentException("Level seed must be UInt32");
         Required(source, "moves", JsonValueKind.Number);
         Required(source, "target", JsonValueKind.Number);
+        JsonElement rules;
+        if (source.TryGetProperty("rulesVersion", out rules) && rules.ValueKind != JsonValueKind.String && rules.ValueKind != JsonValueKind.Null) throw new ArgumentException("Invalid rules version");
+        JsonElement obstacles;
+        if (source.TryGetProperty("obstacles", out obstacles))
+        {
+            if (!source.TryGetProperty("rulesVersion", out rules) || rules.GetString() != "classic-v5") throw new ArgumentException("Invalid obstacle rules version");
+            Required(obstacles, "version", JsonValueKind.String);
+            JsonElement activation;
+            if (obstacles.TryGetProperty("activation", out activation) && activation.ValueKind != JsonValueKind.String) throw new ArgumentException("Invalid obstacle activation");
+            JsonElement sources;
+            if (obstacles.TryGetProperty("sources", out sources) && sources.ValueKind != JsonValueKind.Array) throw new ArgumentException("Invalid obstacle sources");
+            foreach (JsonElement box in Required(obstacles, "blockers", JsonValueKind.Array).EnumerateArray())
+            {
+                Required(box, "id", JsonValueKind.String); Required(box, "cell", JsonValueKind.Number); Required(box, "hp", JsonValueKind.Number);
+                JsonElement optional;
+                if (box.TryGetProperty("regionId", out optional) && optional.ValueKind != JsonValueKind.String) throw new ArgumentException("Invalid box region");
+                if (box.TryGetProperty("required", out optional) && optional.ValueKind != JsonValueKind.True && optional.ValueKind != JsonValueKind.False) throw new ArgumentException("Invalid box requirement");
+            }
+            foreach (JsonElement region in Required(obstacles, "regions", JsonValueKind.Array).EnumerateArray())
+            {
+                Required(region, "id", JsonValueKind.String); Required(region, "cells", JsonValueKind.Array); Required(region, "requires", JsonValueKind.Array);
+                JsonElement optional;
+                if (region.TryGetProperty("required", out optional) && optional.ValueKind != JsonValueKind.True && optional.ValueKind != JsonValueKind.False) throw new ArgumentException("Invalid region requirement");
+            }
+        }
+        if (source.TryGetProperty("rulesVersion", out rules) && rules.ValueKind == JsonValueKind.String && rules.GetString() == "classic-v5")
+        {
+            // Portable loaders normalize optional/null ground layers to one;
+            // explicit zero is a real v5 cleared-ground cell.
+            var normalized = System.Text.Json.Nodes.JsonNode.Parse(source.GetRawText());
+            foreach (var cell in normalized["cells"].AsArray()) if (cell["layers"] == null) cell["layers"] = 1;
+            return JsonSerializer.Deserialize<LevelConfig>(normalized.ToJsonString(), Json);
+        }
         return Read<LevelConfig>(source);
     }
 
@@ -75,6 +136,7 @@ internal static class Program
     // omitting a required field must not silently supply a valid zero/default.
     private static GameSnapshot ReadSnapshot(JsonElement source)
     {
+        if (portableWire) return Hexrota.Catalog.CatalogWire.ReadSnapshot(PortableValue(source));
         foreach (string key in new[] { "version", "score", "movesLeft", "turn" })
         {
             int number;
@@ -88,12 +150,18 @@ internal static class Program
         uint rngState;
         if (!Required(source, "rngState", JsonValueKind.Number).TryGetUInt32(out rngState))
             throw new ArgumentException("Snapshot RNG must be UInt32");
+        if (Required(source, "version", JsonValueKind.Number).GetInt32() == 5)
+        {
+            Required(source, "obstacleVersion", JsonValueKind.String);
+            Required(source, "blockerHp", JsonValueKind.Array);
+            Required(source, "regionOpen", JsonValueKind.Array);
+        }
         return Read<GameSnapshot>(source);
     }
 
     private static object Observed(HexMatch game)
     {
-        return new { snapshot = game.Snapshot(), status = game.Status, covered = game.Covered, remainingLayers = game.RemainingLayers };
+        return new { snapshot = portableWire ? (object)Hexrota.Catalog.CatalogWire.Snapshot(game.Snapshot()) : game.Snapshot(), status = game.Status, covered = game.Covered, remainingLayers = game.RemainingLayers };
     }
 
     private static object CloneObservedAndCheck(HexMatch game)
@@ -228,9 +296,66 @@ internal static class Program
         return component;
     }
 
+    private static object ExecuteObstacles(JsonElement request)
+    {
+        LevelConfig config = ReadLevel(Required(request, "level", JsonValueKind.Object));
+        var game = new HexMatch(config); var rows = new List<object>();
+        rows.Add(new { after = Observed(game), legalMoves = game.LegalMoves() });
+        foreach (JsonElement step in Required(request, "steps", JsonValueKind.Array).EnumerateArray())
+        {
+            object result = null; bool error = false;
+            try
+            {
+                string op = Required(step, "op", JsonValueKind.String).GetString();
+                if (op == "swap") { int[] pair = Read<int[]>(Required(step, "pair", JsonValueKind.Array)); result = SwapWithCloneCheck(game, pair); }
+                else if (op == "restore") { game.Restore(ReadSnapshot(Required(step, "snapshot", JsonValueKind.Object))); result = true; }
+                else if (op == "resume") { game = new HexMatch(config, game.Snapshot()); result = true; }
+                else if (op == "clone")
+                {
+                    var clone = game.Clone(); result = Observed(clone);
+                    if (clone.blockerHp.Length > 0) clone.blockerHp[0] = -100;
+                    if (clone.regionOpen.Length > 0) clone.regionOpen[0] = !clone.regionOpen[0];
+                    if (clone.cellOpen != null && clone.cellOpen.Length > 0) clone.cellOpen[0] = !clone.cellOpen[0];
+                }
+                else if (op == "replay") { game = HexMatch.Replay(config, game.Snapshot().history); result = true; }
+                else if (op == "damage")
+                {
+                    var method = typeof(HexMatch).GetMethod("DamageBlockers", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    var frame = (WaveFrame)method.Invoke(game, new object[] { Read<int[]>(Required(step, "matched", JsonValueKind.Array)) });
+                    var damage = new Dictionary<string, object> { { "blockerHits", frame.blockerHits }, { "brokenBlockers", frame.brokenBlockers }, { "openedRegions", frame.openedRegions }, { "blockerHp", frame.blockerHp }, { "regionOpen", frame.regionOpen } };
+                    if (game.HasColumnFlow) { damage["cellOpen"] = frame.cellOpen; damage["openedCells"] = frame.openedCells; }
+                    result = damage;
+                }
+                else if (op == "gravity") result = game.Gravity(Read<int[]>(Required(step, "matched", JsonValueKind.Array)));
+                else if (op == "refill") result = game.FillVacancies();
+                else if (op == "ensure") result = game.EnsurePlayable();
+                else if (op == "stable") result = game.StableBoard();
+                else if (op == "rng") result = game.Random();
+                else if (op == "inject")
+                {
+                    JsonElement value;
+                    if (step.TryGetProperty("values", out value)) game.values = Read<int?[]>(value);
+                    if (step.TryGetProperty("layers", out value)) game.layers = Read<int[]>(value);
+                    if (step.TryGetProperty("blockerHp", out value)) game.blockerHp = Read<int[]>(value);
+                    if (step.TryGetProperty("cellOpen", out value)) game.cellOpen = Read<bool[]>(value);
+                    if (step.TryGetProperty("regionOpen", out value)) game.regionOpen = Read<bool[]>(value);
+                    if (step.TryGetProperty("score", out value)) game.score = value.GetInt32();
+                    if (step.TryGetProperty("movesLeft", out value)) game.movesLeft = value.GetInt32();
+                    result = true;
+                }
+                else throw new ArgumentException("Unknown obstacle step");
+            }
+            catch { error = true; }
+            rows.Add(new { error = error, result = result, after = Observed(game), legalMoves = game.LegalMoves() });
+        }
+        return rows;
+    }
+
     private static object Execute(JsonElement request)
     {
+        JsonElement wire; portableWire = request.TryGetProperty("wire", out wire) && wire.ValueKind == JsonValueKind.True;
         string operation = Required(request, "operation", JsonValueKind.String).GetString();
+        if (operation == "obstacle") return ExecuteObstacles(request);
         if (operation == "case") return ExecuteCase(Required(request, "vector", JsonValueKind.Object));
         if (operation == "construct")
         {

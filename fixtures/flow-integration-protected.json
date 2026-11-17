@@ -1,0 +1,31 @@
+{
+  "baseline": "a93c920d64ae706d07b9cc271d13fffb3bdbfaf5",
+  "scope": "User-corrected 9.12 integrated campaign L6 and physical column-flow-v1. Only explicit main-app presentation, storage scope, portable flow/catalog core and parity transport may change. Old authored campaign, variants, golden output, thresholds and all prior hash fixtures remain frozen.",
+  "sha256": {
+    "dist/engine.js": "aa033d2b38a40f4104c1d3277db4d4c162a2e2d5fd45152af92002616f98d5c8",
+    "dist/board-view.js": "ba8deb83e38534efcf32769b3d4f231731736e0b733a6ae6298290598bf00773",
+    "dist/move-presentation.js": "b4b346d60e8d11a1bb972ff36a2eceea7a1e2951f0c97f6881b5c15bc9f68caf",
+    "dist/session-store.js": "b69e30e8b019923fb0c540626d546a690f599d705dfacf413af42dc11e9701bc",
+    "dist/app.js": "bba849c2bd87df2ec3c2fcaeec51febba9564a08985666d9e8dc7abb02bbdbd4",
+    "dist/sw.js": "f02970d37e75350a959a51035cfe4ca64f421a463214d30fa451d4158d879314",
+    "dist/style.css": "5e2294cd2759d476a97baebea643326d71ee32f7c80074778dedabb14e10354a",
+    "src/styles/manifest.json": "46723cb3a33565f044d7bf39d40d8b36475b53df474ed58beb76bbfd28cb5d86",
+    "src/styles/10-obstacle-flow.css": "0e164acda7f315339e222c1d80c981cb636721cdc0e53a105a1a4648e1e70b08",
+    "dist/campaign-flow.js": "c05e3b58b95129b1917b5ffa487ea35d952ae868b1bcd2fb236997b6af2ba966",
+    "dist/campaign-flow-levels.js": "c8b10ecaf5a9faee8e7f93e2d8e843fd423e8cebc9dc33b0aab852932720cba6",
+    "unity/Catalog/CatalogWire.cs": "6c5b72ce21ceaa773bcd75efc6d4a65595f685aa47bc30debafca2b66e504938",
+    "unity/Catalog/CampaignFlowCatalog.cs": "1efd850d80cf497da4b77711e38f6a5bc105247355d781e7af579a1688a191f1",
+    "unity/Gameplay/GameplayTypes.cs": "37ceb2badd42d99bb4688cb9087bba6c6c4f52f2222ae51ab331f6e597d1a517",
+    "unity/Gameplay/HexMatch.cs": "e3347043e4beda784d95d99fe417f74ef8be477caf62611c39339123044335af",
+    "unity/Gameplay/HexMatch.Obstacles.cs": "760772e220db84254a9e17f6e291c9dbf1bc663c4c5fddfd9a81cbc152b765f6",
+    "unity/Gameplay/HexMatch.ColumnFlow.cs": "c55606f8011c3f192c801f2fe4fa18e49b5053b1d852ad91a36dac0834ec2b70",
+    "unity/GameplayParityHarness/Program.cs": "8da2a489c5eb851d9c72e09ee61cc8778d31abab72390d2a66035617bcddf691",
+    "unity/GameplayParityHarness/Hexrota.GameplayParity.csproj": "acce5934fa4bc9247b0284178163e44e1774de1d9213ca77ffc1d77cde9ba094",
+    "unity/HintParityHarness/Program.cs": "d0a8bad8bd35df6d91e67f76cc61959c5c215f2755c076a069499dad50c57307",
+    "unity/RewardAdapterParityHarness/Program.cs": "820f354ad2921d15c4720e2ff0663a9ca2c75e54d935faa24d764f7c095cfc8a"
+  },
+  "reportSourceHashes": {
+    "reports/observable-difficulty.json": "986358880507e3393813b610083ea9b88be28f3ca6576c18a40e5b7c592e7373",
+    "reports/solvability-9-9.json": "91a777ecbd3557b0cbd9a57844543ccf40b11adfd5c84d59018dfaeb9311d200"
+  }
+}

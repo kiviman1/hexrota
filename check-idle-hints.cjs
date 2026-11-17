@@ -22,7 +22,7 @@ const showFirst=f=>{f.timer.advance(FIRST_DELAY);assert.equal(f.cycles.length,1)
 const rearm=(f,key='board-1')=>{f.set({eligible:false,boardKey:key});f.policy.playerMoveSucceeded();f.set({eligible:true});};
 
 test('fixed product timings and dependency validation',()=>{
-  assert.deepEqual(Idle.CONFIG,{firstDelay:10000,nextDelay:35000,minInterval:60000,maxPerAttempt:2,duration:900,repeatDelay:4000});assert(Object.isFrozen(Idle.CONFIG));
+  assert.deepEqual(Idle.CONFIG,{firstDelay:10000,nextDelay:35000,minInterval:60000,maxPerAttempt:2,duration:900,repeatDelay:900});assert(Object.isFrozen(Idle.CONFIG));
   assert.throws(()=>Idle.create(),/invalid_idle_hint_dependencies/);
 });
 test('per-instance timing and quota configuration is validated, copied and frozen',()=>{
@@ -53,13 +53,13 @@ test('first hint waits 10 seconds then hides after 900ms',()=>{
   assert.equal(f.cycles.length,1);assert.equal(f.chosen,1);assert.deepEqual(f.cycles[0],{pair:[0,1],attemptId:'a',generation:0,boardKey:'board-0',duration:900,ordinal:1,repeated:false});assert(Object.isFrozen(f.cycles[0]));assert(Object.isFrozen(f.cycles[0].pair));
   f.timer.advance(899);assert.equal(f.hidden.length,0);f.timer.advance(1);assert.equal(f.hidden[0].reason,'elapsed');assert.equal(f.timer.count(),1,'one quiet repeat timer');f.policy.dispose();
 });
-test('an untouched cycle repeats the identical pair after each full 4000ms quiet gap',()=>{
-  const f=fixture();showFirst(f);const initial=f.shown[0];f.timer.advance(900);assert.equal(f.hidden.length,1);f.timer.advance(3999);assert.equal(f.shown.length,1);f.timer.advance(1);
-  assert.equal(f.timer.now(),14900);assert.equal(f.shown.length,2);assert.equal(f.cycles.length,1);assert.equal(f.repeats.length,1);assert.equal(f.chosen,1,'the selected pair is reused without another chooser call');assert.deepEqual(f.shown[1],{...initial,repeated:true});assert.equal(f.shown[1].pair,initial.pair);assert(Object.isFrozen(f.shown[1]));
-  f.timer.advance(899);assert.equal(f.hidden.length,1);f.timer.advance(1);assert.equal(f.hidden.length,2);f.timer.advance(4000);assert.equal(f.shown.length,3);assert.equal(f.shown[2].ordinal,1);assert.equal(f.shown[2].pair,initial.pair);f.policy.dispose();assert.equal(f.timer.count(),0);
+test('an untouched cycle repeats the identical pair after each full 900ms quiet gap',()=>{
+  const f=fixture();showFirst(f);const initial=f.shown[0];f.timer.advance(900);assert.equal(f.hidden.length,1);f.timer.advance(899);assert.equal(f.shown.length,1);f.timer.advance(1);
+  assert.equal(f.timer.now(),11800);assert.equal(f.shown.length,2);assert.equal(f.cycles.length,1);assert.equal(f.repeats.length,1);assert.equal(f.chosen,1,'the selected pair is reused without another chooser call');assert.deepEqual(f.shown[1],{...initial,repeated:true});assert.equal(f.shown[1].pair,initial.pair);assert(Object.isFrozen(f.shown[1]));
+  f.timer.advance(899);assert.equal(f.hidden.length,1);f.timer.advance(1);assert.equal(f.hidden.length,2);f.timer.advance(900);assert.equal(f.shown.length,3);assert.equal(f.shown[2].ordinal,1);assert.equal(f.shown[2].pair,initial.pair);f.policy.dispose();assert.equal(f.timer.count(),0);
 });
 test('unchanged sync notifications preserve the existing quiet repeat deadline',()=>{
-  const f=fixture();showFirst(f);f.timer.advance(900);f.timer.advance(3000);for(let i=0;i<100;i++)f.policy.sync();assert.equal(f.timer.count(),1);f.timer.advance(999);assert.equal(f.repeats.length,0);f.timer.advance(1);assert.equal(f.repeats.length,1);f.policy.dispose();
+  const f=fixture();showFirst(f);f.timer.advance(900);f.timer.advance(600);for(let i=0;i<100;i++)f.policy.sync();assert.equal(f.timer.count(),1);f.timer.advance(299);assert.equal(f.repeats.length,0);f.timer.advance(1);assert.equal(f.repeats.length,1);f.policy.dispose();
 });
 test('interaction while a cue is visible or in its quiet gap cancels the cycle permanently',()=>{
   for(const elapsed of [100,900,3000,4900]){
@@ -68,13 +68,13 @@ test('interaction while a cue is visible or in its quiet gap cancels the cycle p
 });
 test('all state identity barriers cancel repeats and unchanged reentry cannot restart them',()=>{
   for(const patch of [{eligible:false},{generation:1},{boardKey:'booster-board'},{attemptId:'b',boardKey:'b0'}]){
-    const f=fixture();showFirst(f);f.timer.advance(900);const stale=f.timer.ids()[0];f.set(patch);f.timer.jump(4000);f.timer.run(stale);assert.equal(f.repeats.length,0);
+    const f=fixture();showFirst(f);f.timer.advance(900);const stale=f.timer.ids()[0];f.set(patch);f.timer.jump(900);f.timer.run(stale);assert.equal(f.repeats.length,0);
     f.set({eligible:true,attemptId:'a',generation:0,boardKey:'board-0'});f.timer.advance(100000);assert.equal(f.cycles.length,1);assert.equal(f.repeats.length,0);assert.equal(f.timer.count(),0);f.policy.dispose();
   }
 });
 test('repeat callbacks re-read eligibility, attempt, generation and board without a notification',()=>{
   for(const patch of [{eligible:false},{attemptId:'b',boardKey:'b0'},{generation:1},{boardKey:'different'}]){
-    const f=fixture();showFirst(f);f.timer.advance(900);f.set(patch,false);f.timer.advance(4000);assert.equal(f.repeats.length,0);assert.equal(f.chosen,1);f.policy.dispose();assert.equal(f.timer.count(),0);
+    const f=fixture();showFirst(f);f.timer.advance(900);f.set(patch,false);f.timer.advance(900);assert.equal(f.repeats.length,0);assert.equal(f.chosen,1);f.policy.dispose();assert.equal(f.timer.count(),0);
   }
 });
 test('elapsed-hide callbacks cannot resurrect a synchronously cancelled repeat cycle',()=>{
@@ -84,30 +84,30 @@ test('elapsed-hide callbacks cannot resurrect a synchronously cancelled repeat c
   }
 });
 test('a successful move ends the repeat cycle and rearms the next 35/60 distinct cycle',()=>{
-  const f=fixture();showFirst(f);f.timer.advance(4900);assert.equal(f.repeats.length,1);const staleHide=f.timer.ids()[0];rearm(f);f.timer.run(staleHide);f.timer.advance(35000);assert.equal(f.cycles.length,1);assert.equal(f.repeats.length,1);f.timer.advance(20099);assert.equal(f.cycles.length,1);f.timer.advance(1);assert.equal(f.cycles.length,2);assert.equal(f.cycles[1].ordinal,2);assert.equal(f.cycles[1].repeated,false);f.policy.dispose();
+  const f=fixture();showFirst(f);f.timer.advance(1800);assert.equal(f.repeats.length,1);const staleHide=f.timer.ids()[0];rearm(f);f.timer.run(staleHide);f.timer.advance(35000);assert.equal(f.cycles.length,1);assert.equal(f.repeats.length,1);f.timer.advance(23199);assert.equal(f.cycles.length,1);f.timer.advance(1);assert.equal(f.cycles.length,2);assert.equal(f.cycles[1].ordinal,2);assert.equal(f.cycles[1].repeated,false);f.policy.dispose();
 });
 test('repeats do not move the global minimum-interval timestamp',()=>{
-  const f=fixture();showFirst(f);f.timer.advance(49000);assert.equal(f.repeats.length,10);rearm(f);f.timer.advance(34999);assert.equal(f.cycles.length,1);f.timer.advance(1);assert.equal(f.cycles.length,2,'35 seconds from move is enough once 60 seconds from cycle start elapsed');f.policy.dispose();
+  const f=fixture();showFirst(f);f.timer.advance(49000);assert.equal(f.repeats.length,27);rearm(f);f.timer.advance(34999);assert.equal(f.cycles.length,1);f.timer.advance(1);assert.equal(f.cycles.length,2,'35 seconds from move is enough once 60 seconds from cycle start elapsed');f.policy.dispose();
 });
 test('the second distinct cycle keeps repeating without consuming another quota slot',()=>{
-  const f=fixture();showFirst(f);rearm(f);f.timer.advance(60000);assert.equal(f.cycles.length,2);const previousRepeats=f.repeats.length;f.timer.advance(14700);assert.equal(f.repeats.length,previousRepeats+3);assert(f.repeats.slice(-3).every(event=>event.ordinal===2));assert.equal(f.chosen,2);rearm(f,'board-2');f.timer.advance(100000);assert.equal(f.cycles.length,2);assert.equal(f.timer.count(),0);f.policy.dispose();
+  const f=fixture();showFirst(f);rearm(f);f.timer.advance(60000);assert.equal(f.cycles.length,2);const previousRepeats=f.repeats.length;f.timer.advance(5400);assert.equal(f.repeats.length,previousRepeats+3);assert(f.repeats.slice(-3).every(event=>event.ordinal===2));assert.equal(f.chosen,2);rearm(f,'board-2');f.timer.advance(100000);assert.equal(f.cycles.length,2);assert.equal(f.timer.count(),0);f.policy.dispose();
 });
 test('stale repeat and hide callbacks from one cycle cannot affect a later cycle',()=>{
-  const f=fixture();showFirst(f);f.timer.advance(900);const staleRepeat=f.timer.ids()[0];f.timer.advance(4000);const staleHide=f.timer.ids()[0];rearm(f);f.timer.advance(55100);assert.equal(f.cycles.length,2);const shown=f.shown.length,hidden=f.hidden.length;f.timer.run(staleRepeat);f.timer.run(staleHide);assert.equal(f.shown.length,shown);assert.equal(f.hidden.length,hidden);assert.equal(f.timer.count(),1);f.policy.dispose();
+  const f=fixture();showFirst(f);f.timer.advance(900);const staleRepeat=f.timer.ids()[0];f.timer.advance(900);const staleHide=f.timer.ids()[0];rearm(f);f.timer.advance(58200);assert.equal(f.cycles.length,2);const shown=f.shown.length,hidden=f.hidden.length;f.timer.run(staleRepeat);f.timer.run(staleHide);assert.equal(f.shown.length,shown);assert.equal(f.hidden.length,hidden);assert.equal(f.timer.count(),1);f.policy.dispose();
 });
 test('late repeat callbacks show once and start a fresh duration and quiet gap',()=>{
-  const f=fixture();showFirst(f);f.timer.advance(900);const late=f.timer.ids()[0];f.timer.jump(20000);f.timer.run(late);assert.equal(f.repeats.length,1);assert.equal(f.timer.count(),1);f.timer.advance(899);assert.equal(f.hidden.length,1);f.timer.advance(1);assert.equal(f.hidden.length,2);f.timer.advance(3999);assert.equal(f.repeats.length,1);f.timer.advance(1);assert.equal(f.repeats.length,2);f.policy.dispose();
+  const f=fixture();showFirst(f);f.timer.advance(900);const late=f.timer.ids()[0];f.timer.jump(20000);f.timer.run(late);assert.equal(f.repeats.length,1);assert.equal(f.timer.count(),1);f.timer.advance(899);assert.equal(f.hidden.length,1);f.timer.advance(1);assert.equal(f.hidden.length,2);f.timer.advance(899);assert.equal(f.repeats.length,1);f.timer.advance(1);assert.equal(f.repeats.length,2);f.policy.dispose();
 });
 test('early or retired repeat callbacks cannot create duplicate scheduled repeats',()=>{
-  const f=fixture();showFirst(f);f.timer.advance(900);const early=f.timer.ids()[0];f.timer.run(early);assert.equal(f.timer.count(),1);f.timer.run(early);assert.equal(f.timer.count(),1);f.timer.advance(4000);assert.equal(f.repeats.length,1);assert.equal(f.timer.count(),1);f.timer.run(early);assert.equal(f.repeats.length,1);f.policy.dispose();
+  const f=fixture();showFirst(f);f.timer.advance(900);const early=f.timer.ids()[0];f.timer.run(early);assert.equal(f.timer.count(),1);f.timer.run(early);assert.equal(f.timer.count(),1);f.timer.advance(900);assert.equal(f.repeats.length,1);assert.equal(f.timer.count(),1);f.timer.run(early);assert.equal(f.repeats.length,1);f.policy.dispose();
 });
 test('an early retired hide callback cannot create duplicate hides or repeat waits',()=>{
-  const f=fixture();showFirst(f);const early=f.timer.ids()[0];f.timer.run(early);assert.equal(f.timer.count(),1);f.timer.run(early);assert.equal(f.timer.count(),1);f.timer.advance(900);assert.equal(f.hidden.length,1);assert.equal(f.timer.count(),1);f.timer.run(early);assert.equal(f.timer.count(),1);f.timer.advance(4000);assert.equal(f.repeats.length,1);f.policy.dispose();assert.equal(f.timer.count(),0);
+  const f=fixture();showFirst(f);const early=f.timer.ids()[0];f.timer.run(early);assert.equal(f.timer.count(),1);f.timer.run(early);assert.equal(f.timer.count(),1);f.timer.advance(900);assert.equal(f.hidden.length,1);assert.equal(f.timer.count(),1);f.timer.run(early);assert.equal(f.timer.count(),1);f.timer.advance(900);assert.equal(f.repeats.length,1);f.policy.dispose();assert.equal(f.timer.count(),0);
 });
 test('repeat presentation errors and synchronous interaction cancel all further repeats',()=>{
   for(const action of ['throw','interaction','dispose']){
     let f;f=fixture({onShow(event){if(!event.repeated)return;if(action==='throw')throw Error('presentation failed');if(action==='interaction')f.policy.interaction();else f.policy.dispose();}});
-    showFirst(f);f.timer.advance(4900);assert.equal(f.repeats.length,1);assert.equal(f.timer.count(),0,action);f.timer.advance(100000);assert.equal(f.repeats.length,1);f.policy.dispose();
+    showFirst(f);f.timer.advance(1800);assert.equal(f.repeats.length,1);assert.equal(f.timer.count(),0,action);f.timer.advance(100000);assert.equal(f.repeats.length,1);f.policy.dispose();
   }
 });
 test('custom repeat delay is a quiet gap and zero duration still has a positive gap',()=>{
@@ -251,6 +251,48 @@ test('previous pair is transient per attempt and guides a different new-board ch
   const f=fixture({choose(context){contexts.push(context);return Idle.chooseVisiblePair(dto,[[0,1],[2,3]],()=>[0,1,2,3],context.previousPair);}});
   showFirst(f);assert.equal(contexts[0].previousPair,null);rearm(f);f.timer.advance(60000);assert.deepEqual(contexts[1].previousPair,[0,1]);assert(Object.isFrozen(contexts[1]));assert(Object.isFrozen(contexts[1].previousPair));assert.deepEqual(f.cycles[1].pair,[2,3]);
   f.set({attemptId:'b',boardKey:'b0'});f.timer.advance(60000);assert.equal(contexts[2].previousPair,null);assert.deepEqual(f.cycles[2].pair,[0,1]);f.policy.dispose();
+});
+
+
+test('default cue starts occur at 10 seconds 11.8 seconds and 13.6 seconds without another quota charge',()=>{
+  const times=[];let f;f=fixture({onShow(){times.push(f.timer.now());}});f.timer.advance(13600);
+  assert.deepEqual(times,[10000,11800,13600]);assert.equal(f.cycles.length,1);assert.equal(f.repeats.length,2);assert.equal(f.chosen,1);assert(f.shown.every(e=>e.ordinal===1));f.policy.dispose();assert.equal(f.timer.count(),0);
+});
+test('a descriptor is copied and frozen once and repeated cues reuse every preview array',()=>{
+  const selected={pair:[0,1],matched:[0,2,3],matchingSources:[1,2,3],blockers:[4],focusMatched:[0,2,3],focusSources:[1,2,3],movingSource:1,movingTarget:0},f=fixture({choose:()=>selected});showFirst(f);const cue=f.shown[0];
+  for(const key of ['pair','matched','matchingSources','blockers','focusMatched','focusSources']){assert(Object.isFrozen(cue[key]));assert.notEqual(cue[key],selected[key]);}
+  selected.pair[0]=9;selected.matched[0]=9;selected.matchingSources[0]=9;selected.blockers.push(8);selected.focusMatched[0]=9;selected.focusSources[0]=9;selected.movingSource=9;selected.movingTarget=9;
+  f.timer.advance(3600);assert.equal(f.shown.length,3);assert.equal(f.chosen,1);
+  for(const repeated of f.repeats){for(const key of ['pair','matched','matchingSources','blockers','focusMatched','focusSources'])assert.equal(repeated[key],cue[key]);assert.equal(repeated.ordinal,1);}
+  assert.deepEqual(cue,{pair:[0,1],matched:[0,2,3],matchingSources:[1,2,3],blockers:[4],focusMatched:[0,2,3],focusSources:[1,2,3],movingSource:1,movingTarget:0,attemptId:'a',generation:0,boardKey:'board-0',duration:900,ordinal:1,repeated:false});f.policy.dispose();
+});
+test('descriptor repeats end immediately on interaction and stale callbacks cannot revive any preview',()=>{
+  const selected={pair:[0,1],matched:[1,2,4],matchingSources:[0,2,4],blockers:[3],focusMatched:[1,2,4],focusSources:[0,2,4],movingSource:0,movingTarget:1},f=fixture({choose:()=>selected});showFirst(f);f.timer.advance(900);const oldRepeat=f.timer.ids()[0];f.timer.advance(900);const oldHide=f.timer.ids()[0];
+  assert.equal(f.repeats.length,1);f.policy.interaction();assert.equal(f.timer.count(),0);const shown=f.shown.length,hidden=f.hidden.length;f.timer.run(oldRepeat);f.timer.run(oldHide);f.timer.advance(100000);assert.equal(f.shown.length,shown);assert.equal(f.hidden.length,hidden);f.policy.dispose();
+});
+test('malformed preview descriptors consume no quota and schedule no repeated retry',()=>{
+  const valid={pair:[0,1],matched:[1,2,4],matchingSources:[0,2,4],blockers:[3],focusMatched:[1,2,4],focusSources:[0,2,4],movingSource:0,movingTarget:1};
+  for(const change of [v=>delete v.pair,v=>v.matched=[],v=>v.matchingSources=[1,2],v=>v.matchingSources=[0],v=>v.blockers=[3,3],v=>v.blockers=[-1],v=>v.matched=new Array(1),v=>v.pair=new Array(2)]){
+    const bad=plain(valid);change(bad);const f=fixture({choose:()=>bad});f.timer.advance(100000);assert.equal(f.cycles.length,0);assert.equal(f.chosen,1);assert.equal(f.timer.count(),0);f.policy.dispose();
+  }
+});
+test('identity is checked again after copying an external preview descriptor',()=>{
+  let f;const value={pair:[0,1],matchingSources:[0,2,4],blockers:[3],focusMatched:[1,2,4],focusSources:[0,2,4],movingSource:0,movingTarget:1};Object.defineProperty(value,'matched',{get(){f.set({generation:1},false);return [1,2,4];}});
+  f=fixture({choose:()=>value});f.timer.advance(10000);assert.equal(f.cycles.length,0);assert.equal(f.chosen,1);assert.equal(f.timer.count(),1);f.policy.dispose();
+});
+
+
+test('canonical three-fours focus repeats unchanged without advising the other stone or crate',()=>{
+  const entry=require('./fixtures/idle-focus-v1.json').cases[0],g=new HexMatch(entry.level),snapshot=plain(g.snapshot()),input={rulesVersion:g.level.rulesVersion,values:g.values.slice(),layers:g.layers.slice(),score:g.score,target:g.level.target,movesLeft:g.movesLeft,cells:g.level.cells.map(({q,r})=>({q,r})),obstacles:g.level.obstacles,blockerHp:g.blockerHp.slice(),regionOpen:g.regionOpen.slice()},selected=Idle.chooseVisibleHint(input,[entry.pair],values=>g.findMatches(values));
+  const f=fixture({choose:()=>selected});f.timer.advance(13600);assert.equal(f.shown.length,3);assert.equal(f.chosen,1);assert.equal(f.cycles.length,1);
+  for(const cue of f.shown){assert.deepEqual(cue.focusSources,[0,1,5]);assert.deepEqual(cue.focusMatched,[0,1,2]);assert.equal(cue.movingSource,5);assert.equal(cue.movingTarget,2);assert(!cue.focusSources.includes(2));assert(!cue.focusSources.includes(9));assert.equal(cue.focusSources,f.shown[0].focusSources);assert.equal(cue.focusMatched,f.shown[0].focusMatched);}
+  assert.deepEqual(plain(g.snapshot()),snapshot);f.policy.interaction();assert.equal(f.timer.count(),0);f.timer.advance(100000);assert.equal(f.shown.length,3);f.policy.dispose();
+});
+test('missing partial invalid or unmapped focus fails closed without quota or repeating effects',()=>{
+  const valid={pair:[0,1],matched:[1,2,4],matchingSources:[0,2,4],blockers:[3],focusMatched:[1,2,4],focusSources:[0,2,4],movingSource:0,movingTarget:1};
+  for(const change of [v=>delete v.focusMatched,v=>delete v.focusSources,v=>delete v.movingSource,v=>delete v.movingTarget,v=>v.focusMatched=[1,2],v=>v.focusSources=[0,2],v=>v.focusMatched=[1,2,99],v=>v.focusSources=[0,2,99],v=>v.focusMatched=[1,2,2],v=>v.focusSources=[0,2,2],v=>v.focusSources=new Array(3),v=>v.movingSource=1,v=>v.movingTarget=0,v=>v.movingSource=4,v=>v.movingTarget=99,v=>v.movingTarget=v.movingSource]){
+    const bad=plain(valid);change(bad);const f=fixture({choose:()=>bad});f.timer.advance(100000);assert.equal(f.shown.length,0);assert.equal(f.chosen,1);assert.equal(f.timer.count(),0);f.policy.dispose();
+  }
 });
 
 let passed=0;for(const item of tests){try{item.run();passed++;}catch(error){console.error('FAIL: '+item.name);throw error;}}

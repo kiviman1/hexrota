@@ -119,7 +119,7 @@ namespace Hexrota.Hints
             for (int i = 0; i < value.Length; i++) value[i] = game.values[i].HasValue ? game.values[i].Value.ToString(CultureInfo.InvariantCulture) : "";
             for (int i = 0; i < layer.Length; i++) layer[i] = game.layers[i].ToString(CultureInfo.InvariantCulture);
             return string.Join(",", value) + "/" + string.Join(",", layer) + "/" +
-                game.score.ToString(CultureInfo.InvariantCulture) + "/" + game.movesLeft.ToString(CultureInfo.InvariantCulture) + "/" + game.rngState.ToString(CultureInfo.InvariantCulture);
+                game.score.ToString(CultureInfo.InvariantCulture) + "/" + game.movesLeft.ToString(CultureInfo.InvariantCulture) + "/" + game.rngState.ToString(CultureInfo.InvariantCulture) + (game.HasObstacles ? "/" + String.Join(",", game.blockerHp) + "/" + String.Join(",", game.regionOpen) : "");
         }
         private static HintResult Reply(HexMatch original, List<int[]> legal, Node bestPlaying,
             Node bestLost, int searched, int depth, string source = "heuristic", Node item = null, bool truncated = false)

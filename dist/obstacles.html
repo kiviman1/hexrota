@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#183d32">
+  <title>Hexrota — Kutu ve bölge testleri 9.12</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./style.css?v=53">
+  <link rel="stylesheet" href="./obstacle-lab.css?v=9-12">
+  <script src="./engine.js?v=9-12" defer></script>
+  <script src="./obstacle-levels.js?v=9-12" defer></script>
+  <script src="./board-view.js?v=9-12" defer></script>
+  <script src="./board-input.js?v=9-12" defer></script>
+  <script src="./move-presentation.js?v=9-12" defer></script>
+  <script src="./obstacle-lab.js?v=9-12" defer></script>
+</head>
+<body class="obstacle-lab" data-ui-theme="comic">
+  <main class="lab-shell">
+    <header class="lab-header"><a class="brand" href="./">hexrota<span class="brand-dot">.</span></a><span>9.12 · GELİŞTİRME</span></header>
+    <section class="game-card" aria-label="Kutu ve bölge geliştirme bölümleri">
+      <div class="lab-topbar">
+        <label for="level-select">Test bölümü</label><select id="level-select" aria-label="Test bölümü"></select>
+        <div class="scoreboard">
+          <div class="metric"><span>PUAN / HEDEF</span><div class="score-pair"><strong id="sum">0</strong><span>/</span><strong id="target">0</strong></div></div>
+          <div class="metric moves-badge"><span>HAMLE</span><strong id="moves-left">0</strong></div>
+          <div class="metric"><span>YEŞİL ALAN</span><strong id="ground">0 / 0</strong></div>
+        </div>
+      </div>
+      <div class="lab-instruction"><h1 id="level-title">Kırılabilir kutular</h1><p id="instruction">Yan yana iki taşı dokunarak veya sürükleyerek değiştir.</p></div>
+      <div id="board-stage" class="board-stage"><div class="lab-status"><span id="blockers"></span><span id="regions"></span></div><div class="lab-board-wrap"><svg id="board" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Altıgen oyun tahtası" aria-busy="false"></svg></div></div>
+      <div class="lab-controls"><button id="restart" class="secondary-button" type="button">Yeniden başlat</button><button id="proven-move" class="secondary-button" type="button">Yolu göster</button><button id="pause" class="secondary-button" type="button">Duraklat</button></div>
+      <p id="lab-message" role="status">Oyun yükleniyor…</p>
+      <div id="lab-result" role="status" hidden></div>
+    </section>
+    <p class="lab-footnote">Geliştirme bölümleri ayrı kaydedilir. Kutuya komşu eşleşme bir hasar verir. Yeşil alanı ve puan hedefini tamamla.</p>
+  </main>
+</body>
+</html>

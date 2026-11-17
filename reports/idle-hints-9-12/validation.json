@@ -1,0 +1,106 @@
+{
+  "date": "2026-11-17",
+  "baseline": "3365640b5cfceafa11c7ad0c09c9c132595030e2",
+  "scope": "Passive idle hint compatibility, timing, visuals and lifecycle only; no engine/C#/level/economy/save-schema changes.",
+  "npmTest": {
+    "command": "npm test",
+    "exitCode": 0,
+    "logSha256": "59e046fe7ea5d3d7e643068d8c720ca4671cbba3b9324299002281aacc0ff038",
+    "previousChecksAndThresholdsPreserved": true
+  },
+  "idleGroups": {
+    "policy": 56,
+    "view": 28,
+    "obstacleCompatibility": 13,
+    "mountedApp": 8,
+    "total": 105
+  },
+  "browser": {
+    "chromium": {
+      "legacyRegressionPassed": 30,
+      "classicV5CompatibilityPassed": 20,
+      "errors": [],
+      "viewports": [
+        [
+          320,
+          568
+        ],
+        [
+          390,
+          844
+        ],
+        [
+          430,
+          932
+        ]
+      ],
+      "screenshots": 14
+    },
+    "webkit": {
+      "legacyRegressionPassed": 30,
+      "classicV5CompatibilityPassed": 20,
+      "errors": [],
+      "viewports": [
+        [
+          320,
+          568
+        ],
+        [
+          390,
+          844
+        ],
+        [
+          430,
+          932
+        ]
+      ],
+      "screenshots": 14
+    }
+  },
+  "nativeParity": {
+    "actualRuntime": ".NET 8.0.428",
+    "languageVersion": "C# 7.3",
+    "passed": 14,
+    "total": 14,
+    "engineAnd41CSharpSourceHashesUnchanged": true,
+    "details": "native-parity.json"
+  },
+  "timing": {
+    "firstMs": 10000,
+    "animationMs": 900,
+    "quietMs": 900,
+    "repeatStartsMs": [
+      10000,
+      11800,
+      13600,
+      15400
+    ],
+    "nextNewCycleIdleMs": 35000,
+    "newCycleMinIntervalMs": 60000,
+    "maxNewCyclesPerAttempt": 2,
+    "repeatConsumesQuota": false
+  },
+  "clockScope": "Deterministic browser tests replace only the existing controller/view timer dependencies. Global Date/timers/rAF, native WAAPI, gameplay and persistence remain real. Native WAAPI sampled at midpoint for screenshot/transform checks.",
+  "lifecycleScope": "Native input/navigation/modal controls and actual viewport resize; document.hidden/visibilitychange simulated.",
+  "verifiedSafety": [
+    "same immutable pair and first-wave group throughout a cycle",
+    "snapshot and storage bytes unchanged",
+    "no swap/RNG/HP/score/move/save mutation",
+    "canonical move scan exception isolated from live values",
+    "strict v4 and v5 malformed-data rejection",
+    "stale callback and animation fault cleanup",
+    "reduced-motion static outlines"
+  ],
+  "pwaCacheGeneration": 52,
+  "physicalIPhoneTested": false,
+  "unityEditorTested": false,
+  "mainOrProductionChanged": false,
+  "sourceHashes": {
+    "dist/app.js": "59d98b1c5c53aa5875d5fa579c0beae68ac4c5955619a804165c87cf39cd47ae",
+    "dist/idle-hints.js": "684d8e8161f44e9f39c99f225d1472ae77922108cd6cb85d71e2b26036f9ca9e",
+    "dist/idle-hint-view.js": "f8e971d4f3df0781b08251ee244b5809503fa4989598a723be55563478732c01",
+    "src/styles/09-idle-hints.css": "b9e545f4a358a206e25c19f9961ba8b45930ad04f0ca5d1c593e0e59d92bab2a",
+    "dist/style.css": "9c88d5a9755ee31c6624e5483e580c5d89d62f8923c6c300de2ab841ba5e67f5",
+    "dist/sw.js": "ddb3b701a2caf2fa6602b7f2b30942d199494d71dc7778f64ca96bf43aac353e"
+  }
+}
