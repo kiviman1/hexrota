@@ -65,7 +65,7 @@ C# yapı reddi `ArgumentException`, kurtarma reddi `InvalidOperationException`; 
 - Snapshot v4, assisted-v1, Attempt metadata v1, bölüm/veri kimlikleri, profile/match/life anahtarları, ekonomi/ödül/receipt ve 40 yayımlanmış varyant değişmedi. Güncel arşiv ve bütün 80 kazanma sertifikası aynı sonuçları üretir.
 - Özgün audit fixture'ının `afterError` alanları eski, atomik olmayan yardımcı davranışının kanıtıdır; güncel başarısız kurtarmanın istenen sonucu diye kullanılmaz. Sağlıklı yeni test giriş snapshot'ının bütünüyle korunmasını ister.
 - `check-engine.mjs` eski 100..118 sentinel bileşenini geçerli kurulumdan sonra **aynı değerleri açıkça atayarak** kurar; doğrudan `_fillVacancies` çıktısı/assertion'ları korunur. Yabancı taş içeren bu çalışma durumu yayın/restore veya kurtarma girdisi değildir.
-- `fixtures/board-validation-protected.json` yalnız engine, C# HexMatch/BoardTopology ve gameplay harness için dört dosyalık, main `f8b0fe2` tabanlı inceleme iznidir. Eski `command-core-hashes.json`, gameplay/command çıktı goldeni ve diğer korunmuş dosyaların hash'leri değiştirilmez.
+- `fixtures/board-validation-protected.json` yalnız engine, C# HexMatch/BoardTopology ve gameplay harness için dört dosyalık, main `f8b0fe2` tabanlı inceleme iznidir. Balance Lab karşılaştırması ayrıca yalnız observable raporunun kaynak hash alanını bu fixture ile sabitler; diğer rapor byte'ları eski sabit referansla aynen karşılaştırılır. Eski `command-core-hashes.json`, gameplay/command çıktı goldeni ve diğer korunmuş dosyaların hash'leri değiştirilmez.
 - Runtime'ın çevrimdışı güncellenmesi için yalnız PWA kabuk kuşağı **43 → 44** olur. app.js ve hint-worker değişiklikleri cache query'siyle sınırlıdır; oyun/kayıt sürümü artmaz, Production yapılandırması değişmez.
 
 ## Kalıcı regresyon kapsamı
@@ -128,6 +128,10 @@ Son C# birlikte koşumunda 224 kaynağın önce/sonra SHA-256 özeti aynı: `e19
 
 İlk yeni JSDOM reload denemesinde ayrı yerel event-store test seed'i eksikti. Kalıcı profilin yanına gerçek event-store seed'i eklenerek test kurulumu düzeltildi; runtime veya assertion gevşetilmedi. Eski kaynak hash kapıları da silinmedi: dört incelenmiş dosyalık açık overlay eklendi ve özgün davranış golden'larıyla tekrar kontrol edildi.
 
+İlk uzak CI **#71** (head `5a56a5a`) Balance Lab izolasyon adımında tarayıcı açılmadan eski motor hash'ine takıldı. Bu ortam hatası sayılmadı. Mevcut Lab testi eski kaynak SHA'sını zorunlu kılıyordu; yeni motor için dört dosyalık aynı inceleme overlay'i kullanıldı. Yeniden üretilen observable raporunda da yalnız tek `sourceHash` alanı farklı olduğundan bu alan açıkça sabitlendi; geri kalan rapor **byte-byte** eski referansa eşit olmak zorundadır. Lab'ın sabit commit'i, varlıkları, bütün authored verisi, diğer 74 değişmez dosyası ve 10 özel profil anahtarına sıfır erişim koşulları korunur. Hiçbir izolasyon veya davranış assertion'ı kaldırılmadı.
+
+Son yerel `npm run test:balance-lab-economy`: **Chromium exit 0 / 6 grup**, 11,181 sn; **WebKit exit 0 / 6 grup**, 13,140 sn. Güncel gerçek motorla kazanma, kayıp, tekrar, reload, deney seçimi ve hatalı kimlik; Gold/yıldız/envanter/can/Attempt ID/profil değişmezliği tekrar doğrulandı. Bu ek düzeltme yalnız test uyumluluk kapısı ve metadata'dır; motor ve C# davranışları değişmedi.
+
 CI mevcut **15 iş tanımı / matrix sonrası 17 işi** korur. Yeni saf test npm test'e; yeni browser test+JSON/ekran görüntüsü artifact'ı iki mobile browser işine eklenir. Yeni native vakalar mevcut gerçek gameplay parity işinde derlenir. Uzak CI koşumunun güncel durumu teslim PR'ının Checks ve doğrulama bölümünde verilir; bu belge henüz bitmemiş uzak koşumu başarılı ilan etmez.
 
 ## Kalan sınırlar
@@ -142,6 +146,7 @@ CI mevcut **15 iş tanımı / matrix sonrası 17 işi** korur. Yeni saf test npm
 ## Değişen dosyalar
 
 - `.github/workflows/ci.yml`
+- `check-balance-lab-economy-isolation.cjs`
 - `check-board-recovery-browser.cjs`
 - `check-board-recovery-ui.cjs`
 - `check-board-recovery.cjs`
