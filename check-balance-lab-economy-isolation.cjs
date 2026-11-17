@@ -15,6 +15,7 @@ for(const file of [...labAssets.map(file=>'dist/'+file),'data/balance-lab-9-4.js
 const frozen=JSON.parse(fs.readFileSync(path.join(LAB,'fixtures/balance-lab-protected-9-4.json'),'utf8'));
 // The Lab reference remains pinned. The integrated recovery core has exactly
 // four reviewed 9.9b source updates; neither authored data nor Lab assets move.
+const idleCompat=require('./fixtures/idle-hints-9-12-protected.json');
 const capacity=require('./fixtures/board-capacity-protected.json');
 const flow=require('./fixtures/flow-integration-protected.json');
 const obstacles=require('./fixtures/obstacles-regions-protected.json');
@@ -22,10 +23,10 @@ const recoveryProtection=require('./fixtures/board-validation-protected.json');
 const solverProtection=require('./fixtures/solver-integrity-protected.json');
 assert.equal(solverProtection.baseline,'11b0161e913904199198ca61f477f47bb11ad390');
 assert.deepEqual(Object.keys(solverProtection.sha256).sort(),['dist/engine.js','lib/level-analysis.cjs','unity/Hints/HintSolver.cs','unity/HintParityHarness/Program.cs','unity/HintParityHarness/Hexrota.HintParity.csproj','audit-observable.cjs','audit-solvability-9-9.cjs'].sort(),'only seven reviewed solver/hint/report sources may differ');
-for(const [relative,expected]of Object.entries(solverProtection.sha256))assert.equal(sha(fs.readFileSync(path.join(ROOT,relative))),capacity.sha256[relative]||flow.sha256[relative]||obstacles.sha256[relative]||expected,'Reviewed solver source drifted: '+relative);
+for(const [relative,expected]of Object.entries(solverProtection.sha256))assert.equal(sha(fs.readFileSync(path.join(ROOT,relative))),idleCompat.sha256[relative]||capacity.sha256[relative]||flow.sha256[relative]||obstacles.sha256[relative]||expected,'Reviewed solver source drifted: '+relative);
 assert.equal(recoveryProtection.baseline,'f8b0fe25c802404b0516e1b65033fc32627d67fb');
 assert.deepEqual(Object.keys(recoveryProtection.sha256).sort(),['dist/engine.js','unity/Gameplay/HexMatch.cs','unity/Gameplay/BoardTopology.cs','unity/GameplayParityHarness/Program.cs'].sort(),'only the four reviewed 9.9b core/harness files may differ from the old Lab reference');
-for(const [relative,expected]of Object.entries(recoveryProtection.sha256))assert.equal(sha(fs.readFileSync(path.join(ROOT,relative))),capacity.sha256[relative]||flow.sha256[relative]||obstacles.sha256[relative]||solverProtection.sha256[relative]||expected,'Current recovery source must match its exact reviewed hash: '+relative);
+for(const [relative,expected]of Object.entries(recoveryProtection.sha256))assert.equal(sha(fs.readFileSync(path.join(ROOT,relative))),idleCompat.sha256[relative]||capacity.sha256[relative]||flow.sha256[relative]||obstacles.sha256[relative]||solverProtection.sha256[relative]||expected,'Current recovery source must match its exact reviewed hash: '+relative);
 assert.deepEqual(Object.keys(recoveryProtection.reportSourceHashes),['reports/observable-difficulty.json'],'only the observable report source checksum may change; metrics remain byte-protected');
 
 const approvedHostChanges=new Set(['dist/app.js','dist/index.html','dist/style.css','dist/sw.js','unity/Application/GameSessionController.cs','unity/Application/ProfileRepository.cs','dist/session-store.js','unity/Application/SaveMigration.cs','unity/ApplicationParityHarness/ApplicationParityHarness.csproj','unity/ApplicationParityHarness/Program.cs']);
@@ -42,7 +43,7 @@ for(const [relative,expected]of Object.entries(frozen.sha256)){
   reviewedReportSourceHashes.push(relative);continue;
  }
 
- if(capacity.sha256[relative]||flow.sha256[relative]||obstacles.sha256[relative]||solverProtection.sha256[relative]||recoveryProtection.sha256[relative]){assert.equal(sha(actual),capacity.sha256[relative]||flow.sha256[relative]||obstacles.sha256[relative]||solverProtection.sha256[relative]||recoveryProtection.sha256[relative],'Reviewed recovery source drifted: '+relative);reviewedRecoveryFiles.push(relative);continue;}
+ if(idleCompat.sha256[relative]||capacity.sha256[relative]||flow.sha256[relative]||obstacles.sha256[relative]||solverProtection.sha256[relative]||recoveryProtection.sha256[relative]){assert.equal(sha(actual),idleCompat.sha256[relative]||capacity.sha256[relative]||flow.sha256[relative]||obstacles.sha256[relative]||solverProtection.sha256[relative]||recoveryProtection.sha256[relative],'Reviewed recovery source drifted: '+relative);reviewedRecoveryFiles.push(relative);continue;}
  if(approvedHostChanges.has(relative)){if(sha(actual)!==expected)changedHostFiles.push(relative);continue;}
  if(relative==='dist/hint-worker.js'){
   const stripQuery=value=>value.toString('utf8').replace(/(\.\/engine\.js)\?v=\d+/g,'$1');
@@ -53,7 +54,7 @@ for(const [relative,expected]of Object.entries(frozen.sha256)){
 }
 // The browser serves current core files, rather than the pinned page's old copies.
 const runtimeFiles=['engine.js','levels.js','variants-data.js','favicon.svg'];
-for(const file of runtimeFiles)assert.equal(sha(fs.readFileSync(path.join(ROOT,'dist',file))),capacity.sha256['dist/'+file]||flow.sha256['dist/'+file]||obstacles.sha256['dist/'+file]||solverProtection.sha256['dist/'+file]||recoveryProtection.sha256['dist/'+file]||sha(fs.readFileSync(path.join(LAB,'dist',file))),'Current runtime bytes must match the pinned Lab or exact reviewed recovery source: '+file);
+for(const file of runtimeFiles)assert.equal(sha(fs.readFileSync(path.join(ROOT,'dist',file))),idleCompat.sha256['dist/'+file]||capacity.sha256['dist/'+file]||flow.sha256['dist/'+file]||obstacles.sha256['dist/'+file]||solverProtection.sha256['dist/'+file]||recoveryProtection.sha256['dist/'+file]||sha(fs.readFileSync(path.join(LAB,'dist',file))),'Current runtime bytes must match the pinned Lab or exact reviewed recovery source: '+file);
 
 function fixture(){
  const sandbox={window:{},performance};vm.createContext(sandbox);const w=sandbox.window;

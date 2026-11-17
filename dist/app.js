@@ -77,7 +77,8 @@ window.HexSessionStore.boot(function startApp(session) {
   }
   // Idle hints own transient timing and decorative SVG only. The engine and
   // existing selectors remain the authority for rules, input and lifecycle.
-  const idleBoardKey=state=>JSON.stringify([activeLevel.id,state.values,state.layers,state.score,state.movesLeft]);
+  const idleBoardKey=state=>JSON.stringify([activeLevel.id,state.values,state.layers,state.score,state.movesLeft,
+    ...(activeLevel.rulesVersion==='classic-v5'?[activeLevel.rulesVersion,activeLevel.levelDataVersion||null,state.blockerHp,state.regionOpen,state.cellOpen||null]:[])]);
   function idleHintFacts(){
     const attemptId=activeAttempt?.attemptId||null;
     if(!engine||!activeLevel||!attemptId)return {eligible:false,attemptId,generation:epoch,boardKey:null};
@@ -101,9 +102,17 @@ window.HexSessionStore.boot(function startApp(session) {
         read:idleHintFacts,now:()=>window.performance.now(),setTimeout:window.setTimeout.bind(window),clearTimeout:window.clearTimeout.bind(window),
         choosePair:context=>{
           const model=engine;
-          return window.HexIdleHints.chooseVisiblePair({values:model.values,layers:model.layers,score:model.score,target:activeLevel.target,targetMode:activeLevel.targetMode,movesLeft:model.movesLeft},model.legalMoves(),values=>model.findMatches(values),context.previousPair);
+          const visible={values:model.values,layers:model.layers,score:model.score,target:activeLevel.target,targetMode:activeLevel.targetMode,movesLeft:model.movesLeft};
+          if(activeLevel.rulesVersion==='classic-v5')Object.assign(visible,{rulesVersion:'classic-v5',
+            cells:activeLevel.cells.map(cell=>({q:cell.q,r:cell.r})),obstacles:activeLevel.obstacles,
+            blockerHp:model.blockerHp,regionOpen:model.regionOpen,...(model.cellOpen?{cellOpen:model.cellOpen}:{})});
+          // The canonical move scan temporarily exchanges its values. Give it
+          // a disposable values buffer so a scan exception cannot alter play.
+          const core=model._model||model,probe=Object.create(core);
+          Object.defineProperty(probe,'values',{value:core.values.slice(),writable:true});
+          return window.HexIdleHints.chooseVisibleHint(visible,core.legalMoves.call(probe),values=>model.findMatches(values),context.previousPair);
         },
-        onShow:cue=>{const current=idleHintFacts();if(current.eligible&&current.attemptId===cue.attemptId&&current.generation===cue.generation&&current.boardKey===cue.boardKey)idleHintView?.show({pair:cue.pair,layout:geometry(),duration:cue.duration});},
+        onShow:cue=>{const current=idleHintFacts();if(current.eligible&&current.attemptId===cue.attemptId&&current.generation===cue.generation&&current.boardKey===cue.boardKey)idleHintView?.show({pair:cue.pair,matched:cue.matched,matchingSources:cue.matchingSources,blockers:cue.blockers,layout:geometry(),duration:cue.duration});},
         onHide:()=>idleHintView?.hide(),subscribe:sync=>appState.subscribe(()=>sync())
       });
       syncIdleHints();
@@ -117,7 +126,7 @@ window.HexSessionStore.boot(function startApp(session) {
   function bindIdleHintLifecycle(){
     const listen=(target,type,callback,options)=>{target.addEventListener(type,callback,options);idleHintListeners.push(()=>target.removeEventListener(type,callback,options));};
     // Capture retires decoration before native gestures or toolbar actions.
-    for(const type of ['pointerdown','click','keydown'])listen(document,type,idleHintInteraction,{capture:true,passive:true});
+    for(const type of ['pointerdown','touchstart','click','keydown','focusin','wheel','gesturestart','pointercancel'])listen(document,type,idleHintInteraction,{capture:true,passive:true});
     const afterInput=()=>window.queueMicrotask(syncIdleHints);
     for(const type of ['pointerup','pointercancel','lostpointercapture'])listen(window,type,afterInput,true);
     listen(window,'blur',event=>{if(event.target===window){idleUnfocused=true;idleHintInteraction();}},true);
@@ -1686,7 +1695,7 @@ window.HexSessionStore.boot(function startApp(session) {
         suggestion=await new Promise(resolve=>{
           job.resolve=resolve;
           try{
-            job.worker=new Worker('./hint-worker.js?v=51');
+            job.worker=new Worker('./hint-worker.js?v=52');
             job.worker.onmessage=e=>resolve(e.data?.hint||null);
             job.worker.onerror=e=>{e.preventDefault?.();resolve(null);};
             job.worker.postMessage({level:activeLevel,snapshot:engine.snapshot()});

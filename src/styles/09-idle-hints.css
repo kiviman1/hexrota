@@ -1,8 +1,12 @@
-/* The idle cue owns only disposable paint above the board. Real gem geometry,
-   cell transforms, focus and hit targets stay in the reconciled board. */
+/* Disposable group guidance keeps all real coordinates, paint and hit targets.
+   WAAPI animates clone transforms and face opacity; no SVG filter or recolouring. */
 .idle-hint-layer,.idle-hint-layer *{pointer-events:none!important}
-.idle-hint-stone>.gem{transform-box:view-box;transform-origin:0 0}
-.idle-hint-outline{fill:none;stroke:#d3dfba;stroke-width:1.6;opacity:.82;stroke-linejoin:round}
+.idle-hint-stone>.gem,.idle-hint-match>.gem{transform-box:view-box;transform-origin:0 0}
+.idle-hint-outline,.idle-hint-blocker-outline{fill:none;stroke:#e3e8be;stroke-width:1.4;opacity:.7;stroke-linejoin:round;stroke-linecap:round}
+.idle-hint-sheen{fill:#fff;stroke:none;opacity:0}
+.idle-hint-pair-outline{stroke:#f1e6b2;opacity:.76}
+.idle-hint-match-outline{stroke:#d6e7b5;stroke-width:1.15;opacity:.64}
+.idle-hint-blocker-outline{stroke:#ebdbb5;stroke-width:1.25;opacity:.72}
 @media(prefers-reduced-motion:reduce){
   .idle-hint-layer *{animation:none!important;transition:none!important}
 }

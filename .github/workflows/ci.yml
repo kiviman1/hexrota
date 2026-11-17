@@ -563,3 +563,31 @@ jobs:
             test-results/flow-${{ matrix.browser }}
             test-results/large-flow-${{ matrix.browser }}
           if-no-files-found: warn
+
+  idle-hints-obstacle-compatibility:
+    name: Smart idle hints 9.12 / ${{ matrix.browser }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.2'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - run: npm run test:idle-hints
+      - run: npm run test:idle-hints-v5-browser
+        env:
+          HEXROTA_BROWSER: ${{ matrix.browser }}
+          HEXROTA_SMART_IDLE_SCREENSHOT_DIR: test-results/idle-hints-9-12-${{ matrix.browser }}
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: idle-hints-9-12-${{ matrix.browser }}
+          path: test-results/idle-hints-9-12-${{ matrix.browser }}
+          if-no-files-found: warn
