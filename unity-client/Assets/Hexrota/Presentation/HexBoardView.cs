@@ -15,9 +15,11 @@ namespace Hexrota.UnityClient.Presentation
     {
         public event Action<int, int> SwapRequested;
         public event Action PresentationCompleted;
+        public event Action PresentationCancelled;
         public Camera BoardCamera { get; private set; }
         public bool IsAnimating { get; private set; }
         public bool InputEnabled { get; set; }
+        public bool CanPresent { get { return this != null && isActiveAndEnabled && HasVisuals; } }
         public int SelectedIndex { get { return selected; } }
         private HexrotaAssetCatalog assets;
         private Transform world;
@@ -33,12 +35,30 @@ namespace Hexrota.UnityClient.Presentation
         private bool dragged;
         private GameObject selection;
         private Coroutine animation;
-        private readonly MaterialPropertyBlock tint = new MaterialPropertyBlock();
+        private MaterialPropertyBlock tint;
         private static readonly Color[] Colors = {
             new Color(.94f,.63f,.27f), new Color(.35f,.74f,.92f),
             new Color(.81f,.43f,.78f), new Color(.93f,.40f,.36f),
             new Color(.55f,.80f,.38f), new Color(.88f,.83f,.41f)
         };
+
+        private void Awake() { tint = new MaterialPropertyBlock(); }
+
+        // The detached visual root can be destroyed before the canvas/controller
+        // during scene unload. Unity's destroyed-object check must precede any
+        // access to cached transforms, including on the frame after a yield.
+        private bool HasVisuals
+        {
+            get
+            {
+                if (this == null || world == null || effectRoot == null || positions == null ||
+                    stones.Count != positions.Length || grounds.Count != stones.Count ||
+                    cells.Count != stones.Count || numbers.Count != stones.Count) return false;
+                for (int i = 0; i < stones.Count; i++)
+                    if (stones[i] == null || grounds[i] == null || cells[i] == null || numbers[i] == null) return false;
+                return true;
+            }
+        }
 
         public void Initialize(Camera camera, HexrotaAssetCatalog catalog)
         {
@@ -54,6 +74,7 @@ namespace Hexrota.UnityClient.Presentation
 
         public void Build(LevelConfig level, GameSnapshot snapshot)
         {
+            if (this == null || world == null || effectRoot == null) return;
             Cancel(snapshot); ClearModels(); positions = new Vector3[level.cells.Length];
             for (int i = 0; i < level.cells.Length; i++)
             {
@@ -101,7 +122,7 @@ namespace Hexrota.UnityClient.Presentation
         public void Render(GameSnapshot snapshot)
         {
             if (snapshot == null) return;
-            if (positions == null || stones.Count != snapshot.values.Length) return;
+            if (!HasVisuals || stones.Count != snapshot.values.Length) return;
             for (int i = 0; i < stones.Count; i++)
             {
                 stones[i].transform.position = positions[i] + Vector3.back * .15f;
@@ -117,6 +138,7 @@ namespace Hexrota.UnityClient.Presentation
         public void Present(MovePresentation receipt)
         {
             Cancel(receipt.Before);
+            if (!CanPresent) return;
             IsAnimating = true;
             animation = StartCoroutine(Animate(receipt));
         }
@@ -129,8 +151,10 @@ namespace Hexrota.UnityClient.Presentation
             if (a >= 0 && b >= 0 && a < stones.Count && b < stones.Count)
             {
                 yield return SwapMotion(a, b, .16f);
+                if (!HasVisuals) { Cancel(null); yield break; }
                 if (!receipt.Ok) { yield return SwapMotion(a, b, .16f, true); }
             }
+            if (!HasVisuals) { Cancel(null); yield break; }
             if (receipt.Ok && receipt.Swap != null)
             {
                 foreach (WaveFrame wave in receipt.Swap.frames)
@@ -145,10 +169,12 @@ namespace Hexrota.UnityClient.Presentation
                     float elapsed = 0;
                     while (elapsed < .18f)
                     {
+                        if (!HasVisuals) { Cancel(null); yield break; }
                         elapsed += Time.unscaledDeltaTime;
                         foreach (int i in wave.matched) stones[i].transform.localScale = Vector3.one * Mathf.Lerp(1, .02f, elapsed / .18f);
                         yield return null;
                     }
+                    if (!HasVisuals) { Cancel(null); yield break; }
                     foreach (int i in wave.matched) Spawn(assets == null ? null : assets.clearEffect, positions[i]);
                     for (int i = 0; i < stones.Count; i++)
                     {
@@ -168,12 +194,14 @@ namespace Hexrota.UnityClient.Presentation
                     elapsed = 0;
                     while (elapsed < .26f)
                     {
+                        if (!HasVisuals) { Cancel(null); yield break; }
                         elapsed += Time.unscaledDeltaTime;
                         float t = Mathf.SmoothStep(0, 1, Mathf.Clamp01(elapsed / .26f));
                         foreach (var entry in starts)
                             stones[entry.Key].transform.position = Vector3.Lerp(entry.Value, positions[entry.Key], t) + Vector3.back * .15f;
                         yield return null;
                     }
+                    if (!HasVisuals) { Cancel(null); yield break; }
                     ClearEffects();
                 }
             }
@@ -188,6 +216,7 @@ namespace Hexrota.UnityClient.Presentation
             float elapsed = 0;
             while (elapsed < duration)
             {
+                if (!HasVisuals) yield break;
                 elapsed += Time.unscaledDeltaTime; float t = Mathf.SmoothStep(0, 1, elapsed / duration);
                 stones[a].transform.position = Vector3.Lerp(startA, startB, t);
                 stones[b].transform.position = Vector3.Lerp(startB, startA, t);
@@ -197,15 +226,17 @@ namespace Hexrota.UnityClient.Presentation
 
         public void Cancel(GameSnapshot authoritative)
         {
-            if (animation != null) StopCoroutine(animation);
+            bool wasAnimating = IsAnimating;
+            if (this != null && animation != null) StopCoroutine(animation);
             animation = null; IsAnimating = false;
             pointer = int.MinValue; pressed = -1; dragged = false; ClearSelection();
             ClearEffects(); Render(authoritative);
+            if (wasAnimating && PresentationCancelled != null) PresentationCancelled();
         }
 
         public void OnPointerDown(PointerEventData e)
         {
-            if (!InputEnabled || IsAnimating || pointer != int.MinValue) return;
+            if (this == null || !isActiveAndEnabled || !HasVisuals || !InputEnabled || IsAnimating || pointer != int.MinValue) return;
             pointer = e.pointerId; down = e.position; pressed = Hit(e.position); dragged = false;
         }
         public void OnDrag(PointerEventData e)
@@ -240,7 +271,7 @@ namespace Hexrota.UnityClient.Presentation
         }
         private int Hit(Vector2 screen)
         {
-            if (BoardCamera == null || positions == null || !BoardCamera.pixelRect.Contains(screen)) return -1;
+            if (BoardCamera == null || !HasVisuals || !BoardCamera.pixelRect.Contains(screen)) return -1;
             var ray = BoardCamera.ScreenPointToRay(screen);
             var plane = new Plane(Vector3.forward, Vector3.zero); float distance;
             if (!plane.Raycast(ray, out distance)) return -1;
@@ -269,6 +300,7 @@ namespace Hexrota.UnityClient.Presentation
         }
         private void Tint(GameObject obj, Color color)
         {
+            if (obj == null || tint == null) return;
             foreach (Renderer renderer in obj.GetComponentsInChildren<Renderer>())
             {
                 if (renderer is MeshRenderer && renderer.GetComponent<TextMesh>() != null) continue;
@@ -292,9 +324,19 @@ namespace Hexrota.UnityClient.Presentation
         }
         private void ClearModels()
         {
-            foreach (var o in cells) Destroy(o); foreach (var o in grounds) Destroy(o); foreach (var o in stones) Destroy(o);
+            foreach (var o in cells) if (o != null) Destroy(o);
+            foreach (var o in grounds) if (o != null) Destroy(o);
+            foreach (var o in stones) if (o != null) Destroy(o);
             cells.Clear(); grounds.Clear(); stones.Clear(); numbers.Clear();
         }
-        private void OnDestroy() { if (world != null) Destroy(world.gameObject); }
+        private void OnDisable() { InputEnabled = false; Cancel(null); }
+        private void OnDestroy()
+        {
+            Cancel(null);
+            SwapRequested = null; PresentationCompleted = null; PresentationCancelled = null;
+            cells.Clear(); grounds.Clear(); stones.Clear(); numbers.Clear(); positions = null;
+            if (world != null) Destroy(world.gameObject);
+            world = null; effectRoot = null; BoardCamera = null; tint = null;
+        }
     }
 }

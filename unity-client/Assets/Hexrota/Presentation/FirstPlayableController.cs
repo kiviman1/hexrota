@@ -28,6 +28,17 @@ namespace Hexrota.UnityClient.Presentation
         private Rect lastSafe;
         private bool ready, requesting;
 
+        private bool HasInterface
+        {
+            get
+            {
+                return this != null && isActiveAndEnabled && Board != null && boardCamera != null &&
+                    safe != null && menu != null && gameplay != null && modal != null &&
+                    title != null && counters != null && message != null && menuCopy != null &&
+                    modalTitle != null && modalCopy != null && actions != null;
+            }
+        }
+
         private void Awake()
         {
             UnityEngine.Application.targetFrameRate = 30;
@@ -42,6 +53,7 @@ namespace Hexrota.UnityClient.Presentation
         public void ConfigureSession(UnityGameSession session)
         {
             if (session == null) throw new ArgumentNullException("session");
+            if (!HasInterface) return;
             if (Session != null) Session.CancelPresentation();
             if (Board != null) Board.Cancel(null);
             Session = session; ready = true; ShowMenu();
@@ -52,6 +64,7 @@ namespace Hexrota.UnityClient.Presentation
             if (boardCamera == null)
             {
                 var cameraObject = new GameObject("BoardCamera");
+                cameraObject.transform.SetParent(transform, false);
                 boardCamera = cameraObject.AddComponent<Camera>();
             }
             var backgroundObject = new GameObject("ScreenBackgroundCamera");
@@ -65,6 +78,7 @@ namespace Hexrota.UnityClient.Presentation
             if (FindFirstObjectByType<EventSystem>() == null)
             {
                 var events = new GameObject("EventSystem");
+                events.transform.SetParent(transform, false);
                 events.AddComponent<EventSystem>(); events.AddComponent<StandaloneInputModule>();
             }
             var canvasObject = new GameObject("MobileUI", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
@@ -82,6 +96,7 @@ namespace Hexrota.UnityClient.Presentation
             Board = boardInput.gameObject.AddComponent<HexBoardView>(); Board.Initialize(boardCamera, assetCatalog);
             Board.SwapRequested += RequestSwap;
             Board.PresentationCompleted += FinishPresentation;
+            Board.PresentationCancelled += CancelBoardPresentation;
             message = Label("Feedback", gameplay.transform, "Bir taş seç, komşusuna dokun veya sürükle.", new Vector2(.05f,.15f),new Vector2(.95f,.22f),24,TextAnchor.MiddleCenter);
             MakeButton("Duraklat",gameplay.transform,new Vector2(.05f,.065f),new Vector2(.95f,.14f),Pause);
             Label("PlaceholderNotice",gameplay.transform,"Geçici görseller",new Vector2(.05f,.01f),new Vector2(.95f,.05f),18,TextAnchor.MiddleCenter).color = new Color(.55f,.66f,.65f);
@@ -100,7 +115,7 @@ namespace Hexrota.UnityClient.Presentation
 
         public void BeginLevelOne()
         {
-            if (!ready) return;
+            if (!ready || !HasInterface) return;
             CancelPresentation();
             if (!Session.EnterLevelOne()) { ShowCommandFailure(Session.LastError); return; }
             CurrentScreen = "playing"; menu.SetActive(false); gameplay.SetActive(true); modal.SetActive(false);
@@ -110,7 +125,7 @@ namespace Hexrota.UnityClient.Presentation
 
         public void RequestSwap(int a, int b)
         {
-            if (!ready || requesting || CurrentScreen != "playing" || Board.IsAnimating || Session.Status != "playing") return;
+            if (!ready || !HasInterface || !Board.CanPresent || requesting || CurrentScreen != "playing" || Board.IsAnimating || Session.Status != "playing") return;
             requesting = true;
             try
             {
@@ -131,9 +146,14 @@ namespace Hexrota.UnityClient.Presentation
 
         private void FinishPresentation()
         {
+            if (!ready || !HasInterface) return;
             Session.CompletePresentation(); RefreshCounters();
             Board.InputEnabled = CurrentScreen == "playing" && Session.Status == "playing";
             EvaluateOutcome();
+        }
+        private void CancelBoardPresentation()
+        {
+            if (Session != null) Session.CancelPresentation();
         }
         private void RefreshCounters()
         {
@@ -163,10 +183,14 @@ namespace Hexrota.UnityClient.Presentation
         }
         public void Pause()
         {
-            if (!ready || CurrentScreen != "playing") return;
+            if (!ready || !HasInterface || CurrentScreen != "playing") return;
             CancelPresentation(); Session.Suspend(); RefreshCounters();
             if (Session.Status != "playing") { EvaluateOutcome(); return; }
             CurrentScreen = "paused"; Board.InputEnabled = false;
+            ShowPauseMenu();
+        }
+        private void ShowPauseMenu()
+        {
             ShowModal("DURAKLATILDI","Hamlen ve ilerlemen kaydedildi.");
             resumeButton = AddAction("Devam et",0,Resume);
             AddAction("Yeniden başlat",1,ConfirmRestart);
@@ -174,7 +198,7 @@ namespace Hexrota.UnityClient.Presentation
         }
         public void Resume()
         {
-            if (!ready || CurrentScreen != "paused") return;
+            if (!ready || !HasInterface || CurrentScreen != "paused") return;
             CurrentScreen = "playing"; modal.SetActive(false); Board.Render(Session.Snapshot);
             Board.InputEnabled = Session.Status == "playing"; EvaluateOutcome();
         }
@@ -186,14 +210,14 @@ namespace Hexrota.UnityClient.Presentation
         private void ReopenPause() { CurrentScreen = "playing"; Pause(); }
         public void Restart()
         {
-            if (!ready) return;
+            if (!ready || !HasInterface) return;
             CancelPresentation();
             if (!Session.Restart()) { ShowCommandFailure(Session.LastError); return; }
             OpenCurrentBoard();
         }
         public void Retry()
         {
-            if (!ready) return;
+            if (!ready || !HasInterface) return;
             CancelPresentation();
             if (!Session.Retry()) { ShowCommandFailure(Session.LastError); return; }
             OpenCurrentBoard();
@@ -206,7 +230,7 @@ namespace Hexrota.UnityClient.Presentation
         }
         public void ReturnToMenu()
         {
-            if (!ready) return;
+            if (!ready || !HasInterface) return;
             CancelPresentation(); Session.ReturnToMenu(); ShowMenu();
         }
         private void ShowMenu()
@@ -228,10 +252,10 @@ namespace Hexrota.UnityClient.Presentation
             ShowModal("OYUN AÇILAMADI",details);
             if (ready) AddAction("Ana Menü",0,ReturnToMenu);
         }
-        private void CancelPresentation()
+        private void CancelPresentation(bool restoreVisuals = true)
         {
             if (Session != null) Session.CancelPresentation();
-            if (Board != null) Board.Cancel(Session == null || !Session.HasAttempt ? null : Session.Snapshot);
+            if (Board != null) Board.Cancel(!restoreVisuals || Session == null || !Session.HasAttempt ? null : Session.Snapshot);
         }
         public void OnWebVisibilityChanged(string hidden)
         {
@@ -241,11 +265,38 @@ namespace Hexrota.UnityClient.Presentation
         private void OnApplicationFocus(bool focused) { if (!focused) SuspendSafely(); }
         private void SuspendSafely()
         {
-            if (!ready) return;
+            if (!ready || !HasInterface) return;
             if (CurrentScreen == "playing") Pause();
             else { CancelPresentation(); Session.Suspend(); }
         }
-        private void OnDisable() { if (ready) { CancelPresentation(); Session.Suspend(); } }
+        private void OnDisable()
+        {
+            if (!ready) return;
+            // Detached world objects and UI children may already be gone. Stop
+            // presentation without redrawing anything during teardown.
+            if (Board != null) Board.InputEnabled = false;
+            CancelPresentation(false); Session.Suspend();
+            if (CurrentScreen == "playing") CurrentScreen = "paused";
+        }
+        private void OnEnable()
+        {
+            if (!ready || !HasInterface || CurrentScreen != "paused") return;
+            Board.Render(Session.Snapshot); RefreshCounters();
+            if (Session.Status != "playing") { EvaluateOutcome(); return; }
+            ShowPauseMenu();
+        }
+        private void OnDestroy()
+        {
+            ready = false;
+            if (Session != null) Session.CancelPresentation();
+            if (Board != null)
+            {
+                Board.SwapRequested -= RequestSwap;
+                Board.PresentationCompleted -= FinishPresentation;
+                Board.PresentationCancelled -= CancelBoardPresentation;
+                Board.Cancel(null);
+            }
+        }
         private void Update()
         {
             if (Screen.width != lastScreen.x || Screen.height != lastScreen.y || Screen.safeArea != lastSafe) UpdateLayout();
@@ -253,7 +304,7 @@ namespace Hexrota.UnityClient.Presentation
         }
         private void UpdateLayout()
         {
-            if (safe == null) return;
+            if (safe == null || Board == null) return;
             lastScreen = new Vector2(Screen.width,Screen.height); lastSafe = Screen.safeArea;
             Rect normalized = MobileLayout.SafeArea(new Rect(0,0,Screen.width,Screen.height),lastSafe);
             safe.anchorMin = normalized.min; safe.anchorMax = normalized.max; safe.offsetMin = safe.offsetMax = Vector2.zero;

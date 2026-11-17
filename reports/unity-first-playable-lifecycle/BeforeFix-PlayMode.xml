@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="5" result="Failed(Child)" total="5" passed="0" failed="5" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-17 23:51:19Z" end-time="2026-11-17 23:51:20Z" duration="0.92587">
+  <test-suite type="TestSuite" id="1021" name="Hexrota Unity" fullname="Hexrota Unity" runstate="Runnable" testcasecount="13" result="Failed" site="Child" start-time="2026-11-17 23:51:19Z" end-time="2026-11-17 23:51:20Z" duration="0.925870" total="5" passed="0" failed="5" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1038" name="Hexrota.UnityClient.PlayMode.dll" fullname="C:/UnityProjects/hexrota/test-results/unity-lifecycle/baseline/unity-client/Library/ScriptAssemblies/Hexrota.UnityClient.PlayMode.dll" runstate="Runnable" testcasecount="13" result="Failed" site="Child" start-time="2026-11-17 23:51:19Z" end-time="2026-11-17 23:51:20Z" duration="0.920706" total="5" passed="0" failed="5" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="28276" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestSuite" id="1039" name="Hexrota" fullname="Hexrota" runstate="Runnable" testcasecount="13" result="Failed" site="Child" start-time="2026-11-17 23:51:19Z" end-time="2026-11-17 23:51:20Z" duration="0.920356" total="5" passed="0" failed="5" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-suite type="TestSuite" id="1040" name="UnityClientTests" fullname="Hexrota.UnityClientTests" runstate="Runnable" testcasecount="13" result="Failed" site="Child" start-time="2026-11-17 23:51:19Z" end-time="2026-11-17 23:51:20Z" duration="0.920119" total="5" passed="0" failed="5" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[One or more child tests had errors]]></message>
+          </failure>
+          <test-suite type="TestFixture" id="1032" name="HexBoardLifecycleTests" fullname="Hexrota.UnityClientTests.HexBoardLifecycleTests" classname="Hexrota.UnityClientTests.HexBoardLifecycleTests" runstate="Runnable" testcasecount="5" result="Failed" site="Child" start-time="2026-11-17 23:51:19Z" end-time="2026-11-17 23:51:20Z" duration="0.919336" total="5" passed="0" failed="5" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <failure>
+              <message><![CDATA[One or more child tests had errors]]></message>
+            </failure>
+            <test-case id="1037" name="ControllerDisableAndEnablePausesCommittedSwapUntilResume" fullname="Hexrota.UnityClientTests.HexBoardLifecycleTests.ControllerDisableAndEnablePausesCommittedSwapUntilResume" methodname="ControllerDisableAndEnablePausesCommittedSwapUntilResume" classname="Hexrota.UnityClientTests.HexBoardLifecycleTests" runstate="Runnable" seed="490755484" result="Failed" start-time="2026-11-17 23:51:19Z" end-time="2026-11-17 23:51:19Z" duration="0.248128" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <failure>
+                <message><![CDATA[SetUp : Unhandled log message: '[Exception] UnityException: CreateImpl is not allowed to be called from a MonoBehaviour constructor (or instance field initializer), call it in Awake or Start instead. Called from MonoBehaviour 'HexBoardView' on game object 'BoardInput'.
+See "Script Serialization" page in the Unity Manual for further details.'. Use UnityEngine.TestTools.LogAssert.Expect]]></message>
+                <stack-trace><![CDATA[UnityEngine.MaterialPropertyBlock..ctor () (at <6a3be24f609f4c7e856c987d6a26bd21>:0)
+Hexrota.UnityClient.Presentation.HexBoardView..ctor () (at Assets/Hexrota/Presentation/HexBoardView.cs:36)
+UnityEngine.GameObject:AddComponent()
+Hexrota.UnityClient.Presentation.FirstPlayableController:BuildInterface() (at Assets/Hexrota/Presentation/FirstPlayableController.cs:82)
+Hexrota.UnityClient.Presentation.FirstPlayableController:Awake() (at Assets/Hexrota/Presentation/FirstPlayableController.cs:36)
+
+]]></stack-trace>
+              </failure>
+              <output><![CDATA[UnityException: CreateImpl is not allowed to be called from a MonoBehaviour constructor (or instance field initializer), call it in Awake or Start instead. Called from MonoBehaviour 'HexBoardView' on game object 'BoardInput'.
+See "Script Serialization" page in the Unity Manual for further details.
+UnityEngine.MaterialPropertyBlock..ctor () (at <6a3be24f609f4c7e856c987d6a26bd21>:0)
+Hexrota.UnityClient.Presentation.HexBoardView..ctor () (at Assets/Hexrota/Presentation/HexBoardView.cs:36)
+UnityEngine.GameObject:AddComponent()
+Hexrota.UnityClient.Presentation.FirstPlayableController:BuildInterface() (at Assets/Hexrota/Presentation/FirstPlayableController.cs:82)
+Hexrota.UnityClient.Presentation.FirstPlayableController:Awake() (at Assets/Hexrota/Presentation/FirstPlayableController.cs:36)
+
+]]></output>
+            </test-case>
+            <test-case id="1033" name="LevelOneShowsTintedStonesAndLabelsAndCompletesASwap" fullname="Hexrota.UnityClientTests.HexBoardLifecycleTests.LevelOneShowsTintedStonesAndLabelsAndCompletesASwap" methodname="LevelOneShowsTintedStonesAndLabelsAndCompletesASwap" classname="Hexrota.UnityClientTests.HexBoardLifecycleTests" runstate="Runnable" seed="1771262972" result="Failed" start-time="2026-11-17 23:51:19Z" end-time="2026-11-17 23:51:19Z" duration="0.164000" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <failure>
+                <message><![CDATA[SetUp : Unhandled log message: '[Exception] UnityException: CreateImpl is not allowed to be called from a MonoBehaviour constructor (or instance field initializer), call it in Awake or Start instead. Called from MonoBehaviour 'HexBoardView' on game object 'BoardInput'.
+See "Script Serialization" page in the Unity Manual for further details.'. Use UnityEngine.TestTools.LogAssert.Expect]]></message>
+                <stack-trace><![CDATA[UnityEngine.MaterialPropertyBlock..ctor () (at <6a3be24f609f4c7e856c987d6a26bd21>:0)
+Hexrota.UnityClient.Presentation.HexBoardView..ctor () (at Assets/Hexrota/Presentation/HexBoardView.cs:36)
+UnityEngine.GameObject:AddComponent()
+Hexrota.UnityClient.Presentation.FirstPlayableController:BuildInterface() (at Assets/Hexrota/Presentation/FirstPlayableController.cs:82)
+Hexrota.UnityClient.Presentation.FirstPlayableController:Awake() (at Assets/Hexrota/Presentation/FirstPlayableController.cs:36)
+
+]]></stack-trace>
+              </failure>
+              <output><![CDATA[UnityException: CreateImpl is not allowed to be called from a MonoBehaviour constructor (or instance field initializer), call it in Awake or Start instead. Called from MonoBehaviour 'HexBoardView' on game object 'BoardInput'.
+See "Script Serialization" page in the Unity Manual for further details.
+UnityEngine.MaterialPropertyBlock..ctor () (at <6a3be24f609f4c7e856c987d6a26bd21>:0)
+Hexrota.UnityClient.Presentation.HexBoardView..ctor () (at Assets/Hexrota/Presentation/HexBoardView.cs:36)
+UnityEngine.GameObject:AddComponent()
+Hexrota.UnityClient.Presentation.FirstPlayableController:BuildInterface() (at Assets/Hexrota/Presentation/FirstPlayableController.cs:82)
+Hexrota.UnityClient.Presentation.FirstPlayableController:Awake() (at Assets/Hexrota/Presentation/FirstPlayableController.cs:36)
+
+]]></output>
+            </test-case>
+            <test-case id="1035" name="MissingDetachedVisualRootIsSafeDuringControllerTeardown" fullname="Hexrota.UnityClientTests.HexBoardLifecycleTests.MissingDetachedVisualRootIsSafeDuringControllerTeardown" methodname="MissingDetachedVisualRootIsSafeDuringControllerTeardown" classname="Hexrota.UnityClientTests.HexBoardLifecycleTests" runstate="Runnable" seed="964527273" result="Failed" start-time="2026-11-17 23:51:19Z" end-time="2026-11-17 23:51:20Z" duration="0.166573" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <failure>
+                <message><![CDATA[SetUp : Unhandled log message: '[Exception] UnityException: CreateImpl is not allowed to be called from a MonoBehaviour constructor (or instance field initializer), call it in Awake or Start instead. Called from MonoBehaviour 'HexBoardView' on game object 'BoardInput'.
+See "Script Serialization" page in the Unity Manual for further details.'. Use UnityEngine.TestTools.LogAssert.Expect]]></message>
+                <stack-trace><![CDATA[UnityEngine.MaterialPropertyBlock..ctor () (at <6a3be24f609f4c7e856c987d6a26bd21>:0)
+Hexrota.UnityClient.Presentation.HexBoardView..ctor () (at Assets/Hexrota/Presentation/HexBoardView.cs:36)
+UnityEngine.GameObject:AddComponent()
+Hexrota.UnityClient.Presentation.FirstPlayableController:BuildInterface() (at Assets/Hexrota/Presentation/FirstPlayableController.cs:82)
+Hexrota.UnityClient.Presentation.FirstPlayableController:Awake() (at Assets/Hexrota/Presentation/FirstPlayableController.cs:36)
+
+]]></stack-trace>
+              </failure>
+              <output><![CDATA[UnityException: CreateImpl is not allowed to be called from a MonoBehaviour constructor (or instance field initializer), call it in Awake or Start instead. Called from MonoBehaviour 'HexBoardView' on game object 'BoardInput'.
+See "Script Serialization" page in the Unity Manual for further details.
+UnityEngine.MaterialPropertyBlock..ctor () (at <6a3be24f609f4c7e856c987d6a26bd21>:0)
+Hexrota.UnityClient.Presentation.HexBoardView..ctor () (at Assets/Hexrota/Presentation/HexBoardView.cs:36)
+UnityEngine.GameObject:AddComponent()
+Hexrota.UnityClient.Presentation.FirstPlayableController:BuildInterface() (at Assets/Hexrota/Presentation/FirstPlayableController.cs:82)
+Hexrota.UnityClient.Presentation.FirstPlayableController:Awake() (at Assets/Hexrota/Presentation/FirstPlayableController.cs:36)
+
+]]></output>
+            </test-case>
+            <test-case id="1034" name="PauseDuringSwapPreservesCommittedBoardAndResumeAcceptsAnotherSwap" fullname="Hexrota.UnityClientTests.HexBoardLifecycleTests.PauseDuringSwapPreservesCommittedBoardAndResumeAcceptsAnotherSwap" methodname="PauseDuringSwapPreservesCommittedBoardAndResumeAcceptsAnotherSwap" classname="Hexrota.UnityClientTests.HexBoardLifecycleTests" runstate="Runnable" seed="1666546222" result="Failed" start-time="2026-11-17 23:51:20Z" end-time="2026-11-17 23:51:20Z" duration="0.166559" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <failure>
+                <message><![CDATA[SetUp : Unhandled log message: '[Exception] UnityException: CreateImpl is not allowed to be called from a MonoBehaviour constructor (or instance field initializer), call it in Awake or Start instead. Called from MonoBehaviour 'HexBoardView' on game object 'BoardInput'.
+See "Script Serialization" page in the Unity Manual for further details.'. Use UnityEngine.TestTools.LogAssert.Expect]]></message>
+                <stack-trace><![CDATA[UnityEngine.MaterialPropertyBlock..ctor () (at <6a3be24f609f4c7e856c987d6a26bd21>:0)
+Hexrota.UnityClient.Presentation.HexBoardView..ctor () (at Assets/Hexrota/Presentation/HexBoardView.cs:36)
+UnityEngine.GameObject:AddComponent()
+Hexrota.UnityClient.Presentation.FirstPlayableController:BuildInterface() (at Assets/Hexrota/Presentation/FirstPlayableController.cs:82)
+Hexrota.UnityClient.Presentation.FirstPlayableController:Awake() (at Assets/Hexrota/Presentation/FirstPlayableController.cs:36)
+
+]]></stack-trace>
+              </failure>
+              <output><![CDATA[UnityException: CreateImpl is not allowed to be called from a MonoBehaviour constructor (or instance field initializer), call it in Awake or Start instead. Called from MonoBehaviour 'HexBoardView' on game object 'BoardInput'.
+See "Script Serialization" page in the Unity Manual for further details.
+UnityEngine.MaterialPropertyBlock..ctor () (at <6a3be24f609f4c7e856c987d6a26bd21>:0)
+Hexrota.UnityClient.Presentation.HexBoardView..ctor () (at Assets/Hexrota/Presentation/HexBoardView.cs:36)
+UnityEngine.GameObject:AddComponent()
+Hexrota.UnityClient.Presentation.FirstPlayableController:BuildInterface() (at Assets/Hexrota/Presentation/FirstPlayableController.cs:82)
+Hexrota.UnityClient.Presentation.FirstPlayableController:Awake() (at Assets/Hexrota/Presentation/FirstPlayableController.cs:36)
+
+]]></output>
+            </test-case>
+            <test-case id="1036" name="SceneUnloadDuringSwapLeavesNoCallbacksOrVisualRootsAndReloadCanSwap" fullname="Hexrota.UnityClientTests.HexBoardLifecycleTests.SceneUnloadDuringSwapLeavesNoCallbacksOrVisualRootsAndReloadCanSwap" methodname="SceneUnloadDuringSwapLeavesNoCallbacksOrVisualRootsAndReloadCanSwap" classname="Hexrota.UnityClientTests.HexBoardLifecycleTests" runstate="Runnable" seed="1053844663" result="Failed" start-time="2026-11-17 23:51:20Z" end-time="2026-11-17 23:51:20Z" duration="0.166619" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <failure>
+                <message><![CDATA[SetUp : Unhandled log message: '[Exception] UnityException: CreateImpl is not allowed to be called from a MonoBehaviour constructor (or instance field initializer), call it in Awake or Start instead. Called from MonoBehaviour 'HexBoardView' on game object 'BoardInput'.
+See "Script Serialization" page in the Unity Manual for further details.'. Use UnityEngine.TestTools.LogAssert.Expect]]></message>
+                <stack-trace><![CDATA[UnityEngine.MaterialPropertyBlock..ctor () (at <6a3be24f609f4c7e856c987d6a26bd21>:0)
+Hexrota.UnityClient.Presentation.HexBoardView..ctor () (at Assets/Hexrota/Presentation/HexBoardView.cs:36)
+UnityEngine.GameObject:AddComponent()
+Hexrota.UnityClient.Presentation.FirstPlayableController:BuildInterface() (at Assets/Hexrota/Presentation/FirstPlayableController.cs:82)
+Hexrota.UnityClient.Presentation.FirstPlayableController:Awake() (at Assets/Hexrota/Presentation/FirstPlayableController.cs:36)
+
+]]></stack-trace>
+              </failure>
+              <output><![CDATA[UnityException: CreateImpl is not allowed to be called from a MonoBehaviour constructor (or instance field initializer), call it in Awake or Start instead. Called from MonoBehaviour 'HexBoardView' on game object 'BoardInput'.
+See "Script Serialization" page in the Unity Manual for further details.
+UnityEngine.MaterialPropertyBlock..ctor () (at <6a3be24f609f4c7e856c987d6a26bd21>:0)
+Hexrota.UnityClient.Presentation.HexBoardView..ctor () (at Assets/Hexrota/Presentation/HexBoardView.cs:36)
+UnityEngine.GameObject:AddComponent()
+Hexrota.UnityClient.Presentation.FirstPlayableController:BuildInterface() (at Assets/Hexrota/Presentation/FirstPlayableController.cs:82)
+Hexrota.UnityClient.Presentation.FirstPlayableController:Awake() (at Assets/Hexrota/Presentation/FirstPlayableController.cs:36)
+
+Saving results to: C:\UnityProjects\hexrota\test-results\unity-lifecycle\baseline-playmode.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

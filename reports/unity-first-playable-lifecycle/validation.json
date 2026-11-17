@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "editorVersion": "6000.6.9f1",
+  "editorRevision": "8c45277fb9c5",
+  "platform": "Windows",
+  "baseCommit": "ee11060454da591064b62e9872618f23c127b423",
+  "sourceHashesSha256Lf": {
+    "unity-client/Assets/Hexrota/Presentation/HexBoardView.cs": "2aa3a320e728fa67601c632da1c3f10a68116cc125532e41915708193da73aa5",
+    "unity-client/Assets/Hexrota/Presentation/FirstPlayableController.cs": "2e0a4ef927323ef8be2d34179fff65beaf582386c91f0deb94e326dffbeca73d",
+    "unity-client/Assets/Hexrota/Tests/PlayMode/HexBoardLifecycleTests.cs": "e99afdfdff396444b444fcba96129019e4197d6030607c0d727730318876c6b5"
+  },
+  "execution": {
+    "isolatedProjectCopy": true,
+    "originalEditorLeftOpen": true,
+    "batchmode": true,
+    "nographics": true,
+    "packageManifest": "Unmodified repository manifest: Newtonsoft 3.2.1; local user package upgrade excluded",
+    "testAssembly": "Minimal explicit precompiled NUnit/Newtonsoft references; same file included in PR"
+  },
+  "beforeFix": {
+    "testFilter": "Hexrota.UnityClientTests.HexBoardLifecycleTests",
+    "total": 5,
+    "passed": 0,
+    "failed": 5,
+    "cause": "UnityException: CreateImpl is not allowed to be called from a MonoBehaviour constructor (or instance field initializer)",
+    "report": "BeforeFix-PlayMode.xml",
+    "note": "Original presentation sources; corrected test-assembly dependency to allow the baseline to compile"
+  },
+  "afterFix": {
+    "EditMode": {
+      "total": 11,
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "report": "EditMode.xml"
+    },
+    "PlayMode": {
+      "total": 15,
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0,
+      "newRegressions": 7,
+      "report": "PlayMode.xml"
+    }
+  },
+  "supplemental": {
+    "runtimeHost": {
+      "sdk": "8.0.318 (bundled with Editor)",
+      "groups": 9,
+      "assertions": 943,
+      "variants": 40,
+      "winningRoutes": 80
+    },
+    "sourceSynchronization": "25 C# sources + 6 JSON documents byte-identical in LF git export",
+    "structureChecks": 6,
+    "webStorageHostGroups": 10,
+    "lineEndings": "Windows core.autocrlf causes the unmodified workspace byte checks to fail; verified using git -c core.autocrlf=false archive with only PR files overlaid. No generated/core/data files were rewritten."
+  },
+  "scope": "Presentation lifecycle + tests/test assembly only. Canonical gameplay, level data and economy unchanged.",
+  "notValidated": [
+    "Interactive manual Editor playthrough",
+    "WebGL/IL2CPP build",
+    "Physical device"
+  ]
+}
