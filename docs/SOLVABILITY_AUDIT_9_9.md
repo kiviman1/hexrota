@@ -1,5 +1,7 @@
 # Hexrota 9.9 — Çözülebilirlik ve ipucu denetimi
 
+> **9.9b takip durumu:** R-02 güvenli yapı/kurtarma doğrulamasıyla giderildi; özgün fixture korunur ve güncel sağlıklı diagnostik exit 0 döner. [BOARD_VALIDATION_9_9B.md](BOARD_VALIDATION_9_9B.md) güncel sözleşme ve test kanıtıdır. Aşağıdaki 9.9/9.9a gözlemleri tarihseldir; H-01/H-02 ve A-01 açık kalır.
+
 > 9.9a, bu audit'i ve yayın verilerini yeniden yazmaz. R-01 için yeni komut reddi, tarihsel v1 replay ve kazanılmış reklam hakkı korumasının güncel durumu [RESCUE_SAFETY_9_9A.md](RESCUE_SAFETY_9_9A.md) içindedir. R-02, H-01/H-02 ve A-01 bu takip işinde çözülmüş sayılmaz.
 
 ## Kapsam ve sonuç
@@ -40,7 +42,7 @@ Karıştırma RNG tüketebilir; RNG'nin değişmemesi doğru sözleşme değildi
 
 ## Tekrarlanabilir analiz yöntemi
 
-Kaynak: [reports/solvability-9-9.json](../reports/solvability-9-9.json). Kaynak SHA-256: `dc4a4432ebecbf66f8737e02b90106f3e8548db22e40462a9ebaf64f71b5630b`.
+Kaynak: [reports/solvability-9-9.json](../reports/solvability-9-9.json). 9.9 başlangıç kaynak SHA-256: `dc4a4432ebecbf66f8737e02b90106f3e8548db22e40462a9ebaf64f71b5630b`. 9.9b yeniden üretiminde bütün metrikler aynı, güncel kaynak hash'i `212f0da8520b30fee508d030ff4a2942bf7540f253f9e7dd3554d025e2550d49`; yalnız kaynak hash alanları güncellendi.
 
 `audit-solvability-9-9.cjs`, mevcut `HexMatch`, `lib/observable-player.cjs` ve `lib/level-analysis.cjs` işlevlerini yeniden kullanır. Aynı algoritmanın ikinci oyun/çözücü uygulaması yoktur. Rapor `--write` ile üretilir, `--check` ile kaynak ve sonuçların tekrar üretilebilirliği doğrulanır.
 

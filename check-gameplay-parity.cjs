@@ -5,6 +5,8 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),vm=require('node:vm');
 const {spawnSync}=require('node:child_process');
+const {buildRecoveryCases,executeRecovery}=require('./check-board-recovery.cjs');
+const {validationCases}=require('./check-board-validation.cjs');
 const root=__dirname,plain=value=>JSON.parse(JSON.stringify(value));
 function findDotnet(){
  const candidates=[process.env.DOTNET_PATH,'dotnet','/workspace/scratch/dotnet/dotnet',path.join(os.homedir(),'.dotnet','dotnet')].filter(Boolean);
@@ -85,12 +87,20 @@ const recovery=JSON.parse(fs.readFileSync(path.join(root,'fixtures/dead-board-ve
 assert.equal(recovery.schemaVersion,1);assert.equal(recovery.rulesVersion,'classic-v4');assert.equal(recovery.cases.length,4);assert.equal(recovery.failureCases.length,1);
 for(const entry of recovery.cases)request({operation:'case',vector:entry},expectedCase(entry),entry.id);
 const knownGameplay=recovery.diagnosticCases.filter(entry=>entry.gameplayVector);
-for(const entry of knownGameplay)request({operation:'case',vector:entry.gameplayVector},expectedCase(entry.gameplayVector),entry.id+' known-issue parity, NOT a healthy recovery guarantee');
+for(const entry of knownGameplay){const vector=entry.gameplayVector,operation={operation:'recovery',level:vector.level,state:vector.state,method:'ensure',repeat:2},expected=executeRecovery(Engine,operation);assert(expected.steps.every(step=>step.error&&step.message==='Recovery requires at least two distinct palette values'&&step.stateUnchanged));request(operation,expected,entry.id+' current rejection preserves state; old invalid output remains archived');}
 for(const entry of recovery.failureCases){
- const game=injected(entry.level,entry.state);
- assert.throws(()=>game._ensurePlayable(),error=>error.message===entry.expectedError.message);
- assert.deepEqual(observed(game),entry.afterError,'raw helper failure state is explicitly characterized, not called atomic');
- request({operation:'case',vector:entry},null,entry.id);outcomes.at(-1).componentError=entry.expectedError;
+ const game=injected(entry.level,entry.state),before=observed(game);
+ assert.throws(()=>game._ensurePlayable(),error=>error.message===entry.expectedError.message);assert.deepEqual(observed(game),before,'current bounded failure rolls back values and RNG; archived afterError is historical');
+ const operation={operation:'recovery',level:entry.level,state:entry.state,method:'ensure',repeat:2};request(operation,executeRecovery(Engine,operation),entry.id+' full failure/rollback JSON');
+}
+const recoverySafety=buildRecoveryCases(Engine);
+for(const entry of recoverySafety)request(entry.request,entry.expected,entry.name+' complete recovery success/error state');
+const structuralCases=validationCases().filter(entry=>entry.wire),validStructural=structuralCases.filter(entry=>entry.valid).length;
+assert.equal(structuralCases.length,74);assert.equal(validStructural,12);
+for(const entry of structuralCases){
+ const operation={operation:'construct',level:entry.level};
+ if(entry.valid)request(operation,observed(new Engine(entry.level)),entry.id+' accepted structural input preserves exact initial state');
+ else{assert.throws(()=>new Engine(entry.level),entry.id+' JavaScript rejects structural input');request(operation,null,entry.id+' native typed/parser/core rejection');outcomes.at(-1).constructorRejection=true;}
 }
 
 // Prefix fixtures cover every variant, but phase 1 also runs all 80 complete
@@ -140,13 +150,15 @@ try{
  const results=text.trim().split(/\r?\n/).filter(Boolean).map(line=>JSON.parse(line));assert.equal(results.length,outcomes.length,'one real C# result for every request');
  for(const [index,expected]of outcomes.entries()){
   const actual=results[index];
-  if(expected.componentError){assert.equal(actual.error,true,expected.name+' C# fails within bounded recovery');assert.equal(actual.errorType,expected.componentError.csharpErrorType);assert.equal(actual.message,expected.componentError.message);}
+  if(expected.constructorRejection){assert.equal(actual.error,true,expected.name+' C# rejects the same input; transport errors are not claimed to be core-message parity');}
+  else if(expected.componentError){assert.equal(actual.error,true,expected.name+' C# fails within bounded recovery');assert.equal(actual.errorType,expected.componentError.csharpErrorType);assert.equal(actual.message,expected.componentError.message);}
   else if(expected.error){assert.equal(actual.error,true,expected.name+' C# must reject malformed/forged snapshot');assert.equal(actual.stateUnchanged,true,expected.name+' rejected restore preserves existing state');}
   else{assert(!actual.error,expected.name+': C# result '+(actual.message||''));assert.deepEqual(actual,expected.expected,expected.name+': complete C# JSON matches JavaScript/golden result');}
  }
  const rejects=outcomes.filter(row=>row.error).length;
  console.log(`C# gameplay parity passed: ${fixture.cases.length} archived mechanics cases + ${recovery.cases.length} recovery cases/${recovery.failureCases.length} bounded component errors + ${supplementalRoutes} full certified routes + ${offRouteRuns} off-route legal runs (${offRouteSwaps} swaps); ${swaps} total valid swaps, ${resumes} exact resumes, ${replays} explicit replays, ${cloneChecks} independent clone checks, ${swapCloneChecks} cloned next-swap comparisons, ${rejects} rejected core saves with unchanged prior state. All intermediate matches/refill/falls/RNG/layers/status JSON agrees. C# 7.3 compiled with .NET SDK ${sdk.version}.`);
- console.log('Known-issue configuration parity: '+knownGameplay.length+' complete comparisons; JS/C# agreement on unsupported single-palette output is NOT a healthy playable-board guarantee. Run node check-dead-board-recovery.cjs --diagnose for the red safety check.');
+ console.log('Recovery safety parity: '+recoverySafety.length+' additional complete success/error comparisons; '+knownGameplay.length+' original R02 configuration now rejects explicitly with unchanged state. Archived invalid output is not an accepted current result.');
+ console.log('Structural input parity: '+structuralCases.length+' shared JSON inputs ('+validStructural+' exact accepted states, '+(structuralCases.length-validStructural)+' native typed/parser/core rejections). JavaScript-only undefined/sparse inputs are tested separately.');
  console.log(`Explicit phase-1 scope: ${fixture.selectionCases.length} variant-selector vectors, ${fixture.rejectionCases.length} attempt-envelope rejection vectors and hint recommendations remain JavaScript checks in npm test; they are not claimed as C# ports.`);
 }catch(error){console.error(error.stack||error);process.exitCode=1;}
 finally{if(temp)fs.rmSync(temp,{recursive:true,force:true});}

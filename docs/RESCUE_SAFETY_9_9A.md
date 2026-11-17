@@ -1,5 +1,7 @@
 # Hexrota 9.9a — Rescue güvenliği ve uyumluluk
 
+> **9.9b takip durumu:** Bu belgenin 9.9a doğrulama sonuçları tarihsel olarak korunur. R-02 daha sonraki [BOARD_VALIDATION_9_9B.md](BOARD_VALIDATION_9_9B.md) işiyle giderildi; güncel diagnostik exit 0 döner. R-01 replay/makbuz politikası değişmedi.
+
 ## Uygulamadan önce alınan sözleşme kararı
 
 Başlangıç main: `97d8d704d938dff28773b502938c943e89f92fb1`, PR #29 merged. Bu çalışma solvability audit'ini tekrarlamaz; PR #29'un aynı R-01 fixture'ını kullanır.

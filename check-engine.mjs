@@ -174,7 +174,10 @@ const duplicates=new HexMatch(cascadeLevel);duplicates.values.fill(2);
 const duplicateBefore=plain(duplicates.values),duplicateMotion=duplicates._gravity(removed);
 assertFallMetadata(cascadeLevel,{matched:removed,before:duplicateBefore,after:plain(duplicates.values),...duplicateMotion});
 // All four values can be blocked at one slot; fallback must be finite and minimal.
-const blocked=new HexMatch({...base,palette:[1,2,3,4]});
+const blocked=new HexMatch({...base,palette:[1,2,3,4],initial:cells.map(()=>1)});
+// Isolate the refill primitive with the same sentinel state as before. This is
+// deliberately not a publishable/recoverable board; the constructor stays valid.
+blocked.values=base.initial.slice();
 for(const [q,r,value]of[[-2,0,1],[-1,0,1],[1,0,2],[2,0,2],[0,-2,3],[0,-1,3],[0,1,4],[0,2,4]])blocked.values[at(q,r)]=value;
 blocked.values[at(0,0)]=null;
 const forced=blocked._fillVacancies();

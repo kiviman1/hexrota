@@ -48,5 +48,8 @@ const brushWin=expected[suite.fixture.cases.findIndex(row=>row.name==='brush-win
 const keyWin=expected[suite.fixture.cases.findIndex(row=>row.name==='key-wins-with-real-match')];assert.equal(keyWin.steps[1].after.status,'won');assert(keyWin.steps[1].result.scoreGain>=3);
 const frozen=JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures/command-vectors.json'),'utf8'));assert.deepEqual(suite.fixture,frozen,'frozen complete-output SHA256 detects command drift');
 const protectedFiles=['dist/engine.js','unity/Gameplay/HexMatch.cs','unity/Gameplay/GameplayTypes.cs','unity/Gameplay/BoardTopology.cs'];
-for(const file of protectedFiles){const fingerprint=crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname,file))).digest('hex');assert.equal(fingerprint,require('./fixtures/command-core-hashes.json')[file],file+' classic source remains unchanged');}
+const validationProtection=require('./fixtures/board-validation-protected.json');
+assert.equal(validationProtection.baseline,'f8b0fe25c802404b0516e1b65033fc32627d67fb');
+assert.deepEqual(Object.keys(validationProtection.sha256).sort(),['dist/engine.js','unity/Gameplay/HexMatch.cs','unity/Gameplay/BoardTopology.cs','unity/GameplayParityHarness/Program.cs'].sort(),'narrow reviewed 9.9b source changes only; original command output goldens above remain unchanged');
+for(const file of protectedFiles){const fingerprint=crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname,file))).digest('hex');assert.equal(fingerprint,validationProtection.sha256[file]||require('./fixtures/command-core-hashes.json')[file],file+' classic source matches original or reviewed 9.9b boundary');}
 console.log('Command mechanics passed: '+JSON.stringify({...suite.fixture.counts,...counts,cases:expected.length,outputMutationChecks:2,assistedHintChecks:1,classicSourceHashes:protectedFiles.length}));
