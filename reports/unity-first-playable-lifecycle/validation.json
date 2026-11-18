@@ -54,7 +54,32 @@
     "sourceSynchronization": "25 C# sources + 6 JSON documents byte-identical in LF git export",
     "structureChecks": 6,
     "webStorageHostGroups": 10,
-    "lineEndings": "Windows core.autocrlf causes the unmodified workspace byte checks to fail; verified using git -c core.autocrlf=false archive with only PR files overlaid. No generated/core/data files were rewritten."
+    "lineEndings": "Windows core.autocrlf causes the unmodified workspace byte checks to fail; verified using git -c core.autocrlf=false archive with only PR files overlaid. No generated/core/data files were rewritten.",
+    "gpuRendering": {
+      "editorVersion": "6000.6.9f1",
+      "graphicsAPI": "Direct3D12",
+      "device": "AMD Radeon RX 9070 XT",
+      "batchmode": true,
+      "nographics": false,
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "verifiedStonesBefore": 19,
+      "verifiedStonesAfter": 19,
+      "committedTurnAfter": 1,
+      "report": "GpuRender.xml",
+      "probeSource": "RenderedBoardProbe.cs",
+      "screenshots": [
+        "level-one-before-swap.png",
+        "level-one-after-swap.png"
+      ],
+      "scope": "Supplemental actual GPU render-to-texture pixel verification before and after a real legal swap. Probe source is evidence outside Assets, not an extra shipped test assembly.",
+      "probeCorrections": [
+        "Initial immediate after-swap capture failed pixel checks because the same frame still contained effects scheduled for deferred Destroy. Probe now waits one frame and asserts the effect root is empty before capture; pixel expectations were unchanged.",
+        "A subsequent probe had successful pixels but failed LogAssert.NoUnexpectedReceived on its own diagnostic Debug.Log. Removed that diagnostic log; final probe passed. No runtime source changed during either probe correction."
+      ]
+    }
   },
   "scope": "Presentation lifecycle + tests/test assembly only. Canonical gameplay, level data and economy unchanged.",
   "notValidated": [
