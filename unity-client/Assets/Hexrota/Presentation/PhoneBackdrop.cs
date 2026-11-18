@@ -62,6 +62,7 @@ namespace Hexrota.UnityClient.Presentation
                 }
                 FreeTexture();
                 snapshot = RenderTexture.GetTemporary(source.width, source.height, 0, RenderTextureFormat.ARGB32);
+                filter.SetColor("_Scrim", GetComponent<Image>().color);
                 Graphics.Blit(source, snapshot, filter);
                 snapshot.filterMode = FilterMode.Bilinear;
                 snapshot.wrapMode = TextureWrapMode.Clamp;
@@ -73,11 +74,6 @@ namespace Hexrota.UnityClient.Presentation
                     blurred = layer.GetComponent<RawImage>();
                     blurred.raycastTarget = false;
                     Stretch(blurred.rectTransform);
-                    var shade = new GameObject("Scrim", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
-                    shade.transform.SetParent(layer.transform, false);
-                    shade.raycastTarget = false;
-                    shade.color = GetComponent<Image>().color;
-                    Stretch(shade.rectTransform);
                 }
                 var safe = Screen.safeArea;
                 var uv = new Rect(safe.x/size.x,safe.y/size.y,safe.width/size.x,safe.height/size.y);
@@ -113,6 +109,11 @@ namespace Hexrota.UnityClient.Presentation
             if (blurred != null) blurred.texture = null;
             if (snapshot != null) RenderTexture.ReleaseTemporary(snapshot);
             snapshot = null;
+        }
+
+        private void OnApplicationFocus(bool focused)
+        {
+            if (focused && isActiveAndEnabled && snapshot != null && pending == null) Request();
         }
 
         private void OnDisable()
