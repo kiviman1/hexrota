@@ -3,6 +3,12 @@ Shader "Hexrota/PlaceholderColor"
     Properties {
         _Color ("Color", Color) = (1,1,1,1)
         _GuideOpacity ("Lesson focus opacity", Range(0,1)) = 1
+        _GuideCutout ("Covered interior of a muted floor", Float) = 0
+        _RimColor ("Gem edge", Color) = (1,1,1,1)
+        _RimWidth ("Gem edge width", Float) = 0
+        _FloorMark ("Remaining layer pips or green check", Float) = 0
+        _IdleOutline ("Idle hint outline", Float) = 0
+        _IdleSheen ("Idle hint sheen", Float) = 0
     }
     SubShader
     {
@@ -15,11 +21,52 @@ Shader "Hexrota/PlaceholderColor"
             #pragma fragment frag
             #include "UnityCG.cginc"
             fixed4 _Color;
+            fixed4 _RimColor;
+            float _RimWidth, _FloorMark, _IdleOutline, _IdleSheen, _GuideCutout;
             fixed _GuideOpacity;
             struct appdata { float4 vertex : POSITION; };
-            struct v2f { float4 position : SV_POSITION; };
-            v2f vert(appdata input) { v2f output; output.position = UnityObjectToClipPos(input.vertex); return output; }
-            fixed4 frag(v2f input) : SV_Target { return fixed4(_Color.rgb, _Color.a * _GuideOpacity); }
+            struct v2f { float4 position : SV_POSITION; float2 local : TEXCOORD0; };
+            v2f vert(appdata input)
+            {
+                v2f output; output.position = UnityObjectToClipPos(input.vertex);
+                output.local = input.vertex.xy; return output;
+            }
+            float lineDistance(float2 p, float2 start, float2 end)
+            {
+                float2 span = end-start;
+                return length(p-start-span*saturate(dot(p-start,span)/dot(span,span)));
+            }
+            fixed4 frag(v2f input) : SV_Target
+            {
+                float2 p = abs(input.local);
+                float edge = max(p.y, dot(p,float2(.8660254,.5)));
+                if (_GuideCutout > 0) clip(edge - _GuideCutout);
+                float rim = _RimWidth > 0 ? smoothstep(.485-_RimWidth,.491-_RimWidth,edge) : 0;
+                fixed3 color = lerp(_Color.rgb,_RimColor.rgb,rim);
+                if (_IdleOutline > 0)
+                {
+                    fixed3 ink = _IdleOutline > .9 ? fixed3(.945,.902,.698) : fixed3(.839,.906,.710);
+                    color = lerp(color,fixed3(1,1,1),_IdleSheen);
+                    color = lerp(color,ink,smoothstep(.452,.463,edge)*_IdleOutline*.76);
+                }
+                if (_FloorMark > 0)
+                {
+                    // The original SVG places its small floor marks below the gem.
+                    float2 at = input.local * (44*.875/.56);
+                    if (_FloorMark > 2.5)
+                    {
+                        float mark = min(lineDistance(at,float2(-4,-29),float2(-1,-32)),lineDistance(at,float2(-1,-32),float2(5,-25)));
+                        color = lerp(color,fixed3(.18,.38,.12),1-smoothstep(.8,1.75,mark));
+                    }
+                    else
+                    {
+                        float d = distance(float2(abs(at.x),at.y),float2(_FloorMark > 1.5 ? 4 : 0,-31));
+                        color = lerp(color,fixed3(.38,.32,.20),1-smoothstep(2.4,3.1,d));
+                        color = lerp(color,fixed3(1,.95,.79),1-smoothstep(1.8,2.5,d));
+                    }
+                }
+                return fixed4(color, _Color.a * _GuideOpacity);
+            }
             ENDCG
         }
     }

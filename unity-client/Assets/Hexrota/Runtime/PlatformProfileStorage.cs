@@ -42,14 +42,18 @@ namespace Hexrota.UnityClient
                 return File.Exists(path) ? WireJsonCodec.Parse(File.ReadAllText(path, Encoding.UTF8)) : null;
             }
         }
-        public void Write(string key, object value)
+        public void Write(string key, object value) { WriteAtomic(key,value,true); }
+
+        internal void WriteObservation(string key, object value) { WriteAtomic(key,value,false); }
+
+        private void WriteAtomic(string key, object value, bool retainPrevious)
         {
             lock (Gate) {
                 var path = PathFor(key); var temporary = path + ".pending";
                 try {
                     var bytes = Encoding.UTF8.GetBytes(WireJsonCodec.Serialize(value));
                     using (var stream = new FileStream(temporary, FileMode.Create, FileAccess.Write, FileShare.None)) { stream.Write(bytes, 0, bytes.Length); stream.Flush(true); }
-                    if (File.Exists(path)) File.Replace(temporary, path, path + ".previous");
+                    if (File.Exists(path)) File.Replace(temporary, path, retainPrevious ? path + ".previous" : null);
                     else File.Move(temporary, path);
                 }
                 catch (Exception) { throw new ProfileStorageException("storage"); }

@@ -54,10 +54,14 @@ namespace Hexrota.Application
         }
         public Dictionary<string, object> ResumeForSecondChance(int index, SessionCommand command = null)
         {
+            return ResumeForSecondChance(index, command, false);
+        }
+        private Dictionary<string, object> ResumeForSecondChance(int index, SessionCommand command, bool skipTutorials)
+        {
             NeedIndex(index); if (!CanOpen(index)) return Result(false, ClosedReason(index)); var entry = RestoreEntry(index, false);
             if (!RecoverableLoss(entry)) return Result(false, "rescue_unavailable");
             if (HasPendingRescueDelivery && !W.Equal(entry.metadata["attemptId"], W.Get(pendingRescueDelivery["receipt"], "attemptId"))) return Result(false, "pending_rescue_delivery");
-            return Execute(() => { Refresh(); Settle(entry, "failed"); LoadExisting(index, true); return Result(true, "rescue_ready"); }, command);
+            return Execute(() => { Refresh(); Settle(entry, "failed"); LoadExisting(index, true); if (skipTutorials) MarkLessonsSkipped(); return Result(true, "rescue_ready"); }, command);
         }
         public Dictionary<string, object> SetRescueAdAvailable(bool available, SessionCommand command = null)
         {

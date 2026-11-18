@@ -11,7 +11,7 @@ namespace Hexrota.UnityClient
         public sealed class ItemOffer
         {
             public bool Unlocked, CanUse, CanBuy;
-            public int Stock, Price, UnlockAfter;
+            public int Stock, Price, UnlockAfter, Used, Limit;
         }
 
         public sealed class ItemPreview
@@ -64,7 +64,7 @@ namespace Hexrota.UnityClient
             var used = W.Int32(W.Get(W.Get(controller.View()["snapshot"], "usage"), item, 0));
             var unlocked = W.Equal(W.Get(wallet["unlocks"], item), true);
             return new ItemOffer {
-                Unlocked = unlocked, Stock = stock, Price = price,
+                Unlocked = unlocked, Stock = stock, Price = price, Used = used, Limit = W.Int32(W.Required(config, "maxPerAttempt")),
                 UnlockAfter = W.Int32(W.Required(config, "unlockAfterLevelId")),
                 CanUse = InventoryAvailable && unlocked && stock > 0 && used < W.Int32(W.Required(config, "maxPerAttempt")),
                 CanBuy = InventoryAvailable && unlocked && W.Int32(wallet["gold"]) >= price

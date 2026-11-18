@@ -1,0 +1,273 @@
+using System;
+using UnityEngine;
+using UnityEngine.UI;
+using W = Hexrota.Contracts.Wire;
+
+namespace Hexrota.UnityClient.Presentation
+{
+    public sealed partial class FirstPlayableController
+    {
+        private GameObject optionsShade;
+        private RectTransform optionContent;
+        private string optionsReturn, providerRequest;
+        private ScrollRect optionsScroll;
+        private Text refillTimer;
+        private float lifeRefresh;
+        private PhoneAudio phoneAudio;
+
+        private static Color OptColor(string hex)
+        {
+            ColorUtility.TryParseHtmlString("#" + hex, out var color); return color;
+        }
+        private static void PlaceOption(RectTransform item, float x, float y, float width, float height)
+        {
+            item.anchorMin = item.anchorMax = item.pivot = Vector2.up;
+            item.anchoredPosition = new Vector2(x,-y); item.sizeDelta = new Vector2(width,height);
+        }
+        private GameObject OptionBox(string name,float x,float y,float w,float h,string high,string low,string edge,float radius=12,float border=1)
+        {
+            var box = Panel(name,optionContent,Vector2.zero,Vector2.one,Color.white);
+            PlaceOption((RectTransform)box.transform,x,y,w,h);
+            PhoneSkin.Plate(box,OptColor(high),OptColor(low),OptColor(edge),radius,border);
+            return box;
+        }
+        private Text OptionText(string name,string value,float x,float y,float w,float h,int size,
+            TextAnchor align=TextAnchor.MiddleLeft,bool bold=false,Color? color=null)
+        {
+            var t = Label(name,optionContent,value,Vector2.zero,Vector2.one,size,align);
+            PlaceOption(t.rectTransform,x,y,w,h);
+            t.fontSize=size; t.resizeTextForBestFit=false; t.color=color ?? Ink;
+            t.verticalOverflow=VerticalWrapMode.Truncate; if(bold)t.fontStyle=FontStyle.Bold;
+            return t;
+        }
+        private Button OptionButton(string text,float x,float y,float w,float h,Action action,bool green=false)
+        {
+            var box = OptionBox(text,x,y,w,h,green?"91d75a":"9262bd",green?"43852d":"513069",green?"486831":"593968",12,1.5f);
+            var button=box.AddComponent<Button>(); button.targetGraphic=box.GetComponent<Image>();
+            var caption=Label("Label",box.transform,text,Vector2.zero,Vector2.one,13,TextAnchor.MiddleCenter);
+            caption.rectTransform.offsetMin=new Vector2(4,0);caption.rectTransform.offsetMax=new Vector2(-4,0);
+            caption.color=Color.white;caption.fontStyle=FontStyle.Bold;caption.resizeTextForBestFit=false;caption.fontSize=13;
+            caption.raycastTarget=false;
+            button.onClick.AddListener(()=>{ phoneAudio.Click(Session); action(); });
+            return button;
+        }
+        private void OptionsPanel(string screen,string titleText,string eyebrow,string copy,float naturalHeight,float contentHeight)
+        {
+            if (optionsShade == null)
+            {
+                // A drawer can cover a normal lesson, a paused game or an existing result.
+                // Keep that underlying screen and its attempt intact across all nested views.
+                if (CurrentScreen=="playing")
+                {
+                    CancelPresentation();
+                    if (Session.Status != "playing") EvaluateOutcome();
+                    else { Board.Render(Session.Snapshot); RefreshTutorial(true); RefreshCounters(); }
+                }
+                optionsReturn=CurrentScreen;
+            }
+            else { optionsShade.SetActive(false); Destroy(optionsShade); }
+            CurrentScreen=screen;
+            Board.InputEnabled=false; refillTimer=null;
+            optionsShade=Panel("PhoneOptionsOverlay",safe,Vector2.zero,Vector2.one,new Color(.09f,.04f,.16f,.82f));
+            var paper=Panel("PhoneDialog",optionsShade.transform,Vector2.zero,Vector2.one,Color.white);
+            PhoneSkin.Plate(paper,OptColor("fff7df"),OptColor("f5dfb4"),OptColor("c58a42"),25,4);
+            paper.AddComponent<PhoneDialogFrame>().Fit(safe,naturalHeight);
+            var viewport=Rect("Viewport",paper.transform,Vector2.zero,Vector2.one);
+            viewport.offsetMin=new Vector2(4,5); viewport.offsetMax=new Vector2(-4,-5);
+            viewport.gameObject.AddComponent<RectMask2D>();
+            var bg=viewport.gameObject.AddComponent<Image>();bg.color=Color.clear;
+            optionContent=Rect("Content",viewport,Vector2.up,Vector2.one);
+            optionContent.pivot=Vector2.up; optionContent.sizeDelta=new Vector2(0,contentHeight-10);
+            optionsScroll=viewport.gameObject.AddComponent<ScrollRect>();
+            optionsScroll.viewport=viewport;optionsScroll.content=optionContent;
+            optionsScroll.horizontal=false;optionsScroll.vertical=true;optionsScroll.movementType=ScrollRect.MovementType.Clamped;
+            OptionText("Eyebrow",eyebrow,18,15,252,30,9,TextAnchor.MiddleLeft,true,OptColor("8b5864"));
+            var close=OptionBox("Kapat",300,10,40,44,"ff9fa5","de435d","e7a17d",22,2);
+            PhoneSkin.Icon(close.transform,"close",new Vector2(.28f,.28f),new Vector2(.72f,.72f),Color.white);
+            close.AddComponent<Button>().onClick.AddListener(CloseMobileOptions);
+            var ribbon=OptionBox("Başlık",18,64,316,48,"ed7589","c43a63","ffaaa0",12,2);
+            var shadow=ribbon.AddComponent<Shadow>();shadow.effectDistance=new Vector2(0,-4);shadow.effectColor=OptColor("7c2f57");
+            var tails=Rect("RibbonTails",ribbon.transform,Vector2.zero,Vector2.one).gameObject.AddComponent<PhoneRibbonTails>();
+            tails.raycastTarget=false;
+            OptionText("DialogTitle",titleText,30,64,292,48,23,TextAnchor.MiddleLeft,true,Paper);
+            OptionText("DialogDescription",copy,18,123,315,50,13,TextAnchor.MiddleLeft,false,OptColor("715266"));
+            phoneAudio.Configure(Session,false,true);
+        }
+        private void OptionSwitch(string key,string titleText,string subtitle,float y,bool value,Action<bool> change,
+            bool supported=true,bool inset=false)
+        {
+            float x=inset?32:18, width=inset?288:316, height=inset?77:68;
+            var row=Panel(key,optionContent,Vector2.zero,Vector2.one,Color.clear);
+            PlaceOption((RectTransform)row.transform,x,y,width,height);
+            var b=row.AddComponent<Button>(); b.interactable=supported;
+            OptionText("SettingTitle",titleText,x,y+5,width-64,27,13);
+            OptionText("SettingDescription",subtitle,x,y+31,width-66,height-31,11,TextAnchor.UpperLeft,false,OptColor("715266"));
+            var pill=OptionBox(key+"Track",x+width-43,y+(height-26)/2,43,26,value?"bddf94":"e2e8da",value?"aace80":"dfe6d7",value?"adcb86":"d8dfd0",13);
+            var knob=OptionBox(key+"Thumb",x+width-(value?22:39),y+(height-18)/2,18,18,"fbfff8","f7fcf2","f7fcf2",9);
+            knob.GetComponent<Image>().raycastTarget=pill.GetComponent<Image>().raycastTarget=false;
+            b.onClick.AddListener(()=>{
+                float pos=optionsScroll.verticalNormalizedPosition;
+                change(!value); OpenMobileSettings(); Canvas.ForceUpdateCanvases(); optionsScroll.verticalNormalizedPosition=pos;
+            });
+        }
+        public void OnSoundToggle()
+        {
+            if (!ready || !Session.SetPreferences(sound:!Session.SoundEnabled)) return;
+            phoneAudio.Configure(Session,true,true); phoneAudio.Click(Session);
+            if(CurrentScreen=="menu") ShowMenu();
+        }
+        public void OpenMobileSettings()
+        {
+            if (!ready || !HasInterface) return;
+            OptionsPanel("settings","Ayarlar","KENDİ TEMPOUNU BUL","Biraz ses, biraz sakinlik. Nasıl iyi geliyorsa.",1800,1565);
+            OptionBox("Ses",18,169,316,220,"fff6dd","fff4d8","ebc58c",15,.8f);
+            OptionSwitch("Efektler","Ses efektleri","Eşleşmelerin ve hamlelerin sesi",175,Session.SoundEnabled,on=>Session.SetPreferences(sound:on));
+            OptionSwitch("Müzik","Müzik","Arka planda sakin bir melodi",243,Session.MusicEnabled,on=>Session.SetPreferences(music:on));
+            OptionText("VolumeTitle","Ses düzeyi",18,311,150,30,12);
+            var percent=OptionText("VolumeValue","%"+Mathf.RoundToInt(Session.Volume*100),242,311,92,30,11,TextAnchor.MiddleRight);
+            var sliderBox=Rect("Ses düzeyi",optionContent,Vector2.zero,Vector2.one); PlaceOption(sliderBox,18,340,316,34);
+            var touch=sliderBox.gameObject.AddComponent<Image>();touch.color=Color.clear;
+            var rail=Panel("Track",sliderBox,new Vector2(0,.38f),new Vector2(1,.62f),Color.white);
+            PhoneSkin.Plate(rail,OptColor("ede9da"),OptColor("e7e4d4"),OptColor("b8ac9e"),4,1);
+            var fill=Panel("VolumeFill",rail.transform,Vector2.zero,Vector2.one,OptColor("764294"));
+            var track=Rect("ThumbRange",sliderBox,Vector2.zero,Vector2.one);
+            track.offsetMin=new Vector2(7,0);track.offsetMax=new Vector2(-7,0);
+            var handleArea=Rect("VolumeHandle",track,Vector2.zero,Vector2.up);
+            var thumb=Panel("Thumb",handleArea,Vector2.one*.5f,Vector2.one*.5f,Color.white);
+            ((RectTransform)thumb.transform).sizeDelta=new Vector2(15,15);
+            PhoneSkin.Plate(thumb,OptColor("794596"),OptColor("794596"),OptColor("794596"),9,0);
+            var slider=sliderBox.gameObject.AddComponent<Slider>(); slider.minValue=0;slider.maxValue=20;slider.wholeNumbers=true;
+            slider.fillRect=(RectTransform)fill.transform;slider.handleRect=handleArea;
+            slider.value=Mathf.Round(Session.Volume*20);
+            slider.onValueChanged.AddListener(v=>{if(Session.SetPreferences(volume:v/20f))percent.text="%"+Mathf.RoundToInt(v*5);});
+            OptionBox("Hareket",18,405,316,143,"fff6dd","fff4d8","ebc58c",15,.8f);
+            OptionText("MotionTitle","Animasyonlar",18,415,174,27,13);
+            OptionText("MotionDescription","Hareket miktarını seç",18,444,176,29,11);
+            string[] modes={"auto","reduce","full"}, captions={"Cihaza göre","Azaltılmış","Standart"};
+            int selected=Array.IndexOf(modes,Session.MotionPreference);
+            OptionButton(captions[Mathf.Max(0,selected)]+"  ▾",208,426,126,40,()=>{
+                OptionsPanel("motion","Animasyonlar","HAREKET","Hareket miktarını seç",415,415);
+                for(int i=0;i<modes.Length;i++){int choice=i;OptionButton(captions[i],18,178+i*56,316,44,()=>{Session.SetPreferences(motion:modes[choice]);OpenMobileSettings();});}
+            });
+            bool vibration=SystemInfo.supportsVibration;
+            OptionSwitch("Titreşim","Titreşim",vibration?"Eşleşmelerde kısa dokunma geri bildirimi.":"Bu cihaz titreşimi desteklemiyor.",480,Session.HapticsEnabled,on=>Session.SetPreferences(haptics:on),vibration);
+            OptionBox("Developer",18,565,316,540,"fff6dd","fbefd7","e5b87a",15,1);
+            OptionText("DevBadge","GELİŞTİRME TESTİ",32,582,270,22,10,TextAnchor.MiddleLeft,true);
+            OptionSwitch("Can sınırı","Can sınırını kapat","Bölüm testinde can harcanmaz; bekleme gerekmez.",600,(bool)Session.LifeStatus["developerBypass"],on=>Session.SetLifeBypass(on),inset:true);
+            OptionSwitch("Test reklamı","Test reklamı kullanılabilir","Kapatarak reklam bulunamamasını deneyebilirsin.",677,Session.LifeTestAds,on=>Session.SetLifeTestAds(on),inset:true);
+            OptionSwitch("İkinci şans","TEST ikinci şans reklamı kullanılabilir","+5 hamle reklamının bulunamamasını ayrı olarak dene.",754,Session.RescueTestAds,on=>Session.SetRescueTestAds(on),inset:true);
+            OptionText("TestNote","Geliştirme içindir. Gerçek reklam veya para işlemi yoktur.",32,832,288,34,11);
+            OptionButton("300 Test Altını ekle",32,873,288,40,()=>OfferLifeProduct("test_gold_300"));
+            OptionText("ResetTitle","İlk açılışı tekrar dene",32,943,288,31,14,TextAnchor.MiddleLeft,true);
+            OptionText("ResetHelp","Öğreticiyi, hediyeyi ve bütün ilerlemeyi sıfırdan denemek için yeni oyuncu olarak başla.",32,978,288,45,12);
+            var reset=OptionButton("Test için her şeyi sıfırla",32,1041,288,48,ConfirmFullReset);
+            PhoneSkin.Plate(reset.gameObject,OptColor("da6378"),OptColor("ac3453"),OptColor("d78b8a"),12,2);
+            DrawPlaytestSettings(1120);
+            OptionText("Storage","Tercihlerin ve ilerlemen bu cihazda saklanır.",18,1355,316,44,12,TextAnchor.MiddleCenter);
+            OptionButton("Tamam",18,1410,316,50,CloseMobileOptions,true);
+            OptionButton("İlerlemeyi sıfırla",18,1472,316,46,ConfirmOpenReset);
+        }
+
+        private void ConfirmOpenReset()
+        {
+            int charge=Session.ResetCharge;
+            string copy="Açık denemelerin silinecek. Tamamlanan bölümler, Altın, yıldızlar ve envanter korunur.";
+            if(charge>0)copy+=" Oynanmış açık denemeleri silmek "+charge+" can harcar.";
+            OptionsPanel("reset","Baştan başlayalım mı?","YENİ BİR BAŞLANGIÇ",copy,365,365);
+            OptionButton("Evet, ilerlemeyi sıfırla",18,205,316,46,()=>{
+                if(Session.ResetOpenAttempts(charge)){CloseOptionsToHome();return;}
+                if(Session.LastError=="confirmation_changed")ConfirmOpenReset();
+                else OptionText("Failure","İlerleme sıfırlanamadı.",18,312,316,28,12);
+            });
+            OptionButton("Vazgeç",18,261,316,46,OpenMobileSettings);
+        }
+
+        private void ConfirmFullReset()
+        {
+            OptionsPanel("test-reset","Her şey sıfırlansın mı?","GELİŞTİRME TESTİ",
+                "Bu cihazdaki bölümler, öğreticiler, Altın, yıldızlar, çanta, canlar ve TEST işlemleri silinir. Bu işlem geri alınamaz.",365,365);
+            OptionButton("Evet, her şeyi sıfırla",18,205,316,46,()=>{
+                if(Session.ResetForDevelopmentTest())CloseOptionsToHome();
+                else OptionText("Failure","Sıfırlama kaydedilemedi. Tekrar deneyebilirsin.",18,312,316,28,12);
+            });
+            OptionButton("Vazgeç",18,261,316,46,OpenMobileSettings);
+        }
+
+        private void CloseOptionsToHome()
+        {
+            optionsReturn="menu";
+            CloseMobileOptions();
+            Session.ReturnToMenu();
+        }
+
+        public void OpenMobileLives()
+        {
+            if(!ready || !HasInterface)return;
+            var view=Session.LifeStatus;
+            OptionsPanel("lives","Biraz mola mı?","CANLARIN","Yeni ana bölümler için canın olmalı. Kaybetmek veya oynanmış bir denemeyi sıfırlamak 1 can harcar.",681,681);
+            OptionBox("LifeStats",18,182,316,67,"f8e9cc","f5e5c5","dda052",16,1);
+            OptionText("LivesLabel","Canların",18,188,155,20,11,TextAnchor.MiddleCenter);
+            OptionText("Lives",view["lives"]+" / "+view["maxLives"],18,211,155,28,19,TextAnchor.MiddleCenter,true);
+            OptionText("TimeLabel","Sonraki can",173,188,161,20,11,TextAnchor.MiddleCenter);
+            refillTimer=OptionText("LifeTime","",173,211,161,28,17,TextAnchor.MiddleCenter,true); UpdateLifeTimer();
+            OptionButton("Bekle",18,260,154,44,CloseMobileOptions);
+            var lesson=OptionButton("Ücretsiz öğretici",181,260,153,44,()=>{CloseMobileOptions();BeginStage(0);});
+            PhoneSkin.Plate(lesson.gameObject,OptColor("f9f7e8"),OptColor("e3e9d3"),OptColor("c2ccab"),12,1);
+            lesson.GetComponentInChildren<Text>().color=OptColor("47583b");
+            OptionText("Free","Devam eden oyun ve öğreticiler can istemez.",18,308,316,25,11,TextAnchor.MiddleCenter);
+            OptionBox("LifeShop",18,344,316,306,"fff3d6","fff2d4","e8bf87",14,1);
+            OptionText("TestGold","GELİŞTİRME TESTİ                         Test Altını: "+Session.TestGold,31,351,289,28,11,TextAnchor.MiddleCenter,true);
+            OptionText("Note","Gerçek reklam gösterilmez, para alınmaz.",31,379,289,26,11);
+            string[] products={"ad_life","single_life","refill_lives","unlimited_lives_30m"};
+            string[] labels={"▷  Test reklamı: +1 can","1 can","Canları "+view["maxLives"]+"'e tamamla","30 dk sınırsız can"};
+            for(int i=0;i<products.Length;i++)
+            {
+                string product=products[i];var offer=Session.LifeProduct(product);
+                float y=i==0?413:493+(i-1)*51;
+                var button=OptionButton(labels[i],31,y,290,44,()=>OfferLifeProduct(product),i==0);
+                if(i>0)
+                {
+                    PhoneSkin.Plate(button.gameObject,OptColor("fff6da"),OptColor("fff1d1"),OptColor("c6b18f"),10,1);
+                    var label=button.GetComponentInChildren<Text>();
+                    PlaceOption(label.rectTransform,10,0,178,44);label.alignment=TextAnchor.MiddleLeft;
+                    label.fontStyle=FontStyle.Normal;label.color=OptColor("59385b");
+                    OptionText("Price",offer["costGold"]+" Altın",220,y,91,44,12,TextAnchor.MiddleRight,false,OptColor("59385b"));
+                }
+                button.interactable=W.Equal(offer["allowed"],true);
+                if(i==0 && !button.interactable)
+                    OptionText("AdStatus",W.Equal(view["lives"],view["maxLives"])?"Canların zaten dolu.":"Şu anda kullanılamıyor.",31,458,290,25,11);
+            }
+        }
+        private void UpdateLifeTimer()
+        {
+            if(refillTimer==null)return;
+            lifeRefresh=Time.unscaledTime+1;
+            var life=Session.LifeStatus;
+            double remaining=W.Number(life["remainingMs"]);
+            refillTimer.text=remaining<=0?"Canlar dolu":TimeSpan.FromMilliseconds(remaining).ToString(@"mm\:ss");
+        }
+        private void OfferLifeProduct(string product)
+        {
+            string back=CurrentScreen; providerRequest=Session.BeginLifeProduct(product);
+            if(providerRequest==null) return;
+            OptionsPanel("provider","Test işlemi","GELİŞTİRME TESTİ","Bu test işlemini tamamlamak ister misin? Gerçek para harcanmaz.",340,340);
+            Action<bool> complete=confirmed=>{
+                var id=providerRequest;providerRequest=null;
+                if(id!=null)Session.FinishLifeProduct(id,confirmed);
+                if(back=="settings")OpenMobileSettings();else OpenMobileLives();
+            };
+            OptionButton("Tamamla",18,185,316,46,()=>complete(true),true);
+            OptionButton("Vazgeç",18,242,316,46,()=>complete(false));
+        }
+        private void CloseMobileOptions()
+        {
+            if(optionsShade==null)return;
+            if(providerRequest!=null){Session.FinishLifeProduct(providerRequest,false);providerRequest=null;}
+            optionsShade.SetActive(false);Destroy(optionsShade);optionsShade=null;refillTimer=null;
+            CurrentScreen=optionsReturn;
+            if(CurrentScreen=="playing"){Board.InputEnabled=true;Board.Render(Session.Snapshot);RefreshTutorial(true);RefreshCounters();EvaluateOutcome();}
+            else if(CurrentScreen=="menu")ShowMenu();
+            phoneAudio.Configure(Session,CurrentScreen!="paused",true);
+        }
+    }
+}

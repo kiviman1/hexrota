@@ -266,10 +266,26 @@ namespace Hexrota.Application
         }
         public Dictionary<string, object> Enter(int index, bool fresh = false, string reason = "stage_entry", bool confirmed = false, int? maximumCharge = null, SessionCommand command = null)
         {
+            return EnterStage(index, fresh, reason, confirmed, maximumCharge, command, false);
+        }
+        public Dictionary<string, object> SkipTutorials(SessionCommand command = null)
+        {
+            if (active >= tutorialCount || engine == null || engine.Status != "playing") return Result(false, "no_tutorial");
+            return EnterStage(tutorialCount, false, "stage_entry", false, null, command, true);
+        }
+        private void MarkLessonsSkipped()
+        {
+            var done = W.List(game["done"]);
+            for (int i = 0; i < tutorialCount; i++)
+                if (!done.Contains((long)i)) done.Add((long)i);
+            game["done"] = done.OrderBy(value => W.Integer(value)).ToList();
+        }
+        private Dictionary<string, object> EnterStage(int index, bool fresh, string reason, bool confirmed, int? maximumCharge, SessionCommand command, bool skipTutorials)
+        {
             NeedIndex(index); if (!CanOpen(index)) return Result(false, ClosedReason(index));
             var existing = RestoreEntry(index, false);
             if (HasPendingRescueDelivery && (fresh || existing == null || metadata == null || !W.Equal(existing.metadata["attemptId"], metadata["attemptId"]))) return Result(false, "pending_rescue_delivery");
-            if (existing != null && existing.engine.Status == "lost" && !fresh && index >= tutorialCount) { if (RecoverableLoss(existing)) return ResumeForSecondChance(index, command); fresh = true; }
+            if (existing != null && existing.engine.Status == "lost" && !fresh && index >= tutorialCount) { if (RecoverableLoss(existing)) return ResumeForSecondChance(index, command, skipTutorials); fresh = true; }
             if (existing != null && existing.engine.Status == "playing" && fresh && !confirmed) return Result(false, "confirmation_required");
             return Execute(() =>
             {
@@ -299,6 +315,7 @@ namespace Hexrota.Application
                 }
                 if (fresh && previous != null) { CancelPendingRescue((string)previous.metadata["attemptId"]); Abandon(previous, reason); } MarkCompleted(false); Started(reason);
                 if (fresh && previous != null && !W.Equal(previous.metadata["attemptId"], metadata["attemptId"])) Emit("level_retried", CurrentEntry(), W.Obj("reason", reason, "previousAttemptId", previous.metadata["attemptId"]));
+                if (skipTutorials) MarkLessonsSkipped();
                 return Result(true, newAttempt ? "started" : "resumed");
             }, command);
         }

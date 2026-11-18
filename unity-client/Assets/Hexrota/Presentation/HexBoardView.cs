@@ -10,15 +10,18 @@ namespace Hexrota.UnityClient.Presentation
 {
     // This component owns disposable visual state only. Receipts come from the
     // committed application session; no matching, adjacency, scoring or RNG here.
-    public sealed class HexBoardView : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
+    public sealed partial class HexBoardView : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
         IDragHandler, ICancelHandler
     {
         public event Action<int, int> SwapRequested;
         public event Action PresentationCompleted;
         public event Action PresentationCancelled;
+        public event Action<MovePresentation> PresentationStarted;
+        public event Action<WaveFrame,int,float> WaveProgress;
         public Camera BoardCamera { get; private set; }
         public bool IsAnimating { get; private set; }
         public bool InputEnabled { get; set; }
+        public bool ReducedMotion { get; set; }
         public bool CanPresent { get { return this != null && isActiveAndEnabled && HasVisuals; } }
         public int SelectedIndex { get { return selected; } }
         private HexrotaAssetCatalog assets;
@@ -29,6 +32,8 @@ namespace Hexrota.UnityClient.Presentation
         private readonly List<GameObject> stones = new List<GameObject>();
         private readonly List<TextMesh> numbers = new List<TextMesh>();
         private Vector3[] positions;
+        private int[] initialLayers;
+        private Color[] floorEdges;
         private bool tutorialLayout, hasMutedTiles;
 
         private int selected = -1, pressed = -1, pointer = int.MinValue;
@@ -37,13 +42,34 @@ namespace Hexrota.UnityClient.Presentation
         private GameObject selection;
         private Coroutine animation;
         private MaterialPropertyBlock tint;
+        private Material digitsMaterial;
+        private Font digitsFont;
         private static readonly Color[] Colors = {
             new Color32(235,227,245,255), new Color32(179,101,242,255),
             new Color32(255,207,40,255), new Color32(255,104,81,255),
             new Color32(39,159,237,255), new Color32(241,92,189,255)
         };
+        private static readonly Color32[] Edges = {
+            new Color32(255,255,255,255), new Color32(215,163,255,255), new Color32(255,233,149,255),
+            new Color32(255,179,154,255), new Color32(143,221,255,255), new Color32(255,176,223,255)
+        };
+        private static readonly Color32[] Inks = {
+            new Color32(43,34,53,255), new Color32(44,14,67,255), new Color32(88,51,0,255),
+            new Color32(85,27,16,255), new Color32(9,47,83,255), new Color32(74,19,61,255)
+        };
 
-        private void Awake() { tint = new MaterialPropertyBlock(); }
+        private void Awake()
+        {
+            tint = new MaterialPropertyBlock();
+            digitsFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            Font.textureRebuilt += RefreshDigitAtlas;
+        }
+
+        private void RefreshDigitAtlas(Font changed)
+        {
+            if (this != null && digitsMaterial != null && changed == digitsFont)
+                digitsMaterial.mainTexture = changed.material.mainTexture;
+        }
 
         // The detached visual root can be destroyed before the canvas/controller
         // during scene unload. Unity's destroyed-object check must precede any
@@ -77,9 +103,12 @@ namespace Hexrota.UnityClient.Presentation
         {
             if (this == null || world == null || effectRoot == null) return;
             Cancel(snapshot); ClearModels(); positions = new Vector3[level.cells.Length];
+            digitsFont.RequestCharactersInTexture("0123456789",64,FontStyle.Bold);
+            initialLayers = new int[level.cells.Length]; floorEdges = new Color[level.cells.Length];
             tutorialLayout = level.id is string;
             for (int i = 0; i < level.cells.Length; i++)
             {
+                initialLayers[i] = level.cells[i].layers;
                 Vector2 xy = MobileLayout.Axial(level.cells[i].q, level.cells[i].r);
                 positions[i] = new Vector3(xy.x, xy.y, 0);
                 var cell = Make(assets == null ? null : assets.cell, "Cell_" + i, world);
@@ -96,9 +125,13 @@ namespace Hexrota.UnityClient.Presentation
                 labelObject.transform.localPosition = new Vector3(0, 0, -.38f);
                 var text = labelObject.AddComponent<TextMesh>();
                 text.anchor = TextAnchor.MiddleCenter; text.alignment = TextAlignment.Center;
-                text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-                text.GetComponent<MeshRenderer>().sharedMaterial = text.font.material;
-                text.fontSize = 64; text.characterSize = .065f; text.color = new Color(.07f,.10f,.13f);
+                text.font = digitsFont;
+                if (digitsMaterial == null)
+                    digitsMaterial = new Material(Resources.Load<Shader>("PhoneArt/BoardDigit")) {
+                        name = "Board number ink", mainTexture = text.font.material.mainTexture
+                    };
+                text.GetComponent<MeshRenderer>().sharedMaterial = digitsMaterial;
+                text.fontSize = 64; text.fontStyle = FontStyle.Bold; text.characterSize = .068f;
                 numbers.Add(text);
             }
             Render(snapshot); FitCamera();
@@ -106,8 +139,35 @@ namespace Hexrota.UnityClient.Presentation
 
         public void SetViewport(Rect safe)
         {
+            SetCameraArea(MobileLayout.BoardViewport(safe));
+        }
+
+        public void SetCameraArea(Rect area)
+        {
             if (BoardCamera == null) return;
-            BoardCamera.rect = MobileLayout.BoardViewport(safe); FitCamera();
+            StopIdleHint();
+            BoardCamera.rect = area; FitCamera();
+        }
+
+        public Vector2 ViewportCell(int index)
+        {
+            return BoardCamera != null && positions != null && index >= 0 && index < positions.Length
+                ? (Vector2)BoardCamera.WorldToViewportPoint(positions[index]) : Vector2.zero;
+        }
+
+        public bool OverlapsTiles(Rect envelope, Rect area)
+        {
+            if (!HasVisuals || BoardCamera == null) return true;
+            float h = .56f*40/44 / BoardCamera.orthographicSize;
+            float w = h * BoardCamera.pixelHeight / Mathf.Max(1, BoardCamera.pixelWidth);
+            for (int i = 0; i < positions.Length; i++)
+            {
+                Vector2 center = area.min + Vector2.Scale(area.size, ViewportCell(i));
+                float height = area.height * h * .8660254f;
+                if (new Rect(center.x-area.width*w*.5f, center.y-height*.5f,
+                    area.width*w, height).Overlaps(envelope)) return true;
+            }
+            return false;
         }
 
         private void FitCamera()
@@ -116,12 +176,10 @@ namespace Hexrota.UnityClient.Presentation
             var bounds = new Bounds(positions[0], Vector3.zero);
             foreach (Vector3 position in positions) bounds.Encapsulate(position);
             float aspect = Mathf.Max(.1f, BoardCamera.pixelRect.width / Mathf.Max(1, BoardCamera.pixelRect.height));
-            BoardCamera.orthographicSize = Mathf.Max(bounds.extents.y + .65f, (bounds.extents.x + .65f) / aspect);
-            // Web's tutorial viewBox reserves at least 275 x 260 units at an
-            // axial step of 44. Keep that breathing room on small lesson boards.
-            if (tutorialLayout)
-                BoardCamera.orthographicSize = Mathf.Max(BoardCamera.orthographicSize,
-                    .5f * .56f / 44f * Mathf.Max(260, 275 / aspect));
+            const float unit = .56f / 44;
+            float width = Mathf.Max((tutorialLayout ? 275 : 370)*unit, bounds.size.x + 104*unit);
+            float height = Mathf.Max((tutorialLayout ? 260 : 300)*unit, bounds.size.y + (40*Mathf.Sqrt(3)+26)*unit);
+            BoardCamera.orthographicSize = .5f * Mathf.Max(height, width/aspect);
             BoardCamera.transform.position = new Vector3(bounds.center.x, bounds.center.y, -20);
             BoardCamera.transform.rotation = Quaternion.identity;
         }
@@ -130,15 +188,14 @@ namespace Hexrota.UnityClient.Presentation
         {
             if (snapshot == null) return;
             if (!HasVisuals || stones.Count != snapshot.values.Length) return;
+            StopIdleHint(); idleClock.Bind(idleAttempt,VisibleKey(snapshot));
             if (hasMutedTiles) MarkPair(null);
             for (int i = 0; i < stones.Count; i++)
             {
                 stones[i].transform.position = positions[i] + Vector3.back * .15f;
                 stones[i].transform.localScale = Vector3.one;
                 PaintStone(i, snapshot.values[i]);
-                Tint(grounds[i], snapshot.layers[i] == 0 ? new Color(.26f,.64f,.29f) :
-                    snapshot.layers[i] == 1 ? new Color(.56f,.39f,.23f) : new Color(.40f,.29f,.20f));
-                Tint(cells[i], new Color(.15f,.25f,.21f));
+                PaintFloor(i, snapshot.layers[i]);
             }
             ClearSelection(); ClearEffects();
         }
@@ -153,13 +210,16 @@ namespace Hexrota.UnityClient.Presentation
             {
                 bool focus = pair != null && Array.IndexOf(pair, i) >= 0;
                 bool support = guide && Array.IndexOf(matchIndices, i) >= 0;
-                Tint(cells[i], focus || support ? new Color32(255, 244, 197, 255) : new Color(.15f,.25f,.21f));
-                stones[i].transform.localScale = focus ? Vector3.one * 1.1f : Vector3.one;
+                Tint(cells[i], focus || support ? (Color)new Color32(244,255,184,255) : floorEdges[i]);
+                if (cells[i].GetComponent<PlaceholderHexMesh>() != null)
+                    cells[i].transform.localScale = new Vector3(focus ? .973f : .926f,focus ? .973f : .926f,1);
+                stones[i].transform.position = positions[i] + Vector3.back * .15f;
+                stones[i].transform.localScale = focus ? Vector3.one * 1.025f : Vector3.one;
                 if (guide || hasMutedTiles)
                 {
-                    float opacity = guide && !focus && !support ? .32f : 1f;
-                    SetGuideOpacity(cells[i], opacity);
-                    SetGuideOpacity(grounds[i], opacity);
+                    float opacity = guide && !focus && !support ? .30f : 1f;
+                    SetGuideOpacity(cells[i], opacity, .485f*.875f/.926f);
+                    SetGuideOpacity(grounds[i], opacity, stones[i].activeSelf ? .485f*.727f/.875f : 0);
                     SetGuideOpacity(stones[i], opacity);
                     Color label = numbers[i].color;
                     label.a = opacity;
@@ -169,12 +229,33 @@ namespace Hexrota.UnityClient.Presentation
             hasMutedTiles = guide;
         }
 
-        private void SetGuideOpacity(GameObject tile, float opacity)
+        public void AnimateGuide(int a, int b, float seconds)
+        {
+            if (!CanPresent || IsAnimating || a < 0 || a >= stones.Count || b < 0 || b >= stones.Count) return;
+            float phase = ReducedMotion || selected >= 0 || pointer != int.MinValue ? 0 : Mathf.Repeat(seconds/3.8f,1);
+            float travel = Mathf.SmoothStep(0,1,Mathf.InverseLerp(.16f,.62f,phase));
+            float size = phase < .77f ? 1 : phase < .89f ? 1-Mathf.InverseLerp(.77f,.89f,phase)
+                : Mathf.InverseLerp(.92f,1,phase);
+            MoveAlongSwap(a,b,phase >= .9f ? 0 : travel);
+            stones[a].transform.localScale = stones[b].transform.localScale = Vector3.one * (1.025f * size);
+        }
+
+        private void MoveAlongSwap(int a, int b, float t)
+        {
+            Vector3 delta = positions[b] - positions[a];
+            var normal = new Vector3(delta.y,-delta.x,0).normalized;
+            Vector3 offset = delta*t + normal*(Mathf.Min(.56f*38/44,delta.magnitude*.5f)*Mathf.Sin(Mathf.PI*t));
+            stones[a].transform.position = positions[a] + offset + Vector3.back*.15f;
+            stones[b].transform.position = positions[b] - offset + Vector3.back*.15f;
+        }
+
+        private void SetGuideOpacity(GameObject tile, float opacity, float cutout = 0)
         {
             foreach (var renderer in tile.GetComponentsInChildren<Renderer>())
             {
                 renderer.GetPropertyBlock(tint);
                 tint.SetFloat("_GuideOpacity", opacity);
+                tint.SetFloat("_GuideCutout",opacity < 1 ? cutout : 0);
                 renderer.SetPropertyBlock(tint);
             }
         }
@@ -183,6 +264,13 @@ namespace Hexrota.UnityClient.Presentation
         {
             Cancel(receipt.Before);
             if (!CanPresent) return;
+            PresentationStarted?.Invoke(receipt);
+            if (ReducedMotion)
+            {
+                Render(receipt.After);
+                PresentationCompleted?.Invoke();
+                return;
+            }
             IsAnimating = true;
             animation = StartCoroutine(Animate(receipt));
         }
@@ -194,15 +282,19 @@ namespace Hexrota.UnityClient.Presentation
             int a = receipt.A, b = receipt.B;
             if (a >= 0 && b >= 0 && a < stones.Count && b < stones.Count)
             {
-                yield return SwapMotion(a, b, .16f);
+                yield return SwapMotion(a, b, receipt.Ok ? .30f : .14f);
                 if (!HasVisuals) { Cancel(null); yield break; }
                 if (!receipt.Ok) { yield return SwapMotion(a, b, .16f, true); }
             }
             if (!HasVisuals) { Cancel(null); yield break; }
             if (receipt.Ok && receipt.Swap != null)
             {
+                int ordinal = 0;
+                float duration = Mathf.Min(.96f,3f/Mathf.Max(1,receipt.Swap.frames.Length));
                 foreach (WaveFrame wave in receipt.Swap.frames)
                 {
+                    ordinal++;
+                    WaveProgress?.Invoke(wave,ordinal,0);
                     for (int i = 0; i < stones.Count; i++)
                     {
                         stones[i].transform.position = positions[i] + Vector3.back * .15f;
@@ -211,11 +303,14 @@ namespace Hexrota.UnityClient.Presentation
                     foreach (int i in wave.matched)
                         Spawn(assets == null ? null : assets.matchEffect, positions[i] + Vector3.back * .35f);
                     float elapsed = 0;
-                    while (elapsed < .18f)
+                    while (elapsed < duration*.48f)
                     {
                         if (!HasVisuals) { Cancel(null); yield break; }
                         elapsed += Time.unscaledDeltaTime;
-                        foreach (int i in wave.matched) stones[i].transform.localScale = Vector3.one * Mathf.Lerp(1, .02f, elapsed / .18f);
+                        float phase = Mathf.Clamp01(elapsed / (duration*.48f));
+                        float size = phase < .25f ? Mathf.Lerp(1,1.12f,phase/.25f) : Mathf.Lerp(1.12f,.02f,(phase-.25f)/.75f);
+                        foreach (int i in wave.matched) stones[i].transform.localScale = Vector3.one * size;
+                        WaveProgress?.Invoke(wave,ordinal,phase*.48f);
                         yield return null;
                     }
                     if (!HasVisuals) { Cancel(null); yield break; }
@@ -224,7 +319,7 @@ namespace Hexrota.UnityClient.Presentation
                     {
                         stones[i].transform.localScale = Vector3.one;
                         PaintStone(i, wave.after[i]);
-                        Tint(grounds[i], wave.layers[i] == 0 ? new Color(.26f,.64f,.29f) : wave.layers[i] == 1 ? new Color(.56f,.39f,.23f) : new Color(.40f,.29f,.20f));
+                        PaintFloor(i, wave.layers[i]);
                     }
                     var starts = new Dictionary<int, Vector3>();
                     foreach (FallTile fall in wave.falls)
@@ -236,11 +331,13 @@ namespace Hexrota.UnityClient.Presentation
                         Spawn(assets == null ? null : assets.fallEffect, start);
                     }
                     elapsed = 0;
-                    while (elapsed < .26f)
+                    while (elapsed < duration*.52f)
                     {
                         if (!HasVisuals) { Cancel(null); yield break; }
                         elapsed += Time.unscaledDeltaTime;
-                        float t = Mathf.SmoothStep(0, 1, Mathf.Clamp01(elapsed / .26f));
+                        float phase = Mathf.Clamp01(elapsed / (duration*.52f));
+                        float t = Mathf.SmoothStep(0, 1, phase);
+                        WaveProgress?.Invoke(wave,ordinal,.48f+phase*.52f);
                         foreach (var entry in starts)
                             stones[entry.Key].transform.position = Vector3.Lerp(entry.Value, positions[entry.Key], t) + Vector3.back * .15f;
                         yield return null;
@@ -255,15 +352,12 @@ namespace Hexrota.UnityClient.Presentation
 
         private IEnumerator SwapMotion(int a, int b, float duration, bool reverse = false)
         {
-            Vector3 startA = positions[reverse ? b : a] + Vector3.back * .15f;
-            Vector3 startB = positions[reverse ? a : b] + Vector3.back * .15f;
             float elapsed = 0;
             while (elapsed < duration)
             {
                 if (!HasVisuals) yield break;
                 elapsed += Time.unscaledDeltaTime; float t = Mathf.SmoothStep(0, 1, elapsed / duration);
-                stones[a].transform.position = Vector3.Lerp(startA, startB, t);
-                stones[b].transform.position = Vector3.Lerp(startB, startA, t);
+                MoveAlongSwap(a,b,reverse ? 1-t : t);
                 yield return null;
             }
         }
@@ -272,12 +366,14 @@ namespace Hexrota.UnityClient.Presentation
 
         public void SelectCellForItem(Action<int> onTap)
         {
+            StopIdleHint();
             ClearSelection();
             targetCell = onTap;
         }
 
         public void Cancel(GameSnapshot authoritative)
         {
+            StopIdleHint();
             targetCell = null;
             bool wasAnimating = IsAnimating;
             if (this != null && animation != null) StopCoroutine(animation);
@@ -289,6 +385,7 @@ namespace Hexrota.UnityClient.Presentation
 
         public void OnPointerDown(PointerEventData e)
         {
+            StopIdleHint();
             if (this == null || !isActiveAndEnabled || !HasVisuals || !InputEnabled || IsAnimating || pointer != int.MinValue) return;
             pointer = e.pointerId; down = e.position; pressed = Hit(e.position); dragged = false;
         }
@@ -358,15 +455,28 @@ namespace Hexrota.UnityClient.Presentation
         {
             stones[i].SetActive(value.HasValue);
             numbers[i].text = value.HasValue ? value.Value.ToString() : "";
-            if (value.HasValue) Tint(stones[i], Colors[(value.Value % Colors.Length + Colors.Length) % Colors.Length]);
+            if (!value.HasValue) return;
+            int palette = (value.Value % Colors.Length + Colors.Length) % Colors.Length;
+            numbers[i].color = Inks[palette];
+            Tint(stones[i], Colors[palette], Edges[palette], .037f);
         }
-        private void Tint(GameObject obj, Color color)
+        private void PaintFloor(int index, int layers)
+        {
+            bool green = layers == 0, partial = !green && layers < initialLayers[index];
+            Color fill = green ? new Color32(118,217,67,255) : partial ? new Color32(134,119,72,255) : new Color32(83,75,60,255);
+            floorEdges[index] = green ? new Color32(183,250,126,255) : partial ? new Color32(223,196,127,255) : new Color32(141,123,90,255);
+            float mark = green ? 3 : initialLayers[index] == 2 ? layers : 0;
+            Tint(cells[index], floorEdges[index]); Tint(grounds[index],fill,mark:mark);
+        }
+        private void Tint(GameObject obj, Color color, Color rim = default(Color), float width = 0, float mark = 0)
         {
             if (obj == null || tint == null) return;
             foreach (Renderer renderer in obj.GetComponentsInChildren<Renderer>())
             {
                 if (renderer is MeshRenderer && renderer.GetComponent<TextMesh>() != null) continue;
                 renderer.GetPropertyBlock(tint); tint.SetColor("_Color", color); tint.SetColor("_BaseColor", color);
+                tint.SetColor("_RimColor",rim); tint.SetFloat("_RimWidth",width);
+                tint.SetFloat("_FloorMark",mark);
                 renderer.SetPropertyBlock(tint);
             }
         }
@@ -396,7 +506,10 @@ namespace Hexrota.UnityClient.Presentation
         {
             Cancel(null);
             SwapRequested = null; PresentationCompleted = null; PresentationCancelled = null;
+            PresentationStarted = null; WaveProgress = null;
             cells.Clear(); grounds.Clear(); stones.Clear(); numbers.Clear(); positions = null;
+            Font.textureRebuilt -= RefreshDigitAtlas;
+            if (digitsMaterial != null) Destroy(digitsMaterial);
             if (world != null) Destroy(world.gameObject);
             world = null; effectRoot = null; BoardCamera = null; tint = null;
         }

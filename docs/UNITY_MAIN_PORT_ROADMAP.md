@@ -1,5 +1,7 @@
 # Unity aktarım yol haritası
 
+İlk iki aşamanın mobil arayüz teslimi ve açık kabul işleri [telefon ekranları doğrulamasında](../reports/unity-phone-parity/README.md) izlenir. Buradaki sürümlü geliştirici kampanyaları ayrı kayıt alanları gerektirir.
+
 Bu iş sırası normal Web kampanyasını, ardından main’deki sürümlü inceleme girişlerini taşır. Hangi satırın hangi kaynağa dayandığı [özellik matrisinde](UNITY_MAIN_FEATURE_MATRIX.md) yer alır. Bir aşama için kaynak senkronizasyonu, oturum davranışı, menüden erişim ve oyuncuya görünen sonuç ayrı ayrı doğrulanır.
 
 | Sıra | Çalışan dilim | Doğrulama ve karşılaştırma |

@@ -187,6 +187,75 @@ namespace Hexrota.UnityClientTests
             Assert.That(reopened.EnterLevelOne(), Is.True, reopened.LastError);
             SameSnapshot(session.Snapshot, reopened.Snapshot);
         }
+
+        [Test] public void LocalPlaytestRecordsOnlyOptedInCommittedMovesAndExportsWithoutChangingSaves()
+        {
+            long milliseconds=0;
+            session=new UnityGameSession(data,storage,new Clock(),playtestMilliseconds:()=>milliseconds);
+            Assert.That(session.PlaytestEnabled,Is.False);
+            Assert.That(session.EnterLevelOne(),Is.True);
+            Assert.That(storage.Contains("hexrota-playtest-v1"),Is.False);
+            session.SetPlaytestEnabled(true);
+            Assert.That(session.Restart(),Is.True);
+            Assert.That(session.TrySwap(-1,99).Ok,Is.False);
+            session.SetPlaytestActivity(true);
+            milliseconds=500;
+            var route=CertifiedRoute();
+            var move=session.TrySwap(route[0][0],route[0][1]);
+            Assert.That(move.Ok,Is.True);
+            session.SetPlaytestActivity(false);
+            milliseconds=4500;
+            session.CompletePresentation();
+            session.SetPlaytestActivity(true);
+            milliseconds=4820;
+            session.SetPlaytestActivity(false);
+            var export=session.ExportPlaytestData();
+            var rows=W.List(export["events"]);
+            var details=W.Required(rows.Single(e=>W.Equal(W.Get(e,"name"),"move")),"data");
+            Assert.That(W.Equal(W.Get(details,"pair"),W.Arr(route[0][0],route[0][1])),Is.True);
+            Assert.That(W.Int32(W.Get(details,"scoreAfter")),Is.EqualTo(session.Snapshot.score));
+            Assert.That(W.List(W.Get(details,"cells")),Has.Count.EqualTo(2));
+            var observed=W.List(export["attempts"]).Single(a=>W.Equal(W.Get(a,"attemptId"),W.Get(details,"attemptId")));
+            Assert.That(W.Equal(W.Get(observed,"observedStart"),true),Is.True);
+            Assert.That(W.Integer(W.Get(observed,"activeMs")),Is.EqualTo(820));
+            session=new UnityGameSession(data,storage,new Clock(),playtestMilliseconds:()=>milliseconds);
+            Assert.That(session.PlaytestEnabled,Is.True);
+            Assert.That(session.EnterLevelOne(),Is.True);
+            Assert.That(W.List(session.ExportPlaytestData()["events"]).Any(e=>W.Equal(W.Get(e,"name"),"attempt_resumed")),Is.True);
+            string dir=System.IO.Path.Combine(System.IO.Path.GetTempPath(),"hexrota-observation-"+Guid.NewGuid().ToString("N"));
+            var before=storage.Read(ProfileRepository.ProfileKey);
+            try
+            {
+                string path=session.SavePlaytestExport(dir);
+                var saved=WireJsonCodec.Parse(System.IO.File.ReadAllText(path));
+                Assert.That(W.Get(saved,"scope"),Is.EqualTo("local_opt_in_no_personal_data"));
+                Assert.That(W.List(W.Get(saved,"events")).Count,Is.GreaterThan(1));
+                session.ClearPlaytestData();
+                Assert.That(W.List(session.ExportPlaytestData()["events"]),Is.Empty);
+                Assert.That(session.PlaytestEnabled,Is.True);
+                Assert.That(W.Equal(before,storage.Read(ProfileRepository.ProfileKey)),Is.True);
+            }
+            finally {if(System.IO.Directory.Exists(dir))System.IO.Directory.Delete(dir,true);}
+        }
+        [Test] public void MobileRestartConfirmationQuotesTheCanonicalChargeWithoutChangingProfile()
+        {
+            Assert.That(session.EnterLevelOne(),Is.True);
+            Assert.That(session.PreviewRestartCharge(),Is.Zero);
+            var move=CertifiedRoute()[0];
+            Assert.That(session.TrySwap(move[0],move[1]).Ok,Is.True);
+            session.CompletePresentation();
+            long revision=session.Revision;
+            var before=storage.Read(ProfileRepository.ProfileKey);
+            Assert.That(session.PreviewRestartCharge(),Is.EqualTo(1));
+            Assert.That(session.Revision,Is.EqualTo(revision));
+            Assert.That(W.Equal(before,storage.Read(ProfileRepository.ProfileKey)),Is.True);
+            Assert.That(session.SetLifeBypass(true),Is.True);
+            Assert.That(session.PreviewRestartCharge(),Is.Zero);
+            Assert.That(session.SetLifeBypass(false),Is.True);
+            Assert.That(session.Restart(0),Is.False);
+            Assert.That(session.LastError,Is.EqualTo("confirmation_changed"));
+            Assert.That(session.Snapshot.turn,Is.EqualTo(1));
+        }
         [Test] public void WinPersistsOnceAndCampaignCompletionCannotBeFarmedByRetry()
         {
             Assert.That(session.EnterLevelOne(), Is.True, session.LastError);
@@ -277,6 +346,33 @@ namespace Hexrota.UnityClientTests
             string operation = "rescue:" + W.Required(attempt, "attemptId");
             Assert.That(W.Required(W.Required(W.Required(economy, "transactions"), operation), "kind"), Is.EqualTo("rescue"));
             Assert.That(W.Equal(attempt,W.Required(W.Required(game,"attempts"),next.ToString())), Is.True);
+        }
+
+        [Test] public void MobileTestAdCancelAndResumePreserveTheLostBoardAndSettleJustOnce()
+        {
+            Assert.That(session.EnterLevelOne(), Is.True, session.LastError);
+            PlayALosingRoute();
+            var before = session.Snapshot;
+            var offer = session.ReadRescueAd();
+            Assert.That(offer.Available, Is.True, offer.Reason);
+            var cancelled = session.BeginMobileRescueAd();
+            Assert.That(cancelled, Is.Not.Null, session.LastError);
+            session.CompleteMobileRescueAd(cancelled, false);
+            Assert.That(session.Status, Is.EqualTo("lost"));
+            Assert.That(session.ReadRescueAd().PendingId, Is.Null);
+            var pending = session.BeginMobileRescueAd();
+            Assert.That(pending, Is.Not.Null.And.Not.EqualTo(cancelled));
+            session.Suspend();
+            session = new UnityGameSession(data, storage, new Clock());
+            Assert.That(session.EnterLevelOne(), Is.True, session.LastError);
+            Assert.That(session.ReadRescueAd().PendingId, Is.EqualTo(pending));
+            Assert.That(session.CompleteMobileRescueAd(pending, true), Is.True, session.LastError);
+            Assert.That(session.Snapshot.movesLeft, Is.EqualTo(before.movesLeft + offer.Moves));
+            Assert.That(session.Snapshot.turn, Is.EqualTo(before.turn));
+            CollectionAssert.AreEqual(before.values, session.Snapshot.values);
+            CollectionAssert.AreEqual(before.layers, session.Snapshot.layers);
+            Assert.That(session.CompleteMobileRescueAd(pending, true), Is.False);
+            Assert.That(session.Snapshot.movesLeft, Is.EqualTo(before.movesLeft + offer.Moves));
         }
 
         [Test] public void RealLossSettlesAndRetryCreatesANewSavedAttempt()
