@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="1" result="Passed" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-17 23:59:41Z" end-time="2026-11-17 23:59:42Z" duration="1.0118573">
+  <test-suite type="TestSuite" id="1025" name="Hexrota Unity" fullname="Hexrota Unity" runstate="Runnable" testcasecount="16" result="Passed" start-time="2026-11-17 23:59:41Z" end-time="2026-11-17 23:59:42Z" duration="1.011857" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <test-suite type="Assembly" id="1046" name="Hexrota.UnityClient.PlayMode.dll" fullname="C:/UnityProjects/hexrota/test-results/unity-lifecycle/baseline/unity-client/Library/ScriptAssemblies/Hexrota.UnityClient.PlayMode.dll" runstate="Runnable" testcasecount="16" result="Passed" start-time="2026-11-17 23:59:41Z" end-time="2026-11-17 23:59:42Z" duration="1.007149" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="22248" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <test-suite type="TestSuite" id="1047" name="Hexrota" fullname="Hexrota" runstate="Runnable" testcasecount="16" result="Passed" start-time="2026-11-17 23:59:41Z" end-time="2026-11-17 23:59:42Z" duration="1.006802" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1048" name="UnityClientTests" fullname="Hexrota.UnityClientTests" runstate="Runnable" testcasecount="16" result="Passed" start-time="2026-11-17 23:59:41Z" end-time="2026-11-17 23:59:42Z" duration="1.006576" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1044" name="RenderedBoardProbe" fullname="Hexrota.UnityClientTests.RenderedBoardProbe" classname="Hexrota.UnityClientTests.RenderedBoardProbe" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-11-17 23:59:41Z" end-time="2026-11-17 23:59:42Z" duration="1.005846" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1045" name="ActualGraphicsRendersLevelOneBeforeAndAfterLegalSwap" fullname="Hexrota.UnityClientTests.RenderedBoardProbe.ActualGraphicsRendersLevelOneBeforeAndAfterLegalSwap" methodname="ActualGraphicsRendersLevelOneBeforeAndAfterLegalSwap" classname="Hexrota.UnityClientTests.RenderedBoardProbe" runstate="Runnable" seed="308936719" result="Passed" start-time="2026-11-17 23:59:41Z" end-time="2026-11-17 23:59:42Z" duration="0.999635" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Saving results to: C:\UnityProjects\hexrota\test-results\unity-lifecycle\rendered-board.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>
