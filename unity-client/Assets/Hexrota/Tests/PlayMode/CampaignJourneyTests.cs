@@ -53,11 +53,11 @@ namespace Hexrota.UnityClientTests
 
         [UnityTest] public IEnumerator StartButtonRestoresTutorialAcknowledgementAndLeadsThroughBothLessonsToCampaign()
         {
-            var start = controller.GetComponentsInChildren<Button>().Single(b => b.name == "Başlayalım");
-            var sceneArt = controller.GetComponentsInChildren<RawImage>().Single(i => i.name == "CoopLandscape");
-            Assert.That(sceneArt.texture.name, Is.EqualTo("foundation"));
+            var start = controller.GetComponentsInChildren<Button>().Single(b => b.name == "PlayButton");
             Assert.That(controller.Session.FirstOpening, Is.True);
             start.onClick.Invoke();
+            var sceneArt = controller.GetComponentsInChildren<RawImage>().Single(i => i.name == "CoopLandscape");
+            Assert.That(sceneArt.texture.name, Is.EqualTo("foundation"));
             Assert.That(controller.Session.FirstOpening, Is.False);
             Func<string, string> text = name => controller.GetComponentsInChildren<Text>().Single(label => label.name == name).text;
             Assert.That(text("CoachHeading"), Is.EqualTo("ADIM 1 / 3"));
@@ -88,9 +88,10 @@ namespace Hexrota.UnityClientTests
                         if (stage == 0 && turn == 0)
                         {
                             yield return Load();
-                            sceneArt = controller.GetComponentsInChildren<RawImage>().Single(i => i.name == "CoopLandscape");
                             Assert.That(controller.Session.FirstOpening, Is.False, "A committed turn survives scene reload.");
-                            controller.BeginJourney();
+                            start = controller.GetComponentsInChildren<Button>().Single(b => b.name == "PlayButton");
+                            start.onClick.Invoke();
+                            sceneArt = controller.GetComponentsInChildren<RawImage>().Single(i => i.name == "CoopLandscape");
                             Assert.That(text("CoachHeading"), Is.EqualTo("BU HAMLEDE"));
                             Assert.That(text("LessonCounter"), Is.EqualTo("Tahta 1/3"));
                             Assert.That(text("LessonTitle"), Is.EqualTo("İlk eşleşmen!"));
@@ -121,6 +122,11 @@ namespace Hexrota.UnityClientTests
             Assert.That(controller.Session.Level.id.ToString(), Is.EqualTo("1"));
             Assert.That(controller.Session.IsTutorial, Is.False);
             controller.ReturnToMenu();
+            var home = controller.GetComponentInChildren<CastleHomeView>();
+            var wallet = controller.Session.ReadPhoneWallet();
+            Assert.That(wallet.Gold, Is.Positive, "Completing the lessons awards the real welcome gift.");
+            var balance = home.GetComponentsInChildren<Text>().Single(label => label.name == "GoldValue");
+            Assert.That(balance.text, Is.EqualTo(wallet.Gold.ToString()));
             controller.OpenJourney();
             Assert.That(controller.CurrentScreen, Is.EqualTo("journey"));
             controller.OpenGarden();

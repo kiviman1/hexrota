@@ -12,12 +12,13 @@ namespace Hexrota.UnityClient.Presentation
     {
         [SerializeField] private HexrotaAssetCatalog assetCatalog;
         [SerializeField] private Camera boardCamera;
+        [SerializeField] private RectTransform safe;
+        [SerializeField] private CastleHomeView castleHome;
+        internal RectTransform SafeArea => safe;
         public static Func<UnityGameSession> SessionFactory = UnityGameSession.CreateDefault;
         public UnityGameSession Session { get; private set; }
         public HexBoardView Board { get; private set; }
         public string CurrentScreen { get; private set; }
-        private Canvas canvas;
-        private RectTransform safe;
         private GameObject menu, gameplay, modal;
         private RectTransform boardInput;
         private Text title, counters, message, modalTitle, modalCopy;
@@ -93,13 +94,16 @@ namespace Hexrota.UnityClient.Presentation
                 events.transform.SetParent(transform, false);
                 events.AddComponent<EventSystem>(); events.AddComponent<StandaloneInputModule>();
             }
-            var canvasObject = new GameObject("MobileUI", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
-            canvasObject.transform.SetParent(transform, false); canvas = canvasObject.GetComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            var scaler = canvasObject.GetComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(720, 1280); scaler.matchWidthOrHeight = .5f;
-            safe = Rect("SafeArea", canvasObject.transform, Vector2.zero, Vector2.one);
+            if (safe == null)
+            {
+                var canvasObject = new GameObject("MobileUI", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+                canvasObject.transform.SetParent(transform, false);
+                canvasObject.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
+                var scaler = canvasObject.GetComponent<CanvasScaler>();
+                scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+                scaler.referenceResolution = new Vector2(720, 1280); scaler.matchWidthOrHeight = .5f;
+                safe = Rect("SafeArea", canvasObject.transform, Vector2.zero, Vector2.one);
+            }
             BuildGameplayScreen();
 
             BuildPhoneHome();
@@ -153,7 +157,7 @@ namespace Hexrota.UnityClient.Presentation
             RefreshScene(); DrawJourney();
         }
 
-        private void OpenRecords(int page) { DrawRecordsPage(); }
+        internal void OpenRecords() { DrawRecordsPage(); }
 
         public void OpenGarden() { DrawGardenPage(); }
 
@@ -276,7 +280,7 @@ namespace Hexrota.UnityClient.Presentation
             CurrentScreen = "menu"; menu.SetActive(true); gameplay.SetActive(false); modal.SetActive(false);
             Board.InputEnabled = false; boardCamera.enabled = false;
             RefreshScene();
-            DrawHome(Session.FirstOpening);
+            DrawHome();
         }
         private void ShowCommandFailure(string reason)
         {
