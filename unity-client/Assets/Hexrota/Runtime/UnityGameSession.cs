@@ -29,6 +29,11 @@ namespace Hexrota.UnityClient
         public bool IsPresenting { get; private set; }
         public string LastError { get; private set; }
         public bool HasAttempt { get { return inGame && W.Get(controller.View(), "snapshot") != null; } }
+        public string AttemptId { get { return (string)W.Get(W.Get(controller.View(),"metadata"),"attemptId"); } }
+        public VisibleIdleHint ChooseIdleHint(int[] previous)
+        {
+            return HasAttempt && !IsTutorial && !IsPresenting && Status == "playing" ? VisibleIdleHint.Choose(ProjectBoard(),previous) : null;
+        }
         public string Status { get { return W.Get(controller.View(), "status") as string; } }
         public long Revision { get { return controller.Revision; } }
         public GameSnapshot Snapshot { get { var value = W.Get(controller.View(), "snapshot"); return value == null ? null : ReadBoardForDisplay(value); } }
@@ -229,13 +234,16 @@ namespace Hexrota.UnityClient
                 return LevelCatalog.GameplayConfig(data.Catalog.ResolveLevelWire(W.Required(metadata, "levelId"), (string)W.Required(metadata, "variantId"), (string)W.Required(metadata, "levelDataVersion")));
             }
         }
-        public UnityGameSession(ClientGameData data, IProfileStorage storage, IUtcClock clock, uint selectionSeed = 4303818)
+        public UnityGameSession(ClientGameData data, IProfileStorage storage, IUtcClock clock, uint selectionSeed = 4303818,
+            Func<long> playtestMilliseconds = null)
         {
             if (data == null) throw new ArgumentNullException("data");
             this.data = data;
             controller = new GameSessionController(data.Catalog, data.Levels, data.TutorialCount,
                 new ProfileRepository(storage), data.LifeConfig, clock, selectionSeed,
-                "hexrota-unity-test", data.RewardRules, economyConfig: data.EconomyConfig);
+                "hexrota-unity-test", data.RewardRules, economyConfig: data.EconomyConfig,
+                rescueReceiptVerifier: new Hexrota.Rescue.DevelopmentRescueReceiptVerifier());
+            StartPlaytestObservation(storage, clock, playtestMilliseconds);
         }
         public static UnityGameSession CreateDefault()
         {
@@ -248,11 +256,12 @@ namespace Hexrota.UnityClient
                 attemptId = W.Get(W.Get(view, "metadata"), "attemptId") as string,
                 turn = Snapshot == null ? (int?)null : Snapshot.turn };
         }
-        private bool Apply(Func<System.Collections.Generic.Dictionary<string, object>> action)
+        private bool Apply(Func<System.Collections.Generic.Dictionary<string, object>> action,int? requestedStage=null,bool observe=true)
         {
             try {
                 var result = action(); bool ok = W.Equal(W.Get(result, "ok"), true);
                 LastError = ok ? null : W.Get(result, "reason") as string;
+                if(observe) ObserveCommit(result,requestedStage);
                 return ok;
             }
             catch (Exception error) {
@@ -278,9 +287,14 @@ namespace Hexrota.UnityClient
                     replayLesson = previous != null && new HexMatch(level, LevelCatalog.ReadSnapshot(previous)).Status != "playing";
                 }
                 return controller.Enter(index, fresh: replayLesson);
-            });
+            },index);
             inGame = ok;
             return ok;
+        }
+        public bool SkipTutorials()
+        {
+            if (!HasAttempt || !IsTutorial || IsPresenting) return false;
+            return Apply(() => controller.SkipTutorials(Command()), TutorialCount);
         }
         public MovePresentation TrySwap(int a, int b)
         {
@@ -293,7 +307,7 @@ namespace Hexrota.UnityClient
             receipt.Swap = projection.Swap(a, b);
             if (!receipt.Swap.ok) { receipt.Reason = receipt.Swap.reason; LastError = receipt.Reason; return receipt; }
             var envelope = Command();
-            receipt.Ok = Apply(() => controller.Swap(a, b, envelope));
+            receipt.Ok = Apply(() => controller.Swap(a, b, envelope),observe:false);
             receipt.Reason = LastError;
             receipt.After = Snapshot;
             if (receipt.Ok)
@@ -306,21 +320,22 @@ namespace Hexrota.UnityClient
                     IsPresenting = false; receipt.Swap = null;
                 }
             }
+            if(receipt.Ok) ObserveCommit(null,move:receipt);
             return receipt;
         }
         public void CompletePresentation() { IsPresenting = false; }
         public void CancelPresentation() { IsPresenting = false; }
-        public bool Restart()
+        public bool Restart(int? maximumCharge = null)
         {
             CancelPresentation();
-            bool ok = Apply(() => controller.Restart(true, command: Command()));
+            bool ok = Apply(() => controller.Restart(true, maximumCharge, Command()), ActiveStage);
             if (ok) inGame = true;
             return ok;
         }
         public bool Retry()
         {
             CancelPresentation();
-            bool ok = Apply(() => controller.Retry(command: Command()));
+            bool ok = Apply(() => controller.Retry(command: Command()), ActiveStage);
             if (ok) inGame = true;
             return ok;
         }

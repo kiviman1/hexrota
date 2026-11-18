@@ -6,7 +6,8 @@ namespace Hexrota.UnityClient.Presentation
     // Pure projection of web scene-config-v1. Progress belongs to the session.
     public sealed class CoopSceneArt : MonoBehaviour
     {
-        private RawImage landscape, actor;
+        private RawImage landscape, shade;
+        private Texture2D skyGradient;
         private int stage = -1;
         private int width, height;
 
@@ -24,15 +25,18 @@ namespace Hexrota.UnityClient.Presentation
             canvas.planeDistance = 1;
             var art = canvasObject.AddComponent<CoopSceneArt>();
             art.landscape = Picture("CoopLandscape", canvasObject.transform);
-            art.actor = Picture("TavikPortrait", safe);
-            art.actor.transform.SetAsFirstSibling();
-            art.actor.texture = Resources.Load<Texture2D>("CoopArt/inspect");
-            if (art.actor.texture != null)
+            art.shade = Picture("PlaySceneWash",canvasObject.transform);
+            art.skyGradient = new Texture2D(1,64,TextureFormat.RGBA32,false);
+            art.skyGradient.wrapMode = TextureWrapMode.Clamp;
+            var pixels = new Color32[64];
+            for (int i = 0; i < pixels.Length; i++)
             {
-                var fit = art.actor.gameObject.AddComponent<AspectRatioFitter>();
-                fit.aspectRatio = (float)art.actor.texture.width / art.actor.texture.height;
-                fit.aspectMode = AspectRatioFitter.AspectMode.WidthControlsHeight;
+                float fromTop = 1 - i / 63f;
+                Color top = new Color32(27,39,53,90), ridge = new Color32(27,39,53,138), bottom = new Color32(20,44,38,120);
+                pixels[i] = fromTop < .22f ? Color.Lerp(top,ridge,fromTop/.22f) : Color.Lerp(ridge,bottom,(fromTop-.22f)/.78f);
             }
+            art.skyGradient.SetPixels32(pixels); art.skyGradient.Apply(false,true);
+            art.shade.texture = art.skyGradient;
             return art;
         }
 
@@ -58,14 +62,10 @@ namespace Hexrota.UnityClient.Presentation
                 landscape.texture = Resources.Load<Texture2D>("CoopArt/" + name);
                 ResizeLandscape();
             }
-            actor.gameObject.SetActive(menu && actor.texture != null);
-            var rect = actor.rectTransform;
-            rect.anchorMin = firstOpening ? new Vector2(.265f,.60f) : new Vector2(.655f,.65f);
-            rect.anchorMax = firstOpening ? new Vector2(.735f,.60f) : new Vector2(.925f,.65f);
-            rect.anchoredPosition = Vector2.zero;
-            rect.sizeDelta = new Vector2(0, rect.sizeDelta.y);
-            landscape.color = menu ? Color.white : new Color(.76f,.73f,.77f);
+            shade.gameObject.SetActive(!menu);
         }
+
+        private void OnDestroy() { if (skyGradient != null) Destroy(skyGradient); }
 
         private void LateUpdate()
         {

@@ -143,6 +143,29 @@ namespace Hexrota.UnityClientTests
         }
 
         [UnityTest]
+        public IEnumerator ScorePacketFliesToTheHudAndPauseDiscardsItsVisuals()
+        {
+            BeginLevel();
+            var feedback = view.GetComponentsInChildren<Transform>(true).Single(node => node.name == "ScoreFeedback");
+            var packet = feedback.Find("ScorePacket");
+            StartLegalSwap();
+            int scored = view.Session.Snapshot.score;
+            float end = Time.realtimeSinceStartup+4;
+            while ((!packet.gameObject.activeInHierarchy || string.IsNullOrEmpty(packet.GetComponentInChildren<UnityEngine.UI.Text>().text)) &&
+                   Time.realtimeSinceStartup < end) yield return null;
+            Assert.That(packet.gameObject.activeInHierarchy,Is.True);
+            view.Pause();
+            Assert.That(feedback.gameObject.activeSelf,Is.False);
+            Assert.That(view.Session.Snapshot.score,Is.EqualTo(scored));
+            view.Resume(); StartLegalSwap();
+            int gained = view.Session.Snapshot.score-scored;
+            yield return FinishSwap();
+            var amount = view.GetComponentsInChildren<UnityEngine.UI.Text>().Single(t => t.name == "ReceiptGain");
+            Assert.That(amount.text,Is.EqualTo("+"+gained));
+            Assert.That(feedback.gameObject.activeSelf,Is.False);
+        }
+
+        [UnityTest]
         public IEnumerator PauseDuringSwapPreservesCommittedBoardAndResumeAcceptsAnotherSwap()
         {
             BeginLevel();

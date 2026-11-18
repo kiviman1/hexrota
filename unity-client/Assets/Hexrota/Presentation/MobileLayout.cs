@@ -17,6 +17,25 @@ namespace Hexrota.UnityClient.Presentation
             return new Vector2(.84f * q, -Mathf.Sqrt(3f) * .56f * (r + q * .5f));
         }
 
+        public readonly struct GameRegions
+        {
+            public readonly float Header, Footer, CoachTop, CoachBottom;
+            public readonly Rect Board;
+
+            // CSS pixels on the reference 390px portrait viewport, projected
+            // into Unity's safe-area coordinates. Keep the board usable in a short Game view.
+            public GameRegions(float aspect, bool tutorial, bool firstLesson)
+            {
+                float unit = Mathf.Clamp(aspect / 390f, .0001f, 1f / 585f);
+                Header = (firstLesson ? 143 : 160) * unit;
+                Footer = (tutorial ? 53 : 90) * unit;
+                CoachTop = 1 - Header - 10 * unit;
+                CoachBottom = CoachTop - 118 * unit;
+                Board = Rect.MinMaxRect(6f/390, Footer, 1-6f/390,
+                    tutorial ? CoachBottom-8*unit : 1-Header-10*unit);
+            }
+        }
+
         public static Rect BoardViewport(Rect safe)
         {
             return new Rect(safe.x + safe.width * .025f, safe.y + safe.height * .07f,

@@ -13,26 +13,40 @@ namespace Hexrota.UnityClient.Presentation
             Board.Cancel(Session.Snapshot);
             Board.InputEnabled = false;
             CurrentScreen = "inventory";
-            ShowModal("ÇANTA", Session.WalletSummary);
-            var brush = Session.InventoryOffer("greenBrush");
-            var key = Session.InventoryOffer("colorKey");
-            AddAction(ItemName("greenBrush") + "   ×" + brush.Stock, 0, () => ItemDetails("greenBrush"));
-            AddAction(ItemName("colorKey") + "   ×" + key.Stock, 1, () => ItemDetails("colorKey"));
-            AddAction("Oyuna dön", 2, CloseInventory);
+            DrawInventory();
         }
 
         private bool InventoryOpen { get { return ready && HasInterface && CurrentScreen == "inventory" && Session.InventoryAvailable; } }
 
-        private void ItemDetails(string id, string feedback = null)
+        private void DrawInventory(string feedback = null)
         {
             if (!InventoryOpen) return;
-            var offer = Session.InventoryOffer(id);
-            string detail = offer.Unlocked ? "Çantanda " + offer.Stock + " adet var."
-                : offer.UnlockAfter + ". bölüm tamamlanınca açılır.";
-            ShowModal(ItemName(id), (feedback == null ? "" : feedback + "\n") + detail + "\n" + Session.WalletSummary);
-            AddAction("Kullan", 0, () => SelectItemTarget(id)).interactable = offer.CanUse;
-            AddAction(offer.Price + " altına al", 1, () => ConfirmItemPurchase(id)).interactable = offer.CanBuy;
-            AddAction("Geri", 2, OpenInventory);
+            ShowPhoneSheet("Çantan.", "Her güçlendiriciyi bir denemede en fazla bir kez kullanabilirsin.", "KÜÇÜK YARDIMLAR", 892, CloseInventory);
+            SheetPlate("BalanceBand",22,194,316,19,0xefdaab,0xefdaab,0xefdaab,0);
+            SheetText("InventoryBalance","Altının: <b>"+Session.ReadPhoneWallet().Gold+"</b>",22,191,316,26,14,PurpleText);
+            DrawInventoryItem("greenBrush",229);
+            DrawInventoryItem("colorKey",507);
+            SheetText("InventoryNote",feedback??"Prototip fiyatları. Yalnız oyunda kazandığın Altın kullanılır. Gerçek para işlemi yok.",
+                22,785,316,35,12,PurpleText);
+            SheetButton("Çantayı kapat",22,828,72,40,CloseInventory,SheetStyle.Plain).GetComponentInChildren<UnityEngine.UI.Text>().text="Kapat";
+        }
+
+        private void DrawInventoryItem(string id,int y)
+        {
+            bool brush=id=="greenBrush";
+            var offer=Session.InventoryOffer(id);
+            SheetPlate(id,22,y,316,265,0xfff6df,0xfbf0d5,0xd6b484,16);
+            SheetText(id+"Title",ItemName(id),36,y+25,249,38,15,Tone(0x633c79),TextAnchor.MiddleLeft,true);
+            SheetPlate(id+"StockPill",295,y+30,29,27,0x6b4287,0x6b4287,0xb8a0cc,14);
+            SheetText(id+"Stock",offer.Stock.ToString(),295,y+30,29,27,15,MenuCream,TextAnchor.MiddleCenter,true);
+            string description=brush?"Seçtiğin zeminden bir kat azaltır. Hamle harcamaz, puan eklemez.":
+                "Bir taşın sayısını seçtiğin başka bir sayıya değiştirir. Eşleşmeler puan kazandırır.";
+            SheetText(id+"Description",description,36,y+68,288,44,12,PurpleText);
+            string note=!offer.Unlocked?offer.UnlockAfter+". bölümden sonra açılır.":offer.Used>=offer.Limit?
+                "Bu denemede kullandın. Yeni denemede yeniden kullanabilirsin.":"Bu denemede en fazla "+offer.Limit+" kez kullanabilirsin.";
+            SheetText(id+"Eligibility",note,36,y+118,288,27,12,Tone(0x876b74));
+            EnableSheetButton(SheetButton(brush?"Hücre seç":"Taş seç",36,y+152,288,47,()=>SelectItemTarget(id)),offer.CanUse,SheetStyle.Primary);
+            EnableSheetButton(SheetButton(offer.Price+" Altınla +1 al",36,y+207,288,44,()=>ConfirmItemPurchase(id),SheetStyle.Secondary),offer.CanBuy,SheetStyle.Secondary);
         }
 
         private void ConfirmItemPurchase(string id)
@@ -40,14 +54,14 @@ namespace Hexrota.UnityClient.Presentation
             if (!InventoryOpen) return;
             long revision = Session.Revision;
             var offer = Session.InventoryOffer(id);
-            ShowModal("SATIN AL", "1 " + ItemName(id) + " için " + offer.Price + " altın harcanacak.");
-            AddAction("Satın al", 0, () => {
+            ShowPhoneSheet("Satın almak ister misin?", "1 " + ItemName(id) + " için " + offer.Price + " Altın harcanacak.","ÇANTA",345,()=>DrawInventory());
+            SheetButton("Satın al",22,205,316,48,() => {
                 if (!InventoryOpen) return;
                 bool bought = Session.BuyInventoryItem(id, revision);
                 RefreshCounters();
-                ItemDetails(id, bought ? "Çantana eklendi." : "Satın alma gerçekleşmedi.");
+                DrawInventory(bought ? "Çantana eklendi." : "Satın alma gerçekleşmedi.");
             });
-            AddAction("Vazgeç", 1, () => ItemDetails(id));
+            SheetButton("Vazgeç",22,268,316,44,()=>DrawInventory(),SheetStyle.Secondary);
         }
 
         private void SelectItemTarget(string id)
@@ -78,7 +92,7 @@ namespace Hexrota.UnityClient.Presentation
         {
             if (!InventoryOpen) return;
             var preview = Session.PreviewInventoryItem(id, index, value);
-            if (preview == null) { ItemDetails(id, "Bu hücrede kullanılamıyor."); return; }
+            if (preview == null) { DrawInventory("Bu hücrede kullanılamıyor."); return; }
             string details = "+" + preview.ScoreGain + " puan · " + preview.LayersRemoved + " zemin katı\n" +
                 "0 hamle · Çantandan 1 adet düşer.";
             if (preview.WillReshuffle) details += "\nTaşlar karıştırılacak.";
@@ -87,7 +101,7 @@ namespace Hexrota.UnityClient.Presentation
             AddAction("1 " + ItemName(id) + " kullan", 0, () => {
                 if (!InventoryOpen) return;
                 var receipt = Session.ConfirmInventoryItem(preview);
-                if (receipt == null) { ItemDetails(id, "Tahta değişti. Sonucu yeniden kontrol et."); return; }
+                if (receipt == null) { DrawInventory("Tahta değişti. Sonucu yeniden kontrol et."); return; }
                 CurrentScreen = "playing"; modal.SetActive(false); message.text = "";
                 if (receipt.Swap.frames.Length > 0) Board.Present(receipt);
                 else { Board.Render(receipt.After); FinishPresentation(); }

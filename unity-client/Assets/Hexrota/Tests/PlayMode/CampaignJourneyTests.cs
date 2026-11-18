@@ -60,12 +60,14 @@ namespace Hexrota.UnityClientTests
             start.onClick.Invoke();
             Assert.That(controller.Session.FirstOpening, Is.False);
             Func<string, string> text = name => controller.GetComponentsInChildren<Text>().Single(label => label.name == name).text;
-            Assert.That(text("CoachHeading"), Does.Contain("ADIM 1 / 3").And.Contain("Tahta 0/3"));
-            Assert.That(text("Feedback"), Does.Contain("2’yi 1’in yerine kaydır").And.Contain("Aynı sayıdan üç taş yan yana gelsin."));
+            Assert.That(text("CoachHeading"), Is.EqualTo("ADIM 1 / 3"));
+            Assert.That(text("LessonCounter"), Is.EqualTo("Tahta 0/3"));
+            Assert.That(text("LessonTitle"), Is.EqualTo("2’yi 1’in yerine kaydır"));
+            Assert.That(text("LessonCopy"), Is.EqualTo("Aynı sayıdan üç taş yan yana gelsin."));
             Assert.That(controller.Session.ActiveStage, Is.Zero);
             for (int stage = 0; stage < 2; stage++)
             {
-                if (stage == 1) Assert.That(text("CoachHeading"), Does.Contain("Çivi 0/4"));
+                if (stage == 1) Assert.That(text("LessonCounter"), Is.EqualTo("Çivi 0/4"));
                 for (int turn = 0; turn < (stage == 0 ? 3 : 4); turn++)
                 {
                     var pair = controller.Session.TutorialPair;
@@ -76,7 +78,7 @@ namespace Hexrota.UnityClientTests
                     for (int i = 0; i < controller.Session.Level.cells.Length; i++)
                     {
                         var label = GameObject.Find("Value_" + i).GetComponent<TextMesh>();
-                        Assert.That(label.color.a, Is.EqualTo(focus.Contains(i) ? 1f : .32f).Within(.01f),
+                        Assert.That(label.color.a, Is.EqualTo(focus.Contains(i) ? 1f : .30f).Within(.01f),
                             "Tutorial focus for cell " + i);
                     }
                     yield return Move(pair);
@@ -89,8 +91,10 @@ namespace Hexrota.UnityClientTests
                             sceneArt = controller.GetComponentsInChildren<RawImage>().Single(i => i.name == "CoopLandscape");
                             Assert.That(controller.Session.FirstOpening, Is.False, "A committed turn survives scene reload.");
                             controller.BeginJourney();
-                            Assert.That(text("CoachHeading"), Does.Contain("BU HAMLEDE").And.Contain("Tahta 1/3"));
-                            Assert.That(text("Feedback"), Does.Contain("İlk eşleşmen!").And.Contain("2 + 2 + 2 = 6 puan."));
+                            Assert.That(text("CoachHeading"), Is.EqualTo("BU HAMLEDE"));
+                            Assert.That(text("LessonCounter"), Is.EqualTo("Tahta 1/3"));
+                            Assert.That(text("LessonTitle"), Is.EqualTo("İlk eşleşmen!"));
+                            Assert.That(text("LessonCopy"), Does.Contain("2 + 2 + 2 = 6 puan."));
                             Assert.That(controller.Session.Snapshot.turn, Is.EqualTo(1));
                             Assert.That(controller.Session.NeedsTutorialAcknowledgement, Is.True);
                         }
@@ -99,9 +103,19 @@ namespace Hexrota.UnityClientTests
                     }
                 }
                 Assert.That(controller.CurrentScreen, Is.EqualTo("result"));
+                Assert.That(text("ModalTitle"), Is.EqualTo(stage == 0 ? "İlk alan yeşerdi!" : "İlk hediyen hazır!"));
+                var resultArt = controller.GetComponentsInChildren<RawImage>()
+                    .Single(image => image.name == (stage == 0 ? "VictoryMark" : "WelcomeChest"));
+                Assert.That(resultArt.texture, Is.Not.Null);
                 Assert.That(controller.Session.IsStageComplete(stage), Is.True);
                 Assert.That(sceneArt.texture.name, Is.EqualTo(stage == 0 ? "frame" : "finished"));
                 controller.ContinueAfterWin();
+                if (stage==1)
+                {
+                    Assert.That(controller.CurrentScreen, Is.EqualTo("preview"));
+                    var begin = controller.GetComponentsInChildren<Button>().Single(b => b.name == "Başla");
+                    begin.onClick.Invoke();
+                }
                 Assert.That(controller.Session.ActiveStage, Is.EqualTo(stage + 1));
             }
             Assert.That(controller.Session.Level.id.ToString(), Is.EqualTo("1"));

@@ -1,5 +1,7 @@
 # Hexrota Web → Unity özellik ve parite matrisi
 
+**Mobil ekran aktarımı.** Aşağıdaki ilk entegrasyon envanterinden sonra bağlanan ekranlar, kaynakları, testleri ve kalan farklar [native mobil durum tablosunda](../reports/unity-phone-parity/README.md) yer alır. [Aynı durumdaki görüntü çiftleri](../reports/unity-phone-parity/GORSEL-KARSILASTIRMA.md) uygulamanın ilk açılışını ve kayıtlı bir Bölüm 1’i gösterir.
+
 Kaynak, GitHub main dalındaki [b078da4](https://github.com/kiviman1/hexrota/tree/b078da49a0a1c9632195f13aefefad812e7f92ab) commit’idir. Bu sürüm #38 ile 9.15’i içerir. Açık 9.16 geliştirmesi hedefi belirlemez. Unity başlangıç noktası [#35](https://github.com/kiviman1/hexrota/pull/35) ve onun üzerine uygulanmış [#40](https://github.com/kiviman1/hexrota/pull/40) birleşimidir. Sahne `Assets/Hexrota/Scenes/FirstPlayable.unity`, GUID `91100000000000000000000000000001`. Editör 6000.6.9f1, revizyon 8c45277fb9c5.
 
 Web sütunu kullanıcının özelliğe nereden ulaştığını gösterir. C# sütunu algoritma veya otoritenin kaynağıdır. Unity sütununda yalnız Resources’a kopyalanan dosya, menüden erişilebilir bir özellik sayılmaz. Test adları kaynak paritesi ve regresyon senaryolarını gösterir. Bir testin adı, bu teslimde çalıştırıldığı anlamına gelmez; çalıştırma sonuçları PR doğrulama raporundadır.

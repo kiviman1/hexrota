@@ -1,0 +1,8 @@
+{
+  "baseline": "b078da49a0a1c9632195f13aefefad812e7f92ab",
+  "scope": "Atomic tutorial skip when entering the first campaign attempt or resuming its pending second chance.",
+  "sha256": {
+    "unity/Application/GameSessionController.cs": "b52adad8cead61952ddae925b182858a21bb600adc3b04c8ce0b714a67ec9285",
+    "unity/Application/GameSessionController.Rescue.cs": "de1bcd7cbfe46263a2bc92d75026afa891d47bffa37cd7611deee2f972dc7a60"
+  }
+}

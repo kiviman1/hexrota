@@ -16,6 +16,10 @@ const frozen=JSON.parse(fs.readFileSync(path.join(LAB,'fixtures/balance-lab-prot
 // The Lab reference remains pinned. The integrated recovery core has exactly
 // four reviewed 9.9b source updates; neither authored data nor Lab assets move.
 const storyReview=require('./fixtures/story-engine-9-15-protected.json');
+const unityEntry=require('./fixtures/unity-tutorial-entry-protected.json');
+assert.equal(unityEntry.baseline,'b078da49a0a1c9632195f13aefefad812e7f92ab');
+assert.deepEqual(Object.keys(unityEntry.sha256),['unity/Application/GameSessionController.cs','unity/Application/GameSessionController.Rescue.cs']);
+for(const [file,expected] of Object.entries(unityEntry.sha256)) assert.equal(sha(fs.readFileSync(path.join(ROOT,file))),expected,file+' Unity tutorial entry stays pinned');
 assert.equal(storyReview.baseline,'8859d0924a3f2c7ac5771097274c09c6e0b82c22');
 assert.deepEqual(Object.keys(storyReview.sha256),['dist/app.js','dist/app-state.js','dist/state-selectors.js','dist/state-effects.js','dist/session-store.js','dist/game-save.js','dist/index.html','dist/style.css','dist/sw.js','dist/hint-worker.js','dist/obstacles.html','dist/ui-kit.html','src/styles/manifest.json','src/styles/12-story.css','dist/story-engine.js','dist/story-events.js','dist/story-profile.js','dist/story-alpha.js','dist/story-content.js','dist/story-presentation.js','data/story-content-v1.json','scripts/generate-story-content.cjs','unity/Story/StoryEngine.cs','unity/StoryAdapter/CanonicalStoryFacts.cs','unity/StoryAdapter/StoryBindings.cs','unity/StoryParityHarness/Program.cs','unity/StoryParityHarness/Hexrota.StoryParity.csproj'],'only explicit narrative/profile/presentation/cache sources extend previous protection; gameplay and historical data remain unchanged');
 for(const [relative,expected]of Object.entries(storyReview.sha256))assert.equal(sha(fs.readFileSync(path.join(ROOT,relative))),expected,'Story boundary source drifted: '+relative);
@@ -47,6 +51,10 @@ for(const [relative,expected]of Object.entries(frozen.sha256)){
  assert.equal(sha(fs.readFileSync(path.join(LAB,relative))),expected,'The pinned Lab reference itself drifted: '+relative);
  if(relative==='docs/PRODUCT_ROADMAP_2026.md'){sourceOnlyFiles.push(relative);continue;}
  const actual=fs.readFileSync(path.join(ROOT,relative));
+ if(Object.hasOwn(unityEntry.sha256,relative)){
+  assert.equal(sha(actual),unityEntry.sha256[relative],'Unity tutorial entry source drifted: '+relative);
+  reviewedRecoveryFiles.push(relative);continue;
+ }
  if(relative==='reports/observable-difficulty.json'){
   const current=JSON.parse(actual),original=fs.readFileSync(path.join(LAB,relative),'utf8'),prior=JSON.parse(original);
   assert.equal(current.sourceHash,materialReview.reportSourceHashes[relative]||flow.reportSourceHashes?.[relative]||obstacles.reportSourceHashes[relative]||solverProtection.reportSourceHashes[relative],'observable report checksum must match the reviewed current engine');
