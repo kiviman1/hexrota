@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="17" result="Passed" total="17" passed="17" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-18 00:24:56Z" end-time="2026-11-18 00:25:10Z" duration="13.7452456">
+  <test-suite type="TestSuite" id="1027" name="Hexrota Unity" fullname="Hexrota Unity" runstate="Runnable" testcasecount="17" result="Passed" start-time="2026-11-18 00:24:56Z" end-time="2026-11-18 00:25:10Z" duration="13.745246" total="17" passed="17" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <test-suite type="Assembly" id="1050" name="Hexrota.UnityClient.PlayMode.dll" fullname="unity-client/Library/ScriptAssemblies/Hexrota.UnityClient.PlayMode.dll" runstate="Runnable" testcasecount="17" result="Passed" start-time="2026-11-18 00:24:56Z" end-time="2026-11-18 00:25:10Z" duration="13.740761" total="17" passed="17" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="6552" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <test-suite type="TestSuite" id="1051" name="Hexrota" fullname="Hexrota" runstate="Runnable" testcasecount="17" result="Passed" start-time="2026-11-18 00:24:56Z" end-time="2026-11-18 00:25:10Z" duration="13.740530" total="17" passed="17" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1052" name="UnityClientTests" fullname="Hexrota.UnityClientTests" runstate="Runnable" testcasecount="17" result="Passed" start-time="2026-11-18 00:24:56Z" end-time="2026-11-18 00:25:10Z" duration="13.740395" total="17" passed="17" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1028" name="CampaignJourneyTests" fullname="Hexrota.UnityClientTests.CampaignJourneyTests" classname="Hexrota.UnityClientTests.CampaignJourneyTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-11-18 00:24:56Z" end-time="2026-11-18 00:25:02Z" duration="5.519591" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1029" name="StartButtonRestoresTutorialAcknowledgementAndLeadsThroughBothLessonsToCampaign" fullname="Hexrota.UnityClientTests.CampaignJourneyTests.StartButtonRestoresTutorialAcknowledgementAndLeadsThroughBothLessonsToCampaign" methodname="StartButtonRestoresTutorialAcknowledgementAndLeadsThroughBothLessonsToCampaign" classname="Hexrota.UnityClientTests.CampaignJourneyTests" runstate="Runnable" seed="50872802" result="Passed" start-time="2026-11-18 00:24:56Z" end-time="2026-11-18 00:25:02Z" duration="5.512887" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1030" name="FirstPlayableFlowTests" fullname="Hexrota.UnityClientTests.FirstPlayableFlowTests" classname="Hexrota.UnityClientTests.FirstPlayableFlowTests" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-11-18 00:25:02Z" end-time="2026-11-18 00:25:04Z" duration="2.196049" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1032" name="BackgroundPauseAndRestartCancelDisposableAnimation" fullname="Hexrota.UnityClientTests.FirstPlayableFlowTests.BackgroundPauseAndRestartCancelDisposableAnimation" methodname="BackgroundPauseAndRestartCancelDisposableAnimation" classname="Hexrota.UnityClientTests.FirstPlayableFlowTests" runstate="Runnable" seed="636555477" result="Passed" start-time="2026-11-18 00:25:02Z" end-time="2026-11-18 00:25:02Z" duration="0.333118" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1033" name="MissingOptionalVisualsKeepRealBoardAndTouchTargetsUsable" fullname="Hexrota.UnityClientTests.FirstPlayableFlowTests.MissingOptionalVisualsKeepRealBoardAndTouchTargetsUsable" methodname="MissingOptionalVisualsKeepRealBoardAndTouchTargetsUsable" classname="Hexrota.UnityClientTests.FirstPlayableFlowTests" runstate="Runnable" seed="556071222" result="Passed" start-time="2026-11-18 00:25:02Z" end-time="2026-11-18 00:25:02Z" duration="0.266559" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1039" name="MobileViewportStaysInsideSafeArea" fullname="Hexrota.UnityClientTests.FirstPlayableFlowTests.MobileViewportStaysInsideSafeArea" classname="Hexrota.UnityClientTests.FirstPlayableFlowTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-11-18 00:25:02Z" end-time="2026-11-18 00:25:03Z" duration="0.699873" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1034" name="MobileViewportStaysInsideSafeArea(320,568,0,20,0,0)" fullname="Hexrota.UnityClientTests.FirstPlayableFlowTests.MobileViewportStaysInsideSafeArea(320,568,0,20,0,0)" methodname="MobileViewportStaysInsideSafeArea" classname="Hexrota.UnityClientTests.FirstPlayableFlowTests" runstate="Runnable" seed="1424419717" result="Passed" start-time="2026-11-18 00:25:02Z" end-time="2026-11-18 00:25:03Z" duration="0.133793" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1035" name="MobileViewportStaysInsideSafeArea(375,667,0,20,0,0)" fullname="Hexrota.UnityClientTests.FirstPlayableFlowTests.MobileViewportStaysInsideSafeArea(375,667,0,20,0,0)" methodname="MobileViewportStaysInsideSafeArea" classname="Hexrota.UnityClientTests.FirstPlayableFlowTests" runstate="Runnable" seed="489014961" result="Passed" start-time="2026-11-18 00:25:03Z" end-time="2026-11-18 00:25:03Z" duration="0.133103" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1036" name="MobileViewportStaysInsideSafeArea(390,844,0,47,0,34)" fullname="Hexrota.UnityClientTests.FirstPlayableFlowTests.MobileViewportStaysInsideSafeArea(390,844,0,47,0,34)" methodname="MobileViewportStaysInsideSafeArea" classname="Hexrota.UnityClientTests.FirstPlayableFlowTests" runstate="Runnable" seed="1455343129" result="Passed" start-time="2026-11-18 00:25:03Z" end-time="2026-11-18 00:25:03Z" duration="0.133281" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1037" name="MobileViewportStaysInsideSafeArea(430,932,0,59,0,34)" fullname="Hexrota.UnityClientTests.FirstPlayableFlowTests.MobileViewportStaysInsideSafeArea(430,932,0,59,0,34)" methodname="MobileViewportStaysInsideSafeArea" classname="Hexrota.UnityClientTests.FirstPlayableFlowTests" runstate="Runnable" seed="1608521030" result="Passed" start-time="2026-11-18 00:25:03Z" end-time="2026-11-18 00:25:03Z" duration="0.133280" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1038" name="MobileViewportStaysInsideSafeArea(844,390,47,0,47,21)" fullname="Hexrota.UnityClientTests.FirstPlayableFlowTests.MobileViewportStaysInsideSafeArea(844,390,47,0,47,21)" methodname="MobileViewportStaysInsideSafeArea" classname="Hexrota.UnityClientTests.FirstPlayableFlowTests" runstate="Runnable" seed="23544785" result="Passed" start-time="2026-11-18 00:25:03Z" end-time="2026-11-18 00:25:03Z" duration="0.133273" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-case id="1031" name="SceneMenuEntryTapSelectionAndDragReachTheRealCore" fullname="Hexrota.UnityClientTests.FirstPlayableFlowTests.SceneMenuEntryTapSelectionAndDragReachTheRealCore" methodname="SceneMenuEntryTapSelectionAndDragReachTheRealCore" classname="Hexrota.UnityClientTests.FirstPlayableFlowTests" runstate="Runnable" seed="1334081741" result="Passed" start-time="2026-11-18 00:25:03Z" end-time="2026-11-18 00:25:04Z" duration="0.866664" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1040" name="HexBoardLifecycleTests" fullname="Hexrota.UnityClientTests.HexBoardLifecycleTests" classname="Hexrota.UnityClientTests.HexBoardLifecycleTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-11-18 00:25:04Z" end-time="2026-11-18 00:25:09Z" duration="5.266443" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1045" name="ControllerDisableAndEnablePausesCommittedSwapUntilResume" fullname="Hexrota.UnityClientTests.HexBoardLifecycleTests.ControllerDisableAndEnablePausesCommittedSwapUntilResume" methodname="ControllerDisableAndEnablePausesCommittedSwapUntilResume" classname="Hexrota.UnityClientTests.HexBoardLifecycleTests" runstate="Runnable" seed="510457093" result="Passed" start-time="2026-11-18 00:25:04Z" end-time="2026-11-18 00:25:05Z" duration="0.933135" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1047" name="IdleControllerDisableLocksInputAndResumeAcceptsASwap" fullname="Hexrota.UnityClientTests.HexBoardLifecycleTests.IdleControllerDisableLocksInputAndResumeAcceptsASwap" methodname="IdleControllerDisableLocksInputAndResumeAcceptsASwap" classname="Hexrota.UnityClientTests.HexBoardLifecycleTests" runstate="Runnable" seed="30457055" result="Passed" start-time="2026-11-18 00:25:05Z" end-time="2026-11-18 00:25:06Z" duration="0.933175" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1041" name="LevelOneShowsTintedStonesAndLabelsAndCompletesASwap" fullname="Hexrota.UnityClientTests.HexBoardLifecycleTests.LevelOneShowsTintedStonesAndLabelsAndCompletesASwap" methodname="LevelOneShowsTintedStonesAndLabelsAndCompletesASwap" classname="Hexrota.UnityClientTests.HexBoardLifecycleTests" runstate="Runnable" seed="729112255" result="Passed" start-time="2026-11-18 00:25:06Z" end-time="2026-11-18 00:25:07Z" duration="0.899934" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1043" name="MissingDetachedVisualRootIsSafeDuringControllerTeardown" fullname="Hexrota.UnityClientTests.HexBoardLifecycleTests.MissingDetachedVisualRootIsSafeDuringControllerTeardown" methodname="MissingDetachedVisualRootIsSafeDuringControllerTeardown" classname="Hexrota.UnityClientTests.HexBoardLifecycleTests" runstate="Runnable" seed="165805087" result="Passed" start-time="2026-11-18 00:25:07Z" end-time="2026-11-18 00:25:07Z" duration="0.266497" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1042" name="PauseDuringSwapPreservesCommittedBoardAndResumeAcceptsAnotherSwap" fullname="Hexrota.UnityClientTests.HexBoardLifecycleTests.PauseDuringSwapPreservesCommittedBoardAndResumeAcceptsAnotherSwap" methodname="PauseDuringSwapPreservesCommittedBoardAndResumeAcceptsAnotherSwap" classname="Hexrota.UnityClientTests.HexBoardLifecycleTests" runstate="Runnable" seed="1876417218" result="Passed" start-time="2026-11-18 00:25:07Z" end-time="2026-11-18 00:25:08Z" duration="0.899875" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1044" name="SceneUnloadDuringSwapLeavesNoCallbacksOrVisualRootsAndReloadCanSwap" fullname="Hexrota.UnityClientTests.HexBoardLifecycleTests.SceneUnloadDuringSwapLeavesNoCallbacksOrVisualRootsAndReloadCanSwap" methodname="SceneUnloadDuringSwapLeavesNoCallbacksOrVisualRootsAndReloadCanSwap" classname="Hexrota.UnityClientTests.HexBoardLifecycleTests" runstate="Runnable" seed="864049912" result="Passed" start-time="2026-11-18 00:25:08Z" end-time="2026-11-18 00:25:09Z" duration="0.999969" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1046" name="VisualRootDestroyedDuringSwapCancelsWithoutCommittingInvisibleMoves" fullname="Hexrota.UnityClientTests.HexBoardLifecycleTests.VisualRootDestroyedDuringSwapCancelsWithoutCommittingInvisibleMoves" methodname="VisualRootDestroyedDuringSwapCancelsWithoutCommittingInvisibleMoves" classname="Hexrota.UnityClientTests.HexBoardLifecycleTests" runstate="Runnable" seed="1156686224" result="Passed" start-time="2026-11-18 00:25:09Z" end-time="2026-11-18 00:25:09Z" duration="0.299840" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1048" name="InventoryFlowTests" fullname="Hexrota.UnityClientTests.InventoryFlowTests" classname="Hexrota.UnityClientTests.InventoryFlowTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-11-18 00:25:09Z" end-time="2026-11-18 00:25:10Z" duration="0.757481" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1049" name="PurchasedAndGrantedItemsRequireValidPreviewAndRestoreTheirBoard" fullname="Hexrota.UnityClientTests.InventoryFlowTests.PurchasedAndGrantedItemsRequireValidPreviewAndRestoreTheirBoard" methodname="PurchasedAndGrantedItemsRequireValidPreviewAndRestoreTheirBoard" classname="Hexrota.UnityClientTests.InventoryFlowTests" runstate="Runnable" seed="1542455107" result="Passed" start-time="2026-11-18 00:25:09Z" end-time="2026-11-18 00:25:10Z" duration="0.724087" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Saving results to: C:/UnityProjects/hexrota-unity-migration/test-results/migration/editor/PlayMode-verified.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

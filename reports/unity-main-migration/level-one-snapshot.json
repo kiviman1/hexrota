@@ -1,0 +1,63 @@
+{
+  "selectionSeed": 3746266212,
+  "metadata": {
+    "attemptVersion": 1,
+    "levelId": 1,
+    "variantId": "v4",
+    "levelDataVersion": "variants-v1",
+    "attemptId": "a-1-3-a83324e7",
+    "attemptSerial": 3
+  },
+  "snapshot": {
+    "version": 4,
+    "rulesVersion": "classic-v4",
+    "values": [
+      4,
+      1,
+      3,
+      4,
+      3,
+      4,
+      2,
+      2,
+      2,
+      3,
+      4,
+      1,
+      1,
+      1,
+      2,
+      1,
+      1,
+      4,
+      3
+    ],
+    "layers": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "score": 0,
+    "movesLeft": 10,
+    "turn": 0,
+    "rngState": 3386005712,
+    "history": []
+  },
+  "earnedGold": 20
+}
