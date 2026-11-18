@@ -34,7 +34,7 @@ namespace Hexrota.UnityClientTests
                 Assert.That(game.CurrentScreen, Is.EqualTo("playing"));
                 Assert.That(game.GetComponentsInChildren<Transform>().Any(t => t.name == "Coach"), Is.False);
                 var labels = game.GetComponentsInChildren<Text>();
-                Assert.That(labels.Single(t => t.name == "LevelTitle").text, Is.EqualTo("Puanı topla, alanı boya"));
+                Assert.That(labels.Single(t => t.name == "LevelTitle").text, Is.EqualTo(game.Session.StageName(game.Session.ActiveStage)));
                 Assert.That(labels.Single(t => t.name == "Moves").text, Is.EqualTo(game.Session.Snapshot.movesLeft.ToString()));
                 dock = game.GetComponentsInChildren<Button>().Where(b => b.transform.parent.name == "Footer");
                 Assert.That(dock.Select(b => b.name), Is.EqualTo(new[]{"Menü","Yeniden","Çanta","Mola","Ayarlar"}));

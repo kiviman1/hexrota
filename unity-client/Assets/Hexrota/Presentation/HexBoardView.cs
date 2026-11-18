@@ -44,6 +44,7 @@ namespace Hexrota.UnityClient.Presentation
         private MaterialPropertyBlock tint;
         private Material digitsMaterial;
         private Font digitsFont;
+        private bool authoredStone, authoredFloor;
         private static readonly Color[] Colors = {
             new Color32(235,227,245,255), new Color32(179,101,242,255),
             new Color32(255,207,40,255), new Color32(255,104,81,255),
@@ -61,7 +62,6 @@ namespace Hexrota.UnityClient.Presentation
         private void Awake()
         {
             tint = new MaterialPropertyBlock();
-            digitsFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             Font.textureRebuilt += RefreshDigitAtlas;
         }
 
@@ -90,6 +90,11 @@ namespace Hexrota.UnityClient.Presentation
         public void Initialize(Camera camera, HexrotaAssetCatalog catalog)
         {
             BoardCamera = camera; assets = catalog;
+            var numberTemplate = assets != null && assets.stone != null ? assets.stone.GetComponentInChildren<TextMesh>(true) : null;
+            digitsFont = numberTemplate != null && numberTemplate.font != null
+                ? numberTemplate.font : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            authoredStone = assets != null && assets.stone != null && assets.stone.GetComponent<CastleBoardTile>() != null;
+            authoredFloor = assets != null && assets.ground != null && assets.ground.GetComponent<CastleBoardTile>() != null;
             world = new GameObject("BoardVisuals_PLACEHOLDER").transform;
             world.SetParent(transform, false);
             // Canvas children cannot own world-space model transforms. Keep the
@@ -103,7 +108,6 @@ namespace Hexrota.UnityClient.Presentation
         {
             if (this == null || world == null || effectRoot == null) return;
             Cancel(snapshot); ClearModels(); positions = new Vector3[level.cells.Length];
-            digitsFont.RequestCharactersInTexture("0123456789",64,FontStyle.Bold);
             initialLayers = new int[level.cells.Length]; floorEdges = new Color[level.cells.Length];
             tutorialLayout = level.id is string;
             for (int i = 0; i < level.cells.Length; i++)
@@ -116,22 +120,34 @@ namespace Hexrota.UnityClient.Presentation
                 cells.Add(cell);
                 var ground = Make(assets == null ? null : assets.ground, "Ground_" + i, world);
                 ground.transform.position = positions[i]; grounds.Add(ground);
-                var stone = new GameObject("Stone_" + i);
-                stone.transform.SetParent(world, false);
-                Make(assets == null ? null : assets.stone, "StoneModel_PLACEHOLDER", stone.transform);
+                GameObject stone;
+                if (authoredStone) stone = Make(assets.stone, "Stone_" + i, world);
+                else
+                {
+                    stone = new GameObject("Stone_" + i);
+                    stone.transform.SetParent(world, false);
+                    Make(assets == null ? null : assets.stone, "Artwork", stone.transform);
+                }
                 stone.transform.position = positions[i] + Vector3.back * .15f; stones.Add(stone);
-                var labelObject = new GameObject("Value_" + i);
-                labelObject.transform.SetParent(stone.transform, false);
-                labelObject.transform.localPosition = new Vector3(0, 0, -.38f);
-                var text = labelObject.AddComponent<TextMesh>();
-                text.anchor = TextAnchor.MiddleCenter; text.alignment = TextAlignment.Center;
-                text.font = digitsFont;
+                var text = stone.GetComponentInChildren<TextMesh>(true);
+                if (text == null)
+                {
+                    var fallback = new GameObject();
+                    fallback.transform.SetParent(stone.transform, false);
+                    fallback.transform.localPosition = new Vector3(0,0,-.38f);
+                    text = fallback.AddComponent<TextMesh>();
+                    text.anchor = TextAnchor.MiddleCenter; text.alignment = TextAlignment.Center;
+                    text.font = digitsFont; text.fontSize = 64; text.fontStyle = FontStyle.Bold; text.characterSize = .068f;
+                }
+                text.gameObject.name = "Value_" + i;
                 if (digitsMaterial == null)
+                {
+                    digitsFont.RequestCharactersInTexture("0123456789", text.fontSize, text.fontStyle);
                     digitsMaterial = new Material(Resources.Load<Shader>("PhoneArt/BoardDigit")) {
-                        name = "Board number ink", mainTexture = text.font.material.mainTexture
+                        name = "Board number ink", mainTexture = digitsFont.material.mainTexture
                     };
+                }
                 text.GetComponent<MeshRenderer>().sharedMaterial = digitsMaterial;
-                text.fontSize = 64; text.fontStyle = FontStyle.Bold; text.characterSize = .068f;
                 numbers.Add(text);
             }
             Render(snapshot); FitCamera();
@@ -218,8 +234,9 @@ namespace Hexrota.UnityClient.Presentation
                 if (guide || hasMutedTiles)
                 {
                     float opacity = guide && !focus && !support ? .30f : 1f;
-                    SetGuideOpacity(cells[i], opacity, .485f*.875f/.926f);
-                    SetGuideOpacity(grounds[i], opacity, stones[i].activeSelf ? .485f*.727f/.875f : 0);
+                    SetGuideOpacity(cells[i], opacity, authoredFloor ? .433f/1.055f : .485f*.875f/.926f);
+                    float coveredFloor = authoredFloor ? .433f*.78f : .485f*.727f/.875f;
+                    SetGuideOpacity(grounds[i], opacity, stones[i].activeSelf ? coveredFloor : 0);
                     SetGuideOpacity(stones[i], opacity);
                     Color label = numbers[i].color;
                     label.a = opacity;
@@ -447,7 +464,7 @@ namespace Hexrota.UnityClient.Presentation
             ClearSelection(); selected = index;
             if (index < 0) return;
             selection = Make(assets == null ? null : assets.selectionEffect, "Selection", effectRoot);
-            selection.transform.position = positions[index] + Vector3.back * .07f;
+            selection.transform.position = positions[index] + Vector3.back * .135f;
             Tint(selection, new Color(1, .91f, .47f));
         }
         private void ClearSelection() { selected = -1; if (selection != null) Destroy(selection); selection = null; }
@@ -456,6 +473,12 @@ namespace Hexrota.UnityClient.Presentation
             stones[i].SetActive(value.HasValue);
             numbers[i].text = value.HasValue ? value.Value.ToString() : "";
             if (!value.HasValue) return;
+            var tile = stones[i].GetComponent<CastleBoardTile>();
+            if (tile != null && tile.Show(value.Value - 1))
+            {
+                Tint(stones[i], Color.white);
+                return;
+            }
             int palette = (value.Value % Colors.Length + Colors.Length) % Colors.Length;
             numbers[i].color = Inks[palette];
             Tint(stones[i], Colors[palette], Edges[palette], .037f);
@@ -463,9 +486,17 @@ namespace Hexrota.UnityClient.Presentation
         private void PaintFloor(int index, int layers)
         {
             bool green = layers == 0, partial = !green && layers < initialLayers[index];
+            float mark = green ? 3 : initialLayers[index] == 2 ? layers : 0;
+            var tile = grounds[index].GetComponent<CastleBoardTile>();
+            if (tile != null && tile.Show(green ? 2 : partial ? 1 : 0))
+            {
+                floorEdges[index] = Color.white;
+                Tint(cells[index], floorEdges[index]);
+                Tint(grounds[index], Color.white, mark:mark);
+                return;
+            }
             Color fill = green ? new Color32(118,217,67,255) : partial ? new Color32(134,119,72,255) : new Color32(83,75,60,255);
             floorEdges[index] = green ? new Color32(183,250,126,255) : partial ? new Color32(223,196,127,255) : new Color32(141,123,90,255);
-            float mark = green ? 3 : initialLayers[index] == 2 ? layers : 0;
             Tint(cells[index], floorEdges[index]); Tint(grounds[index],fill,mark:mark);
         }
         private void Tint(GameObject obj, Color color, Color rim = default(Color), float width = 0, float mark = 0)

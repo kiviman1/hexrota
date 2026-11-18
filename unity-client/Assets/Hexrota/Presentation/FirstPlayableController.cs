@@ -14,6 +14,7 @@ namespace Hexrota.UnityClient.Presentation
         [SerializeField] private Camera boardCamera;
         [SerializeField] private RectTransform safe;
         [SerializeField] private CastleHomeView castleHome;
+        [SerializeField] private RectTransform boardTrayPrefab;
         internal RectTransform SafeArea => safe;
         public static Func<UnityGameSession> SessionFactory = UnityGameSession.CreateDefault;
         public UnityGameSession Session { get; private set; }
@@ -21,11 +22,9 @@ namespace Hexrota.UnityClient.Presentation
         public string CurrentScreen { get; private set; }
         private GameObject menu, gameplay, modal;
         private RectTransform boardInput;
-        private Text title, counters, message, modalTitle, modalCopy;
+        private Text message, modalTitle, modalCopy;
         private RectTransform actions;
-        private Button resumeButton, acknowledgeButton, inventoryButton;
-        private Text movesCounter, coachHeading;
-        private GameObject coachPortrait;
+        private Button resumeButton;
         private Sprite roundedCard;
         private Texture2D cardTexture;
         private CoopSceneArt coopScene;
@@ -45,7 +44,7 @@ namespace Hexrota.UnityClient.Presentation
             {
                 return this != null && isActiveAndEnabled && Board != null && boardCamera != null &&
                     safe != null && menu != null && gameplay != null && modal != null &&
-                    title != null && counters != null && message != null &&
+                    castleHud != null && castleHud.IsReady && gameTools != null && message != null &&
                     modalTitle != null && modalCopy != null && actions != null;
             }
         }
@@ -112,7 +111,9 @@ namespace Hexrota.UnityClient.Presentation
             modalCopy = Label("ModalCopy",modal.transform,"",new Vector2(.08f,.49f),new Vector2(.92f,.70f),27,TextAnchor.MiddleCenter);
             actions = Rect("Actions",modal.transform,new Vector2(.08f,.09f),new Vector2(.92f,.46f));
             modal.SetActive(false); gameplay.SetActive(false);
-            coopScene = CoopSceneArt.Create(safe, background, boardCamera);
+            var tray = boardTrayPrefab != null ? boardTrayPrefab :
+                Resources.Load<GameObject>("CastleGame/CastleBoardTray").GetComponent<RectTransform>();
+            coopScene = CoopSceneArt.Create(background, boardCamera, tray);
         }
 
         public void BeginLevelOne() { if (ready) BeginStage(Session.TutorialCount); }
@@ -164,7 +165,7 @@ namespace Hexrota.UnityClient.Presentation
         private void RefreshScene()
         {
             int progress=Session.CompletedSceneTutorials;
-            coopScene.Refresh(progress>=1,progress>=2,CurrentScreen=="menu",CurrentScreen=="menu" && Session.FirstOpening);
+            coopScene.Refresh(progress>=1,progress>=2,CurrentScreen=="menu",gameplay.activeSelf);
         }
 
         public void RequestSwap(int a, int b)
@@ -230,7 +231,7 @@ namespace Hexrota.UnityClient.Presentation
             if (phoneAudio != null) phoneAudio.Configure(Session, true);
             Board.InputEnabled = Session.Status == "playing"; RefreshTutorial(true); EvaluateOutcome();
         }
-        private void ConfirmRestart() { DrawRestart(); }
+        internal void ConfirmRestart() { DrawRestart(); }
         private void ReopenPause() { CurrentScreen = "playing"; Pause(); }
         public void Restart()
         {

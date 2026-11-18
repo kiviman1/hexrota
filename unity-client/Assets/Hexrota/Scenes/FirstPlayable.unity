@@ -49,6 +49,9 @@ MonoBehaviour:
   boardCamera: {fileID: 2002}
   safe: {fileID: 4101}
   castleHome: {fileID: 4202}
+  boardTrayPrefab: {fileID: 100001, guid: 1156f057ad087f1ecefeab9f20c47a02, type: 3}
+  castleHudPrefab: {fileID: 100003, guid: dac3934a1f01071a4206ae95368ffd2a, type: 3}
+  gameToolsPrefab: {fileID: 100003, guid: 85e4df4b46a65d3367bdddc4742597e3, type: 3}
 --- !u!1 &2000
 GameObject:
   m_ObjectHideFlags: 0
