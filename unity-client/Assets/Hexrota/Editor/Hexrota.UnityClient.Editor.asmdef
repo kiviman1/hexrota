@@ -1,0 +1,7 @@
+{
+  "name": "Hexrota.UnityClient.Editor",
+  "rootNamespace": "Hexrota.UnityClient.Editor",
+  "references": [],
+  "includePlatforms": ["Editor"],
+  "autoReferenced": true
+}

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#183d36">
+  <title>HEXROTA — Unity 9.11</title>
+  <style>
+    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#183d36;color:#fcf7de;font-family:system-ui,sans-serif;overscroll-behavior:none}
+    #unity-container{position:fixed;top:env(safe-area-inset-top,0px);right:env(safe-area-inset-right,0px);bottom:env(safe-area-inset-bottom,0px);left:env(safe-area-inset-left,0px);display:flex;align-items:center;justify-content:center}
+    #unity-canvas{width:100%;height:100%;touch-action:none;display:block;outline:0}
+    #status{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:max(20px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left));text-align:center;background:#183d36}
+    #start{font:inherit;font-weight:bold;padding:16px 28px;min-height:48px;border:0;border-radius:12px;background:#f2c76e;color:#183d36}
+    #progress{width:200px;max-width:70vw;height:8px;accent-color:#f2c76e}
+    #message{max-width:440px;line-height:1.5;white-space:pre-line}
+  </style>
+</head>
+<body>
+  <main id="unity-container">
+    <canvas id="unity-canvas" tabindex="-1" aria-label="Hexrota Unity oyun tahtası"></canvas>
+    <div id="status" role="status" aria-live="polite">
+      <strong>HEXROTA · Unity 9.11</strong>
+      <span id="message">Geçici görseller · gerçek C# oyun çekirdeği</span>
+      <progress id="progress" max="1" value="0" hidden></progress>
+      <button id="start" type="button">Oyunu aç</button>
+    </div>
+  </main>
+  <script>
+    const canvas = document.querySelector('#unity-canvas');
+    const statusPanel = document.querySelector('#status');
+    const message = document.querySelector('#message');
+    const startButton = document.querySelector('#start');
+    const progress = document.querySelector('#progress');
+    const buildUrl = 'Build';
+    let unityInstance;
+    window.hexrotaProfileLock = false;
+    const fatal = text => { statusPanel.style.display='flex'; progress.hidden=true; startButton.hidden=true; message.textContent=text; };
+    function resizeCanvas() {
+      // Cap Retina fill rate; layout always follows the real visible viewport.
+      const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
+      const view = window.visualViewport;
+      const container = document.querySelector('#unity-container');
+      const safe = getComputedStyle(container);
+      const edge = name => parseFloat(safe[name]) || 0;
+      const width = Math.max(1,Math.round((view ? view.width : innerWidth)-edge('left')-edge('right')));
+      const height = Math.max(1,Math.round((view ? view.height : innerHeight)-edge('top')-edge('bottom')));
+      container.style.width = width+'px'; container.style.height = height+'px';
+      canvas.width=Math.max(1,Math.round(width*ratio)); canvas.height=Math.max(1,Math.round(height*ratio));
+    }
+    resizeCanvas();
+    window.addEventListener('resize',resizeCanvas);
+    if(window.visualViewport) window.visualViewport.addEventListener('resize',resizeCanvas);
+    // Runtime cancellation runs through Unity's focus/pause callbacks. The lock
+    // remains held while hidden, including iPhone task switching / bfcache.
+    document.addEventListener('visibilitychange',()=>{
+      if (unityInstance) unityInstance.SendMessage('Hexrota','OnWebVisibilityChanged',document.hidden ? 'hidden' : 'visible');
+    });
+    async function startUnity() {
+      progress.hidden=false; message.textContent='Unity yükleniyor…';
+      const loader=document.createElement('script'); loader.src=buildUrl+'/{{{ LOADER_FILENAME }}}';
+      await new Promise((resolve,reject)=>{loader.onload=resolve;loader.onerror=()=>reject(new Error('Unity yükleyicisi alınamadı.'));document.body.appendChild(loader);});
+      unityInstance=await createUnityInstance(canvas,{
+        dataUrl:buildUrl+'/{{{ DATA_FILENAME }}}', frameworkUrl:buildUrl+'/{{{ FRAMEWORK_FILENAME }}}', codeUrl:buildUrl+'/{{{ CODE_FILENAME }}}',
+        streamingAssetsUrl:'StreamingAssets', companyName:'Hexrota', productName:'Hexrota Unity', productVersion:'9.11',
+        matchWebGLToCanvasSize:false, devicePixelRatio:Math.min(window.devicePixelRatio || 1,1.5),
+        showBanner:(text,type)=>{if(type==='error') fatal(text);}
+      }, value=>{progress.value=value;});
+      statusPanel.style.display='none'; canvas.focus();
+    }
+    startButton.addEventListener('click',async()=>{
+      startButton.hidden=true;
+      if(!navigator.locks || !window.isSecureContext) {fatal('Güvenli kayıt için HTTPS ve Web Locks destekli güncel Safari gerekir. Lütfen tarayıcınızı güncelleyin.');return;}
+      try {
+        await navigator.locks.request('hexrota-unity-profile-v2',{mode:'exclusive',ifAvailable:true},async lock=>{
+          if(!lock){fatal('Hexrota Unity başka bir sekmede açık. Önce o sekmeyi kapatıp bu sayfayı yenileyin.');return;}
+          window.hexrotaProfileLock=true;
+          try {await startUnity();await new Promise(()=>{});}
+          catch(error){window.hexrotaProfileLock=false;throw error;}
+        });
+      } catch(error){fatal('Unity başlatılamadı: '+error.message);}
+    });
+  </script>
+</body>
+</html>

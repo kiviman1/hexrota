@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="11" result="Passed" total="11" passed="11" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-17 23:53:14Z" end-time="2026-11-17 23:53:15Z" duration="0.2941259">
+  <test-suite type="TestSuite" id="1000" name="Hexrota Unity" fullname="Hexrota Unity" runstate="Runnable" testcasecount="11" result="Passed" start-time="2026-11-17 23:53:14Z" end-time="2026-11-17 23:53:15Z" duration="0.294126" total="11" passed="11" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1014" name="Hexrota.UnityClient.EditMode.dll" fullname="C:/UnityProjects/hexrota/test-results/unity-lifecycle/baseline/unity-client/Library/ScriptAssemblies/Hexrota.UnityClient.EditMode.dll" runstate="Runnable" testcasecount="11" result="Passed" start-time="2026-11-17 23:53:14Z" end-time="2026-11-17 23:53:15Z" duration="0.289299" total="11" passed="11" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="11312" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1015" name="Hexrota" fullname="Hexrota" runstate="Runnable" testcasecount="11" result="Passed" start-time="2026-11-17 23:53:14Z" end-time="2026-11-17 23:53:15Z" duration="0.289147" total="11" passed="11" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1016" name="UnityClientTests" fullname="Hexrota.UnityClientTests" runstate="Runnable" testcasecount="11" result="Passed" start-time="2026-11-17 23:53:14Z" end-time="2026-11-17 23:53:15Z" duration="0.289084" total="11" passed="11" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1001" name="SceneAndAssetImportTests" fullname="Hexrota.UnityClientTests.SceneAndAssetImportTests" classname="Hexrota.UnityClientTests.SceneAndAssetImportTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-17 23:53:14Z" end-time="2026-11-17 23:53:14Z" duration="0.020347" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1002" name="BuildEntrySceneIsImportedAndEnabled" fullname="Hexrota.UnityClientTests.SceneAndAssetImportTests.BuildEntrySceneIsImportedAndEnabled" methodname="BuildEntrySceneIsImportedAndEnabled" classname="Hexrota.UnityClientTests.SceneAndAssetImportTests" runstate="Runnable" seed="523291637" result="Passed" start-time="2026-11-17 23:53:14Z" end-time="2026-11-17 23:53:14Z" duration="0.006655" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1003" name="EveryVisualSlotReferencesARealPrefabWithNoMissingScripts" fullname="Hexrota.UnityClientTests.SceneAndAssetImportTests.EveryVisualSlotReferencesARealPrefabWithNoMissingScripts" methodname="EveryVisualSlotReferencesARealPrefabWithNoMissingScripts" classname="Hexrota.UnityClientTests.SceneAndAssetImportTests" runstate="Runnable" seed="1134678148" result="Passed" start-time="2026-11-17 23:53:14Z" end-time="2026-11-17 23:53:14Z" duration="0.007037" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1004" name="SessionIntegrationTests" fullname="Hexrota.UnityClientTests.SessionIntegrationTests" classname="Hexrota.UnityClientTests.SessionIntegrationTests" runstate="Runnable" testcasecount="9" result="Passed" start-time="2026-11-17 23:53:14Z" end-time="2026-11-17 23:53:15Z" duration="0.268142" total="9" passed="9" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1008" name="CancelAndBackgroundNeverRollBackTheCommittedMove" fullname="Hexrota.UnityClientTests.SessionIntegrationTests.CancelAndBackgroundNeverRollBackTheCommittedMove" methodname="CancelAndBackgroundNeverRollBackTheCommittedMove" classname="Hexrota.UnityClientTests.SessionIntegrationTests" runstate="Runnable" seed="510314628" result="Passed" start-time="2026-11-17 23:53:14Z" end-time="2026-11-17 23:53:14Z" duration="0.119493" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1005" name="EveryPublishedVariantLoadsAndItsCertifiedRoutesWinInTheUnityAssembly" fullname="Hexrota.UnityClientTests.SessionIntegrationTests.EveryPublishedVariantLoadsAndItsCertifiedRoutesWinInTheUnityAssembly" methodname="EveryPublishedVariantLoadsAndItsCertifiedRoutesWinInTheUnityAssembly" classname="Hexrota.UnityClientTests.SessionIntegrationTests" runstate="Runnable" seed="368149912" result="Passed" start-time="2026-11-17 23:53:14Z" end-time="2026-11-17 23:53:14Z" duration="0.056055" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1013" name="MissingLevelDataFailsExplicitlyInsteadOfBuildingAFakeBoard" fullname="Hexrota.UnityClientTests.SessionIntegrationTests.MissingLevelDataFailsExplicitlyInsteadOfBuildingAFakeBoard" methodname="MissingLevelDataFailsExplicitlyInsteadOfBuildingAFakeBoard" classname="Hexrota.UnityClientTests.SessionIntegrationTests" runstate="Runnable" seed="1983786035" result="Passed" start-time="2026-11-17 23:53:14Z" end-time="2026-11-17 23:53:14Z" duration="0.006468" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1007" name="MoveCommitsBeforePresentationAndRejectsDoubleInput" fullname="Hexrota.UnityClientTests.SessionIntegrationTests.MoveCommitsBeforePresentationAndRejectsDoubleInput" methodname="MoveCommitsBeforePresentationAndRejectsDoubleInput" classname="Hexrota.UnityClientTests.SessionIntegrationTests" runstate="Runnable" seed="156692717" result="Passed" start-time="2026-11-17 23:53:14Z" end-time="2026-11-17 23:53:14Z" duration="0.009207" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1006" name="RealLevelOneAndRejectedSwapPreserveCanonicalSave" fullname="Hexrota.UnityClientTests.SessionIntegrationTests.RealLevelOneAndRejectedSwapPreserveCanonicalSave" methodname="RealLevelOneAndRejectedSwapPreserveCanonicalSave" classname="Hexrota.UnityClientTests.SessionIntegrationTests" runstate="Runnable" seed="562522546" result="Passed" start-time="2026-11-17 23:53:14Z" end-time="2026-11-17 23:53:14Z" duration="0.007219" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1011" name="RealLossSettlesAndRetryCreatesANewSavedAttempt" fullname="Hexrota.UnityClientTests.SessionIntegrationTests.RealLossSettlesAndRetryCreatesANewSavedAttempt" methodname="RealLossSettlesAndRetryCreatesANewSavedAttempt" classname="Hexrota.UnityClientTests.SessionIntegrationTests" runstate="Runnable" seed="1301826522" result="Passed" start-time="2026-11-17 23:53:14Z" end-time="2026-11-17 23:53:14Z" duration="0.027763" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1009" name="RestartDuringAnimationCreatesValidatedFreshAttempt" fullname="Hexrota.UnityClientTests.SessionIntegrationTests.RestartDuringAnimationCreatesValidatedFreshAttempt" methodname="RestartDuringAnimationCreatesValidatedFreshAttempt" classname="Hexrota.UnityClientTests.SessionIntegrationTests" runstate="Runnable" seed="1033987581" result="Passed" start-time="2026-11-17 23:53:14Z" end-time="2026-11-17 23:53:14Z" duration="0.014447" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1012" name="StorageFailureCannotProduceAnUncommittedVisualMove" fullname="Hexrota.UnityClientTests.SessionIntegrationTests.StorageFailureCannotProduceAnUncommittedVisualMove" methodname="StorageFailureCannotProduceAnUncommittedVisualMove" classname="Hexrota.UnityClientTests.SessionIntegrationTests" runstate="Runnable" seed="1257005379" result="Passed" start-time="2026-11-17 23:53:14Z" end-time="2026-11-17 23:53:15Z" duration="0.008908" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1010" name="WinPersistsOnceAndCampaignCompletionCannotBeFarmedByRetry" fullname="Hexrota.UnityClientTests.SessionIntegrationTests.WinPersistsOnceAndCampaignCompletionCannotBeFarmedByRetry" methodname="WinPersistsOnceAndCampaignCompletionCannotBeFarmedByRetry" classname="Hexrota.UnityClientTests.SessionIntegrationTests" runstate="Runnable" seed="1271709682" result="Passed" start-time="2026-11-17 23:53:15Z" end-time="2026-11-17 23:53:15Z" duration="0.017368" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Saving results to: C:\UnityProjects\hexrota\test-results\unity-lifecycle\editmode.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>
