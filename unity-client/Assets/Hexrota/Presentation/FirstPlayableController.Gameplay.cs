@@ -48,6 +48,7 @@ namespace Hexrota.UnityClient.Presentation
             gameTools = Instantiate(toolsPrefab, gameplay.transform, false);
             Place((RectTransform)gameTools.transform, 0, 0, 1, 1);
             gameTools.Bind(this);
+            Board.BindIdleHintOverlay(gameTools.DirectionArrow);
             message = gameTools.Feedback;
             CreateScoreFeedback();
         }
@@ -124,17 +125,19 @@ namespace Hexrota.UnityClient.Presentation
 
         private void LateUpdate()
         {
-            if (!ready || CurrentScreen != "playing" || !HasInterface || !gameTools.ShowingLesson) return;
+            if (!ready || !HasInterface || !gameTools.ShowingLesson) return;
+            bool showGesture = guidePair != null && CurrentScreen == "playing" && Board.CanShowTutorialGesture;
+            gameTools.ShowGuide(showGesture);
+            if (CurrentScreen != "playing") return;
             float elapsed = Time.unscaledTime - speechStarted;
             gameTools.ShowPose(!Board.ReducedMotion && !Board.IsAnimating && elapsed < .99f && ((int)(elapsed/.165f) % 2 == 0));
-            if (guidePair == null || !Board.CanPresent) return;
-            gameTools.ShowGuide(!Board.IsAnimating);
-            if (Board.IsAnimating) return;
-            Board.AnimateGuide(guidePair[0],guidePair[1],Time.unscaledTime-guideStarted);
+            if (!showGesture) return;
+            // Only the glove demonstrates the swipe. The two touch targets stay on their real cells.
             float clock = Mathf.Repeat((Time.unscaledTime-guideStarted)/2.2f,1);
-            float pulse = Board.ReducedMotion ? .5f : Mathf.SmoothStep(0,1,Mathf.InverseLerp(.15f,.70f,clock));
+            float pulse = Mathf.SmoothStep(0,1,Mathf.InverseLerp(.17f,.70f,clock));
             var a = Board.ViewportCell(guidePair[0]); var b = Board.ViewportCell(guidePair[1]);
-            float opacity = Board.ReducedMotion ? 1 : 1-Mathf.InverseLerp(.85f,.95f,clock);
+            float opacity = Mathf.InverseLerp(0,.08f,clock) * (1-Mathf.InverseLerp(.77f,.89f,clock));
+            if (Board.ReducedMotion) { pulse = 0; opacity = 0; }
             gameTools.MoveGuide(a, b, pulse, opacity, Board.BoardCamera.pixelWidth / Mathf.Max(1f, Board.BoardCamera.pixelHeight));
         }
 

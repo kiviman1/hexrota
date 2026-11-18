@@ -79,6 +79,45 @@ namespace Hexrota.UnityClientTests
             Assert.That(view.Session.IsPresenting, Is.False);
             Assert.That(view.Board.InputEnabled, Is.True);
         }
+        [UnityTest] public IEnumerator RejectedDragReturnsFromTheFingerWithoutConsumingAMove()
+        {
+            view.BeginLevelOne();
+            yield return null;
+            var before = view.Session.Snapshot;
+            var model = new HexMatch(view.Session.Level, before);
+            int from = -1, to = -1;
+            for (int a = 0; a < before.values.Length && from < 0; a++)
+                for (int b = a + 1; b < before.values.Length; b++)
+                    if (before.values[a] != before.values[b] && model.Adjacent(a, b) && !model.Clone().Swap(a, b).ok)
+                    {
+                        from = a; to = b; break;
+                    }
+            Assert.That(from, Is.GreaterThanOrEqualTo(0));
+            var source = GameObject.Find("Stone_" + from).transform;
+            var target = GameObject.Find("Stone_" + to).transform;
+            Vector3 sourceStart = source.position, targetStart = target.position;
+            Pointer(from, true);
+            var drag = new PointerEventData(EventSystem.current) { pointerId = 7, position = ScreenPoint(to) };
+            ExecuteEvents.Execute(view.Board.gameObject, drag, ExecuteEvents.dragHandler);
+            Vector3 held = source.position;
+            float heldDistance = Vector3.Distance(sourceStart, held);
+            Assert.That(heldDistance, Is.GreaterThan(.05f));
+            Pointer(to, false);
+            Assert.That(view.Board.IsAnimating, Is.True);
+            Assert.That(Vector3.Distance(source.position, held), Is.LessThan(.001f));
+            float deadline = Time.realtimeSinceStartup + 4;
+            while (view.Board.IsAnimating && Time.realtimeSinceStartup < deadline)
+            {
+                Assert.That(Vector3.Distance(source.position, sourceStart), Is.LessThanOrEqualTo(heldDistance + .001f));
+                yield return null;
+            }
+            Assert.That(view.Board.InputEnabled && !view.Board.IsAnimating, Is.True);
+            Assert.That(source.position, Is.EqualTo(sourceStart));
+            Assert.That(target.position, Is.EqualTo(targetStart));
+            Assert.That(view.Session.Snapshot.movesLeft, Is.EqualTo(before.movesLeft));
+            Assert.That(view.Session.Snapshot.turn, Is.EqualTo(before.turn));
+        }
+
         [UnityTest] public IEnumerator BackgroundPauseAndRestartCancelDisposableAnimation()
         {
             view.BeginLevelOne(); yield return null;

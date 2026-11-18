@@ -20,6 +20,7 @@ namespace Hexrota.UnityClient.Presentation
         private bool wasEligible, attempted;
         private double since, cycleStart, lastShown = double.NegativeInfinity;
         private VisibleIdleHint cycle;
+        internal VisibleIdleHint ActiveCue => cycle;
         public VisibleIdleHint Visible { get; private set; }
         public float Phase { get; private set; }
 

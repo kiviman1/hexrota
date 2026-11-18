@@ -32,6 +32,7 @@ namespace Hexrota.UnityClient.Presentation
         private Color handTint;
 
         internal Text Feedback => feedback;
+        internal TutorialGestureArrow DirectionArrow => arrow;
         internal bool ShowingLesson => coachRegion != null && coachRegion.gameObject.activeSelf;
         internal bool CanShowActor => actor != null && actor.texture != null;
         internal RectTransform ActorMount => actorMount;

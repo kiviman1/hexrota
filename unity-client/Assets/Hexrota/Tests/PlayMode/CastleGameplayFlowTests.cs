@@ -93,6 +93,41 @@ namespace Hexrota.UnityClientTests
         }
 
         [UnityTest]
+        public IEnumerator TutorialGloveShowsTheSwipeWhileBothPlayableStonesStayOnTheirCells()
+        {
+            Click("PlayButton");
+            yield return null;
+            var tools = game.GetComponentInChildren<CastleGameToolsView>();
+            var gesture = tools.transform.Find("GestureRegion");
+            var hand = (RectTransform)gesture.Find("GuidePosition");
+            Assert.That(gesture.gameObject.activeInHierarchy, Is.True);
+            int[] pair = game.Session.TutorialPair;
+            var source = GameObject.Find("Stone_" + pair[0]).transform;
+            var target = GameObject.Find("Stone_" + pair[1]).transform;
+            Vector3 from = source.position, to = target.position;
+            Vector3 sourceScale = source.localScale, targetScale = target.localScale;
+            Vector2 displacement = game.Board.ViewportCell(pair[1]) - game.Board.ViewportCell(pair[0]);
+            Vector2 handStart = hand.anchorMin;
+            int turn = game.Session.Snapshot.turn;
+            float furthest = 0;
+            float until = Time.realtimeSinceStartup + 1.7f;
+            while (Time.realtimeSinceStartup < until)
+            {
+                Assert.That(source.position, Is.EqualTo(from));
+                Assert.That(target.position, Is.EqualTo(to));
+                Assert.That(source.localScale, Is.EqualTo(sourceScale));
+                Assert.That(target.localScale, Is.EqualTo(targetScale));
+                furthest = Mathf.Max(furthest, Vector2.Dot(hand.anchorMin - handStart, displacement.normalized));
+                yield return null;
+            }
+            Assert.That(furthest, Is.GreaterThan(displacement.magnitude * .7f));
+            Assert.That(game.Session.Snapshot.turn, Is.EqualTo(turn));
+            game.Pause();
+            yield return null;
+            Assert.That(gesture.gameObject.activeInHierarchy, Is.False);
+        }
+
+        [UnityTest]
         public IEnumerator NumberedBoardKeepsOneHudAndTheCommittedMoveAcrossPauseAndMenu()
         {
             Click("PlayButton");

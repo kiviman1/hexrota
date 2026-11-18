@@ -51,7 +51,7 @@ namespace Hexrota.UnityClient.Presentation
 
         private void Awake()
         {
-            UnityEngine.Application.targetFrameRate = 30;
+            ApplyFrameRate();
             Screen.sleepTimeout = SleepTimeout.SystemSetting;
             font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             CreateCardSprite();
@@ -174,7 +174,7 @@ namespace Hexrota.UnityClient.Presentation
             requesting = true;
             try
             {
-                Board.MarkPair(null);
+                if (Session.IsTutorial) Board.MarkPair(null);
                 var receipt = Session.TrySwap(a, b);
                 if (receipt.Ok) Board.PlayerMoved(receipt.After);
                 Board.InputEnabled = false;
@@ -306,7 +306,19 @@ namespace Hexrota.UnityClient.Presentation
         {
             if (hidden == "hidden") SuspendSafely();
         }
-        private void OnApplicationPause(bool paused) { if (paused) SuspendSafely(); }
+        private static void ApplyFrameRate()
+        {
+            var refresh = Screen.currentResolution.refreshRateRatio;
+            UnityEngine.Application.targetFrameRate = UnityEngine.Application.isMobilePlatform &&
+                refresh.numerator > 0 && refresh.denominator > 0
+                ? Mathf.RoundToInt((float)refresh.value) : 60;
+        }
+
+        private void OnApplicationPause(bool paused)
+        {
+            if (paused) SuspendSafely();
+            else ApplyFrameRate();
+        }
         private void OnApplicationFocus(bool focused) { if (!focused) SuspendSafely(); }
         private void SuspendSafely()
         {

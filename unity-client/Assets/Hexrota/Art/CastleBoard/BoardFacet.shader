@@ -7,6 +7,9 @@ Shader "Hexrota/Castle Board Facet"
         _Color ("Highlight tint", Color) = (1,1,1,1)
         _Lustre ("Bevel glint", Range(0,1)) = 0.32
         _GuideOpacity ("Lesson focus opacity", Range(0,1)) = 1
+        _MotionOpacity ("Clear and refill opacity", Range(0,1)) = 1
+        _MotionFlash ("Match gleam", Range(0,1)) = 0
+        _SpawnCeiling ("Refill segment top (world Y)", Float) = 100000
         _GuideCutout ("Covered face during lesson fade", Float) = 0
         _FloorMark ("Floor indicator", Float) = 0
         _IdleOutline ("Hint edge", Float) = 0
@@ -24,9 +27,11 @@ Shader "Hexrota/Castle Board Facet"
             #include "UnityCG.cginc"
             sampler2D _MainTex;
             fixed4 _Pigment, _Color;
+            half _MotionOpacity, _MotionFlash;
+            float _SpawnCeiling;
             half _Lustre, _GuideOpacity, _GuideCutout, _FloorMark, _IdleOutline, _IdleSheen;
             struct VertexData { float4 vertex : POSITION; float3 normal : NORMAL; float2 uv : TEXCOORD0; };
-            struct FragmentData { float4 pos : SV_POSITION; half3 normal : TEXCOORD0; float2 uv : TEXCOORD1; float2 plane : TEXCOORD2; };
+            struct FragmentData { float4 pos : SV_POSITION; half3 normal : TEXCOORD0; float2 uv : TEXCOORD1; float2 plane : TEXCOORD2; float worldY : TEXCOORD3; };
             FragmentData vert(VertexData v)
             {
                 FragmentData o;
@@ -34,6 +39,7 @@ Shader "Hexrota/Castle Board Facet"
                 o.normal = UnityObjectToWorldNormal(v.normal);
                 o.uv = v.uv;
                 o.plane = v.vertex.xz;
+                o.worldY = mul(unity_ObjectToWorld, v.vertex).y;
                 return o;
             }
             half segmentDistance(float2 p, float2 a, float2 b)
@@ -43,6 +49,8 @@ Shader "Hexrota/Castle Board Facet"
             }
             fixed4 frag(FragmentData i) : SV_Target
             {
+                clip(_MotionOpacity - .005);
+                clip(_SpawnCeiling - i.worldY);
                 float2 p = abs(i.plane);
                 float hex = max(p.y, dot(p,float2(.8660254,.5)));
                 if (_GuideCutout > 0) clip(hex - _GuideCutout);
@@ -70,7 +78,7 @@ Shader "Hexrota/Castle Board Facet"
                         lit = lerp(lit,half3(1,.91,.66),1-smoothstep(.015,.022,d));
                     }
                 }
-                return fixed4(lit,_Color.a*_GuideOpacity);
+                return fixed4(lerp(lit,half3(1,.93,.78),.4*_MotionFlash), _Color.a*_GuideOpacity*_MotionOpacity);
             }
             ENDCG
         }

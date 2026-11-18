@@ -150,6 +150,7 @@ namespace Hexrota.UnityClient.Presentation
                 text.GetComponent<MeshRenderer>().sharedMaterial = digitsMaterial;
                 numbers.Add(text);
             }
+            PrepareMotion(level);
             Render(snapshot); FitCamera();
         }
 
@@ -162,6 +163,7 @@ namespace Hexrota.UnityClient.Presentation
         {
             if (BoardCamera == null) return;
             StopIdleHint();
+            if (pointer != int.MinValue && BoardCamera.rect != area) OnCancel(null);
             BoardCamera.rect = area; FitCamera();
         }
 
@@ -210,6 +212,7 @@ namespace Hexrota.UnityClient.Presentation
             {
                 stones[i].transform.position = positions[i] + Vector3.back * .15f;
                 stones[i].transform.localScale = Vector3.one;
+                SetMotionInk(stones[i], 1f, 0f);
                 PaintStone(i, snapshot.values[i]);
                 PaintFloor(i, snapshot.layers[i]);
             }
@@ -246,16 +249,8 @@ namespace Hexrota.UnityClient.Presentation
             hasMutedTiles = guide;
         }
 
-        public void AnimateGuide(int a, int b, float seconds)
-        {
-            if (!CanPresent || IsAnimating || a < 0 || a >= stones.Count || b < 0 || b >= stones.Count) return;
-            float phase = ReducedMotion || selected >= 0 || pointer != int.MinValue ? 0 : Mathf.Repeat(seconds/3.8f,1);
-            float travel = Mathf.SmoothStep(0,1,Mathf.InverseLerp(.16f,.62f,phase));
-            float size = phase < .77f ? 1 : phase < .89f ? 1-Mathf.InverseLerp(.77f,.89f,phase)
-                : Mathf.InverseLerp(.92f,1,phase);
-            MoveAlongSwap(a,b,phase >= .9f ? 0 : travel);
-            stones[a].transform.localScale = stones[b].transform.localScale = Vector3.one * (1.025f * size);
-        }
+        internal bool CanShowTutorialGesture => InputEnabled && !IsAnimating && pointer == int.MinValue &&
+            selected < 0 && targetCell == null && CanPresent;
 
         private void MoveAlongSwap(int a, int b, float t)
         {
@@ -279,6 +274,7 @@ namespace Hexrota.UnityClient.Presentation
 
         public void Present(MovePresentation receipt)
         {
+            float releasedAt = releasedFraction;
             Cancel(receipt.Before);
             if (!CanPresent) return;
             PresentationStarted?.Invoke(receipt);
@@ -289,94 +285,8 @@ namespace Hexrota.UnityClient.Presentation
                 return;
             }
             IsAnimating = true;
-            animation = StartCoroutine(Animate(receipt));
-        }
-
-        private IEnumerator Animate(MovePresentation receipt)
-        {
-            // The UI selects the requested indices. A rejected swap is visualized
-            // and returned without mutating a snapshot or spending a move.
-            int a = receipt.A, b = receipt.B;
-            if (a >= 0 && b >= 0 && a < stones.Count && b < stones.Count)
-            {
-                yield return SwapMotion(a, b, receipt.Ok ? .30f : .14f);
-                if (!HasVisuals) { Cancel(null); yield break; }
-                if (!receipt.Ok) { yield return SwapMotion(a, b, .16f, true); }
-            }
-            if (!HasVisuals) { Cancel(null); yield break; }
-            if (receipt.Ok && receipt.Swap != null)
-            {
-                int ordinal = 0;
-                float duration = Mathf.Min(.96f,3f/Mathf.Max(1,receipt.Swap.frames.Length));
-                foreach (WaveFrame wave in receipt.Swap.frames)
-                {
-                    ordinal++;
-                    WaveProgress?.Invoke(wave,ordinal,0);
-                    for (int i = 0; i < stones.Count; i++)
-                    {
-                        stones[i].transform.position = positions[i] + Vector3.back * .15f;
-                        PaintStone(i, wave.before[i]);
-                    }
-                    foreach (int i in wave.matched)
-                        Spawn(assets == null ? null : assets.matchEffect, positions[i] + Vector3.back * .35f);
-                    float elapsed = 0;
-                    while (elapsed < duration*.48f)
-                    {
-                        if (!HasVisuals) { Cancel(null); yield break; }
-                        elapsed += Time.unscaledDeltaTime;
-                        float phase = Mathf.Clamp01(elapsed / (duration*.48f));
-                        float size = phase < .25f ? Mathf.Lerp(1,1.12f,phase/.25f) : Mathf.Lerp(1.12f,.02f,(phase-.25f)/.75f);
-                        foreach (int i in wave.matched) stones[i].transform.localScale = Vector3.one * size;
-                        WaveProgress?.Invoke(wave,ordinal,phase*.48f);
-                        yield return null;
-                    }
-                    if (!HasVisuals) { Cancel(null); yield break; }
-                    foreach (int i in wave.matched) Spawn(assets == null ? null : assets.clearEffect, positions[i]);
-                    for (int i = 0; i < stones.Count; i++)
-                    {
-                        stones[i].transform.localScale = Vector3.one;
-                        PaintStone(i, wave.after[i]);
-                        PaintFloor(i, wave.layers[i]);
-                    }
-                    var starts = new Dictionary<int, Vector3>();
-                    foreach (FallTile fall in wave.falls)
-                    {
-                        Vector3 start = fall.from.HasValue ? positions[fall.from.Value] :
-                            positions[fall.to] + Vector3.up * (.97f * (fall.spawnOrder.GetValueOrDefault() + 1));
-                        starts[fall.to] = start;
-                        stones[fall.to].transform.position = start + Vector3.back * .15f;
-                        Spawn(assets == null ? null : assets.fallEffect, start);
-                    }
-                    elapsed = 0;
-                    while (elapsed < duration*.52f)
-                    {
-                        if (!HasVisuals) { Cancel(null); yield break; }
-                        elapsed += Time.unscaledDeltaTime;
-                        float phase = Mathf.Clamp01(elapsed / (duration*.52f));
-                        float t = Mathf.SmoothStep(0, 1, phase);
-                        WaveProgress?.Invoke(wave,ordinal,.48f+phase*.52f);
-                        foreach (var entry in starts)
-                            stones[entry.Key].transform.position = Vector3.Lerp(entry.Value, positions[entry.Key], t) + Vector3.back * .15f;
-                        yield return null;
-                    }
-                    if (!HasVisuals) { Cancel(null); yield break; }
-                    ClearEffects();
-                }
-            }
-            Render(receipt.After); IsAnimating = false; animation = null;
-            if (PresentationCompleted != null) PresentationCompleted();
-        }
-
-        private IEnumerator SwapMotion(int a, int b, float duration, bool reverse = false)
-        {
-            float elapsed = 0;
-            while (elapsed < duration)
-            {
-                if (!HasVisuals) yield break;
-                elapsed += Time.unscaledDeltaTime; float t = Mathf.SmoothStep(0, 1, elapsed / duration);
-                MoveAlongSwap(a,b,reverse ? 1-t : t);
-                yield return null;
-            }
+            if (releasedAt > 0f) MoveAlongSwap(receipt.A, receipt.B, releasedAt);
+            animation = StartCoroutine(Animate(receipt, releasedAt));
         }
 
         private Action<int> targetCell;
@@ -391,11 +301,12 @@ namespace Hexrota.UnityClient.Presentation
         public void Cancel(GameSnapshot authoritative)
         {
             StopIdleHint();
+            ResetGesture();
             targetCell = null;
             bool wasAnimating = IsAnimating;
             if (this != null && animation != null) StopCoroutine(animation);
             animation = null; IsAnimating = false;
-            pointer = int.MinValue; pressed = -1; dragged = false; ClearSelection();
+            ClearSelection();
             ClearEffects(); Render(authoritative);
             if (wasAnimating && PresentationCancelled != null) PresentationCancelled();
         }
@@ -403,30 +314,36 @@ namespace Hexrota.UnityClient.Presentation
         public void OnPointerDown(PointerEventData e)
         {
             StopIdleHint();
-            if (this == null || !isActiveAndEnabled || !HasVisuals || !InputEnabled || IsAnimating || pointer != int.MinValue) return;
-            pointer = e.pointerId; down = e.position; pressed = Hit(e.position); dragged = false;
+            if (e.button != PointerEventData.InputButton.Left) return;
+            if (pointer != int.MinValue)
+            {
+                if (pointer != e.pointerId) OnCancel(null);
+                return;
+            }
+            if (this == null || !isActiveAndEnabled || !HasVisuals || !InputEnabled || IsAnimating || Input.touchCount > 1) return;
+            int start = Hit(e.position);
+            if (start < 0 || (targetCell == null && !stones[start].activeSelf)) return;
+            pointer = e.pointerId;
+            down = e.position;
+            pressed = start;
+            pressedViewport = BoardCamera.pixelRect;
+            float dpi = Screen.dpi;
+            swipePixelScale = UnityEngine.Application.isMobilePlatform && !UnityEngine.Application.isEditor && dpi > 0f ? dpi / 160f : 1f;
         }
         public void OnDrag(PointerEventData e)
         {
-            if (e.pointerId != pointer) return;
-            if (Vector2.Distance(down, e.position) > Mathf.Max(10, Screen.dpi > 0 ? Screen.dpi * .06f : 14)) dragged = true;
+            if (e.pointerId == pointer) SampleSwipe(e.position, true);
         }
         public void OnPointerUp(PointerEventData e)
         {
             if (e.pointerId != pointer) return;
-            // StandaloneInputModule dispatches PointerUp for an interrupted
-            // native touch as well. That interruption must never issue a move.
-            for (int i = 0; i < Input.touchCount; i++)
-            {
-                Touch touch = Input.GetTouch(i);
-                if (touch.fingerId == e.pointerId && touch.phase == TouchPhase.Canceled)
-                {
-                    pointer = int.MinValue; pressed = -1; dragged = false; ClearSelection(); return;
-                }
-            }
-            int from = pressed, to = Hit(e.position); bool wasDrag = dragged;
-            pointer = int.MinValue; pressed = -1; dragged = false;
-            if (!InputEnabled || IsAnimating || from < 0 || to < 0) { ClearSelection(); return; }
+            SampleSwipe(e.position, false);
+            if (e.pointerId != pointer) return;
+            int from = pressed, locked = swipeTarget;
+            bool wasDrag = dragged;
+            float handoff = dragFraction;
+            int to = wasDrag ? -1 : Hit(e.position);
+            ResetGesture();
             if (targetCell != null)
             {
                 if (!wasDrag && from == to)
@@ -436,11 +353,25 @@ namespace Hexrota.UnityClient.Presentation
                 }
                 return;
             }
-            if (wasDrag && from != to) { Request(from, to); return; }
+            if (wasDrag)
+            {
+                if (locked >= 0)
+                {
+                    releasedFraction = handoff;
+                    try { Request(from, locked); }
+                    finally { releasedFraction = 0f; }
+                }
+                else ClearSelection();
+                return;
+            }
+            if (from != to) { ClearSelection(); return; }
             if (selected >= 0 && selected != to) { Request(selected, to); return; }
             Select(selected == to ? -1 : to);
         }
-        public void OnCancel(BaseEventData data) { pointer = int.MinValue; pressed = -1; ClearSelection(); }
+        public void OnCancel(BaseEventData data)
+        {
+            ResetGesture(); ClearSelection();
+        }
         private void Request(int from, int to)
         {
             ClearSelection(); if (SwapRequested != null) SwapRequested(from, to);
@@ -467,7 +398,12 @@ namespace Hexrota.UnityClient.Presentation
             selection.transform.position = positions[index] + Vector3.back * .135f;
             Tint(selection, new Color(1, .91f, .47f));
         }
-        private void ClearSelection() { selected = -1; if (selection != null) Destroy(selection); selection = null; }
+        private void ClearSelection()
+        {
+            selected = -1;
+            if (selection != null) { selection.SetActive(false); Destroy(selection); }
+            selection = null;
+        }
         private void PaintStone(int i, int? value)
         {
             stones[i].SetActive(value.HasValue);
@@ -515,10 +451,6 @@ namespace Hexrota.UnityClient.Presentation
         {
             return HexrotaAssetCatalog.InstantiateOrFallback(prefab, parent, name);
         }
-        private void Spawn(GameObject prefab, Vector3 position)
-        {
-            var effect = Make(prefab, "Effect_PLACEHOLDER", effectRoot); effect.transform.position = position;
-        }
         private void ClearEffects()
         {
             if (effectRoot == null) return;
@@ -530,7 +462,7 @@ namespace Hexrota.UnityClient.Presentation
             foreach (var o in cells) if (o != null) Destroy(o);
             foreach (var o in grounds) if (o != null) Destroy(o);
             foreach (var o in stones) if (o != null) Destroy(o);
-            cells.Clear(); grounds.Clear(); stones.Clear(); numbers.Clear();
+            cells.Clear(); grounds.Clear(); stones.Clear(); numbers.Clear(); motionInk.Clear();
         }
         private void OnDisable() { InputEnabled = false; Cancel(null); }
         private void OnDestroy()
