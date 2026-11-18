@@ -158,10 +158,10 @@ namespace Hexrota.UnityClientTests
             Assert.That(feedback.gameObject.activeSelf,Is.False);
             Assert.That(view.Session.Snapshot.score,Is.EqualTo(scored));
             view.Resume(); StartLegalSwap();
-            int gained = view.Session.Snapshot.score-scored;
+            int expectedScore = view.Session.Snapshot.score;
             yield return FinishSwap();
-            var amount = view.GetComponentsInChildren<UnityEngine.UI.Text>().Single(t => t.name == "ReceiptGain");
-            Assert.That(amount.text,Is.EqualTo("+"+gained));
+            var amount = view.GetComponentsInChildren<UnityEngine.UI.Text>().Single(t => t.name == "Counters");
+            Assert.That(amount.text,Is.EqualTo(expectedScore + " / " + view.Session.Level.target));
             Assert.That(feedback.gameObject.activeSelf,Is.False);
         }
 

@@ -42,6 +42,7 @@ namespace Hexrota.UnityClient.Presentation
             var hudPrefab = castleHudPrefab != null ? castleHudPrefab :
                 Resources.Load<GameObject>("CastleGame/CastleHud").GetComponent<CastleHudView>();
             castleHud = Instantiate(hudPrefab, gameplay.transform, false);
+            castleHud.Bind(this);
 
             var toolsPrefab = gameToolsPrefab != null ? gameToolsPrefab :
                 Resources.Load<GameObject>("CastleGame/CastleGameTools").GetComponent<CastleGameToolsView>();
@@ -56,9 +57,9 @@ namespace Hexrota.UnityClient.Presentation
         private void LayoutGameplay(UnityEngine.Rect safeRect)
         {
             if (Board == null || Session == null || !Session.HasAttempt) return;
-            bool lesson = Session.IsTutorial, first = Session.ActiveStage == 0;
+            bool lesson = Session.IsTutorial;
             float aspect = safeRect.width * Screen.width / Mathf.Max(1,safeRect.height * Screen.height);
-            var layout = new MobileLayout.GameRegions(aspect,lesson,first);
+            var layout = new MobileLayout.GameRegions(aspect,lesson);
             Place((RectTransform)castleHud.transform,0,1-layout.Header,1,1);
             gameTools.FitRegions(layout);
             var area = layout.Board;
@@ -67,28 +68,6 @@ namespace Hexrota.UnityClient.Presentation
                 safeRect.width * area.width,safeRect.height * area.height);
             Board.SetCameraArea(cameraArea);
             coopScene.SetBoardArea(cameraArea, Board, Session.Level.cells.Length);
-            PositionBoardActor(area,aspect,lesson);
-        }
-
-        private void PositionBoardActor(UnityEngine.Rect area, float aspect, bool lesson)
-        {
-            var mount = gameTools.ActorMount;
-            mount.gameObject.SetActive(false);
-            if (lesson || Board == null || !gameTools.CanShowActor) return;
-            foreach (float pixels in new[] {110f,96f,80f})
-            {
-                float w = pixels / 390f, h = w * aspect, gx = 8f / 390f, gy = gx * aspect;
-                foreach (var p in new[] {
-                    new Vector2(area.xMin+14f/390,area.yMin+gy), new Vector2(area.xMax-14f/390-w,area.yMin+gy),
-                    new Vector2(area.xMin+14f/390,area.yMax-28f/390*aspect-h), new Vector2(area.xMax-14f/390-w,area.yMax-28f/390*aspect-h) })
-                {
-                    var box = new UnityEngine.Rect(p.x,p.y,w,h);
-                    var envelope = new UnityEngine.Rect(p.x-10f/390-gx,p.y-5f/390*aspect-gy,w+20f/390+2*gx,h+29f/390*aspect+2*gy);
-                    if (envelope.yMin < area.yMin || envelope.yMax > area.yMax + 10f/390*aspect || Board.OverlapsTiles(envelope,area)) continue;
-                    Place(mount,box.xMin,box.yMin,box.xMax,box.yMax);
-                    mount.gameObject.SetActive(true); return;
-                }
-            }
         }
 
         private void RefreshCounters()

@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Hexrota.Application;
 using Hexrota.UnityClient;
@@ -15,7 +16,7 @@ namespace Hexrota.UnityClientTests
     public sealed class PhoneGameplayTests
     {
         [UnityTest]
-        public IEnumerator SkipButtonOpensNumberedBoardAndFooterCanPauseAndResume()
+        public IEnumerator TutorialAndNumberedBoardUseTopSettingsAndKeepTheBottomFree()
         {
             var initial = FirstPlayableController.SessionFactory;
             var storage = new MemoryProfileStorage();
@@ -26,8 +27,23 @@ namespace Hexrota.UnityClientTests
                 var game = Object.FindAnyObjectByType<FirstPlayableController>();
                 game.BeginJourney();
                 yield return null;
-                var dock = game.GetComponentsInChildren<Button>().Where(b => b.transform.parent.name == "Footer");
-                Assert.That(dock.Select(b => b.name), Is.EqualTo(new[]{"Menü","Mola"}));
+                var hud = game.GetComponentInChildren<CastleHudView>();
+                var settings = hud.GetComponentsInChildren<Button>().Single();
+                Assert.That(settings.name, Is.EqualTo("Ayarlar"));
+                Canvas.ForceUpdateCanvases();
+                var portrait = hud.GetComponentsInChildren<RawImage>().Single(i => i.name == "TavikPortrait");
+                var headerLabels = hud.GetComponentsInChildren<Text>();
+                Vector2 portraitPoint = ScreenCenter(portrait.rectTransform);
+                Assert.That(ScreenCenter(headerLabels.Single(t => t.name == "Counters").rectTransform).x,
+                    Is.LessThan(portraitPoint.x));
+                Assert.That(ScreenCenter(headerLabels.Single(t => t.name == "Moves").rectTransform).x,
+                    Is.GreaterThan(portraitPoint.x));
+                Assert.That(portraitPoint.y, Is.GreaterThan(game.Board.BoardCamera.pixelRect.yMax));
+                Assert.That(game.GetComponentInChildren<CastleGameToolsView>().transform.Find("DockRegion"), Is.Null);
+                TapSettings(settings);
+                Assert.That(game.CurrentScreen, Is.EqualTo("settings"));
+                game.GetComponentsInChildren<Button>().Single(b => b.name == "Kapat").onClick.Invoke();
+                Assert.That(game.Session.IsTutorial && game.Board.InputEnabled, Is.True);
                 Assert.That(game.GetComponentsInChildren<RawImage>().Single(i => i.name == "Face").texture, Is.Not.Null);
                 game.GetComponentsInChildren<Button>().Single(b => b.name == "Geç").onClick.Invoke();
                 yield return null;
@@ -36,8 +52,8 @@ namespace Hexrota.UnityClientTests
                 var labels = game.GetComponentsInChildren<Text>();
                 Assert.That(labels.Single(t => t.name == "LevelTitle").text, Is.EqualTo(game.Session.StageName(game.Session.ActiveStage)));
                 Assert.That(labels.Single(t => t.name == "Moves").text, Is.EqualTo(game.Session.Snapshot.movesLeft.ToString()));
-                dock = game.GetComponentsInChildren<Button>().Where(b => b.transform.parent.name == "Footer");
-                Assert.That(dock.Select(b => b.name), Is.EqualTo(new[]{"Menü","Yeniden","Çanta","Mola","Ayarlar"}));
+                Assert.That(game.GetComponentsInChildren<Button>().Select(b => b.name),
+                    Is.EquivalentTo(new[] { "Ayarlar" }));
                 foreach (var value in Enumerable.Range(0,game.Session.Level.cells.Length))
                 {
                     Vector2 projected = game.Board.ViewportCell(value);
@@ -54,14 +70,32 @@ namespace Hexrota.UnityClientTests
                 game.Board.OnPointerDown(new PointerEventData(EventSystem.current) { pointerId=1, position=Vector2.zero });
                 Assert.That(game.Board.ShowingIdleHint,Is.False);
                 game.Board.OnCancel(null);
-                dock.Single(b => b.name == "Mola").onClick.Invoke();
-                Assert.That(game.CurrentScreen, Is.EqualTo("paused"));
-                game.Resume();
+                TapSettings(settings);
+                Assert.That(game.CurrentScreen, Is.EqualTo("settings"));
+                Assert.That(game.Board.InputEnabled, Is.False);
+                game.GetComponentsInChildren<Button>().Single(b => b.name == "Kapat").onClick.Invoke();
                 Assert.That(game.Board.InputEnabled, Is.True);
                 game.ReturnToMenu();
                 LogAssert.NoUnexpectedReceived();
             }
             finally { FirstPlayableController.SessionFactory = initial; }
         }
+
+        private static void TapSettings(Button settings)
+        {
+            Canvas.ForceUpdateCanvases();
+            var rect = (RectTransform)settings.transform;
+            Vector2 point = ScreenCenter(rect);
+            Assert.That(point.y, Is.GreaterThan(Screen.safeArea.yMax - Screen.safeArea.height * .25f));
+            var input = new PointerEventData(EventSystem.current) { position = point };
+            var hits = new List<RaycastResult>();
+            EventSystem.current.RaycastAll(input, hits);
+            Assert.That(hits, Is.Not.Empty);
+            Assert.That(ExecuteEvents.ExecuteHierarchy(hits[0].gameObject, input, ExecuteEvents.pointerClickHandler),
+                Is.EqualTo(settings.gameObject));
+        }
+
+        private static Vector2 ScreenCenter(RectTransform rect) =>
+            RectTransformUtility.WorldToScreenPoint(null, rect.TransformPoint(rect.rect.center));
     }
 }

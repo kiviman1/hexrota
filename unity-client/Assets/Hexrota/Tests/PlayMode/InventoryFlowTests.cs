@@ -86,7 +86,7 @@ namespace Hexrota.UnityClientTests
             int seventh = session.TutorialCount + 6;
             view.BeginStage(seventh);
             yield return null;
-            Click("Çanta"); Click("70 Altınla +1 al"); Click("Vazgeç");
+            view.OpenInventory(); Click("70 Altınla +1 al"); Click("Vazgeç");
             Assert.That(session.InventoryOffer("greenBrush").Stock, Is.EqualTo(3));
             Click("70 Altınla +1 al"); Click("Satın al");
             Assert.That(session.InventoryOffer("greenBrush").Stock, Is.EqualTo(4));
@@ -101,17 +101,17 @@ namespace Hexrota.UnityClientTests
             int startLayer = session.Snapshot.layers[cell], moves = session.Snapshot.movesLeft;
             TapCell(cell); Click("Vazgeç");
             Assert.That(session.Snapshot.layers[cell], Is.EqualTo(startLayer));
-            Click("Çanta"); Click("Hücre seç"); TapCell(cell);
+            view.OpenInventory(); Click("Hücre seç"); TapCell(cell);
             view.OnWebVisibilityChanged("hidden");
             Assert.That(view.CurrentScreen, Is.EqualTo("paused"));
             Assert.That(session.InventoryOffer("greenBrush").Stock, Is.EqualTo(4));
             view.Resume();
-            Click("Çanta"); Click("Hücre seç"); TapCell(cell); Click("1 Yeşil Fırça kullan");
+            view.OpenInventory(); Click("Hücre seç"); TapCell(cell); Click("1 Yeşil Fırça kullan");
             Assert.That(session.Snapshot.layers[cell], Is.EqualTo(startLayer - 1));
             Assert.That(session.InventoryOffer("greenBrush").Stock, Is.EqualTo(3));
             Assert.That(session.InventoryOffer("greenBrush").CanUse, Is.False);
 
-            Click("Çanta"); Click("Taş seç"); TapCell(cell);
+            view.OpenInventory(); Click("Taş seç"); TapCell(cell);
             int value = session.Level.palette.First(x => x != session.Snapshot.values[cell]);
             Click(value.ToString()); Click("1 Renk Anahtarı kullan");
             float deadline = Time.realtimeSinceStartup + 15;

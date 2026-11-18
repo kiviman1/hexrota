@@ -13,6 +13,8 @@ namespace Hexrota.UnityClient.Presentation
         private static readonly int MotionFlash = Shader.PropertyToID("_MotionFlash");
         private static readonly int SpawnCeiling = Shader.PropertyToID("_SpawnCeiling");
         private const float NoCeiling = 100000f;
+        internal const float MatchCollected = .29f;
+        private const float WaveSeconds = 1.25f;
 
         private sealed class StoneInk
         {
@@ -26,6 +28,12 @@ namespace Hexrota.UnityClient.Presentation
         private readonly Dictionary<int, float> columnTop = new Dictionary<int, float>();
         private Cell[] motionCells;
         private int[][] swipeNeighbors;
+        private Vector3[] matchCenters;
+        private Vector3 waveCenter;
+        internal Vector2 MatchCenterInViewport => BoardCamera != null
+            ? (Vector2)BoardCamera.WorldToViewportPoint(waveCenter) : Vector2.zero;
+        private bool[] unvisitedMatch;
+        private int[] connectedMatch;
         private int swipeTarget = -1;
         private Rect pressedViewport;
         private float swipePixelScale;
@@ -38,6 +46,9 @@ namespace Hexrota.UnityClient.Presentation
         {
             motionCells = level.cells;
             swipeNeighbors = BoardTopology.For(level).neighbors;
+            matchCenters = new Vector3[level.cells.Length];
+            unvisitedMatch = new bool[level.cells.Length];
+            connectedMatch = new int[level.cells.Length];
             segmentedGravity = level.obstacles != null;
             firstColumn = int.MaxValue;
             columnTop.Clear();
@@ -163,7 +174,7 @@ namespace Hexrota.UnityClient.Presentation
                     for (int i = 0; i < stones.Count; i++)
                         if (receipt.Before.values[i] != waves[0].before[i]) PaintStone(i, waves[0].before[i]);
                 }
-                float pace = Mathf.Min(1f, 3f / Mathf.Max(1, waves.Length * .9f));
+                float pace = Mathf.Min(1f, 3.3f / (waves.Length * WaveSeconds));
                 for (int i = 0; i < waves.Length; i++)
                 {
                     yield return AnimateWave(waves[i], i + 1, pace);
@@ -244,14 +255,15 @@ namespace Hexrota.UnityClient.Presentation
         {
             public int cell;
             public bool spawn;
-            public float delay, ceiling;
+            public float delay, ceiling, duration;
             public Vector3 from, to;
         }
 
-        private Drop[] Routes(WaveFrame wave, float pace, out float lastDelay)
+        private Drop[] Routes(WaveFrame wave, float pace, out float lastLanding)
         {
             var drops = new Drop[wave.falls.Length];
-            lastDelay = 0;
+            var longestInColumn = new Dictionary<int, float>();
+            lastLanding = 0;
             for (int i = 0; i < drops.Length; i++)
             {
                 var fall = wave.falls[i];
@@ -270,33 +282,92 @@ namespace Hexrota.UnityClient.Presentation
                 }
                 else drop.from = positions[fall.from.Value] + Vector3.forward * StoneDepth;
                 drops[i] = drop;
-                lastDelay = Mathf.Max(lastDelay, drop.delay);
+                float rowsToFall = Mathf.Abs(drop.from.y - to.y) / RowSpacing;
+                longestInColumn.TryGetValue(q, out float farthest);
+                longestInColumn[q] = Mathf.Max(farthest, rowsToFall);
+            }
+            // A column uses one clock so successive spawns cannot catch one another.
+            for (int i = 0; i < drops.Length; i++)
+            {
+                float rows = longestInColumn[motionCells[drops[i].cell].q];
+                drops[i].duration = Mathf.Max(.28f, (.29f + .065f * Mathf.Sqrt(rows)) * pace);
+                lastLanding = Mathf.Max(lastLanding, drops[i].duration + drops[i].delay);
             }
             return drops;
         }
 
+        private Vector3 LocateMatches(WaveFrame wave)
+        {
+            Vector3 center = Vector3.zero;
+            foreach (int cell in wave.matched)
+            {
+                center += positions[cell];
+                unvisitedMatch[cell] = true;
+            }
+            // These are already committed matches. Group their art locally before
+            // joining the single gain supplied for this wave, even for two distant runs.
+            foreach (int cell in wave.matched)
+            {
+                if (!unvisitedMatch[cell]) continue;
+                Vector3 localCenter = Vector3.zero;
+                connectedMatch[0] = cell;
+                int count = 1;
+                unvisitedMatch[cell] = false;
+                for (int i = 0; i < count; i++)
+                {
+                    int current = connectedMatch[i];
+                    localCenter += positions[current];
+                    foreach (int neighbor in swipeNeighbors[current])
+                    {
+                        if (!unvisitedMatch[neighbor] || wave.before[neighbor] != wave.before[cell]) continue;
+                        unvisitedMatch[neighbor] = false;
+                        connectedMatch[count++] = neighbor;
+                    }
+                }
+                localCenter /= count;
+                for (int i = 0; i < count; i++) matchCenters[connectedMatch[i]] = localCenter;
+            }
+            return center / Mathf.Max(1, wave.matched.Length);
+        }
+
+        private void GatherStones(WaveFrame wave, Vector3 center, float phase)
+        {
+            float gather = Mathf.InverseLerp(.13f, 1f, phase);
+            float firstLeg = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(0, .65f, gather));
+            float secondLeg = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.65f, 1, gather));
+            float direct = Mathf.SmoothStep(0, 1, gather);
+            float size = Mathf.Lerp(1f, .19f, direct) + .105f * Mathf.Sin(Mathf.PI * Mathf.InverseLerp(0, .32f, phase));
+            float opacity = 1f - Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.8f, 1f, phase));
+            for (int i = 0; i < wave.matched.Length; i++)
+            {
+                int cell = wave.matched[i];
+                var stone = stones[cell];
+                Vector3 localCenter = matchCenters[cell];
+                Vector3 point = (localCenter - center).sqrMagnitude < .0001f
+                    ? Vector3.Lerp(positions[cell], center, direct)
+                    : Vector3.Lerp(Vector3.Lerp(positions[cell], localCenter, firstLeg), center, secondLeg);
+                point.z = StoneDepth - (.30f + .003f * i) * direct;
+                stone.transform.position = point;
+                stone.transform.localScale = Vector3.one * size;
+                SetMotionInk(stone, opacity, Mathf.Sin(Mathf.PI * phase));
+                if (phase >= 1f) stone.SetActive(false);
+            }
+        }
+
         private IEnumerator AnimateWave(WaveFrame wave, int ordinal, float pace)
         {
-            float burst = .22f * pace, fallStart = .25f * pace;
-            float fallDuration = Mathf.Max(.28f, .38f * pace);
-            var drops = Routes(wave, pace, out float lastDelay);
-            float duration = Mathf.Max(fallStart + fallDuration + lastDelay, .81f * pace);
+            waveCenter = LocateMatches(wave);
+            var drops = Routes(wave, pace, out float lastLanding);
+            float duration = Mathf.Max(WaveSeconds * pace, lastLanding / (1f - MatchCollected));
+            float fallStart = MatchCollected * duration;
             bool cleared = false, falling = false;
             for (float elapsed = 0; ; elapsed += Time.unscaledDeltaTime)
             {
                 if (!HasVisuals) yield break;
                 if (!cleared)
                 {
-                    float t = Mathf.Clamp01(elapsed / burst);
-                    float vanish = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.25f, 1f, t));
-                    float size = t < .25f ? Mathf.Lerp(1f, 1.12f, t / .25f) : Mathf.Lerp(1.12f, .40f, vanish);
-                    foreach (int cell in wave.matched)
-                    {
-                        var stone = stones[cell];
-                        stone.transform.localScale = Vector3.one * size;
-                        SetMotionInk(stone, 1f - vanish, Mathf.Sin(Mathf.PI * t));
-                        if (t >= 1f) stone.SetActive(false);
-                    }
+                    float t = Mathf.Clamp01(elapsed / fallStart);
+                    GatherStones(wave, waveCenter, t);
                     if (t >= 1f)
                     {
                         cleared = true;
@@ -307,7 +378,7 @@ namespace Hexrota.UnityClient.Presentation
                 {
                     if (!falling) { AssignFallDestinations(wave); falling = true; }
                     foreach (var drop in drops)
-                        DrawFall(drop, Mathf.Clamp01((elapsed - fallStart - drop.delay) / fallDuration));
+                        DrawFall(drop, Mathf.Clamp01((elapsed - fallStart - drop.delay) / drop.duration));
                 }
                 WaveProgress?.Invoke(wave, ordinal, Mathf.Clamp01(elapsed / duration));
                 if (elapsed >= duration) yield break;
@@ -318,15 +389,15 @@ namespace Hexrota.UnityClient.Presentation
         private void DrawFall(Drop drop, float t)
         {
             var stone = stones[drop.cell];
-            float flight = Mathf.Clamp01(t / .82f);
-            float descent = flight * (.48f + .52f * flight);
+            float flight = Mathf.Clamp01(t / .76f);
+            float descent = flight * (.12f + .88f * flight);
             Vector3 point = Vector3.Lerp(drop.from, drop.to, descent);
-            // A short compression at contact followed by one much smaller rebound.
-            float impact = t < .82f ? 0f : Mathf.Sin(Mathf.PI * Mathf.InverseLerp(.82f, .93f, t));
-            float rebound = t < .93f ? 0f : Mathf.Sin(Mathf.PI * Mathf.InverseLerp(.93f, 1f, t));
-            point.y += rebound * .012f - impact * .033f;
+            float stretch = .045f * Mathf.Sin(Mathf.PI * flight) * flight;
+            float impact = Mathf.Sin(Mathf.PI * Mathf.InverseLerp(.76f, .85f, t));
+            float rebound = Mathf.Sin(Mathf.PI * Mathf.InverseLerp(.85f, 1f, t));
+            point.y += RowSpacing * (.058f * rebound - .023f * impact);
             stone.transform.position = point;
-            stone.transform.localScale = new Vector3(1f + .055f * impact, 1f - .065f * impact, 1f);
+            stone.transform.localScale = new Vector3(1f + .085f * impact - stretch * .5f, 1f - .10f * impact + stretch, 1f);
             float opacity = drop.spawn ? Mathf.SmoothStep(0, 1, (drop.ceiling - point.y) / (.5f * RowSpacing)) : 1f;
             SetMotionInk(stone, opacity, 0f, drop.spawn && flight < 1f ? drop.ceiling : NoCeiling);
         }

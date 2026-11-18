@@ -91,7 +91,8 @@ namespace Hexrota.UnityClient.Presentation
             var tails=Rect("RibbonTails",ribbon.transform,Vector2.zero,Vector2.one).gameObject.AddComponent<PhoneRibbonTails>();
             tails.raycastTarget=false;
             OptionText("DialogTitle",titleText,30,64,292,48,23,TextAnchor.MiddleLeft,true,Paper);
-            OptionText("DialogDescription",copy,18,123,315,50,13,TextAnchor.MiddleLeft,false,OptColor("715266"));
+            if (!string.IsNullOrEmpty(copy))
+                OptionText("DialogDescription",copy,18,123,315,50,13,TextAnchor.MiddleLeft,false,OptColor("715266"));
             phoneAudio.Configure(Session,false,true);
         }
         private void OptionSwitch(string key,string titleText,string subtitle,float y,bool value,Action<bool> change,
@@ -120,7 +121,10 @@ namespace Hexrota.UnityClient.Presentation
         public void OpenMobileSettings()
         {
             if (!ready || !HasInterface) return;
-            OptionsPanel("settings","Ayarlar","KENDİ TEMPOUNU BUL","Biraz ses, biraz sakinlik. Nasıl iyi geliyorsa.",1800,1565);
+            bool inGame = (optionsShade == null ? CurrentScreen : optionsReturn) == "playing";
+            OptionsPanel("settings","Ayarlar","KENDİ TEMPOUNU BUL",inGame ? "" : "Biraz ses, biraz sakinlik. Nasıl iyi geliyorsa.",1800,1565);
+            if (optionsReturn == "playing")
+                OptionButton("Bölümden çık",18,121,316,44,CloseOptionsToHome);
             OptionBox("Ses",18,169,316,220,"fff6dd","fff4d8","ebc58c",15,.8f);
             OptionSwitch("Efektler","Ses efektleri","Eşleşmelerin ve hamlelerin sesi",175,Session.SoundEnabled,on=>Session.SetPreferences(sound:on));
             OptionSwitch("Müzik","Müzik","Arka planda sakin bir melodi",243,Session.MusicEnabled,on=>Session.SetPreferences(music:on));
@@ -196,9 +200,9 @@ namespace Hexrota.UnityClient.Presentation
 
         private void CloseOptionsToHome()
         {
+            Session.ReturnToMenu();
             optionsReturn="menu";
             CloseMobileOptions();
-            Session.ReturnToMenu();
         }
 
         public void OpenMobileLives()

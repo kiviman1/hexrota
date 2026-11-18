@@ -128,7 +128,7 @@ namespace Hexrota.UnityClientTests
         }
 
         [UnityTest]
-        public IEnumerator NumberedBoardKeepsOneHudAndTheCommittedMoveAcrossPauseAndMenu()
+        public IEnumerator TopSettingsKeepsOneHudAndTheCommittedMoveOnReturnToTheLevel()
         {
             Click("PlayButton");
             Click("Geç");
@@ -139,12 +139,14 @@ namespace Hexrota.UnityClientTests
             game.RequestSwap(pair[0], pair[1]);
             Assert.That(game.Board.IsAnimating, Is.True);
             Assert.That(game.Session.Snapshot.turn, Is.EqualTo(1));
-            Click("Mola");
-            Assert.That(game.CurrentScreen, Is.EqualTo("paused"));
+            Click("Ayarlar");
+            Assert.That(game.CurrentScreen, Is.EqualTo("settings"));
             Assert.That(game.Board.IsAnimating, Is.False);
-            Click("Devam et");
+            Click("Kapat");
             CheckHudAndBoard();
-            game.ReturnToMenu();
+            Click("Ayarlar");
+            Click("Bölümden çık");
+            Assert.That(game.CurrentScreen, Is.EqualTo("menu"));
             Assert.That(game.GetComponentInChildren<CastleHudView>(), Is.Null);
             Assert.That(game.GetComponentInChildren<CoopSceneArt>().GetComponentsInChildren<Transform>()
                 .Any(part => part.name == "RoyalFelt"), Is.False);

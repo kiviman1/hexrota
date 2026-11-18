@@ -7,7 +7,7 @@ namespace Hexrota.UnityClient.Presentation
     [DisallowMultipleComponent]
     public sealed class CastleBevel : BaseMeshEffect
     {
-        public enum Silhouette { Rounded, Triangle }
+        public enum Silhouette { Rounded, Triangle, Arch, CurvedRibbon }
 
         [SerializeField] private Silhouette shape;
         [SerializeField, Min(0)] private float radius = 12f;
@@ -44,7 +44,8 @@ namespace Hexrota.UnityClient.Presentation
         private void Fill(VertexHelper mesh, Rect rect, float corner, Color low, Color high)
         {
             int start = mesh.currentVertCount;
-            int count = shape == Silhouette.Triangle ? 3 : 36;
+            int count = shape == Silhouette.Arch ? 35 : shape == Silhouette.CurvedRibbon ? 34 :
+                shape == Silhouette.Triangle ? 3 : 36;
             mesh.AddVert(rect.center, graphic.color * Color.Lerp(low, high, .5f), Vector2.zero);
             for (int i = 0; i < count; i++)
             {
@@ -59,6 +60,27 @@ namespace Hexrota.UnityClient.Presentation
         private Vector2 Point(Rect rect, float corner, int i)
         {
             Vector2 half = rect.size * .5f;
+            if (shape == Silhouette.Arch)
+            {
+                float rise = Mathf.Min(rect.height * .70f, half.x);
+                if (i < 25)
+                {
+                    float a = Mathf.PI * i / 24;
+                    return new Vector2(rect.center.x + half.x * Mathf.Cos(a), rect.yMax - rise + rise * Mathf.Sin(a));
+                }
+                bool left = i < 30;
+                float baseAngle = (left ? 180 + (i - 25) * 22.5f : 270 + (i - 30) * 22.5f) * Mathf.Deg2Rad;
+                var baseCorner = new Vector2(left ? rect.xMin + corner : rect.xMax - corner, rect.yMin + corner);
+                return baseCorner + new Vector2(Mathf.Cos(baseAngle), Mathf.Sin(baseAngle)) * corner;
+            }
+            if (shape == Silhouette.CurvedRibbon)
+            {
+                bool top = i < 17;
+                float x = top ? 1 - i / 8f : (i - 17) / 8f - 1;
+                float dip = .23f * rect.height;
+                float y = (top ? rect.yMax : rect.yMin + dip) - dip * x * x;
+                return new Vector2(rect.center.x + x * half.x, y);
+            }
             if (shape == Silhouette.Triangle)
             {
                 if (i == 0) return new Vector2(rect.xMax, rect.center.y);

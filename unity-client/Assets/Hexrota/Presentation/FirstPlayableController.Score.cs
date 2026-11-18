@@ -1,45 +1,41 @@
-using System.Collections.Generic;
 using System.Linq;
 using Hexrota.Gameplay;
 using Hexrota.Rewards;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Hexrota.UnityClient.Presentation
 {
     public sealed partial class FirstPlayableController
     {
+        [SerializeField] private ScorePacketView scorePacketPrefab;
         private RectTransform feedbackLayer, packet;
-        private Text packetGain, packetCaption;
-        private readonly List<Text> flightDigits = new List<Text>();
+        private ScorePacketView scorePacket;
+        private Vector3 packetRestScale;
         private MovePresentation scoreMove;
         private RewardPlan scorePlan;
-        private Vector2 matchCenter, hudDestination;
-        private int waveNumber, priorWaveScore, displayedGain, displayedScore;
-        private bool scoreMilestone, groundMilestone;
+        private int waveNumber, priorWaveScore;
+        private bool scoreMilestone, groundMilestone, groundShown, landed;
 
         private void CreateScoreFeedback()
         {
-            feedbackLayer = Rect("ScoreFeedback",gameplay.transform,Vector2.zero,Vector2.one);
-            packet = Rect("ScorePacket",feedbackLayer,new Vector2(.26f,.455f),new Vector2(.74f,.545f));
-            packetGain = PlayText("PacketGain",packet,"",0,0,1,.8f,82,new Color32(255,242,166,255),TextAnchor.MiddleCenter,true);
-            packetCaption = PlayText("PacketHeadline",packet,"",0,.72f,1,1,21,new Color32(255,243,183,255),TextAnchor.MiddleCenter,true);
-            OutlineScore(packetGain); OutlineScore(packetCaption);
+            feedbackLayer = Rect("ScoreFeedback", gameplay.transform, Vector2.zero, Vector2.one);
+            var prefab = scorePacketPrefab != null ? scorePacketPrefab :
+                Resources.Load<GameObject>("CastleGame/ScorePacket").GetComponent<ScorePacketView>();
+            scorePacket = Instantiate(prefab, feedbackLayer, false);
+            scorePacket.name = "ScorePacket";
+            packet = (RectTransform)scorePacket.transform;
+            packetRestScale = packet.localScale;
+            packet.gameObject.SetActive(false);
             feedbackLayer.gameObject.SetActive(false);
-        }
-
-        private static void OutlineScore(Text label)
-        {
-            var outline = label.gameObject.AddComponent<Outline>();
-            outline.effectColor = new Color32(41,72,43,255); outline.effectDistance = new Vector2(2,-3);
         }
 
         private void BeginScoreFeedback(MovePresentation move)
         {
             ClearScoreFeedback();
-            if (!move.Ok || move.Swap == null || move.Swap.frames.Length == 0) return;
+            if (!move.Ok) return;
+            castleHud.ShowMoves(move.After.movesLeft);
+            if (move.Swap == null || move.Swap.frames.Length == 0) return;
             scoreMove = move;
-            // An item animates committed evidence, but carries no classic reward plan.
             scorePlan = move.A >= 0 && move.B >= 0 ? Session.FeedbackPlan : null;
             priorWaveScore = move.Before.score;
             if (!Board.ReducedMotion) feedbackLayer.gameObject.SetActive(true);
@@ -61,101 +57,80 @@ namespace Hexrota.UnityClient.Presentation
             }
         }
 
-        private Vector2 CellInHud(int cell)
+        private void StartScoreWave(WaveFrame wave, int number)
         {
-            return boardInput.anchorMin + Vector2.Scale(boardInput.anchorMax-boardInput.anchorMin,Board.ViewportCell(cell));
-        }
-
-        private void StartScoreWave(WaveFrame wave,int number)
-        {
-            if (waveNumber > 0) priorWaveScore += scoreMove.Swap.frames[waveNumber-1].scoreGain;
+            if (waveNumber > 0) priorWaveScore += scoreMove.Swap.frames[waveNumber - 1].scoreGain;
             waveNumber = number;
-            displayedGain = displayedScore = -1;
+            groundShown = landed = false;
             var headline = scorePlan?.headline;
             if (headline == null || headline.completion || headline.wave != number) headline = null;
             var cue = scorePlan?.waves?.Where(c => c.wave == number).OrderByDescending(c => c.tier).ThenByDescending(c => c.rawTier).FirstOrDefault();
             if (headline != null && (cue == null || headline.tier > cue.tier)) cue = headline;
             if (phoneAudio != null) phoneAudio.Reward(Session,cue);
-            packetCaption.text = headline != null ? CueText(headline) : number > 1 ? number + ". ZİNCİR" : "";
+            scorePacket.ShowWave(wave.scoreGain, headline != null ? CueText(headline) : number > 1 ? number + ". ZİNCİR" : "");
             scoreMilestone = scorePlan?.milestones?.Any(m => m.kind == "score" && m.wave == number) == true;
             groundMilestone = scorePlan?.milestones?.Any(m => m.kind == "ground" && m.wave == number) == true;
-            matchCenter = Vector2.zero;
-            for (int i=0;i<wave.matched.Length;i++)
-            {
-                matchCenter += CellInHud(wave.matched[i]) / wave.matched.Length;
-                if (flightDigits.Count <= i)
-                {
-                    var digit = PlayText("MatchedDigit",feedbackLayer,"",.446f,.47f,.554f,.53f,48,Paper,TextAnchor.MiddleCenter,true);
-                    OutlineScore(digit); flightDigits.Add(digit);
-                }
-                flightDigits[i].text = wave.before[wave.matched[i]].ToString(); flightDigits[i].gameObject.SetActive(true);
-            }
-            for (int i=wave.matched.Length;i<flightDigits.Count;i++) flightDigits[i].gameObject.SetActive(false);
-            Vector2 point = feedbackLayer.InverseTransformPoint(castleHud.ScoreDestination.TransformPoint(castleHud.ScoreDestination.rect.center));
-            hudDestination = UnityEngine.Rect.PointToNormalized(feedbackLayer.rect,point);
         }
 
-        private void DrawScoreWave(WaveFrame wave,int number,float phase)
+        private void DrawScoreWave(WaveFrame wave, int number, float phase)
         {
             if (!HasInterface || scoreMove == null || feedbackLayer == null || !feedbackLayer.gameObject.activeSelf) return;
-            if (waveNumber != number) StartScoreWave(wave,number);
-            Vector2 area = feedbackLayer.rect.size;
-            float collect = Mathf.SmoothStep(0,1,Mathf.InverseLerp(0,.29f,phase));
-            for (int i=0;i<wave.matched.Length;i++)
+            if (waveNumber != number) StartScoreWave(wave, number);
+            if (!groundShown && phase >= HexBoardView.MatchCollected)
             {
-                var digit = flightDigits[i];
-                digit.gameObject.SetActive(collect < 1);
-                if (collect >= 1) continue;
-                var pos = Vector2.Lerp(CellInHud(wave.matched[i]),matchCenter,collect);
-                digit.rectTransform.anchoredPosition = Vector2.Scale(pos - Vector2.one * .5f, area);
-                digit.rectTransform.localScale = Vector3.one*(1+Mathf.Sin(collect*Mathf.PI)*.2f-collect*.45f);
+                groundShown = true;
+                castleHud.ShowGround(wave.layers);
             }
-            bool showPacket = phase > .1f && phase < .9f;
+
+            const float launch = .52f, contact = .81f;
+            bool showPacket = phase >= HexBoardView.MatchCollected && phase < contact;
             packet.gameObject.SetActive(showPacket);
             if (showPacket)
             {
-                float fly = Mathf.SmoothStep(0,1,Mathf.InverseLerp(.50f,.9f,phase));
-                Vector2 center = Vector2.Lerp(matchCenter,hudDestination,fly);
-                center.y += Mathf.Sin(fly*Mathf.PI)*.04f;
-                packet.anchoredPosition = Vector2.Scale(center - Vector2.one * .5f, area);
-                packet.localScale = Vector3.one*Mathf.Lerp(1,.34f,fly);
-                int gain = Mathf.RoundToInt(wave.scoreGain*collect);
-                if (gain != displayedGain)
-                {
-                    displayedGain = gain;
-                    packetGain.text = "+" + gain;
-                }
+                Vector2 origin = feedbackLayer.InverseTransformPoint(boardInput.TransformPoint(
+                    UnityEngine.Rect.NormalizedToPoint(boardInput.rect, Board.MatchCenterInViewport)));
+                var destination = castleHud.ScoreDestination;
+                Vector2 goal = feedbackLayer.InverseTransformPoint(destination.TransformPoint(destination.rect.center));
+                float fly = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(launch, contact - .01f, phase));
+                Vector2 offset = goal - origin;
+                Vector2 bend = new Vector2(offset.y, -offset.x).normalized * Mathf.Min(65f, offset.magnitude * .16f);
+                packet.localPosition = Vector2.Lerp(origin, goal, fly) + bend * (4f * fly * (1f - fly));
+
+                float bloom = Mathf.InverseLerp(HexBoardView.MatchCollected, .43f, phase);
+                float size = bloom < .44f ? Mathf.SmoothStep(.46f, 1.29f, bloom / .44f) :
+                    Mathf.SmoothStep(1.29f, 1f, (bloom - .44f) / .56f);
+                packet.localScale = packetRestScale * Mathf.Lerp(size, .59f, fly);
+                scorePacket.ShowHeadline(phase < launch);
             }
-            float landed = Mathf.InverseLerp(.86f,1,phase);
-            int score = priorWaveScore + Mathf.RoundToInt(wave.scoreGain*landed);
-            if (score != displayedScore)
+            if (phase < contact) return;
+            if (!landed)
             {
-                displayedScore = score;
-                castleHud.ShowScore(score);
+                landed = true;
+                castleHud.ShowScore(priorWaveScore + wave.scoreGain);
             }
-            float beat = Mathf.Sin(landed*Mathf.PI);
-            castleHud.ScaleGoals(1 + beat*(scoreMilestone ? .065f : .035f), 1 + (groundMilestone ? .065f*beat : 0));
+            float progress = Mathf.InverseLerp(contact, 1f, phase);
+            float beat = progress < .32f ? Mathf.SmoothStep(0, 1, progress / .32f) :
+                Mathf.SmoothStep(1, 0, (progress - .32f) / .68f);
+            castleHud.ScaleGoals(1f + beat * (scoreMilestone ? .28f : .22f), 1f + (groundMilestone ? .09f * beat : 0f));
         }
 
         private void FinishScoreFeedback()
         {
             if (scoreMove == null) return;
-            var move = scoreMove; var headline = scorePlan?.headline;
+            var headline = scorePlan?.headline;
             if (phoneAudio != null && (Board.ReducedMotion || headline?.completion == true))
                 phoneAudio.Reward(Session,headline ?? scorePlan?.waves?.OrderByDescending(c => c.tier).FirstOrDefault());
             ClearScoreFeedback();
-            castleHud.ShowGain(move.Swap.scoreGain);
         }
 
         private void ClearScoreFeedback()
         {
-            scoreMove = null; scorePlan = null; waveNumber = 0;
+            scoreMove = null;
+            scorePlan = null;
+            waveNumber = 0;
+            if (packet != null) packet.gameObject.SetActive(false);
             if (feedbackLayer != null) feedbackLayer.gameObject.SetActive(false);
-            if (castleHud != null)
-            {
-                castleHud.ShowGain(0);
-                castleHud.ScaleGoals(1, 1);
-            }
+            if (castleHud != null) castleHud.ScaleGoals(1, 1);
         }
     }
 }

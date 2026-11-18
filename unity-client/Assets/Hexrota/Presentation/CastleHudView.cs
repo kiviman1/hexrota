@@ -12,6 +12,7 @@ namespace Hexrota.UnityClient.Presentation
         [SerializeField] private Text stageTag;
         [SerializeField] private Text levelTitle;
         [SerializeField] private Text remainingMoves;
+        [SerializeField] private Button settings;
         [SerializeField] private string tutorialFormat = "ÖĞREN {n}";
         [SerializeField] private string chapterFormat = "BÖLÜM {n}";
 
@@ -25,15 +26,17 @@ namespace Hexrota.UnityClient.Presentation
         [Header("Eşleşme geri bildirimi")]
         [SerializeField] private RectTransform scoreGoal;
         [SerializeField] private RectTransform groundGoal;
-        [SerializeField] private GameObject scoreReceipt;
-        [SerializeField] private Text receiptValue;
-        [SerializeField] private string gainFormat = "+{gain}";
         private Vector3 scoreRestScale, groundRestScale;
         private int scoreTarget;
 
         internal RectTransform ScoreDestination => scoreCount.rectTransform;
         internal bool IsReady => stageTag != null && levelTitle != null && scoreCount != null &&
             remainingMoves != null && groundCount != null && scoreProgress != null && groundProgress != null;
+
+        internal void Bind(FirstPlayableController game)
+        {
+            if (settings != null) settings.onClick.AddListener(game.OpenMobileSettings);
+        }
 
         private void Awake()
         {
@@ -48,13 +51,23 @@ namespace Hexrota.UnityClient.Presentation
             stageTag.text = (tutorial ? tutorialFormat : chapterFormat)
                 .Replace("{n}", number.ToString("00", CultureInfo.InvariantCulture));
             levelTitle.text = name;
-            remainingMoves.text = snapshot.movesLeft.ToString(CultureInfo.InvariantCulture);
-            int green = 0;
-            foreach (int layers in snapshot.layers)
-                if (layers == 0) green++;
-            ShowProgress(groundCount, groundProgress, green, snapshot.layers.Length);
+            ShowMoves(snapshot.movesLeft);
+            ShowGround(snapshot.layers);
             scoreTarget = target;
             ShowScore(snapshot.score);
+        }
+
+        internal void ShowMoves(int moves)
+        {
+            remainingMoves.text = moves.ToString(CultureInfo.InvariantCulture);
+        }
+
+        internal void ShowGround(int[] layers)
+        {
+            int green = 0;
+            foreach (int remaining in layers)
+                if (remaining == 0) green++;
+            ShowProgress(groundCount, groundProgress, green, layers.Length);
         }
 
         internal void ShowScore(int score)
@@ -75,13 +88,6 @@ namespace Hexrota.UnityClient.Presentation
         {
             if (scoreGoal != null) scoreGoal.localScale = scoreRestScale * score;
             if (groundGoal != null) groundGoal.localScale = groundRestScale * ground;
-        }
-
-        internal void ShowGain(int gain)
-        {
-            if (scoreReceipt == null || receiptValue == null) return;
-            scoreReceipt.SetActive(gain > 0);
-            if (gain > 0) receiptValue.text = gainFormat.Replace("{gain}", gain.ToString(CultureInfo.InvariantCulture));
         }
     }
 }

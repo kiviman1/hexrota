@@ -7,15 +7,18 @@ namespace Hexrota.UnityClientTests
 {
     public sealed class PhoneGameplayLayoutTests
     {
-        [Test]
-        public void MobileBoardAndControlsFollowThePortraitPlayArea()
+        [TestCase(390,844)]
+        [TestCase(360,640)]
+        [TestCase(393,852)]
+        public void BoardUsesTheSpaceBelowTheHudAndRespectsTheTutorialCard(int width, int height)
         {
-            var numeric = new MobileLayout.GameRegions(390f/844,false,false);
-            var lesson = new MobileLayout.GameRegions(390f/844,true,true);
-            Assert.That(844*numeric.Header,Is.EqualTo(160).Within(.1));
-            Assert.That(844*numeric.Footer,Is.EqualTo(90).Within(.1));
-            Assert.That(844*(1-numeric.Board.center.y), Is.EqualTo(462).Within(1));
-            Assert.That(844*(1-lesson.Board.center.y), Is.EqualTo(535).Within(1));
+            var numeric = new MobileLayout.GameRegions((float)width/height,false);
+            var lesson = new MobileLayout.GameRegions((float)width/height,true);
+            Assert.That(numeric.Header * height / width, Is.EqualTo(132f / 390).Within(.001));
+            Assert.That(numeric.Board.yMin * height, Is.InRange(0f, 8f));
+            Assert.That(lesson.Board.yMin, Is.EqualTo(numeric.Board.yMin));
+            Assert.That(numeric.Board.yMax, Is.LessThan(1 - numeric.Header));
+            Assert.That(lesson.CoachTop, Is.LessThan(1 - lesson.Header));
             Assert.That(lesson.Board.yMax,Is.LessThan(lesson.CoachBottom));
         }
 

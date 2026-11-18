@@ -30,6 +30,14 @@ namespace Hexrota.UnityClientTests
                     Is.TypeOf<Sprite>(), field);
                 Assert.That(node.GetComponent("Text"), Is.Null, field);
             }
+            var portrait = nodes.Single(node => node.name == "TavikPortrait").GetComponent<UnityEngine.UI.RawImage>();
+            Assert.That(portrait.texture, Is.Not.Null);
+            Assert.That(portrait.raycastTarget, Is.False);
+            var settings = hud.GetComponentsInChildren<UnityEngine.UI.Button>(true).Single();
+            Assert.That(settings.name, Is.EqualTo("Ayarlar"));
+            var gear = settings.transform.Find("SettingsIcon").GetComponent<UnityEngine.UI.Image>();
+            Assert.That(gear.sprite, Is.Not.Null);
+            Assert.That(gear.raycastTarget, Is.False);
         }
 
         [Test]
@@ -39,10 +47,10 @@ namespace Hexrota.UnityClientTests
             var tray = Resources.Load<GameObject>("CastleGame/CastleBoardTray");
             Assert.That(tools, Is.Not.Null);
             Assert.That(tray, Is.Not.Null);
-            var bag = tools.transform.Find("DockRegion/CampaignControls/Footer/Çanta");
-            Assert.That(bag.GetComponent("Button"), Is.Not.Null);
-            Assert.That(bag.Find("Label").GetComponent("Text"), Is.Not.Null);
-            AssertSprite(bag.Find("Medallion/Icon"), "GreenBrush");
+            var buttons = tools.GetComponentsInChildren<UnityEngine.UI.Button>(true);
+            Assert.That(buttons.Select(button => button.name), Is.EquivalentTo(new[] { "Geç", "Devam et" }));
+            Assert.That(tools.transform.Find("DockRegion"), Is.Null);
+            Assert.That(tools.transform.Find("TavikPosition"), Is.Null);
             AssertSprite(tools.transform.Find("GestureRegion/GuidePosition/GuideGlove"), "GuideGlove");
             var pieces = tray.GetComponentsInChildren<Transform>(true);
             foreach (string layer in new[] { "AntiqueGoldRim", "RoyalFelt", "WovenDiamonds" })

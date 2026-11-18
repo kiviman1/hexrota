@@ -173,21 +173,6 @@ namespace Hexrota.UnityClient.Presentation
                 ? (Vector2)BoardCamera.WorldToViewportPoint(positions[index]) : Vector2.zero;
         }
 
-        public bool OverlapsTiles(Rect envelope, Rect area)
-        {
-            if (!HasVisuals || BoardCamera == null) return true;
-            float h = .56f*40/44 / BoardCamera.orthographicSize;
-            float w = h * BoardCamera.pixelHeight / Mathf.Max(1, BoardCamera.pixelWidth);
-            for (int i = 0; i < positions.Length; i++)
-            {
-                Vector2 center = area.min + Vector2.Scale(area.size, ViewportCell(i));
-                float height = area.height * h * .8660254f;
-                if (new Rect(center.x-area.width*w*.5f, center.y-height*.5f,
-                    area.width*w, height).Overlaps(envelope)) return true;
-            }
-            return false;
-        }
-
         private void FitCamera()
         {
             if (BoardCamera == null || positions == null || positions.Length == 0) return;
