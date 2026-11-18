@@ -164,6 +164,7 @@ namespace Hexrota.UnityClient
         public sealed class GoldRescueOffer
         {
             internal long Revision;
+            internal string AttemptId;
             public int Cost { get; internal set; }
             public int Moves { get; internal set; }
             public bool Affordable { get; internal set; }
@@ -174,17 +175,20 @@ namespace Hexrota.UnityClient
             var offer = controller.RescueOffer();
             if (!W.Equal(W.Get(offer,"eligible"),true)) return null;
             return new GoldRescueOffer {
-                Revision = Revision, Cost = W.Int32(offer["costGold"]), Moves = W.Int32(offer["moves"]),
+                Revision = Revision, AttemptId = Command().attemptId,
+                Cost = W.Int32(offer["costGold"]), Moves = W.Int32(offer["moves"]),
                 Affordable = W.Equal(W.Get(offer["gold"],"allowed"),true)
             };
         }
         public bool AcceptGoldRescue(GoldRescueOffer offer)
         {
-            if (offer == null || offer.Revision != Revision || !offer.Affordable)
+            var command = Command();
+            if (!HasAttempt || offer == null || offer.Revision != Revision ||
+                offer.AttemptId != command.attemptId || !offer.Affordable)
             {
                 LastError = "rescue_unavailable"; return false;
             }
-            return Apply(() => controller.RescueWithGold("rescue:" + Guid.NewGuid().ToString("N"),Command()));
+            return Apply(() => controller.RescueWithGold("rescue:" + offer.AttemptId, command));
         }
         public string GardenTier
         {
@@ -265,8 +269,16 @@ namespace Hexrota.UnityClient
         {
             if (index < 0 || index >= StageCount) { LastError = "invalid_stage"; return false; }
             CancelPresentation();
-            bool replayLesson = index < TutorialCount && IsStageComplete(index);
-            bool ok = Apply(() => controller.Enter(index, fresh: replayLesson));
+            bool ok = Apply(() => {
+                bool replayLesson = false;
+                if (index < TutorialCount && IsStageComplete(index))
+                {
+                    var previous = W.Get(controller.Preview(index), "snapshot");
+                    var level = LevelCatalog.GameplayConfig(data.Levels[index]);
+                    replayLesson = previous != null && new HexMatch(level, LevelCatalog.ReadSnapshot(previous)).Status != "playing";
+                }
+                return controller.Enter(index, fresh: replayLesson);
+            });
             inGame = ok;
             return ok;
         }

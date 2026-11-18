@@ -93,6 +93,39 @@ namespace Hexrota.UnityClientTests
             Assert.That(boards, Is.EqualTo(40));
             Assert.That(routes, Is.GreaterThanOrEqualTo(80));
         }
+        [Test] public void CompletedLessonCanBeReplayedAndItsNewAttemptResumesAcrossReloads()
+        {
+            Assert.That(session.EnterStage(0), Is.True);
+            while (session.Status == "playing")
+            {
+                if (session.NeedsTutorialAcknowledgement) Assert.That(session.AcknowledgeTutorial(), Is.True);
+                var pair = session.TutorialPair;
+                Assert.That(session.TrySwap(pair[0], pair[1]).Ok, Is.True);
+                session.CompletePresentation();
+            }
+            Assert.That(session.Status, Is.EqualTo("won"));
+            object LessonId() => W.Required(W.Required(W.Required(W.Required(
+                storage.Read(ProfileRepository.ProfileKey), "game"), "attempts"), "0"), "attemptId");
+            var finishedId = LessonId();
+            Assert.That(session.EnterStage(0), Is.True, session.LastError);
+            var replayId = LessonId();
+            Assert.That(replayId, Is.Not.EqualTo(finishedId));
+            for (int turn = 0; turn <= 1; turn++)
+            {
+                session.ReturnToMenu();
+                session = new UnityGameSession(data, storage, new Clock());
+                Assert.That(session.EnterStage(0), Is.True, session.LastError);
+                Assert.That(session.Snapshot.turn, Is.EqualTo(turn));
+                Assert.That(LessonId(), Is.EqualTo(replayId));
+                if (turn == 0)
+                {
+                    var pair = session.TutorialPair;
+                    Assert.That(session.TrySwap(pair[0], pair[1]).Ok, Is.True);
+                    session.CompletePresentation();
+                }
+            }
+            Assert.That(session.NeedsTutorialAcknowledgement, Is.True);
+        }
         [Test] public void RealLevelOneAndRejectedSwapPreserveCanonicalSave()
         {
             Assert.That(session.EnterLevelOne(), Is.True, session.LastError);
@@ -239,7 +272,10 @@ namespace Hexrota.UnityClientTests
             Assert.That(session.Snapshot.movesLeft, Is.EqualTo(lost.movesLeft + offer.Moves));
             CollectionAssert.AreEqual(lost.values,session.Snapshot.values);
             game = W.Required(storage.Read(ProfileRepository.ProfileKey),"game");
-            Assert.That(W.Integer(W.Required(W.Required(game,"economy"),"gold")), Is.EqualTo(balance - offer.Cost));
+            object economy = W.Required(game,"economy");
+            Assert.That(W.Integer(W.Required(economy,"gold")), Is.EqualTo(balance - offer.Cost));
+            string operation = "rescue:" + W.Required(attempt, "attemptId");
+            Assert.That(W.Required(W.Required(W.Required(economy, "transactions"), operation), "kind"), Is.EqualTo("rescue"));
             Assert.That(W.Equal(attempt,W.Required(W.Required(game,"attempts"),next.ToString())), Is.True);
         }
 

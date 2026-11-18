@@ -6,6 +6,8 @@ on:
       - 'unity-client/**'
       - 'data/**'
       - 'dist/variants.json'
+      - 'dist/first-play.js'
+      - '.gitattributes'
       - 'dist/lives-config.json'
       - 'dist/reward-rules.json'
       - 'scripts/*unity*'
