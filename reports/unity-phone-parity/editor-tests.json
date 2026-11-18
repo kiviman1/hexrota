@@ -1,0 +1,305 @@
+{
+  "unity": "6000.6.9f1",
+  "sourceCommit": "61da617971e699a25bbd1bff08d3ade009685418",
+  "suites": [
+    {
+      "mode": "edit",
+      "result": "Passed",
+      "total": 30,
+      "passed": 30,
+      "failed": 0,
+      "skipped": 0,
+      "durationSeconds": 2.3205879,
+      "rawXmlSha256": "5ABAD51FC0FC1BBC061F94ACA8ABE803AEBF7A29D3201C3D1722B7ECC9EB41F9",
+      "cases": [
+        {
+          "name": "Hexrota.UnityClientTests.CompleteCampaignTests.SameProfileCompletesBothLessonsAndAllTenCampaignStagesAcrossReloads",
+          "result": "Passed",
+          "durationSeconds": 0.846761
+        },
+        {
+          "name": "Hexrota.UnityClientTests.MainResourceImportTests.ImportedVersionedLevelsWinAndRestoreFromEveryAuthoredRoute(\"obstacle-levels-v1\",6)",
+          "result": "Passed",
+          "durationSeconds": 0.023919
+        },
+        {
+          "name": "Hexrota.UnityClientTests.MainResourceImportTests.ImportedVersionedLevelsWinAndRestoreFromEveryAuthoredRoute(\"campaign-flow-levels-v1\",2)",
+          "result": "Passed",
+          "durationSeconds": 0.011914
+        },
+        {
+          "name": "Hexrota.UnityClientTests.MainResourceImportTests.ImportedVersionedLevelsWinAndRestoreFromEveryAuthoredRoute(\"campaign-flow-levels-v2\",10)",
+          "result": "Passed",
+          "durationSeconds": 0.328626
+        },
+        {
+          "name": "Hexrota.UnityClientTests.MainResourceImportTests.ImportedVersionedLevelsWinAndRestoreFromEveryAuthoredRoute(\"material-alpha-levels-v1\",6)",
+          "result": "Passed",
+          "durationSeconds": 0.169225
+        },
+        {
+          "name": "Hexrota.UnityClientTests.MainResourceImportTests.StoryBindingsResolveEveryChapterAgainstImportedMaterialAttempts",
+          "result": "Passed",
+          "durationSeconds": 0.140717
+        },
+        {
+          "name": "Hexrota.UnityClientTests.PassiveHintTests.TouchCancelsRepeatsAndOnlyPersistedPlayerMovesRearmTheSecondCue",
+          "result": "Passed",
+          "durationSeconds": 0.02823
+        },
+        {
+          "name": "Hexrota.UnityClientTests.PassiveHintTests.VisibleFirstMatchAgreesWithThePhoneGame(\"levels-original\",0,3,6,\"1,2,3,4,11\")",
+          "result": "Passed",
+          "durationSeconds": 0.006703
+        },
+        {
+          "name": "Hexrota.UnityClientTests.PassiveHintTests.VisibleFirstMatchAgreesWithThePhoneGame(\"obstacle-levels-v1\",0,0,3,\"0,4,5\")",
+          "result": "Passed",
+          "durationSeconds": 0.012017
+        },
+        {
+          "name": "Hexrota.UnityClientTests.PassiveHintTests.VisibleFirstMatchAgreesWithThePhoneGame(\"obstacle-levels-v1\",2,2,7,\"2,12,18\")",
+          "result": "Passed",
+          "durationSeconds": 0.002299
+        },
+        {
+          "name": "Hexrota.UnityClientTests.PassiveHintTests.VisibleFirstMatchAgreesWithThePhoneGame(\"material-alpha-levels-v1\",0,1,7,\"1,15,16\")",
+          "result": "Passed",
+          "durationSeconds": 0.014613
+        },
+        {
+          "name": "Hexrota.UnityClientTests.PassiveHintTests.VisibleFirstMatchAgreesWithThePhoneGame(\"material-alpha-levels-v1\",1,10,2,\"9,10,16\")",
+          "result": "Passed",
+          "durationSeconds": 0.005617
+        },
+        {
+          "name": "Hexrota.UnityClientTests.PhoneGameplayLayoutTests.MobileBoardAndControlsFollowThePortraitPlayArea",
+          "result": "Passed",
+          "durationSeconds": 0.004252
+        },
+        {
+          "name": "Hexrota.UnityClientTests.PhoneGameplayLayoutTests.SkipWithFailedStorageKeepsTheLessonAndSuccessfulSkipPersistsWithoutAwardingWelcomeGold",
+          "result": "Passed",
+          "durationSeconds": 0.026894
+        },
+        {
+          "name": "Hexrota.UnityClientTests.SceneAndAssetImportTests.BuildEntrySceneIsImportedAndEnabled",
+          "result": "Passed",
+          "durationSeconds": 0.000964
+        },
+        {
+          "name": "Hexrota.UnityClientTests.SceneAndAssetImportTests.EveryVisualSlotReferencesARealPrefabWithNoMissingScripts",
+          "result": "Passed",
+          "durationSeconds": 0.007238
+        },
+        {
+          "name": "Hexrota.UnityClientTests.SessionIntegrationTests.CancelAndBackgroundNeverRollBackTheCommittedMove",
+          "result": "Passed",
+          "durationSeconds": 0.025932
+        },
+        {
+          "name": "Hexrota.UnityClientTests.SessionIntegrationTests.CompletedLessonCanBeReplayedAndItsNewAttemptResumesAcrossReloads",
+          "result": "Passed",
+          "durationSeconds": 0.034532
+        },
+        {
+          "name": "Hexrota.UnityClientTests.SessionIntegrationTests.EarnedGoldRescuesTheSameAttemptOnceAndRestoresTheGrantedMoves",
+          "result": "Passed",
+          "durationSeconds": 0.254136
+        },
+        {
+          "name": "Hexrota.UnityClientTests.SessionIntegrationTests.EveryPublishedVariantLoadsAndItsCertifiedRoutesWinInTheUnityAssembly",
+          "result": "Passed",
+          "durationSeconds": 0.091179
+        },
+        {
+          "name": "Hexrota.UnityClientTests.SessionIntegrationTests.LocalPlaytestRecordsOnlyOptedInCommittedMovesAndExportsWithoutChangingSaves",
+          "result": "Passed",
+          "durationSeconds": 0.057616
+        },
+        {
+          "name": "Hexrota.UnityClientTests.SessionIntegrationTests.MissingLevelDataFailsExplicitlyInsteadOfBuildingAFakeBoard",
+          "result": "Passed",
+          "durationSeconds": 0.014184
+        },
+        {
+          "name": "Hexrota.UnityClientTests.SessionIntegrationTests.MobileRestartConfirmationQuotesTheCanonicalChargeWithoutChangingProfile",
+          "result": "Passed",
+          "durationSeconds": 0.017474
+        },
+        {
+          "name": "Hexrota.UnityClientTests.SessionIntegrationTests.MobileTestAdCancelAndResumePreserveTheLostBoardAndSettleJustOnce",
+          "result": "Passed",
+          "durationSeconds": 0.046396
+        },
+        {
+          "name": "Hexrota.UnityClientTests.SessionIntegrationTests.MoveCommitsBeforePresentationAndRejectsDoubleInput",
+          "result": "Passed",
+          "durationSeconds": 0.014841
+        },
+        {
+          "name": "Hexrota.UnityClientTests.SessionIntegrationTests.RealLevelOneAndRejectedSwapPreserveCanonicalSave",
+          "result": "Passed",
+          "durationSeconds": 0.009967
+        },
+        {
+          "name": "Hexrota.UnityClientTests.SessionIntegrationTests.RealLossSettlesAndRetryCreatesANewSavedAttempt",
+          "result": "Passed",
+          "durationSeconds": 0.031838
+        },
+        {
+          "name": "Hexrota.UnityClientTests.SessionIntegrationTests.RestartDuringAnimationCreatesValidatedFreshAttempt",
+          "result": "Passed",
+          "durationSeconds": 0.021024
+        },
+        {
+          "name": "Hexrota.UnityClientTests.SessionIntegrationTests.StorageFailureCannotProduceAnUncommittedVisualMove",
+          "result": "Passed",
+          "durationSeconds": 0.012994
+        },
+        {
+          "name": "Hexrota.UnityClientTests.SessionIntegrationTests.WinPersistsOnceAndCampaignCompletionCannotBeFarmedByRetry",
+          "result": "Passed",
+          "durationSeconds": 0.027168
+        }
+      ]
+    },
+    {
+      "mode": "play",
+      "result": "Passed",
+      "total": 25,
+      "passed": 25,
+      "failed": 0,
+      "skipped": 0,
+      "durationSeconds": 38.3391867,
+      "rawXmlSha256": "7ED62E66717B2BAA48600E788E362ED56145EDEA0CD5015AAF9686775B3062CC",
+      "cases": [
+        {
+          "name": "Hexrota.UnityClientTests.CampaignJourneyTests.StartButtonRestoresTutorialAcknowledgementAndLeadsThroughBothLessonsToCampaign",
+          "result": "Passed",
+          "durationSeconds": 10.687875
+        },
+        {
+          "name": "Hexrota.UnityClientTests.FirstPlayableFlowTests.AllLevelOneCellsPickThroughTheCanvasAndTapsAndDragCommitRealTurns",
+          "result": "Passed",
+          "durationSeconds": 1.533287
+        },
+        {
+          "name": "Hexrota.UnityClientTests.FirstPlayableFlowTests.BackgroundPauseAndRestartCancelDisposableAnimation",
+          "result": "Passed",
+          "durationSeconds": 0.333187
+        },
+        {
+          "name": "Hexrota.UnityClientTests.FirstPlayableFlowTests.MissingOptionalVisualsKeepRealBoardAndTouchTargetsUsable",
+          "result": "Passed",
+          "durationSeconds": 0.266712
+        },
+        {
+          "name": "Hexrota.UnityClientTests.FirstPlayableFlowTests.MobileViewportStaysInsideSafeArea(320,568,0,20,0,0)",
+          "result": "Passed",
+          "durationSeconds": 0.133473
+        },
+        {
+          "name": "Hexrota.UnityClientTests.FirstPlayableFlowTests.MobileViewportStaysInsideSafeArea(375,667,0,20,0,0)",
+          "result": "Passed",
+          "durationSeconds": 0.133092
+        },
+        {
+          "name": "Hexrota.UnityClientTests.FirstPlayableFlowTests.MobileViewportStaysInsideSafeArea(390,844,0,47,0,34)",
+          "result": "Passed",
+          "durationSeconds": 0.133274
+        },
+        {
+          "name": "Hexrota.UnityClientTests.FirstPlayableFlowTests.MobileViewportStaysInsideSafeArea(430,932,0,59,0,34)",
+          "result": "Passed",
+          "durationSeconds": 0.133274
+        },
+        {
+          "name": "Hexrota.UnityClientTests.FirstPlayableFlowTests.MobileViewportStaysInsideSafeArea(844,390,47,0,47,21)",
+          "result": "Passed",
+          "durationSeconds": 0.133267
+        },
+        {
+          "name": "Hexrota.UnityClientTests.FirstPlayableFlowTests.SceneMenuEntryTapSelectionAndDragReachTheRealCore",
+          "result": "Passed",
+          "durationSeconds": 1.500048
+        },
+        {
+          "name": "Hexrota.UnityClientTests.HexBoardLifecycleTests.ControllerDisableAndEnablePausesCommittedSwapUntilResume",
+          "result": "Passed",
+          "durationSeconds": 1.566564
+        },
+        {
+          "name": "Hexrota.UnityClientTests.HexBoardLifecycleTests.IdleControllerDisableLocksInputAndResumeAcceptsASwap",
+          "result": "Passed",
+          "durationSeconds": 1.566571
+        },
+        {
+          "name": "Hexrota.UnityClientTests.HexBoardLifecycleTests.LevelOneShowsTintedStonesAndLabelsAndCompletesASwap",
+          "result": "Passed",
+          "durationSeconds": 1.533231
+        },
+        {
+          "name": "Hexrota.UnityClientTests.HexBoardLifecycleTests.MissingDetachedVisualRootIsSafeDuringControllerTeardown",
+          "result": "Passed",
+          "durationSeconds": 0.266594
+        },
+        {
+          "name": "Hexrota.UnityClientTests.HexBoardLifecycleTests.PauseDuringSwapPreservesCommittedBoardAndResumeAcceptsAnotherSwap",
+          "result": "Passed",
+          "durationSeconds": 1.533245
+        },
+        {
+          "name": "Hexrota.UnityClientTests.HexBoardLifecycleTests.SceneUnloadDuringSwapLeavesNoCallbacksOrVisualRootsAndReloadCanSwap",
+          "result": "Passed",
+          "durationSeconds": 1.66672
+        },
+        {
+          "name": "Hexrota.UnityClientTests.HexBoardLifecycleTests.ScorePacketFliesToTheHudAndPauseDiscardsItsVisuals",
+          "result": "Passed",
+          "durationSeconds": 1.899774
+        },
+        {
+          "name": "Hexrota.UnityClientTests.HexBoardLifecycleTests.VisualRootDestroyedDuringSwapCancelsWithoutCommittingInvisibleMoves",
+          "result": "Passed",
+          "durationSeconds": 0.29995
+        },
+        {
+          "name": "Hexrota.UnityClientTests.InventoryFlowTests.PurchasedAndGrantedItemsRequireValidPreviewAndRestoreTheirBoard",
+          "result": "Passed",
+          "durationSeconds": 1.234971
+        },
+        {
+          "name": "Hexrota.UnityClientTests.MobileProgressPanelsTests.GardenShowsCanonicalMilestonesAndLinksToAllTenRecords",
+          "result": "Passed",
+          "durationSeconds": 0.233164
+        },
+        {
+          "name": "Hexrota.UnityClientTests.MobileProgressPanelsTests.PauseResumeAndLockedInventoryUseTheCampaignBoard",
+          "result": "Passed",
+          "durationSeconds": 0.233458
+        },
+        {
+          "name": "Hexrota.UnityClientTests.MobileProgressPanelsTests.PlaytestToggleAndClearKeepTheAttemptPlayable",
+          "result": "Passed",
+          "durationSeconds": 0.233268
+        },
+        {
+          "name": "Hexrota.UnityClientTests.PhoneGameplayTests.SkipButtonOpensNumberedBoardAndFooterCanPauseAndResume",
+          "result": "Passed",
+          "durationSeconds": 10.214259
+        },
+        {
+          "name": "Hexrota.UnityClientTests.PhoneMenuNavigationTests.ReturningMenuAndMapOpenReadOnlyGoalsBeforeStartingTheRealNumberedBoard",
+          "result": "Passed",
+          "durationSeconds": 0.23293
+        },
+        {
+          "name": "Hexrota.UnityClientTests.PhoneOptionsTests.BoardSettingsPersistAndTestCreditRequiresConfirmation",
+          "result": "Passed",
+          "durationSeconds": 0.372638
+        }
+      ]
+    }
+  ]
+}
