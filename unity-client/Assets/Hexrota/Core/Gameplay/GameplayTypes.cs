@@ -12,6 +12,87 @@ namespace Hexrota.Gameplay
     }
 
     [Serializable]
+    public sealed class BlockerConfig
+    {
+        public string id;
+        public int cell;
+        public int hp;
+        public string regionId;
+        public bool? required;
+    }
+    [Serializable]
+    public sealed class RegionConfig
+    {
+        public string id;
+        public int[] cells;
+        public string[] requires;
+        public bool? required;
+    }
+    [Serializable]
+    public sealed class ObstaclesConfig
+    {
+        public string version;
+        public string activation;
+        public int[] sources;
+        public BlockerConfig[] blockers;
+        public RegionConfig[] regions;
+    }
+    [Serializable]
+    public sealed class BlockerHit
+    {
+        public string id;
+        public int cell;
+        public int beforeHp;
+        public int hp;
+    }
+
+    [Serializable]
+    public sealed class MaterialDefinition
+    {
+        public string id;
+    }
+    [Serializable]
+    public sealed class MaterialSource
+    {
+        public string id;
+        public string kind;
+        public string materialId;
+        public int quantity;
+        public int cell;
+        public string blockerId;
+    }
+    [Serializable]
+    public sealed class MaterialConfig
+    {
+        public string version;
+        public MaterialDefinition[] definitions;
+        public MaterialSource[] sources;
+    }
+    [Serializable]
+    public sealed class MaterialGoal
+    {
+        public string materialId;
+        public int quantity;
+    }
+    [Serializable]
+    public sealed class ObjectiveConfig
+    {
+        public string version;
+        public bool? score;
+        public bool? ground;
+        public MaterialGoal[] materials;
+    }
+    [Serializable]
+    public sealed class MaterialEvent
+    {
+        public string sourceId;
+        public string materialId;
+        public int quantity;
+        public int cell;
+        public string kind;
+    }
+
+    [Serializable]
     public sealed class LevelConfig
     {
         // Campaign IDs are numbers; tutorial IDs are strings. The host JSON adapter
@@ -25,6 +106,9 @@ namespace Hexrota.Gameplay
         public int moves;
         public int target;
         public string targetMode;
+        public ObstaclesConfig obstacles;
+        public MaterialConfig materials;
+        public ObjectiveConfig objectives;
     }
 
     [Serializable]
@@ -39,6 +123,15 @@ namespace Hexrota.Gameplay
         public int turn;
         public uint rngState;
         public int[][] history;
+        public string obstacleVersion;
+        public int[] blockerHp;
+        public bool[] regionOpen;
+        public bool[] cellOpen;
+        public string materialVersion;
+        public string objectiveVersion;
+        public int[] materialCounts;
+        public bool[] collectedSources;
+        public string status;
     }
 
     [Serializable]
@@ -73,6 +166,16 @@ namespace Hexrota.Gameplay
     [Serializable]
     public sealed class WaveFrame
     {
+        public MaterialEvent[] materialEvents;
+        public int[] materialCounts;
+        public bool[] collectedSources;
+        public BlockerHit[] blockerHits;
+        public string[] brokenBlockers;
+        public string[] openedRegions;
+        public int[] openedCells;
+        public int[] blockerHp;
+        public bool[] regionOpen;
+        public bool[] cellOpen;
         public int[] matched;
         public int?[] before;
         public int?[] after;

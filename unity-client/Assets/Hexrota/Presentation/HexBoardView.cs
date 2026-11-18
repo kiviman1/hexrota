@@ -29,6 +29,7 @@ namespace Hexrota.UnityClient.Presentation
         private readonly List<GameObject> stones = new List<GameObject>();
         private readonly List<TextMesh> numbers = new List<TextMesh>();
         private Vector3[] positions;
+        private bool tutorialLayout, hasMutedTiles;
 
         private int selected = -1, pressed = -1, pointer = int.MinValue;
         private Vector2 down;
@@ -37,9 +38,9 @@ namespace Hexrota.UnityClient.Presentation
         private Coroutine animation;
         private MaterialPropertyBlock tint;
         private static readonly Color[] Colors = {
-            new Color(.94f,.63f,.27f), new Color(.35f,.74f,.92f),
-            new Color(.81f,.43f,.78f), new Color(.93f,.40f,.36f),
-            new Color(.55f,.80f,.38f), new Color(.88f,.83f,.41f)
+            new Color32(235,227,245,255), new Color32(179,101,242,255),
+            new Color32(255,207,40,255), new Color32(255,104,81,255),
+            new Color32(39,159,237,255), new Color32(241,92,189,255)
         };
 
         private void Awake() { tint = new MaterialPropertyBlock(); }
@@ -76,6 +77,7 @@ namespace Hexrota.UnityClient.Presentation
         {
             if (this == null || world == null || effectRoot == null) return;
             Cancel(snapshot); ClearModels(); positions = new Vector3[level.cells.Length];
+            tutorialLayout = level.id is string;
             for (int i = 0; i < level.cells.Length; i++)
             {
                 Vector2 xy = MobileLayout.Axial(level.cells[i].q, level.cells[i].r);
@@ -115,6 +117,11 @@ namespace Hexrota.UnityClient.Presentation
             foreach (Vector3 position in positions) bounds.Encapsulate(position);
             float aspect = Mathf.Max(.1f, BoardCamera.pixelRect.width / Mathf.Max(1, BoardCamera.pixelRect.height));
             BoardCamera.orthographicSize = Mathf.Max(bounds.extents.y + .65f, (bounds.extents.x + .65f) / aspect);
+            // Web's tutorial viewBox reserves at least 275 x 260 units at an
+            // axial step of 44. Keep that breathing room on small lesson boards.
+            if (tutorialLayout)
+                BoardCamera.orthographicSize = Mathf.Max(BoardCamera.orthographicSize,
+                    .5f * .56f / 44f * Mathf.Max(260, 275 / aspect));
             BoardCamera.transform.position = new Vector3(bounds.center.x, bounds.center.y, -20);
             BoardCamera.transform.rotation = Quaternion.identity;
         }
@@ -123,6 +130,7 @@ namespace Hexrota.UnityClient.Presentation
         {
             if (snapshot == null) return;
             if (!HasVisuals || stones.Count != snapshot.values.Length) return;
+            if (hasMutedTiles) MarkPair(null);
             for (int i = 0; i < stones.Count; i++)
             {
                 stones[i].transform.position = positions[i] + Vector3.back * .15f;
@@ -133,6 +141,42 @@ namespace Hexrota.UnityClient.Presentation
                 Tint(cells[i], new Color(.15f,.25f,.21f));
             }
             ClearSelection(); ClearEffects();
+        }
+
+        // Authored tutorial and hint pairs are presentation only. Commands still
+        // validate the pointed cells against the session's current attempt.
+        public void MarkPair(int[] pair, int[] matchIndices = null)
+        {
+            if (!HasVisuals) return;
+            bool guide = pair != null && matchIndices != null;
+            for (int i = 0; i < cells.Count; i++)
+            {
+                bool focus = pair != null && Array.IndexOf(pair, i) >= 0;
+                bool support = guide && Array.IndexOf(matchIndices, i) >= 0;
+                Tint(cells[i], focus || support ? new Color32(255, 244, 197, 255) : new Color(.15f,.25f,.21f));
+                stones[i].transform.localScale = focus ? Vector3.one * 1.1f : Vector3.one;
+                if (guide || hasMutedTiles)
+                {
+                    float opacity = guide && !focus && !support ? .32f : 1f;
+                    SetGuideOpacity(cells[i], opacity);
+                    SetGuideOpacity(grounds[i], opacity);
+                    SetGuideOpacity(stones[i], opacity);
+                    Color label = numbers[i].color;
+                    label.a = opacity;
+                    numbers[i].color = label;
+                }
+            }
+            hasMutedTiles = guide;
+        }
+
+        private void SetGuideOpacity(GameObject tile, float opacity)
+        {
+            foreach (var renderer in tile.GetComponentsInChildren<Renderer>())
+            {
+                renderer.GetPropertyBlock(tint);
+                tint.SetFloat("_GuideOpacity", opacity);
+                renderer.SetPropertyBlock(tint);
+            }
         }
 
         public void Present(MovePresentation receipt)
@@ -224,8 +268,17 @@ namespace Hexrota.UnityClient.Presentation
             }
         }
 
+        private Action<int> targetCell;
+
+        public void SelectCellForItem(Action<int> onTap)
+        {
+            ClearSelection();
+            targetCell = onTap;
+        }
+
         public void Cancel(GameSnapshot authoritative)
         {
+            targetCell = null;
             bool wasAnimating = IsAnimating;
             if (this != null && animation != null) StopCoroutine(animation);
             animation = null; IsAnimating = false;
@@ -260,6 +313,15 @@ namespace Hexrota.UnityClient.Presentation
             int from = pressed, to = Hit(e.position); bool wasDrag = dragged;
             pointer = int.MinValue; pressed = -1; dragged = false;
             if (!InputEnabled || IsAnimating || from < 0 || to < 0) { ClearSelection(); return; }
+            if (targetCell != null)
+            {
+                if (!wasDrag && from == to)
+                {
+                    var onTap = targetCell; targetCell = null;
+                    onTap(to);
+                }
+                return;
+            }
             if (wasDrag && from != to) { Request(from, to); return; }
             if (selected >= 0 && selected != to) { Request(selected, to); return; }
             Select(selected == to ? -1 : to);

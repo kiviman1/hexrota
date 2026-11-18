@@ -16,6 +16,8 @@ namespace Hexrota.UnityClient
         public int TutorialCount { get; private set; }
         public Dictionary<string, object> LifeConfig { get; private set; }
         public Dictionary<string, object> EconomyConfig { get; private set; }
+        internal Dictionary<string, object> TutorialCopy { get; private set; }
+        internal Dictionary<string, object> CoopCounters { get; private set; }
         public RewardRules RewardRules { get; private set; }
         public static ClientGameData Load(Func<string, string> read)
         {
@@ -33,6 +35,9 @@ namespace Hexrota.UnityClient
             return new ClientGameData {
                 Catalog = LevelCatalog.FromDocuments(campaign, variants, tutorials),
                 Levels = levels, TutorialCount = fixedLevels.Count,
+                TutorialCopy = W.Map(WireJsonCodec.Parse(required("HexrotaData/tutorial-coach"))),
+                CoopCounters = W.List(W.Required(WireJsonCodec.Parse(required("HexrotaData/scene-config-v1")), "tutorials"))
+                    .ToDictionary(item => (string)W.Required(item,"levelId"), item => item),
                 LifeConfig = W.Map(WireJsonCodec.Parse(required("HexrotaData/lives-config"))),
                 EconomyConfig = W.Map(WireJsonCodec.Parse(required("HexrotaData/economy-config-9-5"))),
                 RewardRules = Newtonsoft.Json.JsonConvert.DeserializeObject<RewardRules>(required("HexrotaData/reward-rules"))

@@ -9,8 +9,15 @@ const root = path.resolve(__dirname, '..');
 const project = 'unity-client';
 const core = `${project}/Assets/Hexrota/Core`;
 const data = `${project}/Assets/Hexrota/Resources/HexrotaData`;
-const modules = ['Application', 'Catalog', 'Commands', 'Contracts', 'Economy', 'Gameplay', 'Hints', 'Lives', 'Rescue', 'RewardAdapter', 'Rewards'];
-const documents = ['data/levels-original.json', 'data/tutorials-fixed.json', 'dist/variants.json', 'dist/lives-config.json', 'dist/reward-rules.json', 'data/economy-config-9-5.json'];
+const modules = ['Application', 'Catalog', 'Commands', 'Contracts', 'Economy', 'Gameplay', 'Hints', 'Lives', 'Rescue', 'RewardAdapter', 'Rewards', 'Story', 'StoryAdapter'];
+const documents = [
+  'data/levels-original.json', 'data/tutorials-fixed.json', 'dist/variants.json',
+  'dist/lives-config.json', 'dist/reward-rules.json', 'data/economy-config-9-5.json',
+  'data/obstacle-levels-v1.json', 'data/campaign-flow-levels-v1.json', 'data/campaign-flow-levels-v2.json',
+  'data/material-alpha-levels-v1.json', 'data/story-content-v1.json',
+  'data/ui-comic-tokens.json', 'data/scene-config-v1.json',
+  'data/tutorial-scene-assets-v1.json', 'data/tavik-approved.json'
+];
 const hash = value => crypto.createHash('sha256').update(value).digest('hex');
 const guid = asset => hash(`hexrota-unity:${asset.replace(/^unity-client\//, '')}`).slice(0, 32);
 const read = file => fs.readFileSync(path.join(root, file));
@@ -27,7 +34,19 @@ const sources = modules.flatMap(module => fs.readdirSync(path.join(root, 'unity'
 const inputs = [...sources, ...documents.map(file => [file, `${data}/${path.basename(file)}`])];
 const output = new Map(inputs.map(([source, target]) => [target, read(source)]));
 output.set(`${core}/Hexrota.Core.asmdef`, JSON.stringify({name: 'Hexrota.Core', rootNamespace: 'Hexrota', references: [], includePlatforms: [], excludePlatforms: [], allowUnsafeCode: false, overrideReferences: false, precompiledReferences: [], autoReferenced: true, defineConstraints: [], versionDefines: [], noEngineReferences: true}, null, 2) + '\n');
+// Project the approved web coach copy for Unity without maintaining a second translation.
+const {copy: lessonCopy} = require('../dist/first-play.js');
+const lessons = JSON.parse(read('data/tutorials-fixed.json')).levels;
+const coach = Object.fromEntries(lessons.map(lesson => [lesson.id, lesson.steps.map((step, turn) => {
+  const guide = lessonCopy(lesson.id, turn);
+  const feedback = lessonCopy(lesson.id, turn + 1, {feedback: true});
+  if (!guide || !feedback) throw new Error(`Missing web coach copy for ${lesson.id} turn ${turn}`);
+  return {guide, feedback};
+})]));
+const coachPath = `${data}/tutorial-coach.json`;
+output.set(coachPath, JSON.stringify(coach, null, 2) + '\n');
 const manifest = {schemaVersion: 1, generatedBy: 'node scripts/sync-unity-client.cjs', authority: 'unity/ C# modules and canonical JSON; generated destinations must not be edited', files: inputs.map(([source, destination]) => ({source, destination, sha256: hash(read(source))}))};
+manifest.presentationProjections = [{sources: ['dist/first-play.js', 'data/tutorials-fixed.json'], destination: coachPath, sha256: hash(output.get(coachPath))}];
 output.set(`${project}/SourceManifest.json`, JSON.stringify(manifest, null, 2) + '\n');
 for (const destination of [...output.keys()]) {
   if (!destination.startsWith(`${project}/Assets/`)) continue;
@@ -50,4 +69,4 @@ for (const file of stale) {
   else fs.unlinkSync(path.join(root, file));
 }
 if (failures) process.exitCode = 1;
-else console.log(`${check ? 'Verified' : 'Synchronized'} ${sources.length} runtime C# sources + ${documents.length} canonical JSON documents (byte-for-byte); harnesses excluded.`);
+else console.log(`${check ? 'Verified' : 'Synchronized'} ${sources.length} runtime C# sources + ${documents.length} canonical JSON documents (byte-for-byte) + 1 generated coach copy projection; harnesses excluded.`);

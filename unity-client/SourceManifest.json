@@ -44,14 +44,24 @@
       "sha256": "cf939e958a991e7b38d4dd53486267fe2197419ff1eeaf86b1048d8fe1867d65"
     },
     {
+      "source": "unity/Catalog/CampaignFlowCatalog.cs",
+      "destination": "unity-client/Assets/Hexrota/Core/Catalog/CampaignFlowCatalog.cs",
+      "sha256": "2fc772943732983c3b4a7d18b4e2fd4d540a6dfee387400c10982aeac775602b"
+    },
+    {
       "source": "unity/Catalog/CatalogWire.cs",
       "destination": "unity-client/Assets/Hexrota/Core/Catalog/CatalogWire.cs",
-      "sha256": "26fe77c2a51222e283a8b16df14db0f907653f0cc33c1cdf4b6a3f9718dc6a5c"
+      "sha256": "364b482e6f03160fc78d4fc181adb64e379a335e087c1c9d24050435b367c99f"
     },
     {
       "source": "unity/Catalog/LevelCatalog.cs",
       "destination": "unity-client/Assets/Hexrota/Core/Catalog/LevelCatalog.cs",
       "sha256": "abc2a8531dd28100a01bb9c69a0469a0931c3a534fcd30be520babda87ebfcf3"
+    },
+    {
+      "source": "unity/Catalog/MaterialAlphaCatalog.cs",
+      "destination": "unity-client/Assets/Hexrota/Core/Catalog/MaterialAlphaCatalog.cs",
+      "sha256": "9ed8918191dd60e89901f0eb01a3f33af964394ba84f4964cfd2a126e8c0604a"
     },
     {
       "source": "unity/Commands/AssistedGame.cs",
@@ -86,17 +96,32 @@
     {
       "source": "unity/Gameplay/GameplayTypes.cs",
       "destination": "unity-client/Assets/Hexrota/Core/Gameplay/GameplayTypes.cs",
-      "sha256": "fb3b3bd8d03b21015b6c0190f6cc9774db84b02fc4f26182370b66a40f313a91"
+      "sha256": "216c4b59d12851af1d7f34ca647c8f050d85a80cf6e7688ad8e67a75fe57e298"
+    },
+    {
+      "source": "unity/Gameplay/HexMatch.ColumnFlow.cs",
+      "destination": "unity-client/Assets/Hexrota/Core/Gameplay/HexMatch.ColumnFlow.cs",
+      "sha256": "c55606f8011c3f192c801f2fe4fa18e49b5053b1d852ad91a36dac0834ec2b70"
+    },
+    {
+      "source": "unity/Gameplay/HexMatch.Materials.cs",
+      "destination": "unity-client/Assets/Hexrota/Core/Gameplay/HexMatch.Materials.cs",
+      "sha256": "4d7f1bfc67430231f24a0b476331863e275de914247f8b6d301678dc288714a7"
+    },
+    {
+      "source": "unity/Gameplay/HexMatch.Obstacles.cs",
+      "destination": "unity-client/Assets/Hexrota/Core/Gameplay/HexMatch.Obstacles.cs",
+      "sha256": "2ce3d0f918c8a63193fbeb3b317c9335492aaee0bbb282fee1fe07caeac8e5e0"
     },
     {
       "source": "unity/Gameplay/HexMatch.cs",
       "destination": "unity-client/Assets/Hexrota/Core/Gameplay/HexMatch.cs",
-      "sha256": "e65432fcfd824a66332928703043a1d75905ae5f877f4d2ad24f0b6b8943b7ab"
+      "sha256": "bb47fc06349fdf4fc3742646612e63fcafbeb24b06cf2ee7d601229f207ee184"
     },
     {
       "source": "unity/Hints/HintSolver.cs",
       "destination": "unity-client/Assets/Hexrota/Core/Hints/HintSolver.cs",
-      "sha256": "e6fe2cc44258f27dfb0a9b6bd6ad4ba0d37fcac770543e46e15201d8a877a113"
+      "sha256": "683b15d72a95f61980db5b5b9bc59e1dc250cbfc7f8b658622e2036428c7b486"
     },
     {
       "source": "unity/Lives/LifeManager.cs",
@@ -129,6 +154,21 @@
       "sha256": "9bf47b3109c6526c817bc4169e062ba0774495131be655728fbaa4488fe4dc98"
     },
     {
+      "source": "unity/Story/StoryEngine.cs",
+      "destination": "unity-client/Assets/Hexrota/Core/Story/StoryEngine.cs",
+      "sha256": "712e687802f15835a634655c5303355eb69ef24a933915299b7067e216a612e9"
+    },
+    {
+      "source": "unity/StoryAdapter/CanonicalStoryFacts.cs",
+      "destination": "unity-client/Assets/Hexrota/Core/StoryAdapter/CanonicalStoryFacts.cs",
+      "sha256": "01e0d5ba62b42783a15936214814d589c17b9ea27a3f0abeaea1840b174c196d"
+    },
+    {
+      "source": "unity/StoryAdapter/StoryBindings.cs",
+      "destination": "unity-client/Assets/Hexrota/Core/StoryAdapter/StoryBindings.cs",
+      "sha256": "ff03d5a4c303631bb67a552cb690594802d93482c66d9ca848bac6c8fc4cf7ba"
+    },
+    {
       "source": "data/levels-original.json",
       "destination": "unity-client/Assets/Hexrota/Resources/HexrotaData/levels-original.json",
       "sha256": "a9a1c3dff5d9d4236aa053c10c509bcdb0d56627e776a2b3ced580b574dfaee3"
@@ -157,6 +197,61 @@
       "source": "data/economy-config-9-5.json",
       "destination": "unity-client/Assets/Hexrota/Resources/HexrotaData/economy-config-9-5.json",
       "sha256": "8202f65e31a779bd11cb27e9fbbe288c1393553c594c6130221946f438731e79"
+    },
+    {
+      "source": "data/obstacle-levels-v1.json",
+      "destination": "unity-client/Assets/Hexrota/Resources/HexrotaData/obstacle-levels-v1.json",
+      "sha256": "9544aa33fb27f1e983eed79e6c4a24d0c8cb5355ac7d41560fc758427f51171d"
+    },
+    {
+      "source": "data/campaign-flow-levels-v1.json",
+      "destination": "unity-client/Assets/Hexrota/Resources/HexrotaData/campaign-flow-levels-v1.json",
+      "sha256": "8edf1ad8f1fe8e64885652fa192f4f1b9e3a7c793c28f44bab5654512a16f372"
+    },
+    {
+      "source": "data/campaign-flow-levels-v2.json",
+      "destination": "unity-client/Assets/Hexrota/Resources/HexrotaData/campaign-flow-levels-v2.json",
+      "sha256": "af658c77b22cdc090add8ccc84385fa75cfa3a688166bce983d6725d56c2bd78"
+    },
+    {
+      "source": "data/material-alpha-levels-v1.json",
+      "destination": "unity-client/Assets/Hexrota/Resources/HexrotaData/material-alpha-levels-v1.json",
+      "sha256": "e36e951bff147d3fdb34e97daff0d0348c444f42dbb49634ea651c456a87c78f"
+    },
+    {
+      "source": "data/story-content-v1.json",
+      "destination": "unity-client/Assets/Hexrota/Resources/HexrotaData/story-content-v1.json",
+      "sha256": "b87b1641f50505c97c726c6b1ef95e755ae41360e7e7aaf7f86e5ea68282cf72"
+    },
+    {
+      "source": "data/ui-comic-tokens.json",
+      "destination": "unity-client/Assets/Hexrota/Resources/HexrotaData/ui-comic-tokens.json",
+      "sha256": "f3054c6be3f1b38a07fe1bbc9bbf65cd051b1f0d22a918080ddb86b53148e293"
+    },
+    {
+      "source": "data/scene-config-v1.json",
+      "destination": "unity-client/Assets/Hexrota/Resources/HexrotaData/scene-config-v1.json",
+      "sha256": "b47fe264b1118b2570e4f198365dbf14cd67e96400e519f4ac1e90052cb9758c"
+    },
+    {
+      "source": "data/tutorial-scene-assets-v1.json",
+      "destination": "unity-client/Assets/Hexrota/Resources/HexrotaData/tutorial-scene-assets-v1.json",
+      "sha256": "95c5798c647f3bd75a8d2b7dc0efa5c4bb55060f8fe1da0d72a50cb0a988893e"
+    },
+    {
+      "source": "data/tavik-approved.json",
+      "destination": "unity-client/Assets/Hexrota/Resources/HexrotaData/tavik-approved.json",
+      "sha256": "6a12d4201096eb4f9cb5e8c514f3a0281e270a1136ae8f0602de4a1fe0a6a1f3"
+    }
+  ],
+  "presentationProjections": [
+    {
+      "sources": [
+        "dist/first-play.js",
+        "data/tutorials-fixed.json"
+      ],
+      "destination": "unity-client/Assets/Hexrota/Resources/HexrotaData/tutorial-coach.json",
+      "sha256": "dc629e2c220fd3c38a2b84a5176ae9279b97062257a903b1bff8dbd5ea451340"
     }
   ]
 }

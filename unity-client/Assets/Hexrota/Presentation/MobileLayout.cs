@@ -19,8 +19,8 @@ namespace Hexrota.UnityClient.Presentation
 
         public static Rect BoardViewport(Rect safe)
         {
-            return new Rect(safe.x + safe.width * .025f, safe.y + safe.height * .23f,
-                safe.width * .95f, safe.height * .53f);
+            return new Rect(safe.x + safe.width * .025f, safe.y + safe.height * .07f,
+                safe.width * .95f, safe.height * .57f);
         }
     }
 }

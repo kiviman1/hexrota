@@ -56,7 +56,7 @@ namespace Hexrota.UnityClientTests
         private int[][] CertifiedRoute()
         {
             var variants = JObject.Parse(Document("HexrotaData/variants"));
-            var level = variants["levels"].Single(x => x["levelId"].Value<int>() == 1);
+            var level = variants["levels"].Single(x => x["levelId"].Value<int>() == Convert.ToInt32(session.Level.id));
             var initial = session.Level.initial.Select(x => x.Value).ToArray();
             var variant = level["variants"].Single(v => v["initial"].Values<int>().SequenceEqual(initial));
             return variant["solutions"][0].Select(pair => pair.Values<int>().ToArray()).ToArray();
@@ -171,12 +171,8 @@ namespace Hexrota.UnityClientTests
             var reopened = new UnityGameSession(data, storage, new Clock());
             Assert.That(reopened.EnterLevelOne(), Is.False, "Winning proof cannot reopen a completed campaign level.");
         }
-        [Test] public void RealLossSettlesAndRetryCreatesANewSavedAttempt()
+        private void PlayALosingRoute()
         {
-            Assert.That(session.EnterLevelOne(), Is.True, session.LastError);
-            var initialProfile = storage.Read(ProfileRepository.ProfileKey);
-            long initialLives = W.Integer(W.Get(W.Get(W.Get(initialProfile, "energy"), "life"), "lives"));
-            string initialAttempt = (string)W.Get(W.Get(W.Get(W.Get(initialProfile, "game"), "attempts"), "2"), "attemptId");
             List<int[]> lossRoute = null;
             // Search only in a clone, using published rules; never alter the live
             // controller to force a loss or invent a terminal snapshot.
@@ -195,12 +191,65 @@ namespace Hexrota.UnityClientTests
                 }
                 if (candidate.Status == "lost") lossRoute = route;
             }
-            Assert.That(lossRoute, Is.Not.Null, "Published Level 1 must provide a real losing path for this lifecycle test.");
+            Assert.That(lossRoute, Is.Not.Null, "Published level must provide a real losing path for this lifecycle test.");
             foreach (var pair in lossRoute)
             {
                 Assert.That(session.TrySwap(pair[0], pair[1]).Ok, Is.True);
                 session.CompletePresentation();
             }
+        }
+
+        [Test] public void EarnedGoldRescuesTheSameAttemptOnceAndRestoresTheGrantedMoves()
+        {
+            // Earn the welcome reward and campaign gold through actual clears.
+            // No changes to wallet, snapshots or rules to manufacture this offer.
+            for (int stage = 0; stage < 8; stage++)
+            {
+                Assert.That(session.EnterStage(stage), Is.True, session.LastError);
+                var route = session.IsTutorial
+                    ? W.List(data.Levels[stage]["solution"]).Select(p => W.List(p).Select(W.Int32).ToArray()).ToArray()
+                    : CertifiedRoute();
+                foreach (var pair in route)
+                {
+                    if (session.NeedsTutorialAcknowledgement) Assert.That(session.AcknowledgeTutorial(), Is.True);
+                    var receipt = session.TrySwap(pair[0],pair[1]);
+                    Assert.That(receipt.Ok, Is.True, receipt.Reason);
+                    session.CompletePresentation();
+                }
+                Assert.That(session.Status, Is.EqualTo("won"));
+            }
+            int next = session.NextCampaignStage;
+            Assert.That(session.EnterStage(next), Is.True);
+            PlayALosingRoute();
+            var offer = session.GetGoldRescueOffer();
+            Assert.That(offer, Is.Not.Null);
+            Assert.That(offer.Affordable, Is.True);
+            var lost = session.Snapshot;
+            object profile = storage.Read(ProfileRepository.ProfileKey);
+            var game = W.Required(profile,"game");
+            long balance = W.Integer(W.Required(W.Required(game,"economy"),"gold"));
+            object attempt = W.Required(W.Required(game,"attempts"),next.ToString());
+            Assert.That(session.AcceptGoldRescue(offer), Is.True, session.LastError);
+            Assert.That(session.AcceptGoldRescue(offer), Is.False, "A stale offer cannot spend twice.");
+            session.Suspend();
+            session = new UnityGameSession(data, storage, new Clock());
+            Assert.That(session.EnterStage(next), Is.True, session.LastError);
+            Assert.That(session.Status, Is.EqualTo("playing"));
+            Assert.That(session.Snapshot.turn, Is.EqualTo(lost.turn));
+            Assert.That(session.Snapshot.movesLeft, Is.EqualTo(lost.movesLeft + offer.Moves));
+            CollectionAssert.AreEqual(lost.values,session.Snapshot.values);
+            game = W.Required(storage.Read(ProfileRepository.ProfileKey),"game");
+            Assert.That(W.Integer(W.Required(W.Required(game,"economy"),"gold")), Is.EqualTo(balance - offer.Cost));
+            Assert.That(W.Equal(attempt,W.Required(W.Required(game,"attempts"),next.ToString())), Is.True);
+        }
+
+        [Test] public void RealLossSettlesAndRetryCreatesANewSavedAttempt()
+        {
+            Assert.That(session.EnterLevelOne(), Is.True, session.LastError);
+            var initialProfile = storage.Read(ProfileRepository.ProfileKey);
+            long initialLives = W.Integer(W.Get(W.Get(W.Get(initialProfile, "energy"), "life"), "lives"));
+            string initialAttempt = (string)W.Get(W.Get(W.Get(W.Get(initialProfile, "game"), "attempts"), "2"), "attemptId");
+            PlayALosingRoute();
             Assert.That(session.Status, Is.EqualTo("lost"));
             Assert.That(session.Snapshot.movesLeft, Is.Zero);
             var afterLoss = storage.Read(ProfileRepository.ProfileKey);

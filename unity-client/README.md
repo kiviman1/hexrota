@@ -1,4 +1,4 @@
-# HEXROTA Unity 9.11
+# Hexrota Unity campaign
 
 Open this directory in Unity Hub with **6000.6.9f1** (revision **8c45277fb9c5**). The exact release and Web Build Support availability were verified against Unity's official release API; see `../reports/unity-9-11/editor-release.json`. Do not silently upgrade/downgrade.
 
@@ -14,9 +14,9 @@ Open `Assets/Hexrota/Scenes/FirstPlayable.unity` and enter Play Mode. The checke
 - `Assets/WebGLTemplates/HexrotaMobile`: phone template and exclusive profile lock.
 - `HostTests`: supplemental actual .NET tests for runtime/core/storage, outside Unity Assets.
 
-The initial menu opens campaign Level 1 at stage index 2, using the existing selector and real four-variant catalog. T1/T2 data and their stage offsets remain intact; their guided screens are not part of this first playable. Core transaction results are the authority for moves, score, terrain, RNG, wins/losses, life charges and one-time progression. Presentation projects frames with a clone of the **same** engine and verifies its entire result against the committed controller snapshot before animation. No speculative save is made.
+A fresh profile opens Tavik’s first coop. Choose **Başlayalım** for T1 and T2. Follow the authored moves, acknowledge the teaching cards and continue into the ten-stage campaign. Returning players can resume, inspect records and visit the garden. The default route uses the same classic catalog as the Web home page: four published variants per numbered stage. A successful move commits through the application controller before the board animates.
 
-The existing campaign contract permanently closes a won level. Loss permits Retry, subject to lives; pause permits confirmed Restart, potentially charging a life. Win offers Menu. Practice replay would require a separately approved product contract; this client does not reopen or re-award completed stages.
+The versioned obstacle, flow, material and story modules and data also ship in the Unity source set. See the [feature matrix](../docs/UNITY_MAIN_FEATURE_MATRIX.md) for player-facing availability, and the [roadmap](../docs/UNITY_MAIN_PORT_ROADMAP.md) for remaining migration work.
 
 Storage retains existing profile/snapshot/attempt schemas in a Unity-specific platform namespace (`hexrota-unity-9.11/` on web, subdirectory on native). It never reads or overwrites the existing web prototype's localStorage. Native uses atomic replacement of the canonical game+energy file. Web acknowledges a command only after synchronous localStorage success under an exclusive Web Lock acquired before Unity starts. Corrupt or denied storage fails closed without resetting progression. Cross-platform/cloud migration is not implemented.
 
@@ -32,4 +32,4 @@ UNITY_EDITOR_PATH=/path/to/6000.6.9f1/Editor/Unity npm run test:unity-editor
 UNITY_EDITOR_PATH=/path/to/6000.6.9f1/Editor/Unity npm run build:unity-web
 ```
 
-**Validation boundary:** no Unity Editor is installed in the implementation environment. Unity tests, scene import, rendering, IL2CPP, WebGL and physical phones have not run. .NET host and structural checks are supplemental evidence, not substitutes. See [delivery report](../docs/UNITY_FOUNDATION_9_11.md), [web test instructions](../docs/UNITY_WEB_TESTING.md) and [Blender pipeline](../docs/BLENDER_ASSET_PIPELINE.md).
+The [migration verification report](../reports/unity-main-migration/README.md) links the real Editor results and portrait comparisons. The earlier [foundation report](../docs/UNITY_FOUNDATION_9_11.md) describes the original 9.11 delivery. See also the [web test instructions](../docs/UNITY_WEB_TESTING.md) and [Blender pipeline](../docs/BLENDER_ASSET_PIPELINE.md).

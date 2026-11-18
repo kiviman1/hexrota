@@ -15,7 +15,16 @@ check('exact engine/data synchronization; runtime allowlist excludes harnesses',
   const run = spawnSync(process.execPath, ['scripts/sync-unity-client.cjs', '--check'], {cwd: root, encoding: 'utf8'});
   assert.equal(run.status, 0, run.stdout + run.stderr);
   const manifest = JSON.parse(read('SourceManifest.json'));
-  assert.equal(manifest.files.filter(file => file.source.endsWith('.cs')).length, 25);
+  const synced = new Set(manifest.files.map(file => file.source));
+  for (const required of [
+    'unity/Application/GameSessionController.cs', 'unity/Gameplay/HexMatch.Obstacles.cs',
+    'unity/Gameplay/HexMatch.ColumnFlow.cs', 'unity/Catalog/CampaignFlowCatalog.cs',
+    'unity/Gameplay/HexMatch.Materials.cs', 'unity/Catalog/MaterialAlphaCatalog.cs',
+    'unity/Story/StoryEngine.cs', 'unity/StoryAdapter/StoryBindings.cs',
+    'unity/StoryAdapter/CanonicalStoryFacts.cs', 'data/obstacle-levels-v1.json',
+    'data/campaign-flow-levels-v1.json', 'data/campaign-flow-levels-v2.json',
+    'data/material-alpha-levels-v1.json', 'data/story-content-v1.json'
+  ]) assert(synced.has(required), 'Required Unity migration input missing: ' + required);
   for (const item of manifest.files) assert(!/Harness|ParitySupport|Program\.cs/.test(item.source));
   for (const item of walk(path.join(project, 'Assets/Hexrota/Core')).filter(file => file.endsWith('.cs'))) assert(!/UnityEngine|System\.Text\.Json|static void Main/.test(fs.readFileSync(item, 'utf8')), item);
 });

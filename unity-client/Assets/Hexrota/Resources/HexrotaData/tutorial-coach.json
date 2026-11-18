@@ -1,0 +1,76 @@
+{
+  "learn-1": [
+    {
+      "guide": {
+        "title": "2’yi 1’in yerine kaydır",
+        "text": "Aynı sayıdan üç taş yan yana gelsin."
+      },
+      "feedback": {
+        "title": "İlk eşleşmen!",
+        "text": "2 + 2 + 2 = 6 puan. Üç taşın altı yeşerdi."
+      }
+    },
+    {
+      "guide": {
+        "title": "Bir eşleşme daha yap",
+        "text": "Parlayan iki taşın yerini değiştir."
+      },
+      "feedback": {
+        "title": "Yeşil yerler kalır",
+        "text": "3 puan daha kazandın. Yeni taşlar geldi; yeşeren yerler kaldı."
+      }
+    },
+    {
+      "guide": {
+        "title": "Son iki yeri yeşert",
+        "text": "Parlayan 2 ile 3’ün yerini değiştir."
+      },
+      "feedback": {
+        "title": "İlk alan yeşerdi!",
+        "text": "Yedi yerin hepsi yeşil. Sıradaki görevde yeni bir zemin var."
+      }
+    }
+  ],
+  "learn-2": [
+    {
+      "guide": {
+        "title": "İki noktalı yeri yeşert",
+        "text": "Parlayan 3 ile 1’in yerini değiştir."
+      },
+      "feedback": {
+        "title": "Bir nokta kaldı",
+        "text": "İki noktalı yer iki eşleşmede yeşerir."
+      }
+    },
+    {
+      "guide": {
+        "title": "Taşları değiştir, sonra izle",
+        "text": "Parlayan iki taşın yerini değiştir."
+      },
+      "feedback": {
+        "title": "Zincir eşleşme!",
+        "text": "Yeni taşlar da eşleşti: 15 puan. Yalnızca bir hamle kullandın."
+      }
+    },
+    {
+      "guide": {
+        "title": "Puan hedefini tamamla",
+        "text": "Parlayan iki taşı değiştir. Hedefin 25 puan."
+      },
+      "feedback": {
+        "title": "Puan hedefi tamam!",
+        "text": "27 puanın var. Son bir yeri yeşert."
+      }
+    },
+    {
+      "guide": {
+        "title": "Son yeri yeşert",
+        "text": "Parlayan iki taşın yerini değiştir."
+      },
+      "feedback": {
+        "title": "Görev tamam!",
+        "text": "Puanın yeterli ve her yer yeşil. İlk bölüme hazırsın."
+      }
+    }
+  ]
+}
