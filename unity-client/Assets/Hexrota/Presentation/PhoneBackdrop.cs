@@ -13,6 +13,7 @@ namespace Hexrota.UnityClient.Presentation
         private RawImage blurred;
         private RenderTexture snapshot;
         private Coroutine pending;
+        private Material filter;
         private Vector2Int size;
 
         public static void Show(GameObject overlay)
@@ -26,6 +27,12 @@ namespace Hexrota.UnityClient.Presentation
 
         private void Request()
         {
+            if (filter == null)
+            {
+                var shader = Resources.Load<Shader>("PhoneArt/DialogSnapshot");
+                if (shader == null || !shader.isSupported) return;
+                filter = new Material(shader);
+            }
             size = new Vector2Int(Screen.width, Screen.height);
             group = GetComponent<CanvasGroup>();
             group.alpha = 0;
@@ -54,8 +61,8 @@ namespace Hexrota.UnityClient.Presentation
                     source = next;
                 }
                 FreeTexture();
-                snapshot = source;
-                source = null;
+                snapshot = RenderTexture.GetTemporary(source.width, source.height, 0, RenderTextureFormat.ARGB32);
+                Graphics.Blit(source, snapshot, filter);
                 snapshot.filterMode = FilterMode.Bilinear;
                 snapshot.wrapMode = TextureWrapMode.Clamp;
                 if (blurred == null)
@@ -73,7 +80,9 @@ namespace Hexrota.UnityClient.Presentation
                     Stretch(shade.rectTransform);
                 }
                 var safe = Screen.safeArea;
-                blurred.uvRect = new Rect(safe.x/size.x,safe.y/size.y,safe.width/size.x,safe.height/size.y);
+                var uv = new Rect(safe.x/size.x,safe.y/size.y,safe.width/size.x,safe.height/size.y);
+                if (SystemInfo.graphicsUVStartsAtTop) uv = new Rect(uv.x,1-uv.y,uv.width,-uv.height);
+                blurred.uvRect = uv;
                 blurred.texture = snapshot;
                 blurred.gameObject.SetActive(true);
             }
@@ -113,6 +122,11 @@ namespace Hexrota.UnityClient.Presentation
             if (group != null) group.alpha = 1;
             if (blurred != null) blurred.gameObject.SetActive(false);
             FreeTexture();
+        }
+
+        private void OnDestroy()
+        {
+            if (filter != null) Destroy(filter);
         }
     }
 }
