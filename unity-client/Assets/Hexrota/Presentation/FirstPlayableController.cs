@@ -203,6 +203,7 @@ namespace Hexrota.UnityClient.Presentation
         private void EvaluateOutcome()
         {
             if (!ready || !Session.HasAttempt || Session.Status == "playing") return;
+            ClearScoreFeedback();
             CurrentScreen = "result";
             Board.InputEnabled = false;
             if (Session.Status == "won") DrawWin(); else DrawLoss();
@@ -247,6 +248,7 @@ namespace Hexrota.UnityClient.Presentation
         }
         private void OpenCurrentBoard()
         {
+            ClearScoreFeedback();
             Session.SetPlaytestActivity(false);
             HideReviewControl();
             CurrentScreen = "playing"; menu.SetActive(false); gameplay.SetActive(true); modal.SetActive(false);

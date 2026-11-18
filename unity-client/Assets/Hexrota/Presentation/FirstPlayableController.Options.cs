@@ -68,7 +68,8 @@ namespace Hexrota.UnityClient.Presentation
             else { optionsShade.SetActive(false); Destroy(optionsShade); }
             CurrentScreen=screen;
             Board.InputEnabled=false; refillTimer=null;
-            optionsShade=Panel("PhoneOptionsOverlay",safe,Vector2.zero,Vector2.one,new Color(.09f,.04f,.16f,.82f));
+            optionsShade=Panel("PhoneOptionsOverlay",safe,Vector2.zero,Vector2.one,new Color32(16,10,41,186));
+            PhoneBackdrop.Show(optionsShade);
             var paper=Panel("PhoneDialog",optionsShade.transform,Vector2.zero,Vector2.one,Color.white);
             PhoneSkin.Plate(paper,OptColor("fff7df"),OptColor("f5dfb4"),OptColor("c58a42"),25,4);
             paper.AddComponent<PhoneDialogFrame>().Fit(safe,naturalHeight);

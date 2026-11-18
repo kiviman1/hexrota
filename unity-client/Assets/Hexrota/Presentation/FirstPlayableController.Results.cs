@@ -15,13 +15,13 @@ namespace Hexrota.UnityClient.Presentation
 
         private void ResultStats(string[] names,string[] values,float top)
         {
-            SheetPlate("ResultStats",22,top-5,316,69,0xf5e7ca,0xf1dfbd,0xd0aa76,14);
+            SheetPlate("ResultStats",22,top,316,84,0xf5e7ca,0xf1dfbd,0xd0aa76,14);
             float width=316f/names.Length;
             for(int i=0;i<names.Length;i++)
             {
                 float x=22+width*i;
-                SheetText("StatName"+i,names[i],x,top,width,18,10,Tone(0x805c71),TextAnchor.MiddleCenter);
-                SheetText("StatValue"+i,values[i],x,top+18,width,42,26,Tone(0x654381),TextAnchor.MiddleCenter,true);
+                SheetText("StatName"+i,names[i],x,top+15,width,19,9,Tone(0x805c71),TextAnchor.MiddleCenter);
+                SheetText("StatValue"+i,values[i],x,top+35,width,36,25,Tone(0x654381),TextAnchor.MiddleCenter,true);
             }
         }
 
@@ -40,34 +40,53 @@ namespace Hexrota.UnityClient.Presentation
                 sheetRibbon.enabled=false;sheetTails.enabled=false;CenterTitle(54);modalTitle.fontSize=30;modalTitle.resizeTextMaxSize=30;
                 At(modalCopy.rectTransform,34,103,292,29);modalCopy.alignment=TextAnchor.MiddleCenter;modalCopy.color=Paper;
                 ResultArt("WelcomeChest","CoopArt/welcome-chest",56,130,248,200);
-                SheetText("WelcomeGold","✦  +"+result.Gold+" Altın",22,317,316,58,32,Gold,TextAnchor.MiddleCenter,true);
+                SheetPlate("GoldCoin",80,325,43,43,0xffdb63,0xe7a735,0xfff1a4,22);
+                SheetText("CoinMark","✦",80,323,43,43,26,Tone(0xfff5ac),TextAnchor.MiddleCenter,true);
+                SheetText("WelcomeGold","+"+result.Gold+" Altın",132,317,177,58,32,Gold,TextAnchor.MiddleLeft,true);
                 SheetText("WelcomeSaved","Hediyen hesabına eklendi.",22,370,316,34,12,Paper,TextAnchor.MiddleCenter);
+                CelebrateWin();
                 SheetButton(next,22,418,316,50,ContinueAfterWin,SheetStyle.Primary,"arrow");return;
             }
             string title=tutorial?(first?"İlk alan yeşerdi!":"Hazırsın!"):result.Headline??(final?"Usta işi!":"Harika eşleşme!");
             string description=tutorial?(first?"Aynı sayıları eşleştirdin, altlarındaki yerleri yeşerttin.":"Puanı topladın, her yeri yeşerttin. İlk bölüm seni bekliyor."):
                 final?"10 bölümün hepsini bitirdin!":board.movesLeft+" hamlen kaldı. Bölümü bitirdin!";
-            ShowPhoneSheet(title,description,final?"YOLCULUK TAMAMLANDI":Session.StageLabel(Session.ActiveStage)+" TAMAMLANDI",tutorial?362:570);
+            int assisted=result.Assisted?32:0,gift=result.Gift!=null?24:0;
+            int rewardHeight=result.Stars>0?82+gift:0;
+            int nextY=412+assisted+rewardHeight;
+            ShowPhoneSheet(title,description,final?"YOLCULUK TAMAMLANDI":Session.StageLabel(Session.ActiveStage)+" TAMAMLANDI",tutorial?362:nextY+197);
+            CelebrateWin();
             ResultArt("VictoryMark","CoopArt/victory-mark",139,30,82,90);
             At(sheetEyebrow.rectTransform,22,145,316,20);sheetEyebrow.alignment=TextAnchor.MiddleCenter;
             CenterTitle(173);At(modalCopy.rectTransform,22,238,316,25);modalCopy.alignment=TextAnchor.MiddleCenter;
             if(tutorial){SheetButton(next,22,286,316,50,ContinueAfterWin,SheetStyle.Primary,"arrow");return;}
-            ResultStats(new[]{"TOPLAM PUAN","KALAN HAMLE","YEŞİL ALAN"},new[]{board.score.ToString(),board.movesLeft.ToString(),"%100"},271);
+            if(result.Assisted) SheetText("AssistedClear","Güçlendirici kullanarak tamamladın.",22,268,316,25,12,PurpleText,TextAnchor.MiddleCenter);
+            ResultStats(new[]{"TOPLAM PUAN","KALAN HAMLE","YEŞİL ALAN"},new[]{board.score.ToString(),board.movesLeft.ToString(),"%100"},286+assisted);
             if(result.Stars>0)
             {
-                SheetPlate("EarnedRewards",22,344,316,64,0x654084,0x38214e,0xe5b660,18);
-                SheetText("Earned","+"+result.Gold+" Altın     +"+result.Stars+" yıldız"+(result.Gift!=null?"  "+result.Gift:""),28,350,304,24,14,Tone(0xffe492),TextAnchor.MiddleCenter,true);
-                SheetText("ResultSaved",result.Assisted?"Güçlendirici kullanarak tamamladın.":"Bu bölüm tamamlandı. Ödülün ve ilerlemen kaydedildi.",28,378,304,21,11,Tone(0xf5e7fa),TextAnchor.MiddleCenter);
+                int rewardsY=397+assisted;
+                SheetPlate("EarnedRewards",22,rewardsY,316,rewardHeight,0x654084,0x38214e,0xe5b660,18);
+                SheetText("Earned","+"+result.Gold+" Altın     +"+result.Stars+" yıldız",28,rewardsY+12,304,30,18,Tone(0xffe492),TextAnchor.MiddleCenter,true);
+                if(result.Gift!=null) SheetText("Gift",result.Gift,28,rewardsY+42,304,24,13,Tone(0xd2f4a7),TextAnchor.MiddleCenter,true);
+                SheetText("ResultSaved","Bu bölüm tamamlandı. Ödülün ve ilerlemen kaydedildi.",28,rewardsY+44+gift,304,25,11,Tone(0xf5e7fa),TextAnchor.MiddleCenter);
             }
-            SheetButton(next,22,424,316,50,ContinueAfterWin,SheetStyle.Primary,"arrow");
-            SheetButton("Tahtayı incele",22,478,316,37,ShowBoardReview,SheetStyle.Plain);
-            ResultLinks(516);
+            SheetButton(next,22,nextY,316,50,ContinueAfterWin,SheetStyle.Primary,"arrow");
+            SheetButton("Tahtayı incele",132,nextY+57,96,40,ShowBoardReview,SheetStyle.Plain);
+            ResultLinks(nextY+113);
         }
 
         private void ResultLinks(int y)
         {
-            SheetButton("Bölümler",22,y,152,40,OpenJourney,SheetStyle.Plain,"map");
-            SheetButton("Ana menü",184,y,154,40,ReturnToMenu,SheetStyle.Plain,"home");
+            SheetPlate("ResultDivider",22,y,316,1,0xe6ecdd,0xe6ecdd,0xe6ecdd,0);
+            SheetButton("Bölümler",90,y+13,88,44,OpenJourney,SheetStyle.Plain,"map");
+            SheetButton("Ana menü",179,y+13,91,44,ReturnToMenu,SheetStyle.Plain,"home");
+        }
+
+        private void CelebrateWin()
+        {
+            if(Session.ReducedMotion)return;
+            var confetti=Rect("Confetti",sheetDecor,Vector2.zero,Vector2.one).gameObject.AddComponent<PhoneWinConfetti>();
+            confetti.Pieces=Session.FeedbackPlan?.headline==null?18:12+Session.FeedbackPlan.headline.tier*4;
+            confetti.raycastTarget=false;
         }
 
         private void ShowBoardReview()
@@ -85,37 +104,52 @@ namespace Hexrota.UnityClient.Presentation
         {
             var board=Session.Snapshot;int green=0;foreach(int layer in board.layers)if(layer==0)green++;
             var ad=Session.ReadRescueAd();var gold=Session.GetGoldRescueOffer();
-            ShowPhoneSheet("Bir plan daha?","Hamlelerin bitti. Altı yeşil olmayan taşları eşleştirmeyi dene.","BİR YOL DAHA VAR",ad!=null?650:425,ShowBoardReview);
-            SheetSymbol("reset",24,false);At(sheetEyebrow.rectTransform,22,82,316,20);sheetEyebrow.alignment=TextAnchor.MiddleCenter;
-            CenterTitle(112);At(modalCopy.rectTransform,22,174,316,40);modalCopy.alignment=TextAnchor.MiddleCenter;
-            ResultStats(new[]{"TOPLAM PUAN","YEŞİL ALAN"},new[]{board.score+" / "+Session.Level.target,green+" / "+board.layers.Length},216);
-            int retryY=298;
+            int retryY=ad==null?413:782;
+            ShowPhoneSheet("Bir plan daha?","Hamlelerin bitti. Altı yeşil olmayan taşları eşleştirmeyi dene.","BİR YOL DAHA VAR",retryY+187,ShowBoardReview);
+            SheetSymbol("reset",30,true);
+            At(sheetEyebrow.rectTransform,22,128,316,28);sheetEyebrow.alignment=TextAnchor.MiddleCenter;
+            CenterTitle(166);At(modalCopy.rectTransform,22,232,316,44);modalCopy.alignment=TextAnchor.MiddleCenter;
+            ResultStats(new[]{"TOPLAM PUAN","YEŞİL ALAN"},new[]{board.score+" / "+Session.Level.target,green+" / "+board.layers.Length},302);
             if(ad!=null)
             {
-                SheetPlate("SecondChance",22,291,316,211,0xf1e7fa,0xdec9ed,0xb89cd1,18);
-                SheetText("SecondChanceTitle","Aynı tahtada +"+ad.Moves+" hamle",34,302,292,25,18,PurpleText,TextAnchor.MiddleCenter,true);
-                SheetText("SecondChanceCopy","Taşların, yeşil alanların ve puanın korunur. Bir denemede bir kez kullanabilirsin.",34,331,292,33,12,PurpleText,TextAnchor.MiddleCenter);
+                SheetPlate("SecondChance",22,413,316,350,0xf1e7fa,0xdec9ed,0xb89cd1,18);
+                SheetText("SecondChanceTitle","Aynı tahtada +"+ad.Moves+" hamle",40,427,280,30,18,Tone(0x60337f),TextAnchor.MiddleLeft,true);
+                SheetText("SecondChanceCopy","Taşların, yeşil alanların ve puanın korunur. Bir denemede bir kez kullanabilirsin.",40,461,280,44,12,PurpleText);
                 string label=ad.PendingDelivery?"Saklanan ödülünü kullan":ad.PendingId!=null?"Yarım kalan TEST reklamını aç":"TEST reklamı · +"+ad.Moves+" hamle";
-                SheetButton(label,35,370,290,40,()=>DrawRescueAd(ad)).interactable=ad.Available;
-                SheetButton(ad.Price+" Altın · +"+ad.Moves+" hamle",35,417,290,40,()=>ConfirmGoldRescue(gold),SheetStyle.Secondary).interactable=gold!=null&&gold.Affordable;
-                string reason=ad.PendingDelivery?"Ödülün kaydedilmeyi bekliyor.":ad.Reason=="already_rescued"?"Bu denemede ikinci şansını kullandın.":
-                    ad.Available?"İkinci şans reklamı: bugün "+ad.Remaining+" hak kaldı.":"Bu denemede TEST reklamı kullanılamıyor.";
-                SheetText("RescueAvailability",reason,34,461,292,34,11,PurpleText,TextAnchor.MiddleCenter);
-                retryY=518;
+                EnableSheetButton(SheetButton(label,40,516,280,47,()=>DrawRescueAd(ad)),ad.Available,SheetStyle.Primary);
+                EnableSheetButton(SheetButton(ad.Price+" Altın · +"+ad.Moves+" hamle",40,572,280,46,()=>UseGoldRescue(gold),SheetStyle.Secondary),
+                    gold!=null&&gold.Affordable&&!ad.PendingDelivery,SheetStyle.Secondary);
+                SheetText("RescueAvailability",RescueAvailability(ad,gold),40,626,280,68,12,Tone(0x67486d),TextAnchor.MiddleLeft,true);
+                SheetText("TestProviderNote","TEST reklamında gerçek reklam gösterilmez. Gerçek para işlemi yoktur.",40,701,280,48,11,Tone(0x67486d));
             }
-            SheetButton("Yeniden dene",22,retryY,316,48,Retry,SheetStyle.Primary,"reset");
-            SheetText("RetryNote","Yeni bir tahta ile başlayacaksın.",22,retryY+52,316,24,11,PurpleText,TextAnchor.MiddleCenter);
-            ResultLinks(retryY+80);
+            SheetButton("Yeniden dene",22,retryY,316,50,Retry,SheetStyle.Primary,"reset");
+            SheetText("RetryNote","Yeni bir tahta ile başlayacaksın.",22,retryY+65,316,23,11,PurpleText,TextAnchor.MiddleCenter);
+            ResultLinks(retryY+102);
         }
-        private void ConfirmGoldRescue(UnityGameSession.GoldRescueOffer offer)
+
+        private static string RescueAvailability(UnityGameSession.RescueAdOffer ad,UnityGameSession.GoldRescueOffer gold)
         {
-            if(CurrentScreen!="result"||offer==null||!ready)return;
-            ShowPhoneSheet("Aynı tahtada devam et",offer.Cost+" Altın ile aynı denemeye "+offer.Moves+" hamle ekle.","İKİNCİ ŞANS",345,EvaluateOutcome);
-            SheetButton(offer.Cost+" Altın kullan",22,205,316,48,()=>{
-                if(!Session.AcceptGoldRescue(offer)){DrawLoss();return;}
-                OpenCurrentBoard();
-            });
-            SheetButton("Vazgeç",22,269,316,46,EvaluateOutcome,SheetStyle.Secondary);
+            if(ad.PendingDelivery) return "Reklam ödülün saklandı. Yeni reklam izlemeden veya Altın harcamadan kullanabilirsin.";
+            string status;
+            switch(ad.Reason)
+            {
+                case "no_legal_swaps":return "Bu tahtada eşleşme yapacak hamle kalmadı. Yeni bir deneme başlatabilirsin.";
+                case "already_rescued":return "Bu denemede ikinci şansını kullandın. Yeni bir deneme başlatabilir veya menüye dönebilirsin.";
+                case "ad_unavailable":status="Şu an TEST reklamı yok. Yeniden deneyebilir veya menüye dönebilirsin.";break;
+                case "daily_limit":status="Bugünkü ikinci şans reklamı hakkın doldu.";break;
+                case "daily_reserved":status="Bugünkü reklam hakların yarım kalan TEST işlemleri için ayrılmış.";break;
+                default:status=ad.PendingId!=null?"Başlattığın TEST işlemini sürdürebilirsin. Yeni bir reklam hakkı ayrılmaz.":
+                    "İkinci şans reklamı: bugün "+ad.Remaining+" hak kaldı. Can reklamlarından ayrıdır.";break;
+            }
+            if(gold!=null && !gold.Affordable) status+=" Altın seçeneği için bakiyen yetersiz.";
+            else if(gold!=null && !ad.Available) status+=" Altınla devam edebilirsin.";
+            return status;
+        }
+        private void UseGoldRescue(UnityGameSession.GoldRescueOffer offer)
+        {
+            if(CurrentScreen!="result" || offer==null || !ready)return;
+            if(Session.AcceptGoldRescue(offer)) OpenCurrentBoard();
+            else DrawLoss();
         }
         private void DrawRescueAd(UnityGameSession.RescueAdOffer offer)
         {

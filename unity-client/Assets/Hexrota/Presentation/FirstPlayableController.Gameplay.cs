@@ -13,6 +13,7 @@ namespace Hexrota.UnityClient.Presentation
         private readonly Button[] dockButtons = new Button[5];
         private RawImage guideHand, playActor, coachFace;
         private TutorialGestureArrow guideArrow;
+        private PhoneCoverageRing coverageRing;
         private Texture2D pointFace, talkFace, happyFace;
         private int[] guidePair;
         private float guideStarted, speechStarted;
@@ -45,6 +46,11 @@ namespace Hexrota.UnityClient.Presentation
             return plate;
         }
 
+        private static void PlateShadow(GameObject surface, Color color)
+        {
+            var shade = surface.AddComponent<Shadow>(); shade.effectColor = color; shade.effectDistance = new Vector2(0,-5);
+        }
+
         private void BuildGameplayScreen()
         {
             gameplay = Rect("Gameplay",safe,Vector2.zero,Vector2.one).gameObject;
@@ -72,6 +78,7 @@ namespace Hexrota.UnityClient.Presentation
             groundColumn = Rect("GreenGoal",goalsBox,Vector2.zero,Vector2.one);
             scoreDivider = Panel("GoalDivider",groundColumn,new Vector2(0,.98f),Vector2.one,new Color32(198,168,118,255));
             var ring = GamePlate("CoverageRing",groundColumn.gameObject.transform,Color.clear,Color.clear,new Color32(187,163,118,190),50,3);
+            coverageRing = ring.AddComponent<PhoneCoverageRing>();
             var ringFit = ring.AddComponent<AspectRatioFitter>(); ringFit.aspectMode = AspectRatioFitter.AspectMode.WidthControlsHeight; ringFit.aspectRatio = 1;
             var ringRect = (RectTransform)ring.transform; Place(ringRect,.05f,.5f,.12f,.5f);
             groundCaption = PlayText("GroundLabel",groundColumn,"",0,0,1,1,20,GreenInk,TextAnchor.MiddleLeft);
@@ -79,6 +86,7 @@ namespace Hexrota.UnityClient.Presentation
             movesBox = (RectTransform)GamePlate("RemainingMoves",hud,new Color32(255,222,117,255),
                 new Color32(239,171,50,255),new Color32(255,227,156,255)).transform;
             PlayText("MovesLabel",movesBox,"HAMLE",0,.64f,1,.93f,17,BrownInk,TextAnchor.MiddleCenter,true);
+            PlateShadow(goalsBox.gameObject,new Color32(49,33,51,255)); PlateShadow(movesBox.gameObject,new Color32(82,49,75,255));
             movesCounter = PlayText("Moves",movesBox,"",0,.08f,1,.71f,69,HeadingInk,TextAnchor.MiddleCenter,true);
 
             coachCard = GamePlate("Coach",gameplay.transform,new Color32(255,244,212,255),
@@ -91,6 +99,8 @@ namespace Hexrota.UnityClient.Presentation
             coachPortrait.AddComponent<Mask>().showMaskGraphic = true;
             coachFace = Rect("Face",coachPortrait.transform,new Vector2(-.645f,-1.13f),new Vector2(1.585f,1.1f)).gameObject.AddComponent<RawImage>();
             coachFace.raycastTarget = false;
+            var rim = GamePlate("PortraitEdge",coachPortrait.transform,Color.clear,Color.clear,new Color32(198,143,80,255),120,4);
+            rim.GetComponent<Image>().raycastTarget = false;
             pointFace = Resources.Load<Texture2D>("CoopArt/point"); talkFace = Resources.Load<Texture2D>("CoopArt/call");
             happyFace = Resources.Load<Texture2D>("CoopArt/celebrate");
             coachHeading = PlayText("CoachHeading",coach,"",.32f,.72f,.59f,.92f,14,BrownInk,TextAnchor.MiddleLeft,true);
@@ -103,7 +113,7 @@ namespace Hexrota.UnityClient.Presentation
             lessonCopy = PlayText("LessonCopy",coach,"",.32f,.06f,.785f,.39f,21,HeadingInk,TextAnchor.MiddleLeft);
             skipLesson = MakeButton("Geç",coach,new Vector2(.8f,.22f),new Vector2(.99f,.78f),SkipLessons);
             skipLesson.GetComponent<Image>().color = Color.clear;
-            var skipText = skipLesson.GetComponentInChildren<Text>(); skipText.fontSize = 18; skipText.fontStyle = FontStyle.Normal;
+            var skipText = skipLesson.GetComponentInChildren<Text>(); skipText.fontSize = skipText.resizeTextMaxSize = 16; skipText.resizeTextMinSize=12; skipText.fontStyle = FontStyle.Normal;
             acknowledgeButton = MakeButton("Devam et",coach,new Vector2(.787f,.23f),new Vector2(.987f,.77f),AcknowledgeTutorial);
             acknowledgeButton.GetComponentInChildren<Text>().fontSize = 22;
             guideArrow = Rect("GestureArrow",boardInput,Vector2.zero,Vector2.one).gameObject.AddComponent<TutorialGestureArrow>();
@@ -129,6 +139,7 @@ namespace Hexrota.UnityClient.Presentation
             var button = MakeButton(caption,playDock.transform,Vector2.zero,Vector2.one,action);
             PhoneSkin.Plate(button.gameObject,blue ? new Color32(117,190,229,255) : new Color32(159,119,190,255),
                 blue ? new Color32(57,123,176,255) : new Color32(80,50,106,255),new Color32(169,132,188,255),20,1);
+            PlateShadow(button.gameObject,new Color32(39,26,52,255));
             var label = button.GetComponentInChildren<Text>(); label.fontSize = label.resizeTextMaxSize = 16; label.resizeTextMinSize = 12;
             label.color = Paper; label.fontStyle = FontStyle.Bold;
             var medallion = GamePlate("Medallion",button.transform,blue ? new Color32(123,196,231,255) : new Color32(149,114,174,255),
@@ -152,8 +163,9 @@ namespace Hexrota.UnityClient.Presentation
             var cameraArea = new UnityEngine.Rect(safeRect.x + safeRect.width * area.x,safeRect.y + safeRect.height * area.y,
                 safeRect.width * area.width,safeRect.height * area.height);
             Board.SetCameraArea(cameraArea);
-            Place(goalsBox,.046f,.08f,first ? .738f : .707f,.72f);
-            Place(movesBox,first ? .764f : .738f,.08f,.954f,.72f);
+            Place(goalsBox,.046f,.08f,first ? .738f : .707f,first ? .685f : .72f);
+            Place(movesBox,first ? .764f : .738f,.08f,.954f,first ? .685f : .72f);
+            Place(coverageRing.GetComponent<RectTransform>(),first ? .065f : .054f,.5f,first ? .158f : .124f,.5f);
             if (first)
             {
                 Place(scoreColumn,.72f,.02f,.99f,.98f); Place(groundColumn,0,0,.72f,1);
@@ -213,6 +225,7 @@ namespace Hexrota.UnityClient.Presentation
             if (!Session.HasAttempt) return;
             var snapshot = Session.Snapshot; int green = 0;
             foreach (int layers in snapshot.layers) if (layers == 0) green++;
+            coverageRing.SetProgress((float)green/snapshot.layers.Length);
             bool first = Session.ActiveStage == 0;
             stageTag.text = Session.StageLabel(Session.ActiveStage);
             title.text = first ? "Her yeri yeşert" : Session.IsTutorial ? "İki hedefi tamamla" : "Puanı topla, alanı boya";

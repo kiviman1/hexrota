@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using Hexrota.Application;
 using Hexrota.Gameplay;
 using Hexrota.Lives;
@@ -102,6 +103,66 @@ namespace Hexrota.UnityClientTests
             view.ReturnToMenu(); yield return null;
             Assert.That(view.Session.HasAttempt, Is.False);
             Assert.That(view.Board.InputEnabled, Is.False);
+        }
+
+        [UnityTest] public IEnumerator AllLevelOneCellsPickThroughTheCanvasAndTapsAndDragCommitRealTurns()
+        {
+            view.BeginLevelOne();
+            yield return null;
+            Canvas.ForceUpdateCanvases();
+            var events=EventSystem.current;
+            var module=events.GetComponent<StandaloneInputModule>();
+            var original=module.inputOverride;
+            var device=events.gameObject.AddComponent<PhoneTouchInput>();
+            module.inputOverride=device;
+            // Simulate a foreground phone screen even if the batch editor window
+            // starts unfocused. No board handler or selected target is injected.
+            if(!events.isFocused)events.SendMessage("OnApplicationFocus",true);
+            try
+            {
+                for(int i=0;i<view.Session.Level.cells.Length;i++)
+                {
+                    var hits=new List<RaycastResult>();
+                    events.RaycastAll(new PointerEventData(events){position=ScreenPoint(i)},hits);
+                    Assert.That(hits,Is.Not.Empty,"Cell "+i);
+                    var target=ExecuteEvents.GetEventHandler<IPointerDownHandler>(hits[0].gameObject);
+                    Assert.That(target,Is.SameAs(view.Board.gameObject),"Cell "+i+" hit "+hits[0].gameObject.name);
+                }
+                var pair=new HexMatch(view.Session.Level,view.Session.Snapshot).LegalMoves()[0];
+                Vector2 first=ScreenPoint(pair[0]),second=ScreenPoint(pair[1]);
+                device.Sample(module,TouchPhase.Began,first);
+                device.Sample(module,TouchPhase.Ended,first);
+                Assert.That(view.Board.SelectedIndex,Is.EqualTo(pair[0]));
+                device.Sample(module,TouchPhase.Began,second);
+                device.Sample(module,TouchPhase.Ended,second);
+                Assert.That(view.Session.Snapshot.turn,Is.EqualTo(1));
+                float end=Time.realtimeSinceStartup+15;
+                while(view.Board.IsAnimating && Time.realtimeSinceStartup<end)yield return null;
+                Assert.That(view.Board.InputEnabled,Is.True);
+                pair=new HexMatch(view.Session.Level,view.Session.Snapshot).LegalMoves()[0];
+                first=ScreenPoint(pair[0]);second=ScreenPoint(pair[1]);
+                device.Sample(module,TouchPhase.Began,first);
+                device.Sample(module,TouchPhase.Moved,Vector2.Lerp(first,second,.6f));
+                device.Sample(module,TouchPhase.Moved,second);
+                device.Sample(module,TouchPhase.Ended,second);
+                Assert.That(view.Session.Snapshot.turn,Is.EqualTo(2));
+                Assert.That(view.Board.IsAnimating,Is.True);
+                view.Pause();
+                Assert.That(view.Board.InputEnabled,Is.False);
+                yield return null;
+                Canvas.ForceUpdateCanvases();
+                var hitsWhilePaused=new List<RaycastResult>();
+                events.RaycastAll(new PointerEventData(events){position=first},hitsWhilePaused);
+                Assert.That(hitsWhilePaused,Is.Not.Empty);
+                Assert.That(ExecuteEvents.GetEventHandler<IPointerDownHandler>(hitsWhilePaused[0].gameObject),
+                    Is.Not.SameAs(view.Board.gameObject),"The modal must intercept the board.");
+                Assert.That(view.Session.Snapshot.turn,Is.EqualTo(2));
+            }
+            finally
+            {
+                module.inputOverride=original;
+                UnityEngine.Object.Destroy(device);
+            }
         }
         [UnityTest] public IEnumerator MissingOptionalVisualsKeepRealBoardAndTouchTargetsUsable()
         {

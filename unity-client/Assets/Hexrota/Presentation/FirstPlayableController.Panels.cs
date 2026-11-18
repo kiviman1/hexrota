@@ -76,6 +76,7 @@ namespace Hexrota.UnityClient.Presentation
             foreach(Transform item in actions) { item.gameObject.SetActive(false); Destroy(item.gameObject); }
             if(sheetFrame!=null) {sheetFrame.gameObject.SetActive(false);Destroy(sheetFrame.gameObject);}
             modal.GetComponent<Image>().color=new Color(0.063f,0.04f,0.161f,.74f);
+            PhoneBackdrop.Show(modal);
             var frame=Panel("PhoneSheet",modal.transform,Vector2.zero,Vector2.one,Color.white);
             sheetFrame=(RectTransform)frame.transform;
             PhoneSkin.Plate(frame,Tone(0xfff9e6),Tone(0xf4dfb0),Tone(0xbd8247),25,4);
@@ -124,12 +125,29 @@ namespace Hexrota.UnityClient.Presentation
 
         private void SheetSymbol(string symbol,float y,bool large)
         {
-            float w=large?82:48,h=large?90:54;
+            float w=large?68:48,h=large?74:54;
             var rect=Rect("Symbol",sheetDecor,Vector2.zero,Vector2.one);
             At(rect,(360-w)/2,y,w,h);
             var badge=rect.gameObject.AddComponent<PhoneChapterBadge>();
             badge.color=Tone(0xead9f3);badge.raycastTarget=false;
             PhoneSkin.Icon(rect,symbol,new Vector2(.23f,.23f),new Vector2(.77f,.77f),Tone(0x714695));
+        }
+
+        private void EnableSheetButton(Button button,bool enabled,SheetStyle style)
+        {
+            button.interactable=enabled;
+            if(enabled)return;
+            // The phone applies saturate(.3) with 55% opacity over parchment.
+            bool primary=style==SheetStyle.Primary;
+            Color Dim(int rgb)
+            {
+                var original=Tone(rgb);
+                float gray=.2126f*original.r+.7152f*original.g+.0722f*original.b;
+                return Color.Lerp(new Color(gray,gray,gray),original,.3f);
+            }
+            button.transition=Selectable.Transition.None;button.targetGraphic.CrossFadeColor(Color.white,0,true,true);
+            PhoneSkin.Plate(button.gameObject,Dim(primary?0x88c83d:0x8859a7),Dim(primary?0x2b771c:0x583279),Dim(primary?0xcce77d:0xae87cb),11,2);
+            button.gameObject.AddComponent<CanvasGroup>().alpha=.55f;
         }
 
         private void DrawPause()

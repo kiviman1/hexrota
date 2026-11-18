@@ -45,8 +45,8 @@ namespace Hexrota.UnityClient.Presentation
             string note=!offer.Unlocked?offer.UnlockAfter+". bölümden sonra açılır.":offer.Used>=offer.Limit?
                 "Bu denemede kullandın. Yeni denemede yeniden kullanabilirsin.":"Bu denemede en fazla "+offer.Limit+" kez kullanabilirsin.";
             SheetText(id+"Eligibility",note,36,y+118,288,27,12,Tone(0x876b74));
-            SheetButton(brush?"Hücre seç":"Taş seç",36,y+152,288,47,()=>SelectItemTarget(id)).interactable=offer.CanUse;
-            SheetButton(offer.Price+" Altınla +1 al",36,y+207,288,44,()=>ConfirmItemPurchase(id),SheetStyle.Secondary).interactable=offer.CanBuy;
+            EnableSheetButton(SheetButton(brush?"Hücre seç":"Taş seç",36,y+152,288,47,()=>SelectItemTarget(id)),offer.CanUse,SheetStyle.Primary);
+            EnableSheetButton(SheetButton(offer.Price+" Altınla +1 al",36,y+207,288,44,()=>ConfirmItemPurchase(id),SheetStyle.Secondary),offer.CanBuy,SheetStyle.Secondary);
         }
 
         private void ConfirmItemPurchase(string id)

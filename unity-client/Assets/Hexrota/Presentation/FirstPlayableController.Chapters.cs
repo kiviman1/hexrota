@@ -69,7 +69,8 @@ namespace Hexrota.UnityClient.Presentation
             if(origin=="preview") return;
             modal.SetActive(false); ClosePreviewLayer();
             CurrentScreen="preview";
-            previewLayer=Panel("ChapterPreview",safe,Vector2.zero,Vector2.one,new Color32(24,13,45,225));
+            previewLayer=Panel("ChapterPreview",safe,Vector2.zero,Vector2.one,new Color32(16,10,41,186));
+            PhoneBackdrop.Show(previewLayer);
             previewLayer.transform.SetAsLastSibling();
             var frame=MenuFrame(previewLayer.transform,"PreviewFrame");
             float height=p.Resume||p.Rescue?553:515;
