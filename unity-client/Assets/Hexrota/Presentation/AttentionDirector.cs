@@ -60,7 +60,8 @@ namespace Hexrota.UnityClient.Presentation
             Changed?.Invoke();
         }
 
-        private bool Blocked(AttentionKind kind) => ModalOpen && kind >= AttentionKind.PlayShine;
+        // An open panel silences the coop pulse and everything below it; flights and the upgrade sequence still run.
+        private bool Blocked(AttentionKind kind) => ModalOpen && kind >= AttentionKind.CoopPulse;
 
         private void RemoveSuspended(object owner)
         {

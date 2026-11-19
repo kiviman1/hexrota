@@ -151,6 +151,8 @@ namespace Hexrota.UnityClient.Presentation
             nextLifeDisplay = Time.unscaledTime + 1;
             var earned = pendingHomeRewards;
             pendingHomeRewards = null;
+            // Eggs still on their way to the counter are not on the bar yet; it fills after they land.
+            castleHome.ShowCoop(Session.ReadCoop(), Session.ReducedMotion, earned != null ? earned.GoldenEggs : 0);
             if (earned == null) return;
             Canvas.ForceUpdateCanvases();
             castleHome.Rewards.PlayWin(HomeRewardSource, earned.GoldenEggs, earned.Gold, wallet);
@@ -249,6 +251,7 @@ namespace Hexrota.UnityClient.Presentation
             {
                 if (castleHome.Rewards.IsPlaying) return;
                 castleHome.ShowWallet(Session.ReadPhoneWallet());
+                castleHome.ShowCoop(Session.ReadCoop(), Session.ReducedMotion);
             }
             else if (CurrentScreen == "journey" && homeLifeTimer != null && homeLifeLabel != null)
             {

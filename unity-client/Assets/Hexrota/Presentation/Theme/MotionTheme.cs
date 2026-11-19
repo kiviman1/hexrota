@@ -15,6 +15,8 @@ namespace Hexrota.UnityClient.Presentation
         }
 
         public Timing tap, release, popIn, popOut, punch;
+        [Tooltip("Progress bar growth.")]
+        public Timing fill;
         public AnimationCurve fly, breathe, shine;
         [Min(0f)] public float flyMin, flyMax, flyStagger;
         [Min(0f)] public float flyLaunchDuration, reducedFlyDuration, rewardStartDelay;
@@ -22,6 +24,9 @@ namespace Hexrota.UnityClient.Presentation
         public float punchScale, breatheAmplitude, idleHopHeight;
         [Tooltip("Basınca düğmenin aşağı indiği mesafe (px).")]
         [Min(0f)] public float pressDepth;
+        [Tooltip("Coop button pulse while an upgrade is ready (seconds per beat, peak scale).")]
+        [Min(0.01f)] public float coopPulsePeriod;
+        public float coopPulseScale;
         public float flyLaunchScale, flyPeakScale, flyArcMin, flyArcMax;
         [Range(0, 20)] public int arrivalHapticMs;
     }

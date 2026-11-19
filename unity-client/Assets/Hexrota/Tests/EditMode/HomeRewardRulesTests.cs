@@ -77,6 +77,11 @@ namespace Hexrota.UnityClientTests
             Assert.That(new[] { ui.bevelAtRest, ui.bevelPressed, ui.rewardIconSize }, Is.EqualTo(new[] { 8f, 2f, 28f }));
             Assert.That(ui.bevelAtRest - motion.pressDepth, Is.GreaterThanOrEqualTo(ui.bevelPressed),
                 "A pressed button must keep at least the pressed bevel.");
+            Assert.That(new Color32[] { ui.sky, ui.skyDeep, ui.heart, ui.heartDeep },
+                Is.EqualTo(new[] { Hex("#3BA9F5"), Hex("#165FA0"), Hex("#F0414F"), Hex("#9E1426") }));
+            Assert.That(new[] { motion.fill.seconds, motion.coopPulsePeriod, motion.coopPulseScale }, Is.EqualTo(new[] { .4f, .9f, 1.08f }));
+            Assert.That(motion.fill.curve.Evaluate(.5f), Is.GreaterThan(.5f), "fill is ease-out");
+            Assert.That(ui.coopScaleEmpty, Is.InRange(.5f, 1f));
             Assert.That(motion.tap.curve.Evaluate(.5f), Is.GreaterThan(.5f));
             Assert.That(motion.release.curve.Evaluate(.6f), Is.EqualTo(1.0896f).Within(.001f));
             Assert.That(motion.popIn.curve.Evaluate(.6f), Is.EqualTo(1.0992f).Within(.001f));
@@ -92,7 +97,7 @@ namespace Hexrota.UnityClientTests
             var prefab = Resources.Load<GameObject>("CastleHome/CastleHome");
             Assert.That(prefab.GetComponentsInChildren<AttentionDirector>(), Has.Length.EqualTo(1));
             foreach (var component in new MonoBehaviour[] { prefab.GetComponent<RewardFlight>(),
-                prefab.GetComponentInChildren<HomePlayButton>() })
+                prefab.GetComponentInChildren<HomePlayButton>(), prefab.GetComponent<CoopHomeView>() })
             {
                 var serialized = new SerializedObject(component);
                 Assert.That(serialized.FindProperty("ui").objectReferenceValue, Is.SameAs(ui));

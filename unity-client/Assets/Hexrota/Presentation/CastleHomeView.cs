@@ -19,6 +19,7 @@ namespace Hexrota.UnityClient.Presentation
         [SerializeField] private HomePlayButton playMotion;
         [SerializeField] private AttentionDirector attention;
         [SerializeField] private RewardFlight rewardFlight;
+        [SerializeField] private CoopHomeView coopView;
 
         [Header("Player progress")]
         [SerializeField] private Text goldValue;
@@ -40,6 +41,7 @@ namespace Hexrota.UnityClient.Presentation
         private Camera uiCamera;
 
         internal RewardFlight Rewards => rewardFlight;
+        internal CoopHomeView Coop => coopView;
         internal Vector2 RewardSource
         {
             get
@@ -58,6 +60,7 @@ namespace Hexrota.UnityClient.Presentation
             eggValue.color = walletTheme.label;
             rewardFlight.Bind(controller, audio, new RewardFlight.Target(goldIcon, goldValue),
                 new RewardFlight.Target(eggIcon, eggValue));
+            if (coopView != null) coopView.Bind(controller);
             if (playButton != null) playButton.onClick.AddListener(controller.BeginJourney);
             if (lifeButton != null) lifeButton.onClick.AddListener(controller.OpenMobileLives);
             if (settingsButton != null) settingsButton.onClick.AddListener(controller.OpenMobileSettings);
@@ -88,6 +91,11 @@ namespace Hexrota.UnityClient.Presentation
             }
             if (livesValue != null) livesValue.text = wallet.Lives.ToString(CultureInfo.InvariantCulture);
             if (lifeStatus != null) lifeStatus.text = wallet.Countdown ?? fullLifeLabel;
+        }
+
+        internal void ShowCoop(UnityGameSession.CoopStatus status, bool reducedMotion, int heldBackEggs = 0)
+        {
+            if (coopView != null) coopView.Show(status, reducedMotion, heldBackEggs);
         }
 
         internal void RegisterTouch() { if (isActiveAndEnabled) playMotion.RegisterTouch(); }

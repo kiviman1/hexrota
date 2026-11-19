@@ -19,9 +19,15 @@ MonoBehaviour:
   goldDeep: {r: 0.65882353, g: 0.41568627, b: 0, a: 1}
   goldLight: {r: 1, g: 0.90980392, b: 0.60392157, a: 1}
   panelDeep: {r: 0.22745098, g: 0.10196078, b: 0.34509804, a: 1}
+  sky: {r: 0.23137255, g: 0.6627451, b: 0.9607843, a: 1}
+  skyDeep: {r: 0.08627451, g: 0.37254903, b: 0.627451, a: 1}
+  heart: {r: 0.9411765, g: 0.25490198, b: 0.30980393, a: 1}
+  heartDeep: {r: 0.61960787, g: 0.078431375, b: 0.14901961, a: 1}
   label: {r: 1, g: 1, b: 1, a: 1}
   shine: {r: 1, g: 1, b: 1, a: 0.32}
   ctaBandOpacity: 0.55
   bevelAtRest: 8
   bevelPressed: 2
   rewardIconSize: 28
+  coopScaleEmpty: 0.85
+  coopRingOpacity: 0.6
