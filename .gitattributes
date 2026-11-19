@@ -1,0 +1,13 @@
+# Preserve byte identity across Windows and Linux for the Unity sync manifest.
+unity/*/*.cs text eol=lf
+data/*.json text eol=lf
+dist/variants.json text eol=lf
+dist/lives-config.json text eol=lf
+dist/reward-rules.json text eol=lf
+unity-client/SourceManifest.json text eol=lf
+unity-client/Assets/Hexrota.meta text eol=lf
+unity-client/Assets/Hexrota/Core.meta text eol=lf
+unity-client/Assets/Hexrota/Core/** text eol=lf
+unity-client/Assets/Hexrota/Resources.meta text eol=lf
+unity-client/Assets/Hexrota/Resources/HexrotaData.meta text eol=lf
+unity-client/Assets/Hexrota/Resources/HexrotaData/** text eol=lf

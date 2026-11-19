@@ -1,0 +1,11 @@
+PASS missing profile is distinct from present JSON null
+PASS new canonical game and energy commit together
+PASS stale revision cannot overwrite canonical save
+PASS next revision advances exactly once
+PASS malformed existing profile fails closed and remains byte identical
+PASS invalid candidate cannot commit or skip a revision
+PASS lock is required for every read and write operation
+PASS quota or privacy failure is never acknowledged as durable
+PASS web prototype profile remains isolated
+PASS UTF8 text is preserved for platform decoder
+Unity Web storage bridge: 10 host groups passed (not Unity execution).

@@ -1,0 +1,8 @@
+{
+  "baseline": "cd34f296abdb35595065d71995bc2214186cdf4b",
+  "scope": "Let the Unity client grant the existing welcome reward on a verified first chapter win using the original welcome transaction and preserving the legacy tutorial flow.",
+  "sha256": {
+    "unity/Application/GameSessionController.cs": "bbd00bee1fb0ebca6481a4e4c495aee4205c33ae5c15f62db49e1a830bac5eb8",
+    "unity/Economy/EconomyManager.cs": "4e81f2b98c7bd1b89bd2c146f07ebe80d0eab5b81c28bc6d4c4a2f39e79e1320"
+  }
+}

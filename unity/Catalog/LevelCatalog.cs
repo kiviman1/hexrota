@@ -22,6 +22,28 @@ namespace Hexrota.Catalog
         private readonly Dictionary<string, Dictionary<string, VariantEntry>> packs = new Dictionary<string, Dictionary<string, VariantEntry>>();
         private readonly Dictionary<string, Dictionary<string, object>> resolved = new Dictionary<string, Dictionary<string, object>>();
         private readonly List<string> versions = new List<string>();
+        private CampaignFlowCatalog campaignFlow;
+        private string preferredVariantVersion;
+
+        internal string DefaultVariantVersion(object levelId)
+        {
+            return preferredVariantVersion != null && packs[preferredVariantVersion].ContainsKey(Key(levelId))
+                ? preferredVariantVersion : CurrentVersion;
+        }
+
+        // Opt in for new campaign attempts. Classic archives remain the authority
+        // for their own versions, including classic level 6 saves from before flow.
+        public LevelCatalog WithCampaignFlow(IEnumerable<Dictionary<string, object>> layouts)
+        {
+            var result = (LevelCatalog)MemberwiseClone();
+            result.campaignFlow = new CampaignFlowCatalog(this, layouts, CampaignFlowCatalog.LargeDataVersion);
+            return result;
+        }
+
+        private static bool IsFlowVersion(object version)
+        {
+            return Equals(version, CampaignFlowCatalog.DataVersion) || Equals(version, CampaignFlowCatalog.LargeDataVersion);
+        }
         public string CurrentVersion { get; private set; }
         public string[] Versions { get { return versions.ToArray(); } }
         internal static void Fail(string code, string message) { throw new CatalogException(code, message); }
@@ -80,7 +102,7 @@ namespace Hexrota.Catalog
                 packs.Add(version, entries); versions.Add(version); CurrentVersion = version;
             }
         }
-        public static LevelCatalog FromDocuments(object campaignDocument, object variantPacks, object tutorialDocument)
+        public static LevelCatalog FromDocuments(object campaignDocument, object variantPacks, object tutorialDocument, string preferredVariantVersion = null)
         {
             foreach (var document in new[] { campaignDocument, tutorialDocument })
                 if (CatalogWire.Map(document) == null || !CatalogWire.Same(CatalogWire.Get(document, "schemaVersion"), 1) || !Object.Equals(CatalogWire.Get(document, "rulesVersion"), "classic-v4") || CatalogWire.List(CatalogWire.Get(document, "levels")) == null)
@@ -90,7 +112,11 @@ namespace Hexrota.Catalog
             var campaign = new List<Dictionary<string, object>>(); var fixedTutorials = new List<Dictionary<string, object>>();
             foreach (var level in CatalogWire.List(CatalogWire.Get(campaignDocument, "levels"))) campaign.Add(CatalogWire.CopyMap(level));
             foreach (var level in CatalogWire.List(CatalogWire.Get(tutorialDocument, "levels"))) fixedTutorials.Add(CatalogWire.CopyMap(level));
-            return new LevelCatalog(campaign, variantPacks, fixedTutorials);
+            var catalog = new LevelCatalog(campaign, variantPacks, fixedTutorials);
+            if (preferredVariantVersion != null && !catalog.packs.ContainsKey(preferredVariantVersion))
+                Fail("UNKNOWN_DATA_VERSION", "The preferred variant pack is unavailable");
+            catalog.preferredVariantVersion = preferredVariantVersion;
+            return catalog;
         }
         private Dictionary<string, object> BaseFor(object id)
         { Dictionary<string, object> result; if (!bases.TryGetValue(Key(id), out result)) Fail("UNKNOWN_LEVEL", "Unknown campaign level"); return result; }
@@ -102,6 +128,8 @@ namespace Hexrota.Catalog
         }
         public Dictionary<string, object> ResolveLevelWire(object levelId, string variantId = LegacyVariantId, string levelDataVersion = LegacyDataVersion)
         {
+            if (campaignFlow != null && IsFlowVersion(levelDataVersion))
+                return campaignFlow.ResolveLevelWire(levelId, variantId, levelDataVersion);
             var basis = BaseFor(levelId);
             if (variantId == LegacyVariantId) {
                 if (levelDataVersion != LegacyDataVersion) Fail("UNKNOWN_DATA_VERSION", "The original board requires its original data version");
@@ -121,8 +149,8 @@ namespace Hexrota.Catalog
             }
             return CatalogWire.CopyMap(result);
         }
-        public string[] List(object levelId) { return VariantsFor(levelId, CurrentVersion).Order.ToArray(); }
-        public string[] List(object levelId, string version) { return VariantsFor(levelId, version).Order.ToArray(); }
+        public string[] List(object levelId) { return campaignFlow == null ? VariantsFor(levelId, DefaultVariantVersion(levelId)).Order.ToArray() : campaignFlow.List(levelId); }
+        public string[] List(object levelId, string version) { return campaignFlow != null && IsFlowVersion(version) ? campaignFlow.List(levelId, version) : VariantsFor(levelId, version).Order.ToArray(); }
         public AttemptMetadata LegacyMetadata(object levelId) { BaseFor(levelId); return new AttemptMetadata(levelId, LegacyVariantId, LegacyDataVersion, "legacy-" + CatalogWire.Text(levelId), 0); }
         public AttemptMetadata Sanitize(object levelId, object metadata)
         {
@@ -132,13 +160,20 @@ namespace Hexrota.Catalog
             if (variant == LegacyVariantId ? count != 0 || attemptId != "legacy-" + CatalogWire.Text(levelId) : count < 1 || !attemptId.StartsWith(prefix, StringComparison.Ordinal) || !Regex.IsMatch(attemptId.Substring(prefix.Length), @"\A[0-9a-f]{8}\z")) Fail("INVALID_ATTEMPT", "Attempt ID does not match its identity");
             return new AttemptMetadata(levelId, variant, version, attemptId, count);
         }
-        public AttemptStart Start(object levelId, IDictionary<string, object> options = null) { return VariantSelector.Select(this, levelId, options); }
+        public AttemptStart Start(object levelId, IDictionary<string, object> options = null)
+        {
+            if (campaignFlow != null && (options == null || !options.ContainsKey("levelDataVersion") || IsFlowVersion(options["levelDataVersion"])))
+                return campaignFlow.Start(levelId, options);
+            return VariantSelector.Select(this, levelId, options);
+        }
         public AttemptCheckpoint Restore(object levelId, object record, object metadata = null)
         {
             object snapshot = record, identity = metadata;
             if (CatalogWire.Has(record, "attemptVersion")) {
                 if (metadata != null) Fail("INVALID_ATTEMPT", "Attempt identity must have one source"); identity = record; snapshot = CatalogWire.Get(record, "snapshot");
             }
+            if (campaignFlow != null && IsFlowVersion(CatalogWire.Get(identity, "levelDataVersion")))
+                return campaignFlow.Restore(levelId, record, metadata);
             var clean = identity == null ? LegacyMetadata(levelId) : Sanitize(levelId, identity); var level = ResolveLevelWire(levelId, clean.variantId, clean.levelDataVersion);
             if (CatalogWire.Map(snapshot) == null) Fail("INVALID_ATTEMPT", "An attempt requires a gameplay checkpoint");
             var game = new HexMatch(CatalogWire.ReadLevel(level), CatalogWire.ReadSnapshot(snapshot)); return new AttemptCheckpoint(clean, level, game, clean.variantId == LegacyVariantId);
@@ -171,7 +206,7 @@ namespace Hexrota.Catalog
         public static uint RandomStep(uint value) { return XorShift32.Next(XorShift32.InitialState(value)); }
         public static AttemptStart Select(LevelCatalog catalog, object levelId, IDictionary<string, object> options = null)
         {
-            options = options ?? new Dictionary<string, object>(); object versionValue = CatalogWire.Get(options, "levelDataVersion") ?? catalog.CurrentVersion;
+            options = options ?? new Dictionary<string, object>(); object versionValue = CatalogWire.Get(options, "levelDataVersion") ?? catalog.DefaultVariantVersion(levelId);
             var entry = catalog.VariantsFor(levelId, versionValue); object serialValue = CatalogWire.Get(options, "attemptSerial") ?? (object)1;
             if (!CatalogWire.Integer(serialValue, 1) || CatalogWire.Has(options, "selectionSeed") && !CatalogWire.Integer(CatalogWire.Get(options, "selectionSeed"), 0, UInt32.MaxValue)) LevelCatalog.Fail("INVALID_SELECTION", "Selection needs an unsigned seed and positive attempt serial");
             long serial = CatalogWire.Long(serialValue); string previous = CatalogWire.Get(options, "previousVariantId") as string; var recent = new HashSet<string>(); var recentValues = CatalogWire.List(CatalogWire.Get(options, "recentVariantIds"));

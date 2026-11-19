@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "tutorial-coop-v1",
+  "files": [
+    {
+      "stage": "foundation",
+      "path": "dist/assets/scenes/tutorial-coop-v1/backgrounds/foundation.jpg",
+      "sourceName": "1-Photo-1.jpg",
+      "bytes": 243351,
+      "sha256": "f023f1abc544d9d946d7b4153607118074cef5d50b9b73b309d4e2ca6a821277",
+      "width": 720,
+      "height": 1280
+    },
+    {
+      "stage": "frame",
+      "path": "dist/assets/scenes/tutorial-coop-v1/backgrounds/frame.jpg",
+      "sourceName": "2-Photo-2.jpg",
+      "bytes": 273582,
+      "sha256": "c9b07127a51d74e0d19177be5eeb0a88edb2a2c324f6ca1b983bb6673744a5c3",
+      "width": 720,
+      "height": 1280
+    },
+    {
+      "stage": "finished",
+      "path": "dist/assets/scenes/tutorial-coop-v1/backgrounds/finished.jpg",
+      "sourceName": "3-Photo-3.jpg",
+      "bytes": 277172,
+      "sha256": "323cb4874580b07d95e12bbb771484e488e55e879a0719f288a6ee8f922cce62",
+      "width": 720,
+      "height": 1280
+    }
+  ]
+}

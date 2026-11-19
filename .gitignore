@@ -10,3 +10,17 @@ test-results/
 
 unity/**/bin/
 unity/**/obj/
+
+# Unity client generated/imported state (serialized sources and metas are committed)
+unity-client/[Ll]ibrary/
+unity-client/[Tt]emp/
+unity-client/[Oo]bj/
+unity-client/[Ll]ogs/
+unity-client/[Uu]ser[Ss]ettings/
+unity-client/[Bb]uilds/
+unity-client/.vs/
+unity-client/*.csproj
+unity-client/*.sln
+unity-client/*.slnx
+unity-client/HostTests/bin/
+unity-client/HostTests/obj/

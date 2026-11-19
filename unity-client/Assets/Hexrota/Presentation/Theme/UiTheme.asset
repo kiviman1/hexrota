@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7afa33d96d8e5ff3af7a5bcbf2572567, type: 3}
+  m_Name: UiTheme
+  m_EditorClassIdentifier:
+  cta: {r: 0.36078431, g: 0.77254902, b: 0.19215686, a: 1}
+  ctaDeep: {r: 0.18039216, g: 0.47843137, b: 0.070588235, a: 1}
+  ctaLight: {r: 0.65098039, g: 0.9372549, b: 0.41568627, a: 1}
+  gold: {r: 1, g: 0.77254902, b: 0.19215686, a: 1}
+  goldDeep: {r: 0.65882353, g: 0.41568627, b: 0, a: 1}
+  goldLight: {r: 1, g: 0.90980392, b: 0.60392157, a: 1}
+  panelDeep: {r: 0.22745098, g: 0.10196078, b: 0.34509804, a: 1}
+  label: {r: 1, g: 1, b: 1, a: 1}
+  shine: {r: 1, g: 1, b: 1, a: 0.32}
+  ctaBandOpacity: 0.55
+  bevelAtRest: 8
+  bevelPressed: 2
+  rewardIconSize: 28

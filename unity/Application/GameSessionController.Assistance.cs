@@ -22,6 +22,7 @@ namespace Hexrota.Application
             var denied = Guard(command); if (denied != null) return denied;
             if (engine == null) return Result(false, "no_attempt");
             if (active < tutorialCount) return Result(false, "tutorial");
+            if (engine.HasObstacles) return Result(false, "inventory_unavailable");
             if (Completed(active)) return Result(false, "level_completed");
             if (!CanOpen(active)) return Result(false, "locked");
             if (Discarded(CurrentEntry())) return Result(false, "attempt_discarded");
@@ -74,6 +75,7 @@ namespace Hexrota.Application
         public Dictionary<string, object> PurchaseInventory(string itemId, string operationId, SessionCommand command = null)
         {
             var denied = Guard(command); if (denied != null) return denied;
+            if (engine != null && engine.HasObstacles) return Result(false, "inventory_unavailable");
             var proposal = economy.Purchase(game["economy"], W.Obj("operationId", operationId, "itemId", itemId));
             if (!W.Equal(proposal["applied"], true)) return Result(false, proposal["reason"] as string);
             return Execute(() => { game["economy"] = proposal["state"]; return Result(true, "item_purchased"); }, command);

@@ -1,0 +1,17 @@
+node check-obstacles-parity.cjs
+Obstacles JS/C# parity passed: 217 scenarios; 6 gated certified routes + 2 flow routes in typed/portable loaders + 48 alternative legal runs; 716 valid swaps, 105 resumes, 105 replays, 110 clone checks, 126 rejected snapshot attempts; full damage/unlock/fall/refill/RNG/status JSON. Actual .NET 8, C# 7.3.
+
+node check-campaign-flow-parity.cjs
+Campaign flow JS/C# catalog parity passed: 136 scenarios, 26 selection cases, 2 complete routes/14 checkpoint prefixes, 85 rejected override/identity/snapshot cases. Actual .NET8, C#7.3; legacy catalog and new scoped L6 identities remain separate.
+
+node check-large-flow-parity.cjs
+Large flow JS/C# parity passed: 5 shapes inside 9x9 hex canvases (43/49/53/61/65 cells); 10 certified routes; 50 mechanics + 103 catalog scenarios; 329 valid swaps/826 waves, 139 exact resumes, 139 replays, 144 independent clones, 48 rejected saves/identities; 129 v2 + 14 archived v1 checkpoint prefixes. Actual .NET8/C#7.3; every resolved fall/refill/RNG/status agrees.
+
+node check-materials-parity.cjs
+Material JS/C# parity passed: 196 scenarios; 6 certified routes/52 prefixes + 24 alternative legal runs; 501 valid swaps/1154 waves/269 material events; 166 exact resumes, 165 replays, 168 independent clones; 102 rejected checkpoints, 41 rejected definitions/objectives. Actual .NET8/C#7.3; event order, once-only grants, objectives, RNG, geometry and status agree.
+
+node check-material-alpha-parity.cjs
+Material alpha JS/C# catalog parity passed: 156 scenarios, 30 selection cases, 6 complete routes/52 checkpoint prefixes, 89 rejected override/identity/snapshot cases. Actual .NET8, C#7.3; legacy catalog and isolated material alpha identities remain separate.
+
+node check-story-parity.cjs
+Story JS/C# parity passed: 282 scenarios; 10 authored route/choice/skip scenarios covering all 6 winning routes/116 gameplay prefixes; 141 actual native fact projections; 1051 reducer calls (405 observations, 407 acknowledgements/choices, 123 strict restores); 125 schema/progress/identity/action rejections. Actual .NET8/C#7.3; queue, conditions, dedup, narrative actions, snapshots and native canonical facts agree.

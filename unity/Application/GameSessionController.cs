@@ -27,6 +27,7 @@ namespace Hexrota.Application
         private readonly LevelCatalog catalog;
         private readonly IList<Dictionary<string, object>> levels;
         private readonly int tutorialCount;
+        private readonly bool onboardingInFirstChapter;
         private readonly ProfileRepository repository;
         private readonly AttemptRepository attempts;
         private readonly IUtcClock clock;
@@ -55,10 +56,11 @@ namespace Hexrota.Application
         {
             internal int index; internal Dictionary<string, object> level, metadata, stats; internal HexMatch engine; internal AssistedGame assistance;
         }
-        public GameSessionController(LevelCatalog catalog, IList<Dictionary<string, object>> orderedLevels, int tutorialCount, ProfileRepository repository, Dictionary<string, object> lifeConfig, IUtcClock clock, uint initialSelectionSeed, string providerNamespace = "hexrota-test", RewardRules rewardRules = null, IReceiptVerifier recoveryReceiptVerifier = null, Dictionary<string, object> economyConfig = null, IRescueReceiptVerifier rescueReceiptVerifier = null, string rescueProviderNamespace = null)
+        public GameSessionController(LevelCatalog catalog, IList<Dictionary<string, object>> orderedLevels, int tutorialCount, ProfileRepository repository, Dictionary<string, object> lifeConfig, IUtcClock clock, uint initialSelectionSeed, string providerNamespace = "hexrota-test", RewardRules rewardRules = null, IReceiptVerifier recoveryReceiptVerifier = null, Dictionary<string, object> economyConfig = null, IRescueReceiptVerifier rescueReceiptVerifier = null, string rescueProviderNamespace = null, bool onboardingInFirstChapter = false)
         {
             if (catalog == null || orderedLevels == null || repository == null || clock == null || tutorialCount < 0 || tutorialCount > orderedLevels.Count || initialSelectionSeed == 0) throw new ArgumentException("Invalid application dependencies");
             this.catalog = catalog; this.levels = orderedLevels.Select(W.Copy).ToList(); this.tutorialCount = tutorialCount; this.repository = repository; this.clock = clock; this.initialSelectionSeed = initialSelectionSeed; this.rewardRules = rewardRules; this.recoveryReceiptVerifier = recoveryReceiptVerifier;
+            this.onboardingInFirstChapter = onboardingInFirstChapter;
             lives = new LifeManager(lifeConfig, clock, new Verifier { owner = this }); economy = new EconomyManager(economyConfig);
             object raw = repository.Read(ProfileRepository.GameKey); string source = ProfileRepository.GameKey;
             // Present null is corrupt progression, not a new player. Never fall
@@ -210,9 +212,10 @@ namespace Hexrota.Application
                 game["economy"] = completion["state"];
                 SyncCompletedCampaign();
             }
-            else if (played && engine.Status == "won" && active == tutorialCount - 1)
+            bool taughtInChapter = onboardingInFirstChapter && active == tutorialCount && !done.Contains((long) tutorialCount - 1);
+            if (played && engine.Status == "won" && (active == tutorialCount - 1 || taughtInChapter))
             {
-                var welcome = economy.ClaimWelcome(W.Map(game["economy"]), W.Obj("levelId", activeLevel["id"], "attemptId", metadata["attemptId"], "status", "won", "verified", true));
+                var welcome = economy.ClaimWelcome(W.Map(game["economy"]), W.Obj("levelId", activeLevel["id"], "attemptId", metadata["attemptId"], "status", "won", "verified", true), taughtInChapter);
                 game["economy"] = welcome["state"];
             }
         }
@@ -266,10 +269,26 @@ namespace Hexrota.Application
         }
         public Dictionary<string, object> Enter(int index, bool fresh = false, string reason = "stage_entry", bool confirmed = false, int? maximumCharge = null, SessionCommand command = null)
         {
+            return EnterStage(index, fresh, reason, confirmed, maximumCharge, command, false);
+        }
+        public Dictionary<string, object> SkipTutorials(SessionCommand command = null)
+        {
+            if (active >= tutorialCount || engine == null || engine.Status != "playing") return Result(false, "no_tutorial");
+            return EnterStage(tutorialCount, false, "stage_entry", false, null, command, true);
+        }
+        private void MarkLessonsSkipped()
+        {
+            var done = W.List(game["done"]);
+            for (int i = 0; i < tutorialCount; i++)
+                if (!done.Contains((long)i)) done.Add((long)i);
+            game["done"] = done.OrderBy(value => W.Integer(value)).ToList();
+        }
+        private Dictionary<string, object> EnterStage(int index, bool fresh, string reason, bool confirmed, int? maximumCharge, SessionCommand command, bool skipTutorials)
+        {
             NeedIndex(index); if (!CanOpen(index)) return Result(false, ClosedReason(index));
             var existing = RestoreEntry(index, false);
             if (HasPendingRescueDelivery && (fresh || existing == null || metadata == null || !W.Equal(existing.metadata["attemptId"], metadata["attemptId"]))) return Result(false, "pending_rescue_delivery");
-            if (existing != null && existing.engine.Status == "lost" && !fresh && index >= tutorialCount) { if (RecoverableLoss(existing)) return ResumeForSecondChance(index, command); fresh = true; }
+            if (existing != null && existing.engine.Status == "lost" && !fresh && index >= tutorialCount) { if (RecoverableLoss(existing)) return ResumeForSecondChance(index, command, skipTutorials); fresh = true; }
             if (existing != null && existing.engine.Status == "playing" && fresh && !confirmed) return Result(false, "confirmation_required");
             return Execute(() =>
             {
@@ -299,6 +318,7 @@ namespace Hexrota.Application
                 }
                 if (fresh && previous != null) { CancelPendingRescue((string)previous.metadata["attemptId"]); Abandon(previous, reason); } MarkCompleted(false); Started(reason);
                 if (fresh && previous != null && !W.Equal(previous.metadata["attemptId"], metadata["attemptId"])) Emit("level_retried", CurrentEntry(), W.Obj("reason", reason, "previousAttemptId", previous.metadata["attemptId"]));
+                if (skipTutorials) MarkLessonsSkipped();
                 return Result(true, newAttempt ? "started" : "resumed");
             }, command);
         }

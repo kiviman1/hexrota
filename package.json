@@ -88,7 +88,13 @@
     "test:materials-browser": "node check-materials-browser.cjs",
     "test:story": "node scripts/generate-story-content.cjs --check && node check-story.cjs && node check-story-events.cjs && node check-story-content.cjs && node check-story-alpha.cjs && node check-story-presentation.cjs && node check-story-profile.cjs && node check-story-ui.cjs",
     "test:unity-story": "node check-story-parity.cjs",
-    "test:story-browser": "node check-story-browser.cjs"
+    "test:story-browser": "node check-story-browser.cjs",
+    "unity:sync": "node scripts/sync-unity-client.cjs",
+    "test:unity-client-structure": "node scripts/check-unity-client.cjs",
+    "test:unity-client-storage": "node scripts/check-unity-web-storage.cjs",
+    "test:unity-client-host": "node scripts/check-unity-runtime.cjs",
+    "test:unity-editor": "bash scripts/run-unity-client.sh tests",
+    "build:unity-web": "bash scripts/run-unity-client.sh web"
   },
   "devDependencies": {
     "jsdom": "31.0.1",

@@ -1,0 +1,6 @@
+{
+  "name": "Hexrota.UnityClient.PlayMode",
+  "references": ["Hexrota.Core", "Hexrota.UnityClient.Runtime", "Hexrota.UnityClient.Presentation", "Unity.ugui"],
+  "optionalUnityReferences": ["TestAssemblies"],
+  "autoReferenced": false
+}

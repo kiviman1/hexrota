@@ -1,0 +1,21 @@
+{
+  "characterId": "tavik",
+  "displayName": "Tavik",
+  "status": "user-approved",
+  "approvedOn": "2026-11-15",
+  "source": {
+    "fileName": "3E32B9C1-DEED-45BA-B75A-2910301426D6.jpeg",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "11fa0f48269f01066109d2cd903f506308851bb292bbfff55d96d54c5ed16e1c"
+  },
+  "assetPath": "assets/characters/tavik/front.webp",
+  "assetSha256": "7d844f1415c9aae1895805fd8efed174165d793d27a71c08ae89711f938ed7e8",
+  "width": 147,
+  "height": 238,
+  "bytes": 7904,
+  "sourceCropLeftTopRightBottom": [652, 43, 799, 281],
+  "processing": "Direct rectangular crop of the approved front view, WebP quality 85. No redraw, recolour, generative replacement or invented pose.",
+  "features": ["large white eyes", "purple feathers", "cream body", "red comb", "orange beak and feet", "brown and gold goggles", "burgundy scarf", "brown explorer backpack", "gold hexagonal pendant"],
+  "scope": "Presentation only. Story unlocks, economy and gameplay are unchanged."
+}

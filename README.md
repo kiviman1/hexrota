@@ -4,6 +4,8 @@
 
 Telefon ve masaüstü için Türkçe altıgen sayı bulmacası. Sınırlı hamle, kalıcı yeşil zemin, çift katmanlı zeminler, dokunma/sürükleme kontrolleri, ipucu, ses ve yerel kayıt içerir. Sade üçlü eşleştirme kuralları kullanılır.
 
+Unity 6000.6.9f1 için FirstPlayable sahnesini, Web kampanyasından aktarılan özellikleri ve çalıştırılan Editor testlerini ayrı belgelerde inceleyebilirsiniz. [Unity istemcisi](unity-client/README.md) · [Web/Unity özellik matrisi](docs/UNITY_MAIN_FEATURE_MATRIX.md) · [Doğrulama ve ekran görüntüleri](reports/unity-main-migration/README.md)
+
 ## Menü ve ekran akışı
 
 Oyun ana menüyle açılır. Yeni oyuncu **Birlikte başlayalım** ile ilk örneği görür; sonraki bölümlerde **Oyna** hedefleri gösterir. Geçerli, yarım kalmış bir kayıt varsa **Devam et** aynı tahtayı ve hamle sayısını doğrudan açar. Bütün ana bölümler tamamlandığında ana eylem “Bahçeni gör” olur; “Yeni bölümler yakında” akışı açılır.

@@ -1,0 +1,90 @@
+name: Unity Client
+on:
+  pull_request:
+    paths:
+      - 'unity/**'
+      - 'unity-client/**'
+      - 'data/**'
+      - 'dist/variants.json'
+      - 'dist/first-play.js'
+      - '.gitattributes'
+      - 'dist/lives-config.json'
+      - 'dist/reward-rules.json'
+      - 'scripts/*unity*'
+      - '.github/workflows/unity-client.yml'
+  workflow_dispatch:
+    inputs:
+      run_editor:
+        description: 'Run real Unity tests/build on the activated exact-version self-hosted runner'
+        required: true
+        type: boolean
+        default: false
+permissions:
+  contents: read
+jobs:
+  source-and-scene-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4 # v4
+      - uses: actions/setup-node@v4 # v4
+        with:
+          node-version: 24
+      - run: node scripts/sync-unity-client.cjs --check
+      - run: node scripts/check-unity-client.cjs
+      - run: node scripts/check-unity-web-storage.cjs
+      - name: State the Unity execution boundary
+        run: |
+          echo 'Static source/scene checks do not execute Unity.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Real EditMode/PlayMode/WebGL require manual dispatch with run_editor and an activated unity-6000.6.9f1 self-hosted runner.' >> "$GITHUB_STEP_SUMMARY"
+  runtime-host:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Execute real C# runtime adapters, canonical routes and atomic file storage
+        run: node scripts/check-unity-runtime.cjs --report
+      - name: Preserve .NET runtime evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: unity-runtime-host-results
+          path: |
+            reports/unity-9-11/runtime-host.json
+            reports/unity-9-11/runtime-host.log
+          if-no-files-found: warn
+  editor-tests-and-web:
+    # Never executes untrusted PR code on a licensed self-hosted machine.
+    if: github.event_name == 'workflow_dispatch' && inputs.run_editor
+    runs-on: [self-hosted, linux, x64, unity-6000.6.9f1]
+    timeout-minutes: 45
+    env:
+      UNITY_EDITOR_PATH: ${{ vars.UNITY_EDITOR_PATH || '/opt/unity/Editor/Unity' }}
+    steps:
+      - uses: actions/checkout@v4 # v4
+      - uses: actions/setup-node@v4 # v4
+        with:
+          node-version: 24
+      - name: Run real EditMode and PlayMode tests
+        run: scripts/run-unity-client.sh tests
+      - name: Build the actual WebGL player
+        run: scripts/run-unity-client.sh web
+      - name: Preserve actual test XML and logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: unity-editor-test-results
+          path: test-results/unity-client/
+          if-no-files-found: warn
+      - name: Preserve verified Unity web output
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: hexrota-unity-web-${{ github.sha }}
+          path: unity-client/Builds/WebGL/
+          if-no-files-found: error
+      - name: Record the deployment boundary
+        run: echo 'Verified Unity web artifact is ready. No Vercel deployment or Production change is performed by this workflow.' >> "$GITHUB_STEP_SUMMARY"
