@@ -11,6 +11,10 @@ namespace Hexrota.UnityClient.Presentation
         private Text homeLifeLabel, homeLifeTimer;
         private RawImage[] homeHearts;
         private float nextLifeDisplay;
+        private UnityGameSession.EarnedResult pendingHomeRewards;
+        internal bool HomePanelOpen => (modal != null && modal.activeInHierarchy) ||
+            (previewLayer != null && previewLayer.activeInHierarchy) || (optionsShade != null && optionsShade.activeInHierarchy);
+        internal Vector2 HomeRewardSource => castleHome.RewardSource;
         private static readonly Color MenuCream = new Color32(255,245,217,255);
         private static readonly Color MenuGold = new Color32(255,211,106,255);
         private static readonly Color PlumTop = new Color32(125,85,151,255);
@@ -33,7 +37,7 @@ namespace Hexrota.UnityClient.Presentation
             {
                 castleHome.transform.SetParent(menu.transform, false);
             }
-            castleHome.Bind(this);
+            castleHome.Bind(this, phoneAudio);
         }
 
         private RectTransform MenuFrame(Transform parent,string name)
@@ -142,8 +146,27 @@ namespace Hexrota.UnityClient.Presentation
             if (castleHome == null) return;
             castleHome.gameObject.SetActive(true);
             castleHome.ShowStage(Session.NextStage, Session.TutorialCount);
-            castleHome.ShowWallet(Session.ReadPhoneWallet());
+            var wallet = Session.ReadPhoneWallet();
+            castleHome.ShowWallet(wallet);
             nextLifeDisplay = Time.unscaledTime + 1;
+            var earned = pendingHomeRewards;
+            pendingHomeRewards = null;
+            if (earned == null) return;
+            Canvas.ForceUpdateCanvases();
+            castleHome.Rewards.PlayWin(HomeRewardSource, earned.Stars, earned.Gold, wallet);
+        }
+
+        private void RememberHomeRewards()
+        {
+            if (!Session.HasAttempt || Session.IsTutorial || Session.Status != "won") return;
+            var earned = Session.ReadEarnedResult();
+            if (earned.Stars > 0 || earned.Gold > 0) pendingHomeRewards = earned;
+        }
+
+        private void CancelHomeRewards()
+        {
+            pendingHomeRewards = null;
+            if (castleHome != null) castleHome.Rewards.Cancel();
         }
 
         private void DrawPhoneHeaderBody(RectTransform body)
@@ -224,6 +247,7 @@ namespace Hexrota.UnityClient.Presentation
             if (Time.unscaledTime < nextLifeDisplay) return;
             if (CurrentScreen == "menu" && castleHome != null)
             {
+                if (castleHome.Rewards.IsPlaying) return;
                 castleHome.ShowWallet(Session.ReadPhoneWallet());
             }
             else if (CurrentScreen == "journey" && homeLifeTimer != null && homeLifeLabel != null)

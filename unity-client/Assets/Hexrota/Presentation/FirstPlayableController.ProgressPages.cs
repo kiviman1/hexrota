@@ -10,7 +10,7 @@ namespace Hexrota.UnityClient.Presentation
         private RectTransform ProgressPage(string route,string eyebrow,string heading,string description,float height)
         {
             if (!ready || !HasInterface) return null;
-            if (Session.HasAttempt) { CancelPresentation(); Session.ReturnToMenu(); }
+            LeaveAttemptForMenu();
             CurrentScreen=route;
             Board.InputEnabled=false; boardCamera.enabled=false;
             gameplay.SetActive(false); modal.SetActive(false); menu.SetActive(true); RefreshScene();
