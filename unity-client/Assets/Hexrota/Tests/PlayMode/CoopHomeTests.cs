@@ -100,6 +100,17 @@ namespace Hexrota.UnityClientTests
             Assert.That(Coop.ProgressText, Is.EqualTo("Hazır!"));
             Assert.That(Coop.ReadyBadgeShown, Is.True);
             Assert.That(Coop.ShownFill, Is.EqualTo(1).Within(.001f));
+            Assert.That(Coop.ReadyBadgeShown && Coop.CoopVisual.GetComponentInChildren<Image>(false) != null, Is.True);
+            float coopPeak = 1, barPeak = 1;
+            float beat = Time.unscaledTime + 1.5f;
+            while (Time.unscaledTime < beat)
+            {
+                coopPeak = Mathf.Max(coopPeak, Coop.CoopVisual.localScale.x);
+                barPeak = Mathf.Max(barPeak, Coop.ProgressBar.localScale.x);
+                yield return null;
+            }
+            Assert.That(coopPeak, Is.GreaterThan(1.01f), "The coop itself beats.");
+            Assert.That(barPeak, Is.GreaterThan(1.01f), "The bar beats with it.");
 
             // Longer than a shine interval: the play button must not shine while the coop pulses.
             deadline = Time.unscaledTime + 4.5f;
@@ -113,6 +124,8 @@ namespace Hexrota.UnityClientTests
             yield return null;
             yield return null;
             Assert.That(Coop.IsPulsing, Is.False, "No pulse while a panel is open.");
+            Assert.That(Coop.CoopVisual.localScale.x, Is.EqualTo(1).Within(.0001f));
+            Assert.That(Coop.ProgressBar.localScale.x, Is.EqualTo(1).Within(.0001f));
             game.GetComponentsInChildren<Button>().Single(button => button.name == "Kapat").onClick.Invoke();
             deadline = Time.unscaledTime + 2;
             while (!Coop.IsPulsing && Time.unscaledTime < deadline) yield return null;
@@ -171,7 +184,11 @@ namespace Hexrota.UnityClientTests
             game.ReturnToMenu();
             yield return null;
             int eggs = game.Session.ReadPhoneWallet().GoldenEggs;
-            game.GetComponentsInChildren<Button>().Single(b => b.name == "CoopTapArea").onClick.Invoke();
+            var plot = game.GetComponentInChildren<HomeBackgroundLayers>().CoopPlot;
+            Assert.That(Coop.Button.transform.IsChildOf(plot), Is.True, "The tap target is the coop standing on the plot.");
+            Assert.That(game.GetComponentsInChildren<Button>(true).Any(b => b.name == "CoopButton" || b.name == "CoopTapArea"), Is.False,
+                "There is no separate coop button.");
+            Coop.Button.onClick.Invoke();
             var panel = Coop.Panel;
             yield return null;
             Assert.That(panel.IsOpen, Is.True);

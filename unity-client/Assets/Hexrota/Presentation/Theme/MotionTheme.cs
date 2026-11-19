@@ -40,5 +40,7 @@ namespace Hexrota.UnityClient.Presentation
         public float coopPulseScale;
         public float flyLaunchScale, flyPeakScale, flyArcMin, flyArcMax;
         [Range(0, 20)] public int arrivalHapticMs;
+        [Tooltip("Home background clouds, back to front: horizontal drift in source-art pixels per second (1170 px wide painting).")]
+        [Min(0f)] public float[] cloudDriftSpeeds;
     }
 }

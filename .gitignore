@@ -24,3 +24,6 @@ unity-client/*.sln
 unity-client/*.slnx
 unity-client/HostTests/bin/
 unity-client/HostTests/obj/
+
+# Source art for the home background (imported copies live in unity-client/Assets/Hexrota/Art/HomeBackground)
+art/HomeBackground/

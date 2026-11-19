@@ -405,6 +405,10 @@ MonoBehaviour:
   flyArcMin: 60
   flyArcMax: 120
   arrivalHapticMs: 16
+  cloudDriftSpeeds:
+  - 20
+  - 14
+  - 10
   shake:
     seconds: 0.3
     curve:
