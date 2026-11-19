@@ -104,14 +104,20 @@ namespace Hexrota.UnityClientTests
                 float peakAlpha = initialAlpha;
                 int nudges = 0;
                 bool extended = false;
-                float until = Time.realtimeSinceStartup + 1.1f;
+                float began = Time.realtimeSinceStartup;
+                float until = began + 2.1f;
                 while (Time.realtimeSinceStartup < until)
                 {
                     yield return null;
                     float distance = Vector3.Dot(source.position - rest, axis) / axis.sqrMagnitude;
-                    Assert.That(distance, Is.InRange(-.001f, .15f));
+                    Assert.That(distance, Is.InRange(-.001f, .11f));
                     Assert.That(Vector3.Distance(source.position, rest + axis * distance), Is.LessThan(.001f));
-                    if (!extended && distance > .06f) { nudges++; extended = true; }
+                    if (!extended && distance > .06f)
+                    {
+                        nudges++;
+                        extended = true;
+                        if (nudges == 3) Assert.That(Time.realtimeSinceStartup - began, Is.GreaterThan(1.2f));
+                    }
                     if (distance < .02f) extended = false;
                     peakAlpha = Mathf.Max(peakAlpha, overlay.canvasRenderer.GetAlpha());
                 }

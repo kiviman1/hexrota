@@ -58,8 +58,10 @@ namespace Hexrota.UnityClient.Presentation
                 cycleStart = lastShown = now;
                 attempt.Shown++; attempt.Armed = false; attempt.LastPair = cycle.Pair; attempt.LastBoard = board;
             }
-            double elapsed = (now - cycleStart) % 1.8;
-            Visible = elapsed < .9 ? cycle : null; Phase = (float)(elapsed/.9);
+            const double nudgeDuration = 1.8;
+            double elapsed = (now - cycleStart) % (2 * nudgeDuration);
+            Visible = elapsed < nudgeDuration ? cycle : null;
+            Phase = (float)(elapsed / nudgeDuration);
         }
     }
 }

@@ -7,6 +7,7 @@ Shader "Hexrota/Castle Board Facet"
         [Toggle] _VertexPigment ("Use FBX material colors", Float) = 0
         _Color ("Highlight tint", Color) = (1,1,1,1)
         _Lustre ("Bevel glint", Range(0,1)) = 0.32
+        _Gel ("Gel surface", Range(0,1)) = 0
         _GuideOpacity ("Lesson focus opacity", Range(0,1)) = 1
         _MotionOpacity ("Clear and refill opacity", Range(0,1)) = 1
         _MotionFlash ("Match gleam", Range(0,1)) = 0
@@ -30,7 +31,7 @@ Shader "Hexrota/Castle Board Facet"
             fixed4 _Pigment, _Color;
             half _MotionOpacity, _MotionFlash;
             float _SpawnCeiling;
-            half _Lustre, _GuideOpacity, _GuideCutout, _FloorMark, _IdleOutline, _IdleSheen, _VertexPigment;
+            half _Lustre, _Gel, _GuideOpacity, _GuideCutout, _FloorMark, _IdleOutline, _IdleSheen, _VertexPigment;
             struct VertexData { float4 vertex : POSITION; float3 normal : NORMAL; float2 uv : TEXCOORD0; fixed4 color : COLOR; };
             struct FragmentData { float4 pos : SV_POSITION; half3 normal : TEXCOORD0; float2 uv : TEXCOORD1; float2 plane : TEXCOORD2; float worldY : TEXCOORD3; half3 pigment : TEXCOORD4; };
             FragmentData vert(VertexData v)
@@ -66,6 +67,26 @@ Shader "Hexrota/Castle Board Facet"
                 half3 base = tex2D(_MainTex,i.uv).rgb * i.pigment * _Pigment.rgb * _Color.rgb;
                 half3 lit = base * (.76 + .28*saturate(dot(n,light)));
                 lit += _Lustre * pow(saturate(dot(n,halfway)),30) * half3(1,.92,.74);
+                if (_Gel > 0)
+                {
+                    // Broaden the light across the flat mesh into a rounded, glossy cap.
+                    float2 jelly = float2(i.plane.x, -i.plane.y);
+                    half3 dome = normalize(half3(jelly * 1.4, -.59));
+                    half core = 1 - smoothstep(.12,.49,hex);
+                    half rim = smoothstep(.28,.46,hex) * (1 - smoothstep(.46,.53,hex));
+                    half front = smoothstep(.18,.76,-n.z);
+                    half3 gel = base * (.69 + .32 * saturate(dot(dome,light)) + .13 * core);
+                    gel += base * rim * (.16 + .27 * saturate(dot(dome,light)));
+
+                    // An offset softbox reflection leaves the raised numeral readable.
+                    float2 large = (jelly - float2(-.16,.205)) / float2(.158,.072);
+                    float2 small = (jelly - float2(.076,.258)) / float2(.061,.037);
+                    half gloss = (1 - smoothstep(.18,1.12,dot(large,large))) * .34
+                               + (1 - smoothstep(.12,1.18,dot(small,small))) * .24;
+                    half softLight = pow(saturate(dot(dome,halfway)),10) * .105;
+                    gel += (gloss + softLight) * front * half3(.97,.99,1);
+                    lit = lerp(lit,gel,_Gel);
+                }
                 lit = lerp(lit,half3(1,.93,.60),
                     saturate((1-saturate(-n.z)) * _IdleOutline + _IdleSheen));
                 if (_FloorMark > 0)

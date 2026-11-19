@@ -386,7 +386,7 @@ namespace Hexrota.UnityClient.Presentation
             float flight = Mathf.Clamp01(t / contact);
             float descent = flight * flight * (1.45f - .45f * flight);
             Vector3 point = Vector3.Lerp(drop.from, drop.to, descent);
-            float stretch = .035f * descent * (1f - Mathf.SmoothStep(.0f, 1f, Mathf.InverseLerp(.86f, 1f, flight)));
+            float stretch = .060f * descent * (1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(.82f, 1f, flight)));
             float landing = Mathf.InverseLerp(contact, 1f, t);
             float impact = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0f, .14f, landing))
                 * (1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(.14f, .40f, landing)));
@@ -394,7 +394,7 @@ namespace Hexrota.UnityClient.Presentation
             float arc = 4f * rebound * (1f - rebound);
             point.y += RowSpacing * .105f * arc * arc;
             stone.transform.position = point;
-            stone.transform.localScale = new Vector3(1f + .06f * impact - stretch * .5f, 1f - .08f * impact + stretch, 1f);
+            stone.transform.localScale = new Vector3(1f + .085f * impact - stretch * .5f, 1f - .10f * impact + stretch, 1f);
             float opacity = drop.spawn ? Mathf.SmoothStep(0, 1, (drop.ceiling - point.y) / (.5f * RowSpacing)) : 1f;
             SetMotionInk(stone, opacity, 0f, drop.spawn && flight < 1f ? drop.ceiling : NoCeiling);
         }

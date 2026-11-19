@@ -30,6 +30,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _FloorMark: 0
+    - _Gel: 0.92
     - _GuideCutout: 0
     - _GuideOpacity: 1
     - _IdleOutline: 0

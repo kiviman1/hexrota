@@ -284,6 +284,9 @@ namespace Hexrota.UnityClient.Presentation
             Vector3 depth = Vector3.forward * StoneDepth;
             stones[a].transform.position = positions[a] + offset + depth + Vector3.back * (.40f * arc);
             stones[b].transform.position = positions[b] - offset + depth + Vector3.back * (.08f * arc);
+            Vector3 spring = new Vector3(1f + .035f * arc, 1f + .035f * arc, 1f);
+            stones[a].transform.localScale = spring;
+            stones[b].transform.localScale = spring;
         }
 
         private void SetGuideOpacity(GameObject tile, float opacity, float cutout = 0)

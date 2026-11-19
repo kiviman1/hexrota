@@ -51,12 +51,12 @@ namespace Hexrota.UnityClientTests
             clock.Tick(11,true,choose);
             var first = clock.Visible;
             Assert.That(first,Is.Not.Null);
-            clock.Tick(11.91,true,choose);
-            Assert.That(clock.Visible,Is.Null);
             clock.Tick(12.81,true,choose);
+            Assert.That(clock.Visible,Is.Null);
+            clock.Tick(14.61,true,choose);
             Assert.That(clock.Visible,Is.SameAs(first));
             clock.Interrupt();
-            clock.Tick(13,true,choose); clock.Tick(70,true,choose);
+            clock.Tick(15,true,choose); clock.Tick(70,true,choose);
             Assert.That(scans,Is.EqualTo(1));
             clock.PlayerMoved("board-B"); clock.Bind("level-1:1","board-B");
             clock.Tick(70,true,choose); clock.Tick(104.99,true,choose);

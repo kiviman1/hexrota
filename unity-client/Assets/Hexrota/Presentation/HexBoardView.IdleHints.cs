@@ -20,7 +20,7 @@ namespace Hexrota.UnityClient.Presentation
         private VisibleIdleHint cachedHint, paintedHint;
         private TutorialGestureArrow idleOutline;
         private Transform hintedStone;
-        private Vector3 hintHome, hintDirection;
+        private Vector3 hintHome, hintDirection, hintScale;
         private float lastPulse = -1f;
         public bool ShowingIdleHint => paintedHint != null;
 
@@ -93,12 +93,15 @@ namespace Hexrota.UnityClient.Presentation
             float pulse = ReducedMotion ? 0f : .5f - .5f * Mathf.Cos(phase * Mathf.PI);
             if (idleOutline != null)
                 idleOutline.canvasRenderer.SetAlpha(ReducedMotion ? 1f : Mathf.Lerp(.66f, 1f, pulse));
-            // Three quick nudges, then a rest. The outline stays aligned to the board.
+            // Three soft nudges, then a rest. The outline stays aligned to the board.
             float tick = Mathf.Repeat(phase * 3f, 1f);
-            float nudge = ReducedMotion || phase >= 1f ? 0f :
-                Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0f, .24f, tick)) *
-                (1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(.24f, .58f, tick)));
-            if (hintedStone != null) hintedStone.position = hintHome + hintDirection * nudge;
+            float lift = ReducedMotion || phase >= 1f ? 0f : Mathf.Sin(Mathf.PI * Mathf.Clamp01(tick / .82f));
+            float nudge = lift * lift;
+            if (hintedStone != null)
+            {
+                hintedStone.position = hintHome + hintDirection * nudge;
+                hintedStone.localScale = Vector3.Scale(hintScale, new Vector3(1f + .032f * nudge, 1f + .032f * nudge, 1f));
+            }
             if (Mathf.Approximately(lastPulse, pulse)) return;
             lastPulse = pulse;
             SetIdleGlow(sourceModels, .48f, .12f * pulse);
@@ -111,7 +114,8 @@ namespace Hexrota.UnityClient.Presentation
             var source = stones[hint.MovingSource];
             hintedStone = source.transform;
             hintHome = hintedStone.position;
-            hintDirection = (positions[hint.MovingTarget] - positions[hint.MovingSource]) * .14f;
+            hintScale = hintedStone.localScale;
+            hintDirection = (positions[hint.MovingTarget] - positions[hint.MovingSource]) * .108f;
             source.GetComponentsInChildren(false, rendererBuffer);
             foreach (var renderer in rendererBuffer)
                 if (!renderer.TryGetComponent<TextMesh>(out _)) sourceModels.Add(renderer);
@@ -172,7 +176,11 @@ namespace Hexrota.UnityClient.Presentation
             paintedHint = null;
             lastPulse = -1f;
             if (idleOutline != null) idleOutline.gameObject.SetActive(false);
-            if (hintedStone != null) hintedStone.position = hintHome;
+            if (hintedStone != null)
+            {
+                hintedStone.position = hintHome;
+                hintedStone.localScale = hintScale;
+            }
             SetIdleGlow(sourceModels, 0, 0);
         }
 
