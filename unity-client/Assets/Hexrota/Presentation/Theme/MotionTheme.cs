@@ -23,6 +23,11 @@ namespace Hexrota.UnityClient.Presentation
         [Tooltip("Panel open/close: shade fade seconds and start/end scale.")]
         [Min(0f)] public float shadeIn, shadeOut;
         public float panelOpenScale, panelCloseScale;
+        [Tooltip("Coop upgrade: squash & stretch of the coop, and the single punch used with reduced motion.")]
+        public Timing coopSquash, reducedUpgradePunch;
+        [Range(0f, 0.5f)] public float coopSquashAmount;
+        [Tooltip("How long \"Seviye N!\" stays, and the delay between arriving residents.")]
+        [Min(0f)] public float levelBannerHold, residentStagger;
         public AnimationCurve fly, breathe, shine;
         [Min(0f)] public float flyMin, flyMax, flyStagger;
         [Min(0f)] public float flyLaunchDuration, reducedFlyDuration, rewardStartDelay;

@@ -82,11 +82,11 @@ namespace Hexrota.UnityClient.Presentation
         private UnityGameSession session;
         private PhoneAudio audioPlayer;
         private Action completed;
-        private bool reduced, vibrate;
+        private bool reduced, vibrate, spending;
         private long revision;
         private float delay, elapsed, lastImpact, volume;
         private int arrivals, requestedFrame;
-        private Vector2 origin;
+        private Vector2 origin, destination;
 
         public bool IsPlaying => current != null;
         public int ActiveIconCount { get; private set; }
@@ -182,6 +182,7 @@ namespace Hexrota.UnityClient.Presentation
             session = controller.Session;
             revision = session.Revision;
             reduced = session.ReducedMotion;
+            spending = false;
             bool sound = session.SoundEnabled;
             volume = sound ? session.Volume : 0;
             vibrate = motion.arrivalHapticMs > 0 && session.HapticsEnabled;
@@ -202,17 +203,54 @@ namespace Hexrota.UnityClient.Presentation
             return true;
         }
 
-        private void Prepare(Flight flight, Target target, int balance, int amount, bool sound, bool preview, ref int pitch)
+        /// <summary>
+        /// Reverse flight: Golden Eggs leave the counter for a point on screen (the coop). The counter
+        /// starts at <paramref name="balanceAfter"/> + <paramref name="amount"/> and drops on every arrival.
+        /// </summary>
+        internal bool PlaySpend(Vector2 toScreenPoint, int amount, int balanceAfter, Action onComplete)
         {
-            flight.Target = target;
-            bool hasTarget = target.Sprite != null && target.TryGetCenter(uiCamera, out _);
-            flight.Count = hasTarget ? (reduced ? 1 : IconCount(amount)) : 0;
-            flight.FinalText = Format(balance);
-            int displayed = Mathf.Max(0, balance - amount);
-            int destination = preview && amount > balance ? amount : balance;
-            flight.StartText = Format(displayed);
+            if (amount <= 0 || controller == null || controller.Session == null) return false;
+            Cancel();
+            if (!isActiveAndEnabled || !attention.TryAcquire(AttentionKind.RewardFlight, this)) return false;
+            session = controller.Session;
+            revision = session.Revision;
+            reduced = session.ReducedMotion;
+            spending = true;
+            vibrate = false;
+            bool sound = session.SoundEnabled;
+            volume = sound ? session.Volume : 0;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(flightLayer, toScreenPoint, uiCamera, out destination);
+
+            var flight = first;
+            flight.Target = egg;
+            bool hasSource = egg.Sprite != null && egg.TryGetCenter(uiCamera, out _);
+            flight.Count = hasSource ? (reduced ? 1 : IconCount(amount)) : 0;
+            flight.StartText = Format(balanceAfter + amount);
+            flight.FinalText = Format(balanceAfter);
             FillShares(amount, flight.Shares, flight.Count);
+            PlanPaths(flight);
+            int displayed = balanceAfter + amount, pitch = 0;
             var cue = sound ? new RewardCue { reason = "home_reward" } : null;
+            for (int i = 0; i < flight.Count; i++)
+            {
+                displayed -= flight.Shares[flight.ArrivalOrder[i]];
+                flight.ArrivalText[i] = Format(Mathf.Max(balanceAfter, displayed));
+                if (sound) { cue.pitchStep = pitch++; cue.tier = 0; cue.completion = false; }
+                flight.Notes[i] = sound ? audioPlayer.PrepareHomeReward(cue, volume) : null;
+            }
+            egg.Show(flight.Count > 0 ? flight.StartText : flight.FinalText);
+            second.Count = 0;
+            completed = onComplete;
+            delay = 0;
+            requestedFrame = Time.frameCount;
+            Begin(first);
+            AdvancePastMissingTargets();
+            if (current != null) Animate(0);
+            return true;
+        }
+
+        private void PlanPaths(Flight flight)
+        {
             for (int i = 0; i < flight.Count; i++)
             {
                 flight.Paths[i] = new IconPath
@@ -229,6 +267,20 @@ namespace Hexrota.UnityClient.Presentation
                 }
                 flight.ArrivalOrder[previous + 1] = i;
             }
+        }
+
+        private void Prepare(Flight flight, Target target, int balance, int amount, bool sound, bool preview, ref int pitch)
+        {
+            flight.Target = target;
+            bool hasTarget = target.Sprite != null && target.TryGetCenter(uiCamera, out _);
+            flight.Count = hasTarget ? (reduced ? 1 : IconCount(amount)) : 0;
+            flight.FinalText = Format(balance);
+            int displayed = Mathf.Max(0, balance - amount);
+            int destination = preview && amount > balance ? amount : balance;
+            flight.StartText = Format(displayed);
+            FillShares(amount, flight.Shares, flight.Count);
+            var cue = sound ? new RewardCue { reason = "home_reward" } : null;
+            PlanPaths(flight);
             for (int i = 0; i < flight.Count; i++)
             {
                 int index = flight.ArrivalOrder[i];
@@ -283,13 +335,15 @@ namespace Hexrota.UnityClient.Presentation
             using (Animation.Auto())
             {
                 if (!current.Target.TryGetCenter(uiCamera, out Vector2 screenTarget) ||
-                    !RectTransformUtility.ScreenPointToLocalPointInRectangle(flightLayer, screenTarget, uiCamera, out Vector2 end))
+                    !RectTransformUtility.ScreenPointToLocalPointInRectangle(flightLayer, screenTarget, uiCamera, out Vector2 end) ||
+                    spending && !RectTransformUtility.ScreenPointToLocalPointInRectangle(flightLayer, screenTarget, uiCamera, out origin))
                 {
                     FinishCurrent();
                     AdvancePastMissingTargets();
                     return;
                 }
 
+                if (spending) end = destination;
                 elapsed += delta;
                 MoveIcons(end);
                 ApplyArrivals();

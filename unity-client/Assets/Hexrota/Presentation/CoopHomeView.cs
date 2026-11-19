@@ -40,6 +40,8 @@ namespace Hexrota.UnityClient.Presentation
         [SerializeField] private string completeLabel = "Alan tamamlandı";
 
         private FirstPlayableController controller;
+        /// <summary>Set by the upgrade sequence: the view keeps its current state until released.</summary>
+        internal bool Frozen;
         private UnityGameSession.CoopStatus status;
         private bool reducedMotion, wasFlying, bound;
         private float shownFill, fillFrom, fillTo, fillTime, pulseTime;
@@ -78,23 +80,10 @@ namespace Hexrota.UnityClient.Presentation
             barLabelOutline.effectColor = ui.panelDeep;
             coopButton.onClick.AddListener(Open);
             if (coopTapArea != null) coopTapArea.onClick.AddListener(Open);
-            if (panel != null) panel.UpgradeRequested += Upgrade;
         }
 
-        private void Open()
-        {
-            Opened?.Invoke();
-            if (panel != null && controller != null && controller.Session != null)
-                panel.Open(controller.Session.ReadCoop(), controller.Session.ReducedMotion);
-        }
-
-        private void Upgrade()
-        {
-            var session = controller != null ? controller.Session : null;
-            if (session == null) return;
-            if (!session.TryUpgradeCoop()) { panel.Show(session.ReadCoop()); return; }
-            panel.Close(() => Show(session.ReadCoop(), session.ReducedMotion));
-        }
+        // CoopUpgradeSequence opens the panel and runs the upgrade.
+        private void Open() => Opened?.Invoke();
 
         /// <param name="heldBackEggs">Eggs that are still flying to the counter; the bar fills once they land.</param>
         internal void Show(UnityGameSession.CoopStatus next, bool reduced, int heldBackEggs = 0)
@@ -105,8 +94,10 @@ namespace Hexrota.UnityClient.Presentation
             status = next;
             int eggs = Mathf.Max(0, next.Eggs - heldBackEggs);
             float target = Fraction(next, eggs);
-            bool levelChanged = previous == null || previous.Level != next.Level || previous.AreaId != next.AreaId;
-            if (levelChanged || target < shownFill || reduced) SetFill(target);
+            bool firstShow = previous == null;
+            bool levelChanged = !firstShow && (previous.Level != next.Level || previous.AreaId != next.AreaId);
+            if (firstShow || reduced || target < shownFill && !levelChanged) SetFill(target);
+            else if (levelChanged) { SetFill(0); fillTo = target; fillTime = 0; } // spent: reset, then fill toward the new cost
             else if (!Mathf.Approximately(target, fillTo)) { fillFrom = shownFill; fillTo = target; fillTime = 0; }
 
             bool ready = next.Ready && heldBackEggs == 0;
@@ -114,7 +105,13 @@ namespace Hexrota.UnityClient.Presentation
                 progressFormat.Replace("{have}", eggs.ToString(CultureInfo.InvariantCulture))
                     .Replace("{cost}", next.NextCost.ToString(CultureInfo.InvariantCulture));
             readyBadge.SetActive(ready);
-            if (coop != null && next.Usable && next.UpgradeCount > 0)
+            ShowLevel(next);
+        }
+
+        /// <summary>Updates only the placeholder coop for the given level.</summary>
+        internal void ShowLevel(UnityGameSession.CoopStatus next)
+        {
+            if (coop != null && next != null && next.Usable && next.UpgradeCount > 0)
                 coop.localScale = coopRestScale * Mathf.Lerp(ui.coopScaleEmpty, 1, (float)next.Level / next.UpgradeCount);
         }
 
@@ -138,7 +135,7 @@ namespace Hexrota.UnityClient.Presentation
         {
             if (controller == null || controller.Session == null || status == null) return;
             bool flying = rewardFlight != null && rewardFlight.IsPlaying;
-            if (wasFlying && !flying) Show(controller.Session.ReadCoop(), controller.Session.ReducedMotion);
+            if (wasFlying && !flying && !Frozen) Show(controller.Session.ReadCoop(), controller.Session.ReducedMotion);
             wasFlying = flying;
 
             if (fillTime < motion.fill.seconds)
@@ -149,7 +146,7 @@ namespace Hexrota.UnityClient.Presentation
             }
 
             // The pulse waits for the flight and the fill so that one thing moves at a time.
-            bool wantsPulse = status.Ready && readyBadge.activeSelf && !reducedMotion && !flying &&
+            bool wantsPulse = status.Ready && readyBadge.activeSelf && !reducedMotion && !flying && !Frozen &&
                 fillTime >= motion.fill.seconds && isActiveAndEnabled;
             if (wantsPulse && !IsPulsing && !attention.ModalOpen) attention.TryAcquire(AttentionKind.CoopPulse, this);
             else if (!wantsPulse && IsPulsing) attention.Release(this);

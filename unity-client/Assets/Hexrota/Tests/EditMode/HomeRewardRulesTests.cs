@@ -88,6 +88,10 @@ namespace Hexrota.UnityClientTests
             Assert.That(new[] { motion.shadeIn, motion.shadeOut, motion.panelOpenScale, motion.panelCloseScale, motion.shake.seconds },
                 Is.EqualTo(new[] { .2f, .15f, .85f, .9f, .3f }));
             Assert.That(motion.shakeDistance, Is.Positive);
+            Assert.That(new[] { motion.coopSquash.seconds, motion.reducedUpgradePunch.seconds, motion.coopSquashAmount,
+                motion.levelBannerHold, motion.residentStagger }, Is.EqualTo(new[] { .4f, .15f, .12f, .9f, .08f }));
+            Assert.That(motion.reducedFlyDuration + motion.reducedUpgradePunch.seconds, Is.LessThanOrEqualTo(.5f),
+                "Reduced-motion upgrade stays within 0.5 s.");
             Assert.That(motion.tap.curve.Evaluate(.5f), Is.GreaterThan(.5f));
             Assert.That(motion.release.curve.Evaluate(.6f), Is.EqualTo(1.0896f).Within(.001f));
             Assert.That(motion.popIn.curve.Evaluate(.6f), Is.EqualTo(1.0992f).Within(.001f));
@@ -104,7 +108,7 @@ namespace Hexrota.UnityClientTests
             Assert.That(prefab.GetComponentsInChildren<AttentionDirector>(), Has.Length.EqualTo(1));
             foreach (var component in new MonoBehaviour[] { prefab.GetComponent<RewardFlight>(),
                 prefab.GetComponentInChildren<HomePlayButton>(), prefab.GetComponent<CoopHomeView>(),
-                prefab.GetComponentInChildren<CoopUpgradePanel>(true) })
+                prefab.GetComponentInChildren<CoopUpgradePanel>(true), prefab.GetComponent<CoopUpgradeSequence>() })
             {
                 var serialized = new SerializedObject(component);
                 Assert.That(serialized.FindProperty("ui").objectReferenceValue, Is.SameAs(ui));

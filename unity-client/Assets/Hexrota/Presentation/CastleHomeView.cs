@@ -20,6 +20,7 @@ namespace Hexrota.UnityClient.Presentation
         [SerializeField] private AttentionDirector attention;
         [SerializeField] private RewardFlight rewardFlight;
         [SerializeField] private CoopHomeView coopView;
+        [SerializeField] private CoopUpgradeSequence coopSequence;
 
         [Header("Player progress")]
         [SerializeField] private Text goldValue;
@@ -42,6 +43,9 @@ namespace Hexrota.UnityClient.Presentation
 
         internal RewardFlight Rewards => rewardFlight;
         internal CoopHomeView Coop => coopView;
+        /// <summary>A reward flight or the coop upgrade is animating; periodic refreshes must wait.</summary>
+        internal bool IsBusy => rewardFlight.IsPlaying || (coopSequence != null && coopSequence.IsPlaying);
+        internal void FinishCoopUpgrade() { if (coopSequence != null) coopSequence.Finish(); }
         internal Vector2 RewardSource
         {
             get
@@ -61,6 +65,7 @@ namespace Hexrota.UnityClient.Presentation
             rewardFlight.Bind(controller, audio, new RewardFlight.Target(goldIcon, goldValue),
                 new RewardFlight.Target(eggIcon, eggValue));
             if (coopView != null) coopView.Bind(controller);
+            if (coopSequence != null) coopSequence.Bind(controller);
             if (playButton != null) playButton.onClick.AddListener(controller.BeginJourney);
             if (lifeButton != null) lifeButton.onClick.AddListener(controller.OpenMobileLives);
             if (settingsButton != null) settingsButton.onClick.AddListener(controller.OpenMobileSettings);
@@ -96,6 +101,7 @@ namespace Hexrota.UnityClient.Presentation
         internal void ShowCoop(UnityGameSession.CoopStatus status, bool reducedMotion, int heldBackEggs = 0)
         {
             if (coopView != null) coopView.Show(status, reducedMotion, heldBackEggs);
+            if (coopSequence != null) coopSequence.ShowResidents(status);
         }
 
         internal void RegisterTouch() { if (isActiveAndEnabled) playMotion.RegisterTouch(); }

@@ -168,7 +168,7 @@ namespace Hexrota.UnityClient.Presentation
         private void CancelHomeRewards()
         {
             pendingHomeRewards = null;
-            if (castleHome != null) castleHome.Rewards.Cancel();
+            if (castleHome != null) { castleHome.FinishCoopUpgrade(); castleHome.Rewards.Cancel(); }
         }
 
         private void DrawPhoneHeaderBody(RectTransform body)
@@ -249,7 +249,7 @@ namespace Hexrota.UnityClient.Presentation
             if (Time.unscaledTime < nextLifeDisplay) return;
             if (CurrentScreen == "menu" && castleHome != null)
             {
-                if (castleHome.Rewards.IsPlaying) return;
+                if (castleHome.IsBusy) return;
                 castleHome.ShowWallet(Session.ReadPhoneWallet());
                 castleHome.ShowCoop(Session.ReadCoop(), Session.ReducedMotion);
             }
