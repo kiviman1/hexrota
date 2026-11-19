@@ -51,8 +51,9 @@ namespace Hexrota.UnityClientTests
                 var labels = game.GetComponentsInChildren<Text>();
                 Assert.That(labels.Any(t => t.name == "StageTag" || t.name == "LevelTitle"), Is.False);
                 Assert.That(labels.Single(t => t.name == "Moves").text, Is.EqualTo(game.Session.Snapshot.movesLeft.ToString()));
-                Assert.That(game.GetComponentsInChildren<Button>().Select(b => b.name),
-                    Is.EquivalentTo(new[] { "Ayarlar" }));
+                // The development win shortcut exists only in Editor/Development builds.
+                Assert.That(game.GetComponentsInChildren<Button>().Select(b => b.name)
+                    .Where(name => name != FirstPlayableController.DevelopmentWinButtonName), Is.EquivalentTo(new[] { "Ayarlar" }));
                 foreach (var value in Enumerable.Range(0,game.Session.Level.cells.Length))
                 {
                     Vector2 projected = game.Board.ViewportCell(value);
