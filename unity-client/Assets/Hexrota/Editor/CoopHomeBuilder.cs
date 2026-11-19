@@ -7,7 +7,9 @@ using UnityEngine.UI;
 
 namespace Hexrota.UnityClient.Editor
 {
-    // Adds the editable coop controls (button, progress bar, tap area) to the home prefab.
+    // Adds the editable coop controls to the home prefab: the placeholder coop on the background plot
+    // (tap to open the upgrade panel, with the ready badge) and the progress bar. Run after
+    // Rebuild Background Layers.
     // Layout follows docs/design/wireframe/Main.html (390 x 844 reference). Colors and timings are
     // applied at runtime from UiTheme/MotionTheme; the values set here only make the prefab readable.
     // Re-running replaces only the objects this builder owns.
@@ -17,6 +19,9 @@ namespace Hexrota.UnityClient.Editor
         private const string Theme = "Assets/Hexrota/Presentation/Theme/";
         private const string EggSprite = "Assets/Hexrota/Art/CastleHome/GoldenEgg.png";
         private static readonly string[] Owned = { "CoopTapArea", "CoopProgress", "CoopButton" };
+        public const string PlotCoop = "PlotCoop";
+        public const string CoopDrawing = "CoopDrawing";
+        private const string CoopSprite = "Assets/Hexrota/Art/CastleHome/Coop.png";
 
         [MenuItem("Hexrota/Home/Rebuild Coop Controls")]
         public static void Rebuild()
@@ -26,38 +31,50 @@ namespace Hexrota.UnityClient.Editor
             var rounded = Load<Sprite>(Theme + "HomeRounded.png");
             var hex = Load<Sprite>(Theme + "HomeHex.png");
             var egg = Load<Sprite>(EggSprite);
+            var coopSprite = Load<Sprite>(CoopSprite);
             var root = PrefabUtility.LoadPrefabContents(Prefab);
             try
             {
                 var layout = root.transform.Find("MenuLayout");
-                var environment = layout != null ? layout.Find("Environment") : null;
-                var coop = environment != null ? environment.Find("Coop") as RectTransform : null;
                 var playArea = layout != null ? layout.Find("PlayArea") as RectTransform : null;
                 var home = root.GetComponent<CastleHomeView>();
                 var attention = root.GetComponentInChildren<AttentionDirector>(true);
                 var flight = root.GetComponentInChildren<RewardFlight>(true);
+                var layers = root.GetComponentInChildren<HomeBackgroundLayers>(true);
+                var plot = layers != null ? layers.CoopPlot : null;
                 var font = root.GetComponentsInChildren<Text>(true).First(t => t.name == "StageLabel").font;
-                if (coop == null || playArea == null || home == null || attention == null || flight == null)
-                    throw new InvalidOperationException("Home prefab hierarchy changed.");
+                if (playArea == null || home == null || attention == null || flight == null || plot == null)
+                    throw new InvalidOperationException("Home prefab hierarchy changed (run Rebuild Background Layers first).");
                 foreach (var name in Owned)
                 {
                     var existing = layout.Find(name);
                     if (existing != null) UnityEngine.Object.DestroyImmediate(existing.gameObject);
                 }
+                var oldCoop = plot.Find(PlotCoop);
+                if (oldCoop != null) UnityEngine.Object.DestroyImmediate(oldCoop.gameObject);
 
-                // Transparent hit area over the coop. It sits right above the environment, so every
-                // other control keeps priority, and the environment layers stay non-interactive.
-                var tap = NewRect(layout, "CoopTapArea", new Vector2(.2f, .32f), new Vector2(.8f, .74f), Vector2.zero, Vector2.zero);
-                tap.SetSiblingIndex(environment.GetSiblingIndex() + 1);
-                var tapImage = tap.gameObject.AddComponent<Image>();
-                tapImage.color = Color.clear;
-                var tapButton = tap.gameObject.AddComponent<Button>();
+                // Placeholder coop standing on the plot (until the 3D coop). It is part of the background,
+                // so every UI control keeps tap priority. The level scale grows it from its base.
+                var coop = NewRect(plot, PlotCoop, new Vector2(.295f, .237f), new Vector2(.705f, 1.126f), Vector2.zero, Vector2.zero);
+                coop.pivot = new Vector2(.5f, 0);
+                coop.SetAsLastSibling();
+                var visual = NewRect(coop, CoopDrawing, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+                visual.pivot = new Vector2(.5f, 0);
+                var drawing = Simple(visual, coopSprite, Color.white);
+                drawing.raycastTarget = true;
+                var tapButton = visual.gameObject.AddComponent<Button>();
                 tapButton.transition = Selectable.Transition.None;
-                tapButton.targetGraphic = tapImage;
+                tapButton.targetGraphic = drawing;
+                var badge = NewRect(visual, "ReadyBadge", new Vector2(.84f, .74f), new Vector2(.84f, .74f), Vector2.zero, new Vector2(30, 32));
+                var badgeRim = Simple(NewRect(badge, "Rim", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero), hex, ui.heartDeep);
+                var badgeFace = Simple(NewRect(badge, "Face", Vector2.zero, Vector2.one, Vector2.zero, new Vector2(-6, -6)), hex, ui.heart);
+                Label(badge, "Mark", font, 18, "!", ui, out var badgeOutline);
+                badgeOutline.effectColor = ui.heartDeep;
+                badge.gameObject.SetActive(false);
 
-                // Progress bar: 72px above the play button centre, 200 x 24.
+                // Progress bar: in the empty meadow right of the stone path, between the plot and Play.
                 float playY = playArea.anchorMin.y;
-                var bar = NewRect(layout, "CoopProgress", new Vector2(.5f, playY), new Vector2(.5f, playY), new Vector2(0, 72), new Vector2(200, 24));
+                var bar = NewRect(layout, "CoopProgress", new Vector2(.5f, playY), new Vector2(.5f, playY), new Vector2(67, 64), new Vector2(200, 24));
                 bar.SetSiblingIndex(playArea.GetSiblingIndex());
                 var track = Sliced(NewRect(bar, "Track", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero), rounded, ui.panelDeep);
                 var fill = NewRect(bar, "Fill", Vector2.zero, new Vector2(0, 1), Vector2.zero, Vector2.zero);
@@ -67,37 +84,13 @@ namespace Hexrota.UnityClient.Editor
                 var eggIcon = NewRect(bar, "Egg", new Vector2(0, .5f), new Vector2(0, .5f), new Vector2(-2, 2), new Vector2(34, 34));
                 Simple(eggIcon, egg, Color.white);
 
-                // Coop button: hexagon to the left of Play, on the same row.
-                var button = NewRect(layout, "CoopButton", new Vector2(0, playY), new Vector2(0, playY), new Vector2(46, 0), new Vector2(64, 70));
-                button.SetSiblingIndex(playArea.GetSiblingIndex() + 1);
-                var buttonImage = button.gameObject.AddComponent<Image>();
-                buttonImage.sprite = hex;
-                buttonImage.color = Color.clear;
-                var coopButton = button.gameObject.AddComponent<Button>();
-                coopButton.transition = Selectable.Transition.None;
-                coopButton.targetGraphic = buttonImage;
-                var visual = NewRect(button, "Visual", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-                var ring = Simple(NewRect(visual, "PulseRing", Vector2.zero, Vector2.one, Vector2.zero, new Vector2(16, 18)), hex, ui.gold);
-                ring.enabled = false;
-                var rim = Simple(NewRect(visual, "Rim", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero), hex, ui.skyDeep);
-                var face = Simple(NewRect(visual, "Face", Vector2.zero, Vector2.one, new Vector2(0, 2), new Vector2(-8, -10)), hex, ui.sky);
-                var buttonLabel = Label(visual, "Label", font, 15, "Kümes", ui, out var buttonOutline);
-                var badge = NewRect(visual, "ReadyBadge", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-6, -6), new Vector2(26, 28));
-                var badgeRim = Simple(NewRect(badge, "Rim", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero), hex, ui.heartDeep);
-                var badgeFace = Simple(NewRect(badge, "Face", Vector2.zero, Vector2.one, Vector2.zero, new Vector2(-6, -6)), hex, ui.heart);
-                Label(badge, "Mark", font, 16, "!", ui, out var badgeOutline);
-                badgeOutline.effectColor = ui.heartDeep;
-                badge.gameObject.SetActive(false);
-
                 var view = root.GetComponent<CoopHomeView>();
                 if (view == null) view = root.AddComponent<CoopHomeView>();
                 var data = new SerializedObject(view);
                 Set(data, "ui", ui); Set(data, "motion", motion); Set(data, "attention", attention); Set(data, "rewardFlight", flight);
-                Set(data, "coop", coop); Set(data, "coopButton", coopButton); Set(data, "coopTapArea", tapButton);
-                Set(data, "buttonVisual", visual); Set(data, "buttonRim", rim); Set(data, "buttonFace", face); Set(data, "pulseRing", ring);
-                Set(data, "buttonLabel", buttonLabel); Set(data, "buttonLabelOutline", buttonOutline);
+                Set(data, "coop", coop); Set(data, "coopVisual", visual); Set(data, "coopTapArea", tapButton);
                 Set(data, "readyBadge", badge.gameObject); Set(data, "readyBadgeRim", badgeRim); Set(data, "readyBadgeFace", badgeFace);
-                Set(data, "barFill", fill); Set(data, "barTrack", track); Set(data, "barFillImage", fillImage);
+                Set(data, "bar", bar); Set(data, "barFill", fill); Set(data, "barTrack", track); Set(data, "barFillImage", fillImage);
                 Set(data, "barLabel", barLabel); Set(data, "barLabelOutline", barOutline);
                 data.ApplyModifiedPropertiesWithoutUndo();
                 var homeData = new SerializedObject(home);

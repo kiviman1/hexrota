@@ -5,7 +5,8 @@ using UnityEngine.UI;
 
 namespace Hexrota.UnityClient.Presentation
 {
-    // Home coop entry: the coop button, the progress bar toward the next upgrade and the "ready" pulse.
+    // Home coop entry: the coop on the plot (tap to open the upgrade panel), the progress bar toward the
+    // next upgrade and the "ready" pulse, which beats on the coop itself and on the bar.
     // The bar never animates backwards; spending resets it at once, earning fills it with MotionTheme.fill.
     [DisallowMultipleComponent]
     public sealed class CoopHomeView : MonoBehaviour
@@ -16,13 +17,12 @@ namespace Hexrota.UnityClient.Presentation
         [SerializeField] private RewardFlight rewardFlight;
 
         [Header("Coop")]
-        [Tooltip("Placeholder coop in the scene; its scale grows with the coop level.")]
+        [Tooltip("Placeholder coop on the plot; its scale grows with the coop level.")]
         [SerializeField] private RectTransform coop;
-        [SerializeField] private Button coopButton, coopTapArea;
-        [SerializeField] private RectTransform buttonVisual;
-        [SerializeField] private Image buttonRim, buttonFace, pulseRing;
-        [SerializeField] private Text buttonLabel;
-        [SerializeField] private Outline buttonLabelOutline;
+        [Tooltip("The coop drawing inside the placeholder; it beats while an upgrade is ready.")]
+        [SerializeField] private RectTransform coopVisual;
+        [Tooltip("Tapping the coop opens the upgrade panel.")]
+        [SerializeField] private Button coopTapArea;
         [SerializeField] private GameObject readyBadge;
         [SerializeField] private Image readyBadgeRim, readyBadgeFace;
 
@@ -30,6 +30,8 @@ namespace Hexrota.UnityClient.Presentation
         [SerializeField] private CoopUpgradePanel panel;
 
         [Header("Progress")]
+        [Tooltip("The whole bar; it beats with the coop while an upgrade is ready.")]
+        [SerializeField] private RectTransform bar;
         [SerializeField] private RectTransform barFill;
         [SerializeField] private Image barTrack, barFillImage;
         [SerializeField] private Text barLabel;
@@ -47,14 +49,17 @@ namespace Hexrota.UnityClient.Presentation
         private float shownFill, fillFrom, fillTo, fillTime, pulseTime;
         private Vector3 coopRestScale = Vector3.one;
 
-        /// <summary>Raised when the player taps the coop or its button.</summary>
+        /// <summary>Raised when the player taps the coop.</summary>
         internal event Action Opened;
 
         public UnityGameSession.CoopStatus Status => status;
         public float ShownFill => shownFill;
         public bool IsPulsing => attention != null && attention.IsOwner(this);
         public string ProgressText => barLabel != null ? barLabel.text : null;
-        public Button Button => coopButton;
+        /// <summary>The coop on the plot; tapping it opens the upgrade panel.</summary>
+        public Button Button => coopTapArea;
+        public RectTransform CoopVisual => coopVisual;
+        public RectTransform ProgressBar => bar;
         public bool PanelOpen => panel != null && panel.IsOpen;
         public CoopUpgradePanel Panel => panel;
         public bool ReadyBadgeShown => readyBadge != null && readyBadge.activeSelf;
@@ -66,20 +71,13 @@ namespace Hexrota.UnityClient.Presentation
             if (bound) return;
             bound = true;
             if (coop != null) coopRestScale = coop.localScale;
-            buttonRim.color = buttonLabelOutline.effectColor = ui.skyDeep;
-            buttonFace.color = ui.sky;
-            buttonLabel.color = barLabel.color = ui.label;
-            var ring = ui.gold;
-            ring.a = ui.coopRingOpacity;
-            pulseRing.color = ring;
-            pulseRing.enabled = false;
+            barLabel.color = ui.label;
             readyBadgeRim.color = ui.heartDeep;
             readyBadgeFace.color = ui.heart;
             barTrack.color = ui.panelDeep;
             barFillImage.color = ui.cta;
             barLabelOutline.effectColor = ui.panelDeep;
-            coopButton.onClick.AddListener(Open);
-            if (coopTapArea != null) coopTapArea.onClick.AddListener(Open);
+            coopTapArea.onClick.AddListener(Open);
         }
 
         // CoopUpgradeSequence opens the panel and runs the upgrade.
@@ -155,28 +153,28 @@ namespace Hexrota.UnityClient.Presentation
 
         private void AnimatePulse()
         {
-            bool pulsing = IsPulsing;
-            pulseRing.enabled = pulsing;
-            if (!pulsing)
+            if (!IsPulsing)
             {
                 pulseTime = 0;
-                buttonVisual.localScale = Vector3.one;
+                SetPulseScale(1);
                 return;
             }
             pulseTime = Mathf.Repeat(pulseTime + Time.unscaledDeltaTime, motion.coopPulsePeriod);
             float beat = 0.5f - 0.5f * Mathf.Cos(2 * Mathf.PI * pulseTime / motion.coopPulsePeriod);
-            float scale = 1 + (motion.coopPulseScale - 1) * beat;
-            buttonVisual.localScale = new Vector3(scale, scale, 1);
-            var ring = pulseRing.color;
-            ring.a = ui.coopRingOpacity * beat;
-            pulseRing.color = ring;
+            SetPulseScale(1 + (motion.coopPulseScale - 1) * beat);
+        }
+
+        private void SetPulseScale(float scale)
+        {
+            var size = new Vector3(scale, scale, 1);
+            if (coopVisual != null) coopVisual.localScale = size;
+            if (bar != null) bar.localScale = size;
         }
 
         private void OnDisable()
         {
             if (attention != null) attention.Release(this);
-            if (buttonVisual != null) buttonVisual.localScale = Vector3.one;
-            if (pulseRing != null) pulseRing.enabled = false;
+            SetPulseScale(1);
             wasFlying = false;
         }
     }

@@ -66,9 +66,11 @@ namespace Hexrota.UnityClientTests
             var wallet = controller.Session.ReadPhoneWallet();
             var labels = home.GetComponentsInChildren<Text>();
             var brand = home.transform.Find("MenuLayout/Brand");
-            Assert.That(brand, Is.Not.Null);
-            Assert.That(brand.GetComponentsInChildren<Text>().Any(label => !string.IsNullOrWhiteSpace(label.text)), Is.True,
-                "The logo must have an independently editable title.");
+            Assert.That(brand, Is.Not.Null, "The emblem is kept in the prefab.");
+            Assert.That(brand.gameObject.activeSelf, Is.False, "The emblem is hidden so the sky band and clouds show.");
+            Assert.That(brand.GetComponentsInChildren<Text>(true).Any(label => !string.IsNullOrWhiteSpace(label.text)), Is.True,
+                "The logo keeps an independently editable title.");
+            Assert.That(home.transform.Find("MenuLayout/TopBar").gameObject.activeInHierarchy, Is.True, "The top bar stays.");
             var play = home.GetComponentsInChildren<Button>().Single(button => button.name == "PlayButton");
             Assert.That(play.GetComponentInChildren<Text>(), Is.Not.Null, "The primary action must have an editable caption.");
             Assert.That(labels.Single(label => label.name == "GoldValue").text, Is.EqualTo(wallet.Gold.ToString()));
@@ -76,6 +78,11 @@ namespace Hexrota.UnityClientTests
             Assert.That(labels.Single(label => label.name == "LifeStatus").text, Is.EqualTo("Dolu"));
             Assert.That(labels.Single(label => label.name == "StageLabel").text, Does.Contain("1"));
             Assert.That(controller.Session.FirstOpening, Is.True);
+            TapHomeButton("CoopDrawing");
+            Assert.That(home.GetComponentInChildren<CoopHomeView>().PanelOpen, Is.True,
+                "Tapping the coop on the plot opens the upgrade panel.");
+            home.GetComponentInChildren<CoopHomeView>().Panel.GetComponentsInChildren<Button>().Single(b => b.name == "CloseButton").onClick.Invoke();
+            yield return new WaitForSecondsRealtime(.5f);
             TapHomeButton("LifeButton", 17f);
             Assert.That(controller.CurrentScreen, Is.EqualTo("lives"));
             ButtonNamed("Bekle").onClick.Invoke();
@@ -113,7 +120,9 @@ namespace Hexrota.UnityClientTests
                     frame.sizeDelta = size;
                     yield return null;
                     Canvas.ForceUpdateCanvases();
-                    foreach (var button in home.GetComponentsInChildren<Button>())
+                    // The coop on the plot belongs to the full-screen background art, not to the safe-area UI.
+                    var art = home.GetComponentInChildren<HomeBackgroundLayers>().transform;
+                    foreach (var button in home.GetComponentsInChildren<Button>().Where(b => !b.transform.IsChildOf(art)))
                     {
                         ((RectTransform)button.transform).GetWorldCorners(corners);
                         foreach (var corner in corners)

@@ -63,7 +63,10 @@ namespace Hexrota.UnityClientTests
             Assert.That(coop.gameObject.activeSelf, Is.True, "The coop view still scales and targets the placeholder.");
             Assert.That(coop.GetComponent<Image>().enabled, Is.False);
             foreach (Transform part in coop) Assert.That(part.gameObject.activeSelf, Is.False, part.name);
-            foreach (var image in env.GetComponentsInChildren<Image>(true)) Assert.That(image.raycastTarget, Is.False, image.name);
+            var plotCoop = layers.CoopPlot.Find("PlotCoop");
+            Assert.That(plotCoop, Is.Not.Null, "A placeholder coop stands on the plot until the 3D coop.");
+            foreach (var image in env.GetComponentsInChildren<Image>(true))
+                Assert.That(image.raycastTarget, Is.EqualTo(image.name == "CoopDrawing"), image.name + ": only the coop takes taps.");
         }
 
         [UnityTest]
@@ -102,6 +105,23 @@ namespace Hexrota.UnityClientTests
                 Rect plot = ScreenRect(screen, layers.CoopPlot);
                 Assert.That(display.Contains(plot.center), Is.True);
                 Assert.That(plot.center.x, Is.EqualTo(display.center.x).Within(width * .05f), "The plot sits in the middle.");
+
+                // The coop stands on the plot; the bar sits below the plot, right of the stone path, above Play.
+                Rect coop = ScreenRect(screen, (RectTransform)layers.CoopPlot.Find("PlotCoop"));
+                Assert.That(coop.center.x, Is.EqualTo(plot.center.x).Within(1f));
+                Assert.That(coop.yMin, Is.GreaterThan(plot.yMin).And.LessThan(plot.center.y), "The coop base is on the plot.");
+                Rect ArtRect(float left, float top, float right, float bottom) => Rect.MinMaxRect(
+                    frame.xMin + left / layers.ArtSize.x * frame.width, frame.yMax - bottom / layers.ArtSize.y * frame.height,
+                    frame.xMin + right / layers.ArtSize.x * frame.width, frame.yMax - top / layers.ArtSize.y * frame.height);
+                var bar = ScreenRect(screen, (RectTransform)home.transform.Find("MenuLayout/CoopProgress"));
+                var egg = ScreenRect(screen, (RectTransform)home.transform.Find("MenuLayout/CoopProgress/Egg"));
+                var play = ScreenRect(screen, (RectTransform)home.transform.Find("MenuLayout/PlayArea/PlayButton"));
+                var barAll = Rect.MinMaxRect(Mathf.Min(bar.xMin, egg.xMin), Mathf.Min(bar.yMin, egg.yMin),
+                                             Mathf.Max(bar.xMax, egg.xMax), Mathf.Max(bar.yMax, egg.yMax));
+                Assert.That(barAll.yMax, Is.LessThanOrEqualTo(ArtRect(0, 1640, 1170, 1660).yMin), "Bar stays below the plot.");
+                Assert.That(barAll.xMin, Is.GreaterThanOrEqualTo(ArtRect(30, 1670, 420, 1990).xMax), "Bar stays right of the stone path.");
+                Assert.That(barAll.Overlaps(play), Is.False, "Bar does not cover Play.");
+                Assert.That(barAll.xMax, Is.LessThanOrEqualTo(display.xMax), "Bar stays on screen.");
             }
             finally { Object.Destroy(canvas.gameObject); }
         }

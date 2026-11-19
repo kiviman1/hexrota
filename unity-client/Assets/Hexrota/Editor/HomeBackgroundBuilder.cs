@@ -9,7 +9,8 @@ namespace Hexrota.UnityClient.Editor
     // Replaces the home background with the painted layers in Art/HomeBackground (source: art/HomeBackground,
     // see its README). Draw order: sky → cloud_1..3 → ground → (empty: 3D coop and residents) → UI.
     // foreground.png is imported but not used yet. Old castle-scene layers are hidden, not deleted.
-    // Re-running replaces only the ArtFrame this builder owns.
+    // Re-running replaces only the ArtFrame this builder owns; then run Rebuild Coop Controls and
+    // Rebuild Coop Upgrade Sequence, which place the coop and its residents on ArtFrame/CoopPlot.
     public static class HomeBackgroundBuilder
     {
         private const string Prefab = "Assets/Hexrota/Resources/CastleHome/CastleHome.prefab";
@@ -104,6 +105,10 @@ namespace Hexrota.UnityClient.Editor
                 var castle = coop.GetComponent<Image>();
                 if (castle != null) castle.enabled = false;
                 foreach (Transform part in coop) part.gameObject.SetActive(false);
+
+                // The HEXROTA emblem covered the sky band; it stays in the prefab, hidden. The top bar stays.
+                var brand = root.transform.Find("MenuLayout/Brand");
+                if (brand != null) brand.gameObject.SetActive(false);
 
                 PrefabUtility.SaveAsPrefabAsset(root, Prefab);
             }

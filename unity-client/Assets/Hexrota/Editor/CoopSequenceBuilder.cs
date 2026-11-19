@@ -7,8 +7,8 @@ using UnityEngine.UI;
 
 namespace Hexrota.UnityClient.Editor
 {
-    // Adds the coop upgrade sequence pieces to the home prefab: placeholder residents beside the
-    // coop, the burst, the "Seviye N!" banner and a full-screen input lock. Run after the coop
+    // Adds the coop upgrade sequence pieces to the home prefab: placeholder residents on the plot beside
+    // the coop, the burst, the "Seviye N!" banner and a full-screen input lock. Run after the coop
     // controls and the upgrade panel builders.
     public static class CoopSequenceBuilder
     {
@@ -39,17 +39,22 @@ namespace Hexrota.UnityClient.Editor
                 var panel = root.GetComponentInChildren<CoopUpgradePanel>(true);
                 var attention = root.GetComponentInChildren<AttentionDirector>(true);
                 var flight = root.GetComponentInChildren<RewardFlight>(true);
-                var tap = layout != null ? layout.Find("CoopTapArea") : null;
+                var layers = root.GetComponentInChildren<HomeBackgroundLayers>(true);
+                var plot = layers != null ? layers.CoopPlot : null;
+                var coop = plot != null ? plot.Find(CoopHomeBuilder.PlotCoop) : null;
                 var font = root.GetComponentsInChildren<Text>(true).First(t => t.name == "StageLabel").font;
-                if (tap == null || view == null || panel == null || home == null) throw new InvalidOperationException("Run the coop control and panel builders first.");
+                if (coop == null || view == null || panel == null || home == null) throw new InvalidOperationException("Run the coop control and panel builders first.");
                 foreach (var name in Owned)
                 {
                     var existing = layout.Find(name);
                     if (existing != null) UnityEngine.Object.DestroyImmediate(existing.gameObject);
                 }
 
-                var residents = Rect(layout, "CoopResidents", new Vector2(.5f, .33f), new Vector2(.5f, .33f), Vector2.zero, Vector2.zero);
-                residents.SetSiblingIndex(tap.GetSiblingIndex() + 1);
+                var oldResidents = plot.Find("CoopResidents");
+                if (oldResidents != null) UnityEngine.Object.DestroyImmediate(oldResidents.gameObject);
+                // Residents stand on the plot around the coop base, in front of the coop.
+                var residents = Rect(plot, "CoopResidents", new Vector2(.5f, .237f), new Vector2(.5f, .237f), Vector2.zero, Vector2.zero);
+                residents.SetSiblingIndex(coop.GetSiblingIndex() + 1);
                 var spots = new RectTransform[Spots.Length];
                 for (int i = 0; i < Spots.Length; i++)
                 {
@@ -61,7 +66,7 @@ namespace Hexrota.UnityClient.Editor
                 }
 
                 var burstRect = Rect(layout, "CoopBurst", new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(150, 150));
-                burstRect.SetSiblingIndex(residents.GetSiblingIndex() + 1);
+                burstRect.SetSiblingIndex(layout.Find("Environment").GetSiblingIndex() + 1);
                 var burst = burstRect.gameObject.AddComponent<Image>();
                 burst.sprite = burstSprite; burst.color = ui.goldLight; burst.raycastTarget = false; burst.preserveAspect = true;
                 burstRect.gameObject.SetActive(false);
