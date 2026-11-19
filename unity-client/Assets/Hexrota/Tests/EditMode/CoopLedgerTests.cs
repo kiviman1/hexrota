@@ -3,30 +3,50 @@ using System.Linq;
 using Hexrota.Application;
 using Hexrota.UnityClient;
 using NUnit.Framework;
-using UnityEngine;
 using W = Hexrota.Contracts.Wire;
 
 namespace Hexrota.UnityClientTests
 {
     public sealed class CoopLedgerTests
     {
-        private CoopConfig config;
+        // Plain C# rules: the ledger is tested without UnityEngine, exactly as the .NET host compiles it.
+        private static readonly int[] Costs = { 1, 2, 2, 2, 3 };
+        private static readonly int[] Arrivals = { 1, 1, 1, 1, 2 };
+        private CoopRules config;
         private int[] costs;
 
+        internal static CoopRules Rules(string id, int[] costs, int[] arrivals) =>
+            new CoopRules(new[] { new CoopRules.Area(id, costs.Select((cost, i) => new CoopRules.Upgrade(cost, arrivals[i]))) });
+
         [SetUp]
-        public void LoadShippedConfig()
+        public void BuildRules()
         {
-            config = CoopConfig.Load();
-            Assert.That(config, Is.Not.Null, "Resources/" + CoopConfig.ResourcePath + " must exist.");
-            costs = config.First.upgrades.Select(u => u.cost).ToArray();
+            config = Rules("farm-1", Costs, Arrivals);
+            costs = config.First.Upgrades.Select(u => u.Cost).ToArray();
         }
 
         [Test]
-        public void FirstAreaHasFiveUpgradesWithTheAgreedCostsAndArrivals()
+        public void ShippedAssetGivesTheFirstAreaItsCurrentCostsAndArrivals()
         {
-            Assert.That(config.areas, Has.Length.EqualTo(1));
-            Assert.That(costs, Is.EqualTo(new[] { 6, 8, 10, 12, 14 }));
-            Assert.That(config.First.upgrades.Select(u => u.chickens), Is.EqualTo(new[] { 1, 1, 1, 1, 2 }));
+            var asset = CoopConfig.Load();
+            Assert.That(asset, Is.Not.Null, "Resources/" + CoopConfig.ResourcePath + " must exist.");
+            var shipped = asset.ToRules();
+            Assert.That(shipped.Areas, Has.Count.EqualTo(1));
+            Assert.That(shipped.First.Id, Is.EqualTo("farm-1"));
+            // Sized for the current 10-chapter campaign (10 eggs); see docs/design/HANDOFF.md.
+            Assert.That(shipped.First.Upgrades.Select(u => u.Cost), Is.EqualTo(new[] { 1, 2, 2, 2, 3 }));
+            Assert.That(shipped.First.Upgrades.Select(u => u.Cost).Sum(), Is.EqualTo(10));
+            Assert.That(shipped.First.Upgrades.Select(u => u.Chickens), Is.EqualTo(new[] { 1, 1, 1, 1, 2 }));
+        }
+
+        [Test]
+        public void RulesRejectFreeUpgradesEmptyAreasAndDuplicateIds()
+        {
+            Assert.That(() => new CoopRules.Upgrade(0, 1), Throws.InstanceOf<System.ArgumentOutOfRangeException>());
+            Assert.That(() => new CoopRules.Area("a", new CoopRules.Upgrade[0]), Throws.ArgumentException);
+            var area = new CoopRules.Area("a", new[] { new CoopRules.Upgrade(1, 1) });
+            Assert.That(() => new CoopRules(new[] { area, area }), Throws.ArgumentException);
+            Assert.That(() => new CoopRules(new CoopRules.Area[0]), Throws.ArgumentException);
         }
 
         [Test]
@@ -41,7 +61,7 @@ namespace Hexrota.UnityClientTests
             Assert.That(ledger.Level, Is.EqualTo(1));
             Assert.That(ledger.SpentEggs, Is.EqualTo(costs[0]));
             Assert.That(ledger.Available(earned), Is.EqualTo(1));
-            Assert.That(ledger.Chickens, Is.EqualTo(config.First.upgrades[0].chickens));
+            Assert.That(ledger.Chickens, Is.EqualTo(config.First.Upgrades[0].Chickens));
 
             var record = store.Read(CoopLedger.StorageKey);
             Assert.That(W.Integer(W.Get(record, "level")), Is.EqualTo(1));
@@ -70,7 +90,7 @@ namespace Hexrota.UnityClientTests
             Assert.That(ledger.TryUpgrade(earned, out _), Is.True);
 
             var restored = new CoopLedger(config, store);
-            Assert.That(restored.AreaId, Is.EqualTo(config.First.id));
+            Assert.That(restored.AreaId, Is.EqualTo(config.First.Id));
             Assert.That(restored.Level, Is.EqualTo(2));
             Assert.That(restored.SpentEggs, Is.EqualTo(earned));
             Assert.That(restored.Available(earned), Is.Zero);
@@ -89,7 +109,7 @@ namespace Hexrota.UnityClientTests
             }
             Assert.That(ledger.IsAreaComplete, Is.True);
             Assert.That(ledger.NextUpgrade, Is.Null);
-            Assert.That(ledger.Chickens, Is.EqualTo(config.First.upgrades.Sum(u => u.chickens)));
+            Assert.That(ledger.Chickens, Is.EqualTo(Arrivals.Sum()));
 
             Assert.That(ledger.TryUpgrade(earned, out string last), Is.False);
             Assert.That(last, Is.EqualTo("area_complete"));
@@ -117,7 +137,7 @@ namespace Hexrota.UnityClientTests
             var store = new MemoryProfileStorage();
             store.Seed(CoopLedger.StorageKey, W.Obj("schemaVersion", 1L, "areaId", "missing", "level", 1L, "spentEggs", 6L));
             Assert.That(() => new CoopLedger(config, store), Throws.InstanceOf<ProfileStorageException>());
-            store.Seed(CoopLedger.StorageKey, W.Obj("schemaVersion", 1L, "areaId", config.First.id, "level", 99L, "spentEggs", 6L));
+            store.Seed(CoopLedger.StorageKey, W.Obj("schemaVersion", 1L, "areaId", config.First.Id, "level", 99L, "spentEggs", 6L));
             Assert.That(() => new CoopLedger(config, store), Throws.InstanceOf<ProfileStorageException>());
         }
 

@@ -17,7 +17,7 @@ namespace Hexrota.UnityClient
         }
 
         private readonly IProfileStorage profileStorage;
-        private readonly CoopConfig coopConfig;
+        private readonly CoopRules coopRules;
         private CoopLedger coopLedger;
         private bool coopLoaded;
 
@@ -33,8 +33,8 @@ namespace Hexrota.UnityClient
                 if (coopLoaded) return coopLedger;
                 coopLoaded = true;
                 CoopError = null;
-                if (coopConfig == null) { CoopError = "missing_coop_config"; return null; }
-                try { coopLedger = new CoopLedger(coopConfig, profileStorage); }
+                if (coopRules == null) { CoopError = "missing_coop_rules"; return null; }
+                try { coopLedger = new CoopLedger(coopRules, profileStorage); }
                 catch (ProfileStorageException error) { CoopError = error.Code; }
                 return coopLedger;
             }
@@ -52,8 +52,8 @@ namespace Hexrota.UnityClient
             return new CoopStatus {
                 Usable = true, AreaId = ledger.AreaId, AreaComplete = ledger.IsAreaComplete,
                 Level = ledger.Level, UpgradeCount = ledger.UpgradeCount, Chickens = ledger.Chickens, Eggs = eggs,
-                NextCost = next?.cost ?? 0, NextChickens = next?.chickens ?? 0,
-                Ready = next != null && eggs >= next.Value.cost
+                NextCost = next != null ? next.Cost : 0, NextChickens = next != null ? next.Chickens : 0,
+                Ready = next != null && eggs >= next.Cost
             };
         }
 

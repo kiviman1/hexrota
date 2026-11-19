@@ -18,7 +18,7 @@ namespace Hexrota.UnityClientTests
         private Func<UnityGameSession> original;
         private ClientGameData data;
         private MemoryProfileStorage storage;
-        private CoopConfig config;
+        private CoopRules config;
         private FirstPlayableController game;
 
         // One won chapter = one egg; the test coop's first upgrade costs exactly that.
@@ -43,7 +43,6 @@ namespace Hexrota.UnityClientTests
         {
             if (original != null) FirstPlayableController.SessionFactory = original;
             if (game != null) game.ReturnToMenu();
-            if (config != null) UnityEngine.Object.Destroy(config);
             yield return null;
         }
 

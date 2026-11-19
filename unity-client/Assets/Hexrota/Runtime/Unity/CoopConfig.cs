@@ -1,9 +1,12 @@
 using System;
+using System.Linq;
 using UnityEngine;
 
 namespace Hexrota.UnityClient
 {
-    // Coop progression data. Costs and arrivals live only in the asset, never in code.
+    // Unity-side source of the coop values. It only carries data: the rules live in the plain C#
+    // CoopRules/CoopLedger (Runtime), which the .NET runtime host compiles without UnityEngine.
+    // Costs and arrivals are edited here, never in code.
     [CreateAssetMenu(menuName = "Hexrota/Coop Config")]
     public sealed class CoopConfig : ScriptableObject
     {
@@ -27,16 +30,19 @@ namespace Hexrota.UnityClient
 
         public Area[] areas;
 
-        public Area First => areas != null && areas.Length > 0 ? areas[0] : null;
-
-        public Area Find(string id)
+        public CoopRules ToRules()
         {
-            if (areas == null) return null;
-            foreach (var area in areas)
-                if (area != null && area.id == id) return area;
-            return null;
+            return new CoopRules((areas ?? new Area[0]).Select(area => new CoopRules.Area(area.id,
+                (area.upgrades ?? new Upgrade[0]).Select(u => new CoopRules.Upgrade(u.cost, u.chickens)))));
         }
 
         public static CoopConfig Load() => Resources.Load<CoopConfig>(ResourcePath);
+
+        /// <summary>Rules from the shipped asset, or null (coop disabled) when the asset is missing.</summary>
+        public static CoopRules LoadRules()
+        {
+            var config = Load();
+            return config != null ? config.ToRules() : null;
+        }
     }
 }

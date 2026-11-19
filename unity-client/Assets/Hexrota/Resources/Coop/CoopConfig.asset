@@ -15,13 +15,13 @@ MonoBehaviour:
   areas:
   - id: farm-1
     upgrades:
-    - cost: 6
+    - cost: 1
       chickens: 1
-    - cost: 8
+    - cost: 2
       chickens: 1
-    - cost: 10
+    - cost: 2
       chickens: 1
-    - cost: 12
+    - cost: 2
       chickens: 1
-    - cost: 14
+    - cost: 3
       chickens: 2

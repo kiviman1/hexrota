@@ -14,33 +14,33 @@ namespace Hexrota.UnityClient
         public const string StorageKey = "hexrota-coop-v1";
         private const long SchemaVersion = 1;
 
-        private readonly CoopConfig config;
+        private readonly CoopRules rules;
         private readonly IProfileStorage storage;
-        private CoopConfig.Area area;
+        private CoopRules.Area area;
 
-        public CoopLedger(CoopConfig config, IProfileStorage storage)
+        public CoopLedger(CoopRules rules, IProfileStorage storage)
         {
-            if (config == null || config.First == null) throw new ArgumentException("Coop config has no area", "config");
-            this.config = config;
+            if (rules == null) throw new ArgumentNullException("rules");
+            this.rules = rules;
             this.storage = storage ?? throw new ArgumentNullException("storage");
             Load(storage.Read(StorageKey));
         }
 
-        public string AreaId => area.id;
+        public string AreaId => area.Id;
         public int Level { get; private set; }
         public int SpentEggs { get; private set; }
-        public int UpgradeCount => area.upgrades.Length;
-        public bool IsAreaComplete => Level >= area.upgrades.Length;
+        public int UpgradeCount => area.Upgrades.Count;
+        public bool IsAreaComplete => Level >= area.Upgrades.Count;
 
         /// <summary>The upgrade that would build level <see cref="Level"/> + 1, or null when the area is complete.</summary>
-        public CoopConfig.Upgrade? NextUpgrade => IsAreaComplete ? (CoopConfig.Upgrade?)null : area.upgrades[Level];
+        public CoopRules.Upgrade NextUpgrade => IsAreaComplete ? null : area.Upgrades[Level];
 
         public int Chickens
         {
             get
             {
                 int total = 0;
-                for (int i = 0; i < Level; i++) total += area.upgrades[i].chickens;
+                for (int i = 0; i < Level; i++) total += area.Upgrades[i].Chickens;
                 return total;
             }
         }
@@ -51,11 +51,11 @@ namespace Hexrota.UnityClient
         {
             var next = NextUpgrade;
             if (next == null) { error = "area_complete"; return false; }
-            int cost = next.Value.cost;
+            int cost = next.Cost;
             if (Available(earnedEggs) < cost) { error = "insufficient_eggs"; return false; }
             try
             {
-                storage.Write(StorageKey, Record(area.id, Level + 1, SpentEggs + cost));
+                storage.Write(StorageKey, Record(area.Id, Level + 1, SpentEggs + cost));
             }
             catch (ProfileStorageException storageError)
             {
@@ -79,7 +79,7 @@ namespace Hexrota.UnityClient
         {
             if (raw == null)
             {
-                area = config.First;
+                area = rules.First;
                 Level = SpentEggs = 0;
                 return;
             }
@@ -87,9 +87,9 @@ namespace Hexrota.UnityClient
             if (!W.IsMap(raw) || !W.Equal(W.Get(raw, "schemaVersion"), SchemaVersion) ||
                 !W.IsSafeInteger(W.Get(raw, "level")) || !W.IsSafeInteger(W.Get(raw, "spentEggs")))
                 throw new ProfileStorageException("invalid_coop");
-            var found = config.Find(W.Get(raw, "areaId") as string);
+            var found = rules.Find(W.Get(raw, "areaId") as string);
             long level = W.Integer(W.Get(raw, "level")), spent = W.Integer(W.Get(raw, "spentEggs"));
-            if (found == null || level < 0 || level > found.upgrades.Length || spent < 0 || spent > int.MaxValue)
+            if (found == null || level < 0 || level > found.Upgrades.Count || spent < 0 || spent > int.MaxValue)
                 throw new ProfileStorageException("invalid_coop");
             area = found;
             Level = (int)level;

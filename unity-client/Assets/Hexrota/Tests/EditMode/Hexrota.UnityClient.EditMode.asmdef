@@ -3,7 +3,8 @@
   "references": [
     "Hexrota.Core",
     "Hexrota.UnityClient.Runtime",
-    "Hexrota.UnityClient.Presentation"
+    "Hexrota.UnityClient.Presentation",
+    "Hexrota.UnityClient.Runtime.Unity"
   ],
   "includePlatforms": [
     "Editor"

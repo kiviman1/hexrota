@@ -247,21 +247,21 @@ namespace Hexrota.UnityClient
             }
         }
         public UnityGameSession(ClientGameData data, IProfileStorage storage, IUtcClock clock, uint selectionSeed = 4303818,
-            Func<long> playtestMilliseconds = null, CoopConfig coop = null)
+            Func<long> playtestMilliseconds = null, CoopRules coop = null)
         {
             if (data == null) throw new ArgumentNullException("data");
             this.data = data;
             profileStorage = storage;
-            coopConfig = coop != null ? coop : CoopConfig.Load();
+            coopRules = coop; // the Unity layer supplies these from the CoopConfig asset
             controller = new GameSessionController(data.Catalog, data.Levels, data.TutorialCount,
                 new ProfileRepository(storage), data.LifeConfig, clock, selectionSeed,
                 "hexrota-unity-test", data.RewardRules, economyConfig: data.EconomyConfig,
                 rescueReceiptVerifier: new Hexrota.Rescue.DevelopmentRescueReceiptVerifier(), onboardingInFirstChapter: true);
             StartPlaytestObservation(storage, clock, playtestMilliseconds);
         }
-        public static UnityGameSession CreateDefault()
+        public static UnityGameSession CreateDefault(CoopRules coop = null)
         {
-            return new UnityGameSession(ClientGameData.FromResources(), PlatformProfileStorage.Create(), new SystemUtcClock());
+            return new UnityGameSession(ClientGameData.FromResources(), PlatformProfileStorage.Create(), new SystemUtcClock(), coop: coop);
         }
         private SessionCommand Command()
         {

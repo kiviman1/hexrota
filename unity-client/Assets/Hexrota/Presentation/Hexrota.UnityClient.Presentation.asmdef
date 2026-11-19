@@ -1,7 +1,7 @@
 {
   "name": "Hexrota.UnityClient.Presentation",
   "rootNamespace": "Hexrota.UnityClient.Presentation",
-  "references": ["Hexrota.Core", "Hexrota.UnityClient.Runtime", "Unity.ugui"],
+  "references": ["Hexrota.Core", "Hexrota.UnityClient.Runtime", "Hexrota.UnityClient.Runtime.Unity", "Unity.ugui"],
   "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,

@@ -20,20 +20,15 @@ namespace Hexrota.UnityClientTests
         private Func<UnityGameSession> original;
         private ClientGameData data;
         private MemoryProfileStorage storage;
-        private CoopConfig config;
+        private CoopRules config;
         private FirstPlayableController game;
         private int[] last;
 
-        internal static CoopConfig TestConfig(params int[] costs)
-        {
-            var config = ScriptableObject.CreateInstance<CoopConfig>();
-            config.areas = new[] { new CoopConfig.Area { id = "test-farm",
-                upgrades = costs.Select(cost => new CoopConfig.Upgrade { cost = cost, chickens = 1 }).ToArray() } };
-            return config;
-        }
+        internal static CoopRules TestConfig(params int[] costs) =>
+            new CoopRules(new[] { new CoopRules.Area("test-farm", costs.Select(cost => new CoopRules.Upgrade(cost, 1))) });
 
         // Plays the first chapter up to its last move (or to the win) outside the scene.
-        internal static int[] PrepareFirstChapter(ClientGameData data, MemoryProfileStorage storage, CoopConfig config, bool win)
+        internal static int[] PrepareFirstChapter(ClientGameData data, MemoryProfileStorage storage, CoopRules config, bool win)
         {
             var preparer = new UnityGameSession(data, storage, new SystemUtcClock(), coop: config);
             Assert.That(preparer.EnterLevelOne(), Is.True, preparer.LastError);
@@ -70,7 +65,6 @@ namespace Hexrota.UnityClientTests
         {
             if (original != null) FirstPlayableController.SessionFactory = original;
             if (game != null) game.ReturnToMenu();
-            if (config != null) UnityEngine.Object.Destroy(config);
             yield return null;
         }
 

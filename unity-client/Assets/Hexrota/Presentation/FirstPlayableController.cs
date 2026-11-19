@@ -16,7 +16,7 @@ namespace Hexrota.UnityClient.Presentation
         [SerializeField] private CastleHomeView castleHome;
         [SerializeField] private RectTransform boardTrayPrefab;
         internal RectTransform SafeArea => safe;
-        public static Func<UnityGameSession> SessionFactory = UnityGameSession.CreateDefault;
+        public static Func<UnityGameSession> SessionFactory = () => UnityGameSession.CreateDefault(CoopConfig.LoadRules());
         public UnityGameSession Session { get; private set; }
         public HexBoardView Board { get; private set; }
         public string CurrentScreen { get; private set; }
