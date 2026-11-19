@@ -27,3 +27,6 @@ unity-client/HostTests/obj/
 
 # Source art for the home background (imported copies live in unity-client/Assets/Hexrota/Art/HomeBackground)
 art/HomeBackground/
+
+# Tripo source models for the 3D coop (processed by art/coop-3d/process_tripo.py)
+art/coop-3d/source/

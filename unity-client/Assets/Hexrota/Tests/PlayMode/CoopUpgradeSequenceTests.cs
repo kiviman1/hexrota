@@ -80,17 +80,22 @@ namespace Hexrota.UnityClientTests
             Assert.That(EggCounter, Is.EqualTo("Hazır!"), "The bar keeps its count until the eggs leave it.");
 
             bool sawFlight = false, sawBanner = false;
+            float squash = 0;
             float deadline = Time.unscaledTime + 6;
             while (Sequence.IsPlaying && Time.unscaledTime < deadline)
             {
                 sawFlight |= Flight.ActiveIconCount > 0;
                 sawBanner |= Sequence.Banner == "Seviye 1!";
+                squash = Mathf.Max(squash, Mathf.Abs(Coop.Model.Model.localScale.y - 1));
                 Assert.That(play.IsShining, Is.False, "No other attention animation during the upgrade.");
                 Assert.That(Coop.IsPulsing, Is.False);
                 yield return null;
             }
             Assert.That(Sequence.IsPlaying, Is.False);
             Assert.That(sawFlight && sawBanner, Is.True);
+            Assert.That(squash, Is.GreaterThan(.01f), "The upgrade squash plays on the 3D coop.");
+            Assert.That(Coop.Model.Model.localScale, Is.EqualTo(Vector3.one), "It settles back.");
+            Assert.That(Coop.Model.ShownName, Is.EqualTo("CP_L1"));
             Assert.That(Flight.ActiveIconCount, Is.Zero);
             Assert.That(EggCounter, Is.EqualTo("0/2"), "The bar restarts toward the next cost.");
             Assert.That(Sequence.VisibleResidents, Is.EqualTo(1));

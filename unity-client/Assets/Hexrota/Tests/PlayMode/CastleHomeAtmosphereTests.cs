@@ -122,8 +122,39 @@ namespace Hexrota.UnityClientTests
                 Assert.That(barAll.xMin, Is.GreaterThanOrEqualTo(ArtRect(30, 1670, 420, 1990).xMax), "Bar stays right of the stone path.");
                 Assert.That(barAll.Overlaps(play), Is.False, "Bar does not cover Play.");
                 Assert.That(barAll.xMax, Is.LessThanOrEqualTo(display.xMax), "Bar stays on screen.");
+
+                // Every 3D coop level stands on the plot, clear of Play and the bar.
+                var model = home.GetComponentInChildren<CoopModelView>();
+                for (int level = 0; level < model.LevelCount; level++)
+                {
+                    model.Show(level);
+                    model.Refresh();
+                    Rect coop3D = ModelRect(screen, model);
+                    string name = "CP_L" + level + " at " + width + "x" + height;
+                    Assert.That(coop3D.xMin, Is.GreaterThanOrEqualTo(plot.xMin), name + " fits the plot (left).");
+                    Assert.That(coop3D.xMax, Is.LessThanOrEqualTo(plot.xMax), name + " fits the plot (right).");
+                    Assert.That(coop3D.yMin, Is.GreaterThanOrEqualTo(plot.yMin), name + " stands on the plot.");
+                    Assert.That(coop3D.Overlaps(play), Is.False, name + " clears Play.");
+                    Assert.That(coop3D.Overlaps(barAll), Is.False, name + " clears the bar.");
+                }
             }
             finally { Object.Destroy(canvas.gameObject); }
+        }
+
+        // The shown model's bounds projected through the stage camera onto the coop's RawImage.
+        private static Rect ModelRect(RectTransform screen, CoopModelView model)
+        {
+            Rect view = ScreenRect(screen, (RectTransform)model.transform);
+            var b = model.ShownRenderer.bounds;
+            float xMin = float.MaxValue, yMin = float.MaxValue, xMax = float.MinValue, yMax = float.MinValue;
+            for (int i = 0; i < 8; i++)
+            {
+                var corner = new Vector3((i & 1) == 0 ? b.min.x : b.max.x, (i & 2) == 0 ? b.min.y : b.max.y, (i & 4) == 0 ? b.min.z : b.max.z);
+                var v = model.StageCamera.WorldToViewportPoint(corner);
+                float x = Mathf.Lerp(view.xMin, view.xMax, v.x), y = Mathf.Lerp(view.yMin, view.yMax, v.y);
+                xMin = Mathf.Min(xMin, x); xMax = Mathf.Max(xMax, x); yMin = Mathf.Min(yMin, y); yMax = Mathf.Max(yMax, y);
+            }
+            return Rect.MinMaxRect(xMin, yMin, xMax, yMax);
         }
 
         private static Rect ScreenRect(RectTransform screen, RectTransform rect)

@@ -17,14 +17,12 @@ namespace Hexrota.UnityClient.Presentation
         [SerializeField] private RewardFlight rewardFlight;
 
         [Header("Coop")]
-        [Tooltip("Placeholder coop on the plot; its scale grows with the coop level.")]
+        [Tooltip("The coop's UI target on the plot: eggs fly here and the upgrade squash scales it (the 3D model copies it).")]
         [SerializeField] private RectTransform coop;
-        [Tooltip("The coop drawing inside the placeholder; it beats while an upgrade is ready.")]
+        [Tooltip("Beats while an upgrade is ready (the 3D model copies it); holds the ready badge.")]
         [SerializeField] private RectTransform coopVisual;
-        [Tooltip("The placeholder coop drawing; shown from level 1.")]
-        [SerializeField] private GameObject coopDrawing;
-        [Tooltip("What the plot shows before the coop is built (level 0): a few fence stakes.")]
-        [SerializeField] private RectTransform emptyPlot;
+        [Tooltip("The 3D coop: CP_L0 foundation at level 0, CP_L1..CP_L4 for the levels.")]
+        [SerializeField] private CoopModelView model;
         [Tooltip("Tapping the plot or the coop opens the upgrade panel.")]
         [SerializeField] private Button coopTapArea;
         [SerializeField] private GameObject readyBadge;
@@ -53,7 +51,6 @@ namespace Hexrota.UnityClient.Presentation
         private UnityGameSession.CoopStatus status;
         private bool reducedMotion, wasFlying, bound;
         private float shownFill, fillFrom, fillTo, fillTime, pulseTime;
-        private Vector3 coopRestScale = Vector3.one;
 
         /// <summary>Raised when the player taps the coop.</summary>
         internal event Action Opened;
@@ -66,9 +63,10 @@ namespace Hexrota.UnityClient.Presentation
         public Button Button => coopTapArea;
         public RectTransform CoopVisual => coopVisual;
         public RectTransform ProgressBar => bar;
-        /// <summary>True once the coop is built (level 1+); level 0 shows the empty plot.</summary>
-        public bool CoopBuilt => coopDrawing != null && coopDrawing.activeSelf;
-        public bool EmptyPlotShown => emptyPlot != null && emptyPlot.gameObject.activeSelf;
+        /// <summary>True once the coop is built (level 1+); level 0 shows the foundation model.</summary>
+        public bool CoopBuilt => model != null && model.Level > 0;
+        public bool EmptyPlotShown => model != null && model.Level == 0;
+        public CoopModelView Model => model;
         internal Image BarEgg => barEgg;
         internal Text BarLabel => barLabel;
         public bool PanelOpen => panel != null && panel.IsOpen;
@@ -81,7 +79,6 @@ namespace Hexrota.UnityClient.Presentation
             controller = owner;
             if (bound) return;
             bound = true;
-            if (coop != null) coopRestScale = coop.localScale;
             barLabel.color = ui.label;
             // Kontur rule: the label sits on the green fill, so its outline is the fill's deep tone.
             barLabelOutline.effectColor = ui.ctaDeep;
@@ -127,16 +124,11 @@ namespace Hexrota.UnityClient.Presentation
             return status.AreaComplete ? completeLabel : Progress(status, eggs);
         }
 
-        /// <summary>Updates only the placeholder coop for the given level: an empty plot at level 0,
-        /// the coop from level 1, growing with each upgrade.</summary>
+        /// <summary>Shows the 3D coop for the given level: the foundation (CP_L0) at level 0, then CP_L1..CP_L4.</summary>
         internal void ShowLevel(UnityGameSession.CoopStatus next)
         {
-            if (next == null) return;
-            bool built = next.Usable && next.Level > 0;
-            if (coopDrawing != null) coopDrawing.SetActive(built);
-            if (emptyPlot != null) emptyPlot.gameObject.SetActive(!built);
-            if (coop != null && next.Usable && next.UpgradeCount > 0)
-                coop.localScale = coopRestScale * Mathf.Lerp(ui.coopScaleEmpty, 1, (float)next.Level / next.UpgradeCount);
+            if (next == null || model == null) return;
+            model.Show(next.Usable ? next.Level : 0);
         }
 
         private static float Fraction(UnityGameSession.CoopStatus s, int eggs)
@@ -194,7 +186,6 @@ namespace Hexrota.UnityClient.Presentation
         {
             var size = new Vector3(scale, scale, 1);
             if (coopVisual != null) coopVisual.localScale = size;
-            if (emptyPlot != null) emptyPlot.localScale = size;
             if (bar != null) bar.localScale = size;
         }
 

@@ -101,16 +101,18 @@ namespace Hexrota.UnityClientTests
             Assert.That(Coop.ReadyBadgeShown, Is.True);
             Assert.That(Coop.ShownFill, Is.EqualTo(1).Within(.001f));
             Assert.That(Coop.ReadyBadgeShown && Coop.CoopVisual.GetComponentInChildren<Image>(false) != null, Is.True);
-            float coopPeak = 1, barPeak = 1;
+            float coopPeak = 1, barPeak = 1, modelPeak = 1;
             float beat = Time.unscaledTime + 1.5f;
             while (Time.unscaledTime < beat)
             {
                 coopPeak = Mathf.Max(coopPeak, Coop.CoopVisual.localScale.x);
                 barPeak = Mathf.Max(barPeak, Coop.ProgressBar.localScale.x);
+                modelPeak = Mathf.Max(modelPeak, Coop.Model.Model.localScale.x);
                 yield return null;
             }
             Assert.That(coopPeak, Is.GreaterThan(1.01f), "The coop itself beats.");
             Assert.That(barPeak, Is.GreaterThan(1.01f), "The bar beats with it.");
+            Assert.That(modelPeak, Is.GreaterThan(1.01f), "The 3D coop beats too.");
 
             // Longer than a shine interval: the play button must not shine while the coop pulses.
             deadline = Time.unscaledTime + 4.5f;
@@ -189,8 +191,10 @@ namespace Hexrota.UnityClientTests
             Assert.That(Coop.Button.transform.IsChildOf(plot), Is.True, "The tap target is the plot with its coop.");
             Assert.That(game.GetComponentsInChildren<Button>(true).Any(b => b.name == "CoopButton"), Is.False,
                 "There is no separate coop button.");
-            Assert.That(Coop.CoopBuilt, Is.False, "Level 0: the plot is empty.");
-            Assert.That(Coop.EmptyPlotShown, Is.True, "Level 0 shows fence stakes.");
+            Assert.That(Coop.CoopBuilt, Is.False, "Level 0: only the foundation.");
+            Assert.That(Coop.EmptyPlotShown, Is.True);
+            Assert.That(Coop.Model.ShownName, Is.EqualTo("CP_L0"), "Level 0 shows the CP_L0 foundation.");
+            Assert.That(Coop.Model.ShownRenderer.sharedMaterial.shader.name, Is.EqualTo("Hexrota/Stylized Lit"));
             Coop.Button.onClick.Invoke();
             var panel = Coop.Panel;
             yield return null;
@@ -206,8 +210,38 @@ namespace Hexrota.UnityClientTests
             Assert.That(panel.IsOpen, Is.False);
             Assert.That(Coop.ProgressText, Is.EqualTo("0/2"));
             Assert.That(Coop.CoopBuilt, Is.True, "The coop appears from level 1.");
+            Assert.That(Coop.Model.ShownName, Is.EqualTo("CP_L1"), "Level 1 shows CP_L1.");
             Assert.That(Coop.EmptyPlotShown, Is.False);
             Assert.That(new UnityGameSession(data, storage, new SystemUtcClock(), coop: config).ReadCoop().Level, Is.EqualTo(1));
+        }
+
+        [UnityTest]
+        public IEnumerator TheCoopModelRendersOnThePlotWithItsOwnCamera()
+        {
+            yield return Open(false, "reduce");
+            game.ReturnToMenu();
+            yield return null;
+            var model = Coop.Model;
+            var root = (RectTransform)model.GetComponentInParent<Canvas>().rootCanvas.transform;
+            var view = (RectTransform)model.transform;
+            var layers = game.GetComponentInChildren<HomeBackgroundLayers>();
+            Assert.That(view.IsChildOf(layers.CoopPlot), Is.True, "Anchored to Background/ArtFrame/CoopPlot.");
+            Assert.That(view.GetComponent<RawImage>().texture, Is.SameAs(model.Texture), "Rendered into its own texture.");
+            Assert.That(model.StageCamera.transform.eulerAngles.x, Is.EqualTo(30).Within(.5f), "Looks down like the background.");
+            var probe = new RenderTextureDescriptor(model.Texture.width, model.Texture.height, RenderTextureFormat.ARGB32, 24) { msaaSamples = 4 };
+            Assert.That(model.Texture.antiAliasing, Is.EqualTo(Mathf.Max(1, Mathf.Min(4, SystemInfo.GetRenderTextureSupportedMSAASampleCount(probe)))),
+                "4x MSAA where the device supports it.");
+            Assert.That(model.Look, Is.Not.Null, "Lighting comes from the CoopLook asset.");
+            Assert.That(model.ContactShadow.isVisible || model.ContactShadow.enabled, Is.True, "A blob shadow grounds the coop.");
+            foreach (var other in Camera.allCameras.Where(c => c != model.StageCamera))
+                Assert.That(other.cullingMask & (1 << CoopModelView.StageLayer), Is.Zero, other.name + " must not draw the stage.");
+
+            // Fit against the plot, Play and the bar at phone sizes: CastleHomeAtmosphereTests.
+            for (int level = 0; level < model.LevelCount; level++)
+            {
+                model.Show(level);
+                Assert.That(model.ShownName, Is.EqualTo("CP_L" + level));
+            }
         }
 
         [UnityTest]

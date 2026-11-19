@@ -9,7 +9,7 @@ namespace Hexrota.UnityClientTests
     public sealed class GoldenEggTests
     {
         // The shipped first-area costs, built as plain rules (the session takes CoopRules, not the asset).
-        internal static readonly CoopRules Rules = CoopLedgerTests.Rules("farm-1", new[] { 1, 2, 2, 2, 3 }, new[] { 1, 1, 1, 1, 2 });
+        internal static readonly CoopRules Rules = CoopLedgerTests.Rules("farm-1", new[] { 1, 2, 3, 4 }, new[] { 1, 1, 2, 2 });
 
         // Wins the first chapter through the real session so the economy ledger stays valid.
         internal static UnityGameSession WinFirstChapter(ClientGameData data, MemoryProfileStorage store)

@@ -20,17 +20,12 @@ namespace Hexrota.UnityClient.Editor
         private const string EggSprite = "Assets/Hexrota/Art/CastleHome/GoldenEgg.png";
         private static readonly string[] Owned = { "CoopTapArea", "CoopProgress", "CoopButton" };
         public const string PlotCoop = "PlotCoop";
-        public const string CoopDrawing = "CoopDrawing";
-        public const string EmptyPlot = "EmptyPlot";
+        public const string Coop3D = "Coop3D";
+        public const string GroundPoint = "CoopGround";
         public const string TapArea = "CoopTapArea";
-        private const string StakeSprite = "Assets/Hexrota/Art/CastleHome/FenceStake.png";
         private const string DisplayFont = "Assets/Hexrota/Art/CastleHomeType/LilitaOne-Regular.ttf";
-        // Fence stakes on the empty plot: anchor in the plot (x, y = base) and height in points.
-        private static readonly Vector3[] Stakes =
-        {
-            new Vector3(.3f, .62f, 40), new Vector3(.7f, .62f, 40), new Vector3(.24f, .22f, 52), new Vector3(.76f, .22f, 52),
-        };
-        private const string CoopSprite = "Assets/Hexrota/Art/CastleHome/Coop.png";
+        // Where the coop's ground centre sits on the plot (fraction of the plot rect).
+        private static readonly Vector2 Ground = new Vector2(.5f, .40f);
 
         [MenuItem("Hexrota/Home/Rebuild Coop Controls")]
         public static void Rebuild()
@@ -40,9 +35,8 @@ namespace Hexrota.UnityClient.Editor
             var rounded = Load<Sprite>(Theme + "HomeRounded.png");
             var hex = Load<Sprite>(Theme + "HomeHex.png");
             var egg = Load<Sprite>(EggSprite);
-            var coopSprite = Load<Sprite>(CoopSprite);
-            var stakeSprite = Load<Sprite>(StakeSprite);
             var display = Load<Font>(DisplayFont);
+            var models = CoopModelAssets.Prepare();
             var root = PrefabUtility.LoadPrefabContents(Prefab);
             try
             {
@@ -61,35 +55,46 @@ namespace Hexrota.UnityClient.Editor
                     var existing = layout.Find(name);
                     if (existing != null) UnityEngine.Object.DestroyImmediate(existing.gameObject);
                 }
-                foreach (var name in new[] { PlotCoop, EmptyPlot, TapArea })
+                foreach (var name in new[] { PlotCoop, TapArea, Coop3D, GroundPoint, "EmptyPlot" })
                 {
                     var old = plot.Find(name);
                     if (old != null) UnityEngine.Object.DestroyImmediate(old.gameObject);
                 }
 
-                // Placeholder coop standing on the plot (until the 3D coop). It is part of the background,
-                // so every UI control keeps tap priority. The level scale grows it from its base.
-                var coop = NewRect(plot, PlotCoop, new Vector2(.295f, .237f), new Vector2(.705f, 1.126f), Vector2.zero, Vector2.zero);
+                // The 3D coop (CP_L0 foundation .. CP_L4): rendered into this RawImage, which is part of the
+                // background art, so every UI control keeps tap priority and draws on top.
+                var ground = NewRect(plot, GroundPoint, Ground, Ground, Vector2.zero, Vector2.zero);
+                var view3D = NewRect(plot, Coop3D, new Vector2(-.15f, -.2f), new Vector2(1.15f, 2.0f), Vector2.zero, Vector2.zero);
+                var raw = view3D.gameObject.AddComponent<RawImage>();
+                raw.raycastTarget = false;
+                raw.material = models.ViewMaterial;
+
+                // The coop's UI target over the model: eggs fly to it, the upgrade squash scales it from the
+                // ground and the ready pulse scales its visual; the model copies both. Holds the ready badge.
+                var coop = NewRect(plot, PlotCoop, new Vector2(.2f, Ground.y), new Vector2(.8f, 1.35f), Vector2.zero, Vector2.zero);
                 coop.pivot = new Vector2(.5f, 0);
-                coop.SetAsLastSibling();
                 var visual = NewRect(coop, "CoopVisual", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
                 visual.pivot = new Vector2(.5f, 0);
-                var drawing = NewRect(visual, CoopDrawing, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-                Simple(drawing, coopSprite, Color.white);
-                drawing.gameObject.SetActive(false); // level 0: the plot is empty until the first upgrade
 
-                // Level 0: a few fence stakes mark where the coop will be built.
-                var empty = NewRect(plot, EmptyPlot, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-                empty.SetSiblingIndex(coop.GetSiblingIndex());
-                foreach (var stake in Stakes)
+                var model = view3D.gameObject.AddComponent<CoopModelView>();
+                var modelData = new SerializedObject(model);
+                Set(modelData, "look", models.Look);
+                var levels = modelData.FindProperty("levels");
+                var mats = modelData.FindProperty("materials");
+                levels.arraySize = mats.arraySize = models.Levels.Length;
+                for (int i = 0; i < models.Levels.Length; i++)
                 {
-                    var post = NewRect(empty, "Stake", new Vector2(stake.x, stake.y), new Vector2(stake.x, stake.y), Vector2.zero, new Vector2(stake.z * .3f, stake.z));
-                    post.pivot = new Vector2(.5f, 0);
-                    Simple(post, stakeSprite, Color.white);
+                    levels.GetArrayElementAtIndex(i).objectReferenceValue = models.Levels[i];
+                    mats.GetArrayElementAtIndex(i).objectReferenceValue = models.Materials[i];
                 }
+                Set(modelData, "shadowMaterial", models.ShadowMaterial);
+                Set(modelData, "groundPoint", ground);
+                Set(modelData, "scaleSource", coop);
+                Set(modelData, "pulseSource", visual);
+                modelData.ApplyModifiedPropertiesWithoutUndo();
 
-                // Tapping the plot (empty or built) opens the panel. Transparent, above the coop and residents.
-                var tap = NewRect(plot, TapArea, Vector2.zero, new Vector2(1, 1.13f), Vector2.zero, Vector2.zero);
+                // Tapping the plot or the coop opens the panel. Transparent, above the coop and residents.
+                var tap = NewRect(plot, TapArea, Vector2.zero, new Vector2(1, 1.45f), Vector2.zero, Vector2.zero);
                 var tapImage = tap.gameObject.AddComponent<Image>();
                 tapImage.color = Color.clear;
                 var tapButton = tap.gameObject.AddComponent<Button>();
@@ -122,7 +127,7 @@ namespace Hexrota.UnityClient.Editor
                 var data = new SerializedObject(view);
                 Set(data, "ui", ui); Set(data, "motion", motion); Set(data, "attention", attention); Set(data, "rewardFlight", flight);
                 Set(data, "coop", coop); Set(data, "coopVisual", visual); Set(data, "coopTapArea", tapButton);
-                Set(data, "coopDrawing", drawing.gameObject); Set(data, "emptyPlot", empty); Set(data, "barEgg", eggImage);
+                Set(data, "model", model); Set(data, "barEgg", eggImage);
                 Set(data, "readyBadge", badge.gameObject); Set(data, "readyBadgeRim", badgeRim); Set(data, "readyBadgeFace", badgeFace);
                 Set(data, "bar", bar); Set(data, "barFill", fill); Set(data, "barTrack", track); Set(data, "barFillImage", fillImage);
                 Set(data, "barLabel", barLabel); Set(data, "barLabelOutline", barOutline);
