@@ -73,8 +73,7 @@ namespace Hexrota.UnityClient.Presentation
         private void RefreshCounters()
         {
             if (!Session.HasAttempt) return;
-            int stage = Session.ActiveStage;
-            castleHud.ShowStage(stage, Session.TutorialCount, Session.StageName(stage), Session.Level.target, Session.Snapshot);
+            castleHud.ShowStage(Session.Level.target, Session.Snapshot);
         }
 
         private void RenderLessonCard(bool showCopy)

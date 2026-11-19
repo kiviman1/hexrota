@@ -148,7 +148,7 @@ namespace Hexrota.UnityClient.Presentation
         private void UseGoldRescue(UnityGameSession.GoldRescueOffer offer)
         {
             if(CurrentScreen!="result" || offer==null || !ready)return;
-            if(Session.AcceptGoldRescue(offer)) OpenCurrentBoard();
+            if(Session.AcceptGoldRescue(offer)) OpenCurrentBoard(false);
             else DrawLoss();
         }
         private void DrawRescueAd(UnityGameSession.RescueAdOffer offer)
@@ -160,7 +160,7 @@ namespace Hexrota.UnityClient.Presentation
                 "Bu yerel test gerçek reklam göstermez. Yalnız tamamladığında aynı tahtana "+offer.Moves+" hamle eklenir.";
             ShowPhoneSheet(offer.PendingDelivery?"Saklanan reklam ödülün":"TEST reklamı: +"+offer.Moves+" hamle",description,"GELİŞTİRME TESTİ",350);
             SheetButton(offer.PendingDelivery?"Ödülü kullanmayı dene":"TEST reklamını tamamla",22,208,316,48,()=>{
-                if(offer.PendingDelivery?Session.DeliverMobileRescueAd():Session.CompleteMobileRescueAd(id,true)) OpenCurrentBoard();
+                if(offer.PendingDelivery?Session.DeliverMobileRescueAd():Session.CompleteMobileRescueAd(id,true)) OpenCurrentBoard(false);
                 else DrawLoss();
             });
             SheetButton("Vazgeç",22,267,316,46,()=>{if(!offer.PendingDelivery)Session.CompleteMobileRescueAd(id,false);DrawLoss();},SheetStyle.Secondary);

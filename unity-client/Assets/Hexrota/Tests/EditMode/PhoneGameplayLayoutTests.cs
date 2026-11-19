@@ -14,7 +14,7 @@ namespace Hexrota.UnityClientTests
         {
             var numeric = new MobileLayout.GameRegions((float)width/height,false);
             var lesson = new MobileLayout.GameRegions((float)width/height,true);
-            Assert.That(numeric.Header * height / width, Is.EqualTo(132f / 390).Within(.001));
+            Assert.That(numeric.Header * height / width, Is.EqualTo(104f / 390).Within(.001));
             Assert.That(numeric.Board.yMin * height, Is.InRange(0f, 8f));
             Assert.That(lesson.Board.yMin, Is.EqualTo(numeric.Board.yMin));
             Assert.That(numeric.Board.yMax, Is.LessThan(1 - numeric.Header));

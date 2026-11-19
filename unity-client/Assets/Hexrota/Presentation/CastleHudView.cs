@@ -8,13 +8,9 @@ namespace Hexrota.UnityClient.Presentation
     [DisallowMultipleComponent]
     public sealed class CastleHudView : MonoBehaviour
     {
-        [Header("Bölüm")]
-        [SerializeField] private Text stageTag;
-        [SerializeField] private Text levelTitle;
+        [Header("Oyun")]
         [SerializeField] private Text remainingMoves;
         [SerializeField] private Button settings;
-        [SerializeField] private string tutorialFormat = "ÖĞREN {n}";
-        [SerializeField] private string chapterFormat = "BÖLÜM {n}";
 
         [Header("Hedefler")]
         [SerializeField] private Text scoreCount;
@@ -30,8 +26,8 @@ namespace Hexrota.UnityClient.Presentation
         private int scoreTarget;
 
         internal RectTransform ScoreDestination => scoreCount.rectTransform;
-        internal bool IsReady => stageTag != null && levelTitle != null && scoreCount != null &&
-            remainingMoves != null && groundCount != null && scoreProgress != null && groundProgress != null;
+        internal bool IsReady => settings != null && scoreCount != null && remainingMoves != null &&
+            groundCount != null && scoreProgress != null && groundProgress != null;
 
         internal void Bind(FirstPlayableController game)
         {
@@ -44,13 +40,8 @@ namespace Hexrota.UnityClient.Presentation
             groundRestScale = groundGoal.localScale;
         }
 
-        internal void ShowStage(int stage, int tutorialCount, string name, int target, GameSnapshot snapshot)
+        internal void ShowStage(int target, GameSnapshot snapshot)
         {
-            bool tutorial = stage < tutorialCount;
-            int number = tutorial ? stage + 1 : stage - tutorialCount + 1;
-            stageTag.text = (tutorial ? tutorialFormat : chapterFormat)
-                .Replace("{n}", number.ToString("00", CultureInfo.InvariantCulture));
-            levelTitle.text = name;
             ShowMoves(snapshot.movesLeft);
             ShowGround(snapshot.layers);
             scoreTarget = target;

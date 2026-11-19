@@ -39,7 +39,7 @@ namespace Hexrota.UnityClientTests
         [UnityTest] public IEnumerator PauseResumeAndLockedInventoryUseTheCampaignBoard()
         {
             scene.BeginLevelOne();
-            yield return null;
+            yield return ChapterEntryWait.Ready(scene);
             var board=scene.Session.Snapshot;
             scene.Pause();
             Assert.That(Text("ModalTitle"),Is.EqualTo("Rota seni bekler."));
@@ -83,6 +83,7 @@ namespace Hexrota.UnityClientTests
         [UnityTest] public IEnumerator PlaytestToggleAndClearKeepTheAttemptPlayable()
         {
             scene.BeginLevelOne();
+            yield return ChapterEntryWait.Ready(scene);
             scene.OpenMobileSettings();
             Assert.That(scene.Session.PlaytestEnabled,Is.False);
             Button("Oyuncu testi kaydı").onClick.Invoke();

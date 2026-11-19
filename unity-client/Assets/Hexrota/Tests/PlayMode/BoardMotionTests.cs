@@ -29,7 +29,7 @@ namespace Hexrota.UnityClientTests
             yield return SceneManager.LoadSceneAsync("FirstPlayable");
             game = UnityEngine.Object.FindAnyObjectByType<FirstPlayableController>();
             game.BeginJourney();
-            yield return null;
+            yield return ChapterEntryWait.Ready(game);
             world = game.gameObject.scene.GetRootGameObjects().Single(obj => obj.name == "BoardVisuals_PLACEHOLDER").transform;
         }
 

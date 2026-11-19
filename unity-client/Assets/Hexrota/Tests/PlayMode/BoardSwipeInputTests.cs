@@ -36,7 +36,7 @@ namespace Hexrota.UnityClientTests
         {
             Assert.That(game.Session.SetPreferences(motion: reduced ? "reduce" : "full"), Is.True);
             game.BeginJourney();
-            yield return null;
+            yield return ChapterEntryWait.Ready(game);
             board = game.Board;
             int[] pair = game.Session.TutorialPair;
             legalSwap = new Vector2Int(pair[0], pair[1]);

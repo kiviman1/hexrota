@@ -114,13 +114,14 @@ namespace Hexrota.UnityClient.Presentation
             var tray = boardTrayPrefab != null ? boardTrayPrefab :
                 Resources.Load<GameObject>("CastleGame/CastleBoardTray").GetComponent<RectTransform>();
             coopScene = CoopSceneArt.Create(background, boardCamera, tray);
+            CreateChapterEntrance();
         }
 
         public void BeginLevelOne() { if (ready) BeginStage(Session.TutorialCount); }
 
         public void BeginJourney()
         {
-            if (!ready || !HasInterface) return;
+            if (!ready || !HasInterface || IsEnteringStage) return;
             int next = Session.NextStage;
             if (next < 0) { OpenGarden(); return; }
             var stage = Session.GetChapterPreview(next);
@@ -130,7 +131,7 @@ namespace Hexrota.UnityClient.Presentation
 
         public void BeginStage(int index)
         {
-            if (!ready || !HasInterface) return;
+            if (!ready || !HasInterface || IsEnteringStage) return;
             CancelPresentation();
             if (!Session.EnterStage(index)) { ShowCommandFailure(Session.LastError); return; }
             OpenCurrentBoard();
@@ -216,6 +217,7 @@ namespace Hexrota.UnityClient.Presentation
 
         public void Pause()
         {
+            if (ready && HasInterface && IsEnteringStage) FinishInterruptedEntrance();
             if (!ready || !HasInterface || CurrentScreen != "playing") return;
             CancelPresentation(); Session.Suspend(); RefreshCounters();
             if (Session.Status != "playing") { EvaluateOutcome(); return; }
@@ -251,18 +253,35 @@ namespace Hexrota.UnityClient.Presentation
             if (!Session.Retry()) { ShowCommandFailure(Session.LastError); return; }
             OpenCurrentBoard();
         }
-        private void OpenCurrentBoard()
+        private void OpenCurrentBoard(bool animateEntry = true)
+        {
+            if (animateEntry && Session.Status == "playing") StartChapterEntrance();
+            else
+            {
+                CurrentScreen = "playing";
+                PrepareCurrentBoard();
+                EnableCurrentBoard();
+            }
+        }
+
+        private void PrepareCurrentBoard()
         {
             ClearScoreFeedback();
             Session.SetPlaytestActivity(false);
             HideReviewControl();
-            CurrentScreen = "playing"; menu.SetActive(false); gameplay.SetActive(true); modal.SetActive(false);
+            menu.SetActive(false); gameplay.SetActive(true); modal.SetActive(false);
             boardCamera.enabled = true;
             Board.BindIdleHints(Session.IsTutorial ? null : Session.AttemptId, Session.ChooseIdleHint);
-            Board.Build(Session.Level,Session.Snapshot);
+            Board.Build(Session.Level,Session.Snapshot,Session.UsesNineByNineFrame);
             message.text = "";
+            Board.InputEnabled = false;
+            RefreshScene(); RefreshCounters(); UpdateLayout();
+        }
+
+        private void EnableCurrentBoard()
+        {
             Board.InputEnabled = Session.Status == "playing";
-            RefreshScene(); RefreshTutorial(true); RefreshCounters(); UpdateLayout(); EvaluateOutcome();
+            RefreshTutorial(true); EvaluateOutcome();
         }
         public void AcknowledgeTutorial()
         {
@@ -278,6 +297,7 @@ namespace Hexrota.UnityClient.Presentation
         }
         private void ShowMenu()
         {
+            StopChapterEntrance();
             CurrentScreen = "menu"; menu.SetActive(true); gameplay.SetActive(false); modal.SetActive(false);
             Board.InputEnabled = false; boardCamera.enabled = false;
             RefreshScene();
@@ -298,6 +318,7 @@ namespace Hexrota.UnityClient.Presentation
         }
         private void CancelPresentation(bool restoreVisuals = true)
         {
+            StopChapterEntrance();
             ClearScoreFeedback();
             if (Session != null) Session.CancelPresentation();
             if (Board != null) Board.Cancel(!restoreVisuals || Session == null || !Session.HasAttempt ? null : Session.Snapshot);
@@ -327,12 +348,17 @@ namespace Hexrota.UnityClient.Presentation
             if (optionsShade != null) CloseMobileOptions();
             if (phoneAudio != null) phoneAudio.Configure(Session, false);
             if (CurrentScreen == "inventory") CloseInventory();
-            if (CurrentScreen == "playing") Pause();
+            if (CurrentScreen == "playing" || IsEnteringStage) Pause();
             else { CancelPresentation(); Session.Suspend(); }
         }
         private void OnDisable()
         {
             if (!ready) return;
+            if (IsEnteringStage)
+            {
+                prepareOnEnable = !entrancePrepared;
+                CurrentScreen = "paused";
+            }
             Session.SetPlaytestActivity(false);
             if (phoneAudio != null) phoneAudio.Configure(Session, false);
             // Detached world objects and UI children may already be gone. Stop
@@ -344,12 +370,15 @@ namespace Hexrota.UnityClient.Presentation
         private void OnEnable()
         {
             if (!ready || !HasInterface || CurrentScreen != "paused") return;
+            if (prepareOnEnable) { prepareOnEnable = false; PrepareCurrentBoard(); }
             Board.Render(Session.Snapshot); RefreshCounters();
             if (Session.Status != "playing") { EvaluateOutcome(); return; }
             ShowPauseMenu();
         }
         private void OnDestroy()
         {
+            StopChapterEntrance();
+            if (chapterLoading != null) Destroy(chapterLoading.gameObject);
             if (roundedCard != null) Destroy(roundedCard);
             if (cardTexture != null) Destroy(cardTexture);
             ready = false;
@@ -373,7 +402,7 @@ namespace Hexrota.UnityClient.Presentation
                 phoneAudio.Configure(Session, optionsShade == null && CurrentScreen != "paused", true);
             if (ready) TickPhoneLife();
             if (Screen.width != lastScreen.x || Screen.height != lastScreen.y || Screen.safeArea != lastSafe) UpdateLayout();
-            if (Input.GetKeyDown(KeyCode.Escape)) { if (CurrentScreen == "playing") Pause(); else if (CurrentScreen == "paused") Resume(); }
+            if (Input.GetKeyDown(KeyCode.Escape)) { if (CurrentScreen == "playing" || IsEnteringStage) Pause(); else if (CurrentScreen == "paused") Resume(); }
         }
         private void UpdateLayout()
         {
@@ -382,6 +411,7 @@ namespace Hexrota.UnityClient.Presentation
             Rect normalized = MobileLayout.SafeArea(new Rect(0,0,Screen.width,Screen.height),lastSafe);
             safe.anchorMin = normalized.min; safe.anchorMax = normalized.max; safe.offsetMin = safe.offsetMax = Vector2.zero;
             LayoutGameplay(normalized);
+            if (IsEnteringStage && entrancePrepared) SetHudEntrance(hudProgress);
         }
         private void ShowModal(string heading, string copy)
         {

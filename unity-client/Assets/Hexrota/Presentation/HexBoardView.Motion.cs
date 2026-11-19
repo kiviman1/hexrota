@@ -28,6 +28,7 @@ namespace Hexrota.UnityClient.Presentation
         private readonly Dictionary<int, float> columnTop = new Dictionary<int, float>();
         private Cell[] motionCells;
         private int[][] swipeNeighbors;
+        private int[][] columns;
         private Vector3[] matchCenters;
         private Vector3 waveCenter;
         internal Vector2 MatchCenterInViewport => BoardCamera != null
@@ -45,7 +46,9 @@ namespace Hexrota.UnityClient.Presentation
         private void PrepareMotion(LevelConfig level)
         {
             motionCells = level.cells;
-            swipeNeighbors = BoardTopology.For(level).neighbors;
+            var topology = BoardTopology.For(level);
+            swipeNeighbors = topology.neighbors;
+            columns = topology.columns;
             matchCenters = new Vector3[level.cells.Length];
             unvisitedMatch = new bool[level.cells.Length];
             connectedMatch = new int[level.cells.Length];
@@ -372,6 +375,7 @@ namespace Hexrota.UnityClient.Presentation
                     {
                         cleared = true;
                         for (int i = 0; i < grounds.Count; i++) PaintFloor(i, wave.layers[i]);
+                        PaintTerrain(wave.blockerHp, wave.cellOpen, wave.regionOpen);
                     }
                 }
                 if (elapsed >= fallStart)

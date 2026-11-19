@@ -56,6 +56,7 @@ namespace Hexrota.UnityClientTests
             var start = controller.GetComponentsInChildren<Button>().Single(b => b.name == "PlayButton");
             Assert.That(controller.Session.FirstOpening, Is.True);
             start.onClick.Invoke();
+            yield return ChapterEntryWait.Ready(controller);
             var sceneArt = controller.GetComponentsInChildren<RawImage>().Single(i => i.name == "CoopLandscape");
             Assert.That(sceneArt.texture.name, Is.EqualTo("foundation"));
             Assert.That(controller.Session.FirstOpening, Is.False);
@@ -91,6 +92,7 @@ namespace Hexrota.UnityClientTests
                             Assert.That(controller.Session.FirstOpening, Is.False, "A committed turn survives scene reload.");
                             start = controller.GetComponentsInChildren<Button>().Single(b => b.name == "PlayButton");
                             start.onClick.Invoke();
+                            yield return ChapterEntryWait.Ready(controller);
                             sceneArt = controller.GetComponentsInChildren<RawImage>().Single(i => i.name == "CoopLandscape");
                             Assert.That(text("CoachHeading"), Is.EqualTo("BU HAMLEDE"));
                             Assert.That(text("LessonCounter"), Is.EqualTo("Tahta 1/3"));
@@ -117,6 +119,7 @@ namespace Hexrota.UnityClientTests
                     var begin = controller.GetComponentsInChildren<Button>().Single(b => b.name == "Başla");
                     begin.onClick.Invoke();
                 }
+                yield return ChapterEntryWait.Ready(controller);
                 Assert.That(controller.Session.ActiveStage, Is.EqualTo(stage + 1));
             }
             Assert.That(controller.Session.Level.id.ToString(), Is.EqualTo("1"));

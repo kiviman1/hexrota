@@ -55,7 +55,7 @@ namespace Hexrota.UnityClientTests
         {
             Assert.That(view.Session.HasAttempt, Is.False);
             view.BeginLevelOne();
-            yield return null;
+            yield return ChapterEntryWait.Ready(view);
             Assert.That(view.Session.HasAttempt, Is.True, view.Session.LastError);
             Assert.That(view.Board.InputEnabled, Is.True);
             var pair = new HexMatch(view.Session.Level, view.Session.Snapshot).LegalMoves()[0];
@@ -82,7 +82,7 @@ namespace Hexrota.UnityClientTests
         [UnityTest] public IEnumerator RejectedDragReturnsFromTheFingerWithoutConsumingAMove()
         {
             view.BeginLevelOne();
-            yield return null;
+            yield return ChapterEntryWait.Ready(view);
             var before = view.Session.Snapshot;
             var model = new HexMatch(view.Session.Level, before);
             int from = -1, to = -1;
@@ -120,7 +120,8 @@ namespace Hexrota.UnityClientTests
 
         [UnityTest] public IEnumerator BackgroundPauseAndRestartCancelDisposableAnimation()
         {
-            view.BeginLevelOne(); yield return null;
+            view.BeginLevelOne();
+            yield return ChapterEntryWait.Ready(view);
             var pair = new HexMatch(view.Session.Level, view.Session.Snapshot).LegalMoves()[0];
             view.RequestSwap(pair[0], pair[1]);
             Assert.That(view.Board.IsAnimating, Is.True);
@@ -135,7 +136,8 @@ namespace Hexrota.UnityClientTests
             Assert.That(view.Board.InputEnabled, Is.False, "Backgrounded board stays behind pause UI.");
             view.OnWebVisibilityChanged("visible");
             view.Resume();
-            view.Restart(); yield return null;
+            view.Restart();
+            yield return ChapterEntryWait.Ready(view);
             Assert.That(view.Session.Snapshot.turn, Is.Zero);
             Assert.That(view.Session.IsPresenting, Is.False);
             Assert.That(view.Board.IsAnimating, Is.False);
@@ -147,7 +149,7 @@ namespace Hexrota.UnityClientTests
         [UnityTest] public IEnumerator AllLevelOneCellsPickThroughTheCanvasAndTapsAndDragCommitRealTurns()
         {
             view.BeginLevelOne();
-            yield return null;
+            yield return ChapterEntryWait.Ready(view);
             Canvas.ForceUpdateCanvases();
             var events=EventSystem.current;
             var module=events.GetComponent<StandaloneInputModule>();

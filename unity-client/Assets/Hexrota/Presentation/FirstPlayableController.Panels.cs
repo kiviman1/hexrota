@@ -167,7 +167,7 @@ namespace Hexrota.UnityClient.Presentation
             bool fromPause=CurrentScreen=="paused";
             if(Session.IsTutorial){Restart();return;}
             if(!fromPause){CancelPresentation();Session.Suspend();Board.InputEnabled=false;CurrentScreen="paused";}
-            Action cancel=()=>{if(fromPause){DrawPause();return;}OpenCurrentBoard();};
+            Action cancel=()=>{if(fromPause){DrawPause();return;}OpenCurrentBoard(false);};
             int cost=Session.PreviewRestartCharge();
             var life=Session.LifeStatus;
             string text="Bu bölümdeki ilerlemen sıfırlanacak. Yeni bir tahta açılacak. Bu işlem can harcamaz.";

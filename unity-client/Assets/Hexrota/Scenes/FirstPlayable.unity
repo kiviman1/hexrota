@@ -53,6 +53,7 @@ MonoBehaviour:
   castleHudPrefab: {fileID: 100003, guid: dac3934a1f01071a4206ae95368ffd2a, type: 3}
   gameToolsPrefab: {fileID: 100003, guid: 85e4df4b46a65d3367bdddc4742597e3, type: 3}
   scorePacketPrefab: {fileID: 100003, guid: b97007a68d034fa5a88b0e06091f6cb9, type: 3}
+  loadingPrefab: {fileID: 100003, guid: 55eb8ff5b04f4651b10394d13a1727f1, type: 3}
 --- !u!1 &2000
 GameObject:
   m_ObjectHideFlags: 0

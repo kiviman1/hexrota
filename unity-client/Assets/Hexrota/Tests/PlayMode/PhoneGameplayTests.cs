@@ -26,7 +26,7 @@ namespace Hexrota.UnityClientTests
                 yield return SceneManager.LoadSceneAsync("FirstPlayable");
                 var game = Object.FindAnyObjectByType<FirstPlayableController>();
                 game.BeginJourney();
-                yield return null;
+                yield return ChapterEntryWait.Ready(game);
                 var hud = game.GetComponentInChildren<CastleHudView>();
                 var settings = hud.GetComponentsInChildren<Button>().Single();
                 Assert.That(settings.name, Is.EqualTo("Ayarlar"));
@@ -35,7 +35,7 @@ namespace Hexrota.UnityClientTests
                 var headerLabels = hud.GetComponentsInChildren<Text>();
                 Vector2 portraitPoint = ScreenCenter(portrait.rectTransform);
                 Assert.That(ScreenCenter(headerLabels.Single(t => t.name == "Counters").rectTransform).x,
-                    Is.LessThan(portraitPoint.x));
+                    Is.GreaterThan(portraitPoint.x));
                 Assert.That(ScreenCenter(headerLabels.Single(t => t.name == "Moves").rectTransform).x,
                     Is.GreaterThan(portraitPoint.x));
                 Assert.That(portraitPoint.y, Is.GreaterThan(game.Board.BoardCamera.pixelRect.yMax));
@@ -46,11 +46,11 @@ namespace Hexrota.UnityClientTests
                 Assert.That(game.Session.IsTutorial && game.Board.InputEnabled, Is.True);
                 Assert.That(game.GetComponentsInChildren<RawImage>().Single(i => i.name == "Face").texture, Is.Not.Null);
                 game.GetComponentsInChildren<Button>().Single(b => b.name == "Geç").onClick.Invoke();
-                yield return null;
+                yield return ChapterEntryWait.Ready(game);
                 Assert.That(game.CurrentScreen, Is.EqualTo("playing"));
                 Assert.That(game.GetComponentsInChildren<Transform>().Any(t => t.name == "Coach"), Is.False);
                 var labels = game.GetComponentsInChildren<Text>();
-                Assert.That(labels.Single(t => t.name == "LevelTitle").text, Is.EqualTo(game.Session.StageName(game.Session.ActiveStage)));
+                Assert.That(labels.Any(t => t.name == "StageTag" || t.name == "LevelTitle"), Is.False);
                 Assert.That(labels.Single(t => t.name == "Moves").text, Is.EqualTo(game.Session.Snapshot.movesLeft.ToString()));
                 Assert.That(game.GetComponentsInChildren<Button>().Select(b => b.name),
                     Is.EquivalentTo(new[] { "Ayarlar" }));

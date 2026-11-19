@@ -1,0 +1,9 @@
+{
+  "baseline": "a3718217ac2f336658757054aad64f3e120977c8",
+  "scope": "Select authored campaign-flow layouts for new Unity attempts, restore saved identities and apply the existing obstacle-board restrictions on rescue and inventory.",
+  "sha256": {
+    "unity/Application/GameSessionController.Assistance.cs": "dd6e09101997943582c3882cbe9270e47f10a94cbeb84a6ed7f1618b3013ddcd",
+    "unity/Application/GameSessionController.Rescue.cs": "90049a315cb05494c58674160883d740ce6a5d0add3f0fc7ee51dbca4c614701",
+    "unity/Catalog/LevelCatalog.cs": "1c733d464d9dd54351577de20ce75d2e7690885dfb030f82b1a01462384fe7e8"
+  }
+}

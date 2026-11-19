@@ -120,7 +120,7 @@ namespace Hexrota.UnityClient.Presentation
         }
         public void OpenMobileSettings()
         {
-            if (!ready || !HasInterface) return;
+            if (!ready || !HasInterface || IsEnteringStage) return;
             bool inGame = (optionsShade == null ? CurrentScreen : optionsReturn) == "playing";
             OptionsPanel("settings","Ayarlar","KENDİ TEMPOUNU BUL",inGame ? "" : "Biraz ses, biraz sakinlik. Nasıl iyi geliyorsa.",1800,1565);
             if (optionsReturn == "playing")

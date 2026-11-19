@@ -7,7 +7,7 @@ namespace Hexrota.UnityClient.Presentation
     [DisallowMultipleComponent]
     public sealed class CastleBevel : BaseMeshEffect
     {
-        public enum Silhouette { Rounded, Triangle, Arch, CurvedRibbon }
+        public enum Silhouette { Rounded, Triangle, Arch, CurvedRibbon, Hexagon, CutCorners }
 
         [SerializeField] private Silhouette shape;
         [SerializeField, Min(0)] private float radius = 12f;
@@ -45,7 +45,8 @@ namespace Hexrota.UnityClient.Presentation
         {
             int start = mesh.currentVertCount;
             int count = shape == Silhouette.Arch ? 35 : shape == Silhouette.CurvedRibbon ? 34 :
-                shape == Silhouette.Triangle ? 3 : 36;
+                shape == Silhouette.Triangle ? 3 : shape == Silhouette.Hexagon ? 6 :
+                shape == Silhouette.CutCorners ? 8 : 36;
             mesh.AddVert(rect.center, graphic.color * Color.Lerp(low, high, .5f), Vector2.zero);
             for (int i = 0; i < count; i++)
             {
@@ -60,6 +61,21 @@ namespace Hexrota.UnityClient.Presentation
         private Vector2 Point(Rect rect, float corner, int i)
         {
             Vector2 half = rect.size * .5f;
+            if (shape == Silhouette.Hexagon)
+            {
+                float hexAngle = i * Mathf.PI / 3f;
+                return rect.center + Vector2.Scale(half, new Vector2(Mathf.Cos(hexAngle), Mathf.Sin(hexAngle) / .8660254f));
+            }
+            if (shape == Silhouette.CutCorners)
+            {
+                // A short cut alternates with a long edge at each corner.
+                int side = i / 2;
+                float sx = side == 0 || side == 3 ? 1f : -1f;
+                float sy = side < 2 ? 1f : -1f;
+                bool insetX = i % 4 == 1 || i % 4 == 2;
+                return rect.center + new Vector2(sx * (half.x - (insetX ? corner : 0f)),
+                    sy * (half.y - (insetX ? 0f : corner)));
+            }
             if (shape == Silhouette.Arch)
             {
                 float rise = Mathf.Min(rect.height * .70f, half.x);

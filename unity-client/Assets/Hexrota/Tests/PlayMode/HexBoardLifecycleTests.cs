@@ -50,9 +50,10 @@ namespace Hexrota.UnityClientTests
             yield return null;
         }
 
-        private void BeginLevel()
+        private IEnumerator BeginLevel()
         {
             view.BeginLevelOne();
+            yield return ChapterEntryWait.Ready(view);
             Assert.That(view.CurrentScreen, Is.EqualTo("playing"), view.Session.LastError);
             Assert.That(view.Board.InputEnabled, Is.True);
         }
@@ -114,7 +115,7 @@ namespace Hexrota.UnityClientTests
         [UnityTest]
         public IEnumerator LevelOneShowsTintedStonesAndLabelsAndCompletesASwap()
         {
-            BeginLevel();
+            yield return BeginLevel();
             yield return null;
             var world = VisualRoot().transform;
             var snapshot = view.Session.Snapshot;
@@ -145,7 +146,7 @@ namespace Hexrota.UnityClientTests
         [UnityTest]
         public IEnumerator ScorePacketFliesToTheHudAndPauseDiscardsItsVisuals()
         {
-            BeginLevel();
+            yield return BeginLevel();
             var feedback = view.GetComponentsInChildren<Transform>(true).Single(node => node.name == "ScoreFeedback");
             var packet = feedback.Find("ScorePacket");
             StartLegalSwap();
@@ -168,7 +169,7 @@ namespace Hexrota.UnityClientTests
         [UnityTest]
         public IEnumerator PauseDuringSwapPreservesCommittedBoardAndResumeAcceptsAnotherSwap()
         {
-            BeginLevel();
+            yield return BeginLevel();
             int completions = 0;
             view.Board.PresentationCompleted += () => completions++;
             StartLegalSwap();
@@ -194,7 +195,7 @@ namespace Hexrota.UnityClientTests
         [UnityTest]
         public IEnumerator MissingDetachedVisualRootIsSafeDuringControllerTeardown()
         {
-            BeginLevel();
+            yield return BeginLevel();
             StartLegalSwap();
             var session = view.Session;
             var committed = session.Snapshot;
@@ -217,7 +218,7 @@ namespace Hexrota.UnityClientTests
         [UnityTest]
         public IEnumerator SceneUnloadDuringSwapLeavesNoCallbacksOrVisualRootsAndReloadCanSwap()
         {
-            BeginLevel();
+            yield return BeginLevel();
             StartLegalSwap();
             var session = view.Session;
             var oldBoard = view.Board;
@@ -238,7 +239,7 @@ namespace Hexrota.UnityClientTests
             yield return SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
             view = UnityEngine.Object.FindFirstObjectByType<FirstPlayableController>();
             Assert.That(view, Is.Not.Null);
-            BeginLevel();
+            yield return BeginLevel();
             StartLegalSwap();
             yield return FinishSwap();
             Assert.That(completions, Is.Zero, "The old board must not call back into a later scene.");
@@ -248,7 +249,7 @@ namespace Hexrota.UnityClientTests
         [UnityTest]
         public IEnumerator ControllerDisableAndEnablePausesCommittedSwapUntilResume()
         {
-            BeginLevel();
+            yield return BeginLevel();
             StartLegalSwap();
             var committed = view.Session.Snapshot;
             int completions = 0;
@@ -278,7 +279,7 @@ namespace Hexrota.UnityClientTests
         [UnityTest]
         public IEnumerator VisualRootDestroyedDuringSwapCancelsWithoutCommittingInvisibleMoves()
         {
-            BeginLevel();
+            yield return BeginLevel();
             StartLegalSwap();
             var committed = view.Session.Snapshot;
             int completions = 0;
@@ -305,7 +306,7 @@ namespace Hexrota.UnityClientTests
         [UnityTest]
         public IEnumerator IdleControllerDisableLocksInputAndResumeAcceptsASwap()
         {
-            BeginLevel();
+            yield return BeginLevel();
             var committed = view.Session.Snapshot;
             Assert.That(view.Board.IsAnimating, Is.False);
             view.enabled = false;

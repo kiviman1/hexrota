@@ -8,6 +8,7 @@ namespace Hexrota.UnityClient.Presentation
     {
         private RawImage landscape, shade;
         private RectTransform boardTray;
+        private float entranceSlide = 1f;
         private Texture2D skyGradient;
         private int stage = -1;
         private int width, height;
@@ -76,19 +77,21 @@ namespace Hexrota.UnityClient.Presentation
         public void SetBoardArea(Rect viewport, HexBoardView board, int cellCount)
         {
             if (boardTray == null || cellCount == 0 || board.BoardCamera == null) return;
-            float bottom = 1f, top = 0f;
-            for (int i = 0; i < cellCount; i++)
-            {
-                float y = board.ViewportCell(i).y;
-                bottom = Mathf.Min(bottom, y);
-                top = Mathf.Max(top, y);
-            }
+            Vector2 frame = board.FrameVerticalLimits();
             // Include the outer half-hex and breathing room around the top and bottom rows.
             // The background camera draws the tray behind the world-space models and their input plane.
             float margin = .74f / (2f * board.BoardCamera.orthographicSize);
-            boardTray.anchorMin = new Vector2(viewport.xMin, viewport.yMin + viewport.height * Mathf.Max(0, bottom - margin));
-            boardTray.anchorMax = new Vector2(viewport.xMax, viewport.yMin + viewport.height * Mathf.Min(1, top + margin));
+            boardTray.anchorMin = new Vector2(viewport.xMin, viewport.yMin + viewport.height * Mathf.Max(0, frame.x - margin));
+            boardTray.anchorMax = new Vector2(viewport.xMax, viewport.yMin + viewport.height * Mathf.Min(1, frame.y + margin));
             boardTray.offsetMin = boardTray.offsetMax = Vector2.zero;
+            SetEntranceSlide(entranceSlide);
+        }
+
+        internal void SetEntranceSlide(float progress)
+        {
+            entranceSlide = Mathf.Clamp01(progress);
+            if (boardTray != null)
+                boardTray.anchoredPosition = Vector2.right * ((1f - entranceSlide) * ((RectTransform)boardTray.parent).rect.width);
         }
 
         private void OnDestroy() { if (skyGradient != null) Destroy(skyGradient); }

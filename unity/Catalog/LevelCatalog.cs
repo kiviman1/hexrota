@@ -22,6 +22,21 @@ namespace Hexrota.Catalog
         private readonly Dictionary<string, Dictionary<string, VariantEntry>> packs = new Dictionary<string, Dictionary<string, VariantEntry>>();
         private readonly Dictionary<string, Dictionary<string, object>> resolved = new Dictionary<string, Dictionary<string, object>>();
         private readonly List<string> versions = new List<string>();
+        private CampaignFlowCatalog campaignFlow;
+
+        // Opt in for new campaign attempts. Classic archives remain the authority
+        // for their own versions, including classic level 6 saves from before flow.
+        public LevelCatalog WithCampaignFlow(IEnumerable<Dictionary<string, object>> layouts)
+        {
+            var result = (LevelCatalog)MemberwiseClone();
+            result.campaignFlow = new CampaignFlowCatalog(this, layouts, CampaignFlowCatalog.LargeDataVersion);
+            return result;
+        }
+
+        private static bool IsFlowVersion(object version)
+        {
+            return Equals(version, CampaignFlowCatalog.DataVersion) || Equals(version, CampaignFlowCatalog.LargeDataVersion);
+        }
         public string CurrentVersion { get; private set; }
         public string[] Versions { get { return versions.ToArray(); } }
         internal static void Fail(string code, string message) { throw new CatalogException(code, message); }
@@ -102,6 +117,8 @@ namespace Hexrota.Catalog
         }
         public Dictionary<string, object> ResolveLevelWire(object levelId, string variantId = LegacyVariantId, string levelDataVersion = LegacyDataVersion)
         {
+            if (campaignFlow != null && IsFlowVersion(levelDataVersion))
+                return campaignFlow.ResolveLevelWire(levelId, variantId, levelDataVersion);
             var basis = BaseFor(levelId);
             if (variantId == LegacyVariantId) {
                 if (levelDataVersion != LegacyDataVersion) Fail("UNKNOWN_DATA_VERSION", "The original board requires its original data version");
@@ -121,8 +138,8 @@ namespace Hexrota.Catalog
             }
             return CatalogWire.CopyMap(result);
         }
-        public string[] List(object levelId) { return VariantsFor(levelId, CurrentVersion).Order.ToArray(); }
-        public string[] List(object levelId, string version) { return VariantsFor(levelId, version).Order.ToArray(); }
+        public string[] List(object levelId) { return campaignFlow == null ? VariantsFor(levelId, CurrentVersion).Order.ToArray() : campaignFlow.List(levelId); }
+        public string[] List(object levelId, string version) { return campaignFlow != null && IsFlowVersion(version) ? campaignFlow.List(levelId, version) : VariantsFor(levelId, version).Order.ToArray(); }
         public AttemptMetadata LegacyMetadata(object levelId) { BaseFor(levelId); return new AttemptMetadata(levelId, LegacyVariantId, LegacyDataVersion, "legacy-" + CatalogWire.Text(levelId), 0); }
         public AttemptMetadata Sanitize(object levelId, object metadata)
         {
@@ -132,13 +149,20 @@ namespace Hexrota.Catalog
             if (variant == LegacyVariantId ? count != 0 || attemptId != "legacy-" + CatalogWire.Text(levelId) : count < 1 || !attemptId.StartsWith(prefix, StringComparison.Ordinal) || !Regex.IsMatch(attemptId.Substring(prefix.Length), @"\A[0-9a-f]{8}\z")) Fail("INVALID_ATTEMPT", "Attempt ID does not match its identity");
             return new AttemptMetadata(levelId, variant, version, attemptId, count);
         }
-        public AttemptStart Start(object levelId, IDictionary<string, object> options = null) { return VariantSelector.Select(this, levelId, options); }
+        public AttemptStart Start(object levelId, IDictionary<string, object> options = null)
+        {
+            if (campaignFlow != null && (options == null || !options.ContainsKey("levelDataVersion") || IsFlowVersion(options["levelDataVersion"])))
+                return campaignFlow.Start(levelId, options);
+            return VariantSelector.Select(this, levelId, options);
+        }
         public AttemptCheckpoint Restore(object levelId, object record, object metadata = null)
         {
             object snapshot = record, identity = metadata;
             if (CatalogWire.Has(record, "attemptVersion")) {
                 if (metadata != null) Fail("INVALID_ATTEMPT", "Attempt identity must have one source"); identity = record; snapshot = CatalogWire.Get(record, "snapshot");
             }
+            if (campaignFlow != null && IsFlowVersion(CatalogWire.Get(identity, "levelDataVersion")))
+                return campaignFlow.Restore(levelId, record, metadata);
             var clean = identity == null ? LegacyMetadata(levelId) : Sanitize(levelId, identity); var level = ResolveLevelWire(levelId, clean.variantId, clean.levelDataVersion);
             if (CatalogWire.Map(snapshot) == null) Fail("INVALID_ATTEMPT", "An attempt requires a gameplay checkpoint");
             var game = new HexMatch(CatalogWire.ReadLevel(level), CatalogWire.ReadSnapshot(snapshot)); return new AttemptCheckpoint(clean, level, game, clean.variantId == LegacyVariantId);

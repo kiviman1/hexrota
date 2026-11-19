@@ -63,7 +63,7 @@ namespace Hexrota.UnityClientTests
         public IEnumerator RealStonesMergeThenOneGainFliesToTheCounterBeforeItsImpact()
         {
             game.BeginLevelOne();
-            yield return null;
+            yield return ChapterEntryWait.Ready(game);
             var model = new HexMatch(game.Session.Level, game.Session.Snapshot);
             var pair = model.LegalMoves().First(move => model.Clone().Swap(move[0], move[1])
                 .frames[0].falls.Any(drop => drop.from.HasValue));
@@ -143,7 +143,7 @@ namespace Hexrota.UnityClientTests
         public IEnumerator ARealCascadeDeliversEachWaveOnceToTheSameCounter()
         {
             game.BeginLevelOne();
-            yield return null;
+            yield return ChapterEntryWait.Ready(game);
             var initial = new HexMatch(game.Session.Level, game.Session.Snapshot);
             int[][] route = null;
             for (int depth = 1; depth <= 3 && route == null; depth++)
@@ -211,6 +211,7 @@ namespace Hexrota.UnityClientTests
         {
             Assert.That(game.Session.SetPreferences(motion: "reduce"), Is.True);
             game.BeginLevelOne();
+            yield return ChapterEntryWait.Ready(game);
             var pair = LegalPair();
             int score = game.Session.Snapshot.score;
             var plan = new HexMatch(game.Session.Level, game.Session.Snapshot).Swap(pair[0], pair[1]);

@@ -54,7 +54,7 @@ namespace Hexrota.UnityClientTests
             Assert.That(labels.Single(label => label.name == "Moves").text, Is.EqualTo(snapshot.movesLeft.ToString()));
             Assert.That(labels.Single(label => label.name == "Counters").text, Is.EqualTo(snapshot.score + " / " + game.Session.Level.target));
             Assert.That(labels.Single(label => label.name == "GroundCount").text, Is.EqualTo(snapshot.layers.Count(layer => layer == 0) + " / " + snapshot.layers.Length));
-            Assert.That(labels.Single(label => label.name == "LevelTitle").text, Is.EqualTo(game.Session.StageName(game.Session.ActiveStage)));
+            Assert.That(labels.Any(label => label.name == "StageTag" || label.name == "LevelTitle"), Is.False);
             string[] stones = { "Purple", "Yellow", "LightRed", "Turquoise", "Orange" };
             for (int i = 0; i < snapshot.values.Length; i++)
             {
@@ -79,7 +79,7 @@ namespace Hexrota.UnityClientTests
         public IEnumerator PlayShowsTutorialGoalsAndItsFirstSwapUpdatesEachVisibleLayer()
         {
             Click("PlayButton");
-            yield return null;
+            yield return ChapterEntryWait.Ready(game);
             Assert.That(game.Session.ActiveStage, Is.Zero);
             CheckHudAndBoard();
             int previousMoves = game.Session.Snapshot.movesLeft;
@@ -96,7 +96,7 @@ namespace Hexrota.UnityClientTests
         public IEnumerator TutorialGloveShowsTheSwipeWhileBothPlayableStonesStayOnTheirCells()
         {
             Click("PlayButton");
-            yield return null;
+            yield return ChapterEntryWait.Ready(game);
             var tools = game.GetComponentInChildren<CastleGameToolsView>();
             var gesture = tools.transform.Find("GestureRegion");
             var hand = (RectTransform)gesture.Find("GuidePosition");
@@ -131,8 +131,9 @@ namespace Hexrota.UnityClientTests
         public IEnumerator TopSettingsKeepsOneHudAndTheCommittedMoveOnReturnToTheLevel()
         {
             Click("PlayButton");
+            yield return ChapterEntryWait.Ready(game);
             Click("Geç");
-            yield return null;
+            yield return ChapterEntryWait.Ready(game);
             Assert.That(game.Session.ActiveStage, Is.EqualTo(game.Session.TutorialCount));
             CheckHudAndBoard();
             int[] pair = new HexMatch(game.Session.Level, game.Session.Snapshot).LegalMoves()[0];
@@ -151,7 +152,7 @@ namespace Hexrota.UnityClientTests
             Assert.That(game.GetComponentInChildren<CoopSceneArt>().GetComponentsInChildren<Transform>()
                 .Any(part => part.name == "RoyalFelt"), Is.False);
             Click("PlayButton");
-            yield return null;
+            yield return ChapterEntryWait.Ready(game);
             Assert.That(game.CurrentScreen, Is.EqualTo("playing"));
             Assert.That(game.Session.Snapshot.turn, Is.EqualTo(1));
             Assert.That(game.GetComponentsInChildren<CastleHudView>(true), Has.Length.EqualTo(1));

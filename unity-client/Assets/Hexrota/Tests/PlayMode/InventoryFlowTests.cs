@@ -26,7 +26,7 @@ namespace Hexrota.UnityClientTests
         public IEnumerator OpenScene()
         {
             originalFactory = FirstPlayableController.SessionFactory;
-            data = ClientGameData.FromResources();
+            data = ClientGameData.FromResources(false);
             storage = new MemoryProfileStorage();
             FirstPlayableController.SessionFactory = () => new UnityGameSession(data, storage, new SystemUtcClock());
             yield return SceneManager.LoadSceneAsync("FirstPlayable");
@@ -84,8 +84,20 @@ namespace Hexrota.UnityClientTests
             }
 
             int seventh = session.TutorialCount + 6;
+            // A previously saved classic board must keep its v4 assistance contract.
+            Assert.That(session.EnterStage(seventh), Is.True, session.LastError);
+            var opening = session.RequestHint();
+            Assert.That(session.TrySwap(opening[0], opening[1]).Ok, Is.True);
+            session.CompletePresentation();
+            string attemptId = session.AttemptId;
+            session.ReturnToMenu();
+            data = ClientGameData.FromResources();
+            session = new UnityGameSession(data, storage, new SystemUtcClock());
+            view.ConfigureSession(session);
             view.BeginStage(seventh);
-            yield return null;
+            yield return ChapterEntryWait.Ready(view);
+            Assert.That(session.AttemptId, Is.EqualTo(attemptId));
+            Assert.That(session.UsesNineByNineFrame, Is.False);
             view.OpenInventory(); Click("70 Altınla +1 al"); Click("Vazgeç");
             Assert.That(session.InventoryOffer("greenBrush").Stock, Is.EqualTo(3));
             Click("70 Altınla +1 al"); Click("Satın al");

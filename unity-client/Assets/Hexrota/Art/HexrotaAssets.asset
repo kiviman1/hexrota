@@ -16,6 +16,8 @@ MonoBehaviour:
   cell: {fileID: 6000848187643607547, guid: cbbfe30d45a88e34c8395595dbbbeb13, type: 3}
   ground: {fileID: 254937581801548803, guid: a1a3d9b32b6affd4a8e386d63874173d, type: 3}
   stone: {fileID: 6341103060521061023, guid: 3d2b8fbd9b0018f47b021546dccc4cfc, type: 3}
+  crateOneHit: {fileID: 21300000, guid: 9f33df43342c487098116adc78786c5d, type: 3}
+  crateTwoHits: {fileID: 21300000, guid: 24a9a8e8d7a7409f9eaa6e34d48afff5, type: 3}
   selectionEffect: {fileID: 100000, guid: 4999dfeeca0070d06d49d00d194f3117, type: 3}
   matchEffect: {fileID: 100000, guid: 5d4b3b62db4777772ff7d615c7f54cd0, type: 3}
   fallEffect: {fileID: 100000, guid: 569508d2344d1cfc902b56893d9e440e, type: 3}

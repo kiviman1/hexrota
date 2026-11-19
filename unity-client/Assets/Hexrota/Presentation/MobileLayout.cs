@@ -26,7 +26,7 @@ namespace Hexrota.UnityClient.Presentation
             public GameRegions(float aspect, bool tutorial)
             {
                 float unit = Mathf.Clamp(aspect / 390f, .0001f, 1f / 585f);
-                Header = 132 * unit;
+                Header = 104 * unit;
                 CoachTop = 1 - Header - 6 * unit;
                 CoachBottom = CoachTop - 118 * unit;
                 Board = Rect.MinMaxRect(6f/390, 6 * unit, 1-6f/390,

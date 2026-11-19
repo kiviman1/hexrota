@@ -34,7 +34,9 @@ namespace Hexrota.UnityClient.Presentation
         private Vector3[] positions;
         private int[] initialLayers;
         private Color[] floorEdges;
-        private bool tutorialLayout, hasMutedTiles;
+        private bool tutorialLayout, hasMutedTiles, frameNineByNine;
+        private Bounds frameBounds;
+        private Vector3 restingCamera;
 
         private int selected = -1, pressed = -1, pointer = int.MinValue;
         private Vector2 down;
@@ -104,12 +106,13 @@ namespace Hexrota.UnityClient.Presentation
             effectRoot.SetParent(world, false);
         }
 
-        public void Build(LevelConfig level, GameSnapshot snapshot)
+        public void Build(LevelConfig level, GameSnapshot snapshot, bool frameNineByNine = false)
         {
             if (this == null || world == null || effectRoot == null) return;
-            Cancel(snapshot); ClearModels(); positions = new Vector3[level.cells.Length];
+            Cancel(null); ClearModels(); positions = new Vector3[level.cells.Length];
             initialLayers = new int[level.cells.Length]; floorEdges = new Color[level.cells.Length];
             tutorialLayout = level.id is string;
+            this.frameNineByNine = frameNineByNine;
             for (int i = 0; i < level.cells.Length; i++)
             {
                 initialLayers[i] = level.cells[i].layers;
@@ -150,7 +153,9 @@ namespace Hexrota.UnityClient.Presentation
                 text.GetComponent<MeshRenderer>().sharedMaterial = digitsMaterial;
                 numbers.Add(text);
             }
+            frameBounds = CellFrame();
             PrepareMotion(level);
+            PrepareTerrain(level.obstacles);
             Render(snapshot); FitCamera();
         }
 
@@ -173,18 +178,41 @@ namespace Hexrota.UnityClient.Presentation
                 ? (Vector2)BoardCamera.WorldToViewportPoint(positions[index]) : Vector2.zero;
         }
 
+        private Bounds CellFrame()
+        {
+            var bounds = new Bounds(positions[0], Vector3.zero);
+            if (frameNineByNine)
+            {
+                // The Git-authored 9×9 frame is odd-q. The odd column's lower
+                // half-row belongs to the frame even when all four corners are void.
+                for (int q = -4; q <= 4; q++)
+                {
+                    int offset = Mathf.FloorToInt(q * .5f);
+                    bounds.Encapsulate(MobileLayout.Axial(q, -4 - offset));
+                    bounds.Encapsulate(MobileLayout.Axial(q, 4 - offset));
+                }
+            }
+            foreach (Vector3 position in positions) bounds.Encapsulate(position);
+            return bounds;
+        }
+
+        internal Vector2 FrameVerticalLimits()
+        {
+            return new Vector2(BoardCamera.WorldToViewportPoint(frameBounds.min).y,
+                BoardCamera.WorldToViewportPoint(frameBounds.max).y);
+        }
+
         private void FitCamera()
         {
             if (BoardCamera == null || positions == null || positions.Length == 0) return;
-            var bounds = new Bounds(positions[0], Vector3.zero);
-            foreach (Vector3 position in positions) bounds.Encapsulate(position);
             float aspect = Mathf.Max(.1f, BoardCamera.pixelRect.width / Mathf.Max(1, BoardCamera.pixelRect.height));
             const float unit = .56f / 44;
-            float width = Mathf.Max((tutorialLayout ? 275 : 370)*unit, bounds.size.x + 104*unit);
-            float height = Mathf.Max((tutorialLayout ? 260 : 300)*unit, bounds.size.y + (40*Mathf.Sqrt(3)+26)*unit);
+            float width = Mathf.Max((tutorialLayout ? 275 : 370)*unit, frameBounds.size.x + (frameNineByNine ? 92 : 104)*unit);
+            float height = Mathf.Max((tutorialLayout ? 260 : 300)*unit, frameBounds.size.y + (40*Mathf.Sqrt(3)+(frameNineByNine ? 12 : 26))*unit);
             BoardCamera.orthographicSize = .5f * Mathf.Max(height, width/aspect);
-            BoardCamera.transform.position = new Vector3(bounds.center.x, bounds.center.y, -20);
+            restingCamera = new Vector3(frameBounds.center.x, frameBounds.center.y, -20);
             BoardCamera.transform.rotation = Quaternion.identity;
+            SetEntranceSlide(entranceSlide);
         }
 
         public void Render(GameSnapshot snapshot)
@@ -201,6 +229,7 @@ namespace Hexrota.UnityClient.Presentation
                 PaintStone(i, snapshot.values[i]);
                 PaintFloor(i, snapshot.layers[i]);
             }
+            PaintTerrain(snapshot.blockerHp, snapshot.cellOpen, snapshot.regionOpen);
             ClearSelection(); ClearEffects();
         }
 
@@ -285,6 +314,7 @@ namespace Hexrota.UnityClient.Presentation
 
         public void Cancel(GameSnapshot authoritative)
         {
+            EndEntrance();
             StopIdleHint();
             ResetGesture();
             targetCell = null;
@@ -307,7 +337,8 @@ namespace Hexrota.UnityClient.Presentation
             }
             if (this == null || !isActiveAndEnabled || !HasVisuals || !InputEnabled || IsAnimating || Input.touchCount > 1) return;
             int start = Hit(e.position);
-            if (start < 0 || (targetCell == null && !stones[start].activeSelf)) return;
+            if (start < 0 || (closedCells != null && closedCells[start]) ||
+                (targetCell == null && !stones[start].activeSelf)) return;
             pointer = e.pointerId;
             down = e.position;
             pressed = start;
@@ -444,9 +475,9 @@ namespace Hexrota.UnityClient.Presentation
         }
         private void ClearModels()
         {
-            foreach (var o in cells) if (o != null) Destroy(o);
-            foreach (var o in grounds) if (o != null) Destroy(o);
-            foreach (var o in stones) if (o != null) Destroy(o);
+            foreach (var o in cells) if (o != null) { o.SetActive(false); Destroy(o); }
+            foreach (var o in grounds) if (o != null) { o.SetActive(false); Destroy(o); }
+            foreach (var o in stones) if (o != null) { o.SetActive(false); Destroy(o); }
             cells.Clear(); grounds.Clear(); stones.Clear(); numbers.Clear(); motionInk.Clear();
         }
         private void OnDisable() { InputEnabled = false; Cancel(null); }

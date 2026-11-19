@@ -15,7 +15,8 @@ namespace Hexrota.UnityClientTests
             Assert.That(hud, Is.Not.Null);
             Assert.That(PrefabUtility.IsPartOfPrefabAsset(hud), Is.True);
             var nodes = hud.GetComponentsInChildren<Transform>(true);
-            foreach (string field in new[] { "StageTag", "LevelTitle", "Moves", "Counters", "GroundCount" })
+            Assert.That(nodes.Any(node => node.name == "StageTag" || node.name == "LevelTitle"), Is.False);
+            foreach (string field in new[] { "Moves", "Counters", "GroundCount" })
             {
                 var node = nodes.Single(item => item.name == field);
                 Assert.That(node.GetComponent("Text"), Is.Not.Null, field);
@@ -35,9 +36,31 @@ namespace Hexrota.UnityClientTests
             Assert.That(portrait.raycastTarget, Is.False);
             var settings = hud.GetComponentsInChildren<UnityEngine.UI.Button>(true).Single();
             Assert.That(settings.name, Is.EqualTo("Ayarlar"));
-            var gear = settings.transform.Find("SettingsIcon").GetComponent<UnityEngine.UI.Image>();
-            Assert.That(gear.sprite, Is.Not.Null);
+            var gear = settings.transform.Find("SettingsIcon").GetComponent<UnityEngine.UI.RawImage>();
+            Assert.That(gear.texture, Is.Not.Null);
             Assert.That(gear.raycastTarget, Is.False);
+        }
+
+        [Test]
+        public void LoadingFieldGuideProvidesAnEditableIllustrationForEachTip()
+        {
+            var prefab = Resources.Load<GameObject>("CastleGame/ChapterLoading");
+            Assert.That(PrefabUtility.IsPartOfPrefabAsset(prefab), Is.True);
+            var guide = new SerializedObject(prefab.GetComponent<ChapterLoadingView>());
+            var tips = guide.FindProperty("tips");
+            Assert.That(tips.arraySize, Is.GreaterThan(1));
+            for (int i = 0; i < tips.arraySize; i++)
+            {
+                var tip = tips.GetArrayElementAtIndex(i);
+                Assert.That(tip.FindPropertyRelative("heading").stringValue, Is.Not.Empty);
+                Assert.That(tip.FindPropertyRelative("body").stringValue, Is.Not.Empty);
+                var diagram = tip.FindPropertyRelative("diagram").objectReferenceValue as GameObject;
+                Assert.That(diagram, Is.Not.Null);
+                Assert.That(diagram.transform.childCount, Is.Positive);
+            }
+            Assert.That(prefab.GetComponent<CanvasGroup>().blocksRaycasts, Is.True);
+            var curtain = prefab.transform.Find("NightSky").GetComponent<UnityEngine.UI.Image>();
+            Assert.That(curtain.raycastTarget, Is.True);
         }
 
         [Test]

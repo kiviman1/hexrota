@@ -187,6 +187,7 @@ namespace Hexrota.UnityClientTests
         [UnityTest] public IEnumerator ReturningMenuAndMapOpenReadOnlyGoalsBeforeStartingTheRealNumberedBoard()
         {
             TapHomeButton("PlayButton");
+            yield return ChapterEntryWait.Ready(controller);
             Assert.That(controller.Session.ActiveStage,Is.Zero);
             Assert.That(controller.Session.CompletedSceneTutorials,Is.Zero);
             controller.ReturnToMenu();
@@ -202,6 +203,7 @@ namespace Hexrota.UnityClientTests
             Assert.That(controller.CurrentScreen,Is.EqualTo("journey"));
             Assert.That(controller.Session.Revision,Is.EqualTo(revision));
             ButtonNamed("BÖLÜM 01").onClick.Invoke(); ButtonNamed("Başla").onClick.Invoke();
+            yield return ChapterEntryWait.Ready(controller);
             Assert.That(controller.CurrentScreen,Is.EqualTo("playing"));
             Assert.That(controller.Session.ActiveStage,Is.EqualTo(2));
             Assert.That(controller.Session.CompletedSceneTutorials,Is.EqualTo(2));
