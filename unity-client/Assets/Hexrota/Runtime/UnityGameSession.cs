@@ -225,13 +225,27 @@ namespace Hexrota.UnityClient
             return pair;
         }
 
-        public LevelConfig Level
+        private System.Collections.Generic.Dictionary<string, object> ActiveLevelWire
         {
             get {
                 var metadata = W.Get(controller.View(), "metadata");
                 if (metadata == null) return null;
-                if (IsTutorial) return LevelCatalog.GameplayConfig(data.Catalog.ResolveTutorial((string)W.Required(metadata,"levelId")));
-                return LevelCatalog.GameplayConfig(data.Catalog.ResolveLevelWire(W.Required(metadata, "levelId"), (string)W.Required(metadata, "variantId"), (string)W.Required(metadata, "levelDataVersion")));
+                if (IsTutorial) return data.Catalog.ResolveTutorial((string)W.Required(metadata,"levelId"));
+                return data.Catalog.ResolveLevelWire(W.Required(metadata, "levelId"), (string)W.Required(metadata, "variantId"), (string)W.Required(metadata, "levelDataVersion"));
+            }
+        }
+        public LevelConfig Level
+        {
+            get {
+                var level = ActiveLevelWire;
+                return level == null ? null : LevelCatalog.GameplayConfig(level);
+            }
+        }
+        public bool UsesNineByNineFrame
+        {
+            get {
+                var size = W.Get(ActiveLevelWire, "boardSize");
+                return W.Equal(W.Get(size, "layout"), "odd-q") && W.Equal(W.Get(size, "columns"), 9) && W.Equal(W.Get(size, "rows"), 9);
             }
         }
         public UnityGameSession(ClientGameData data, IProfileStorage storage, IUtcClock clock, uint selectionSeed = 4303818,

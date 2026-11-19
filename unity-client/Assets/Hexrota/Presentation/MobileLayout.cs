@@ -19,19 +19,17 @@ namespace Hexrota.UnityClient.Presentation
 
         public readonly struct GameRegions
         {
-            public readonly float Header, Footer, CoachTop, CoachBottom;
+            public readonly float Header, CoachTop, CoachBottom;
             public readonly Rect Board;
 
-            // CSS pixels on the reference 390px portrait viewport, projected
-            // into Unity's safe-area coordinates. Keep the board usable in a short Game view.
-            public GameRegions(float aspect, bool tutorial, bool firstLesson)
+            // The top HUD and the tutorial card use the same reference width as the phone canvas.
+            public GameRegions(float aspect, bool tutorial)
             {
                 float unit = Mathf.Clamp(aspect / 390f, .0001f, 1f / 585f);
-                Header = (firstLesson ? 143 : 160) * unit;
-                Footer = (tutorial ? 53 : 90) * unit;
-                CoachTop = 1 - Header - 10 * unit;
+                Header = 104 * unit;
+                CoachTop = 1 - Header - 6 * unit;
                 CoachBottom = CoachTop - 118 * unit;
-                Board = Rect.MinMaxRect(6f/390, Footer, 1-6f/390,
+                Board = Rect.MinMaxRect(6f/390, 6 * unit, 1-6f/390,
                     tutorial ? CoachBottom-8*unit : 1-Header-10*unit);
             }
         }

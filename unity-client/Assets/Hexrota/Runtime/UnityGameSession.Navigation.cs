@@ -26,7 +26,7 @@ namespace Hexrota.UnityClient
         public sealed class PhoneWallet
         {
             public int Lives, Maximum, Gold, Stars, Brushes, Keys;
-            public string Timer;
+            public string Timer, Countdown;
         }
 
         public PhoneWallet ReadPhoneWallet()
@@ -40,7 +40,8 @@ namespace Hexrota.UnityClient
                 Lives = W.Int32(W.Required(life, "lives")), Maximum = W.Int32(W.Required(life, "maxLives")),
                 Gold = W.Int32(wallet["gold"]), Stars = W.Int32(wallet["stars"]),
                 Brushes = W.Int32(W.Required(wallet["inventory"], "greenBrush")), Keys = W.Int32(W.Required(wallet["inventory"], "colorKey")),
-                Timer = W.Get(life, "nextLifeAtUtc") != null ? "Sonraki can " + time : unlimited ? time : "Canlar dolu"
+                Timer = W.Get(life, "nextLifeAtUtc") != null ? "Sonraki can " + time : unlimited ? time : "Canlar dolu",
+                Countdown = unlimited || W.Get(life, "nextLifeAtUtc") != null ? time : null
             };
         }
 

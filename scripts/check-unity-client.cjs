@@ -47,6 +47,10 @@ check('serialized local references resolve to committed assets', () => {
   // repository assets, or an explicitly documented Unity package reference.
   const packageGuids = new Set([
     'fe87c0e1cc204ed48ad3b37840f39efc', // Unity UI Image
+    '1344c3c82d62a2a41a3576d8abb8e3ea', // Unity UI RawImage
+    '86710e43de46f6f4bac7c8e50813a599', // Unity UI AspectRatioFitter
+    'e19747de3f5aca642ab2be37e372fb86', // Unity UI Outline
+    '31a19414c41e5ae4aae2af33fee712f6', // Unity UI Mask
     '5f7201a12d95ffc409449d95f23cf332', // Unity UI Text
     '4e29b1a8efbd4b44bb3f3716e73f07ff', // Unity UI Button
     '0cd44c1031e13a943bb63640046fad76', // Unity UI CanvasScaler

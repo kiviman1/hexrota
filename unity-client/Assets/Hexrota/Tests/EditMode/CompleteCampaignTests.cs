@@ -2,13 +2,29 @@ using System.Linq;
 using Hexrota.Application;
 using Hexrota.Catalog;
 using Hexrota.UnityClient;
-using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using W = Hexrota.Contracts.Wire;
 
 namespace Hexrota.UnityClientTests
 {
+    internal static class CampaignTestRoute
+    {
+        internal static int[][] ForActiveAttempt(ClientGameData data, UnityGameSession session, MemoryProfileStorage storage)
+        {
+            int stage = session.ActiveStage;
+            var level = data.Levels[stage];
+            if (!session.IsTutorial)
+            {
+                var game = W.Required(storage.Read(ProfileRepository.ProfileKey), "game");
+                var attempt = W.Required(W.Required(game, "attempts"), stage.ToString());
+                level = data.Catalog.ResolveLevelWire(W.Required(attempt, "levelId"),
+                    (string)W.Required(attempt, "variantId"), (string)W.Required(attempt, "levelDataVersion"));
+            }
+            return W.List(level["solution"]).Select(pair => W.List(pair).Select(W.Int32).ToArray()).ToArray();
+        }
+    }
+
     public sealed class CompleteCampaignTests
     {
         [Test]
@@ -17,23 +33,13 @@ namespace Hexrota.UnityClientTests
             var data = ClientGameData.FromResources();
             var storage = new MemoryProfileStorage();
             var clock = new SystemUtcClock();
-            var variants = JObject.Parse(Resources.Load<TextAsset>("HexrotaData/variants").text)["levels"];
             var session = new UnityGameSession(data, storage, clock);
             Assert.That(session.StageCount, Is.EqualTo(12));
             for (int stage = 0; stage < session.StageCount; stage++)
             {
                 Assert.That(session.NextStage, Is.EqualTo(stage), "Recommended stage after reload");
                 Assert.That(session.EnterStage(stage), Is.True, session.LastError);
-                int[][] route;
-                if (stage < session.TutorialCount)
-                    route = W.List(data.Levels[stage]["solution"]).Select(p => W.List(p).Select(W.Int32).ToArray()).ToArray();
-                else
-                {
-                    var attempt = W.Required(W.Required(W.Required(storage.Read(ProfileRepository.ProfileKey), "game"), "attempts"), stage.ToString());
-                    var level = variants.Single(l => l["levelId"].Value<int>() == stage - 1);
-                    var variant = level["variants"].Single(v => v["id"].Value<string>() == (string)W.Required(attempt, "variantId"));
-                    route = variant["solutions"][0].Select(p => p.Values<int>().ToArray()).ToArray();
-                }
+                int[][] route = CampaignTestRoute.ForActiveAttempt(data, session, storage);
                 foreach (int[] pair in route)
                 {
                     if (session.NeedsTutorialAcknowledgement) Assert.That(session.AcknowledgeTutorial(), Is.True);

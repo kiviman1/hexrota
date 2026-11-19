@@ -77,7 +77,8 @@ namespace Hexrota.UnityClient
         {
             if(!HasAttempt || IsTutorial || Status!="lost")return null;
             var offer=controller.RescueOffer();
-            var ad=offer["ad"];
+            var ad=W.Get(offer,"ad");
+            if(ad==null)return null;
             string reason=W.Get(ad,"reason") as string;
             string id=W.Get(ad,"pendingTransactionId") as string;
             bool delivery=controller.HasPendingRescueDelivery || reason=="receipt_pending_delivery";

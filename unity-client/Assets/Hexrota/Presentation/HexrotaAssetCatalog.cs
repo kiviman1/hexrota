@@ -11,6 +11,9 @@ namespace Hexrota.UnityClient.Presentation
         public GameObject cell;
         public GameObject ground;
         public GameObject stone;
+        [Header("Kapalı alanlar")]
+        public Sprite crateOneHit;
+        public Sprite crateTwoHits;
         public GameObject selectionEffect;
         public GameObject matchEffect;
         public GameObject fallEffect;

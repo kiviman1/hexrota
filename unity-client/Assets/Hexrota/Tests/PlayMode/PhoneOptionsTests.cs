@@ -25,7 +25,7 @@ namespace Hexrota.UnityClientTests
                 yield return SceneManager.LoadSceneAsync("FirstPlayable");
                 var game = Object.FindAnyObjectByType<FirstPlayableController>();
                 game.BeginLevelOne();
-                yield return null;
+                yield return ChapterEntryWait.Ready(game);
                 var initial = game.Session.Snapshot;
                 var sound = game.Session.SoundEnabled;
                 game.OpenMobileSettings();

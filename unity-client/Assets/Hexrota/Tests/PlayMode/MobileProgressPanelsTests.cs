@@ -39,7 +39,7 @@ namespace Hexrota.UnityClientTests
         [UnityTest] public IEnumerator PauseResumeAndLockedInventoryUseTheCampaignBoard()
         {
             scene.BeginLevelOne();
-            yield return null;
+            yield return ChapterEntryWait.Ready(scene);
             var board=scene.Session.Snapshot;
             scene.Pause();
             Assert.That(Text("ModalTitle"),Is.EqualTo("Rota seni bekler."));
@@ -47,7 +47,7 @@ namespace Hexrota.UnityClientTests
             Button("Devam et").onClick.Invoke();
             Assert.That(scene.CurrentScreen,Is.EqualTo("playing"));
             Assert.That(scene.Board.InputEnabled,Is.True);
-            Button("Çanta").onClick.Invoke();
+            scene.OpenInventory();
             Assert.That(Text("ModalTitle"),Is.EqualTo("Çantan."));
             Assert.That(Text("greenBrushEligibility"),Is.EqualTo("3. bölümden sonra açılır."));
             Assert.That(Button("Hücre seç").interactable,Is.False);
@@ -83,6 +83,7 @@ namespace Hexrota.UnityClientTests
         [UnityTest] public IEnumerator PlaytestToggleAndClearKeepTheAttemptPlayable()
         {
             scene.BeginLevelOne();
+            yield return ChapterEntryWait.Ready(scene);
             scene.OpenMobileSettings();
             Assert.That(scene.Session.PlaytestEnabled,Is.False);
             Button("Oyuncu testi kaydı").onClick.Invoke();

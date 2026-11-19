@@ -23,14 +23,14 @@ namespace Hexrota.Application
         }
         private Dictionary<string, object> RescueContext(Entry entry)
         {
-            if (entry == null || entry.metadata == null) return null;
+            if (entry == null || entry.metadata == null || entry.engine.HasObstacles) return null;
             var commands = entry.assistance == null ? W.Arr() : W.List(entry.assistance.Commands);
             object last = entry.assistance == null ? entry.engine.history.Count > 0 ? (object)"swap" : "none" : commands.Count == 0 ? "none" : W.Get(commands[commands.Count - 1], "type");
             return W.Obj("attemptId", entry.metadata["attemptId"], "levelId", entry.level["id"], "tutorial", entry.index < tutorialCount, "cleared", Completed(entry.index), "status", entry.engine.Status, "movesLeft", (long)entry.engine.movesLeft, "turn", (long)entry.engine.turn, "lastCommand", last, "rescuesUsed", entry.assistance == null ? 0L : W.Integer(W.Get(entry.assistance.Usage, "rescue")));
         }
         private bool RecoverableLoss(Entry entry)
         {
-            return entry != null && entry.index >= tutorialCount && entry.engine.Status == "lost" && !Discarded(entry) && (RetainedRescueDelivery(entry) != null || entry.engine.LegalMoves().Count > 0 && W.Equal(rescue.Availability(game["rescue"], RescueContext(entry), W.Obj("gold", W.Get(game["economy"], "gold")))["eligible"], true));
+            return entry != null && entry.index >= tutorialCount && !entry.engine.HasObstacles && entry.engine.Status == "lost" && !Discarded(entry) && (RetainedRescueDelivery(entry) != null || entry.engine.LegalMoves().Count > 0 && W.Equal(rescue.Availability(game["rescue"], RescueContext(entry), W.Obj("gold", W.Get(game["economy"], "gold")))["eligible"], true));
         }
         private Dictionary<string, object> RetainedRescueDelivery()
         {
@@ -49,7 +49,9 @@ namespace Hexrota.Application
         }
         public Dictionary<string, object> RescueOffer()
         {
-            var context = RescueContext(); if (context == null) return Result(false, "no_attempt"); var offer = rescue.Availability(game["rescue"], context, W.Obj("gold", W.Get(game["economy"], "gold")));
+            var context = RescueContext();
+            if (context == null) return Result(false, engine == null ? "no_attempt" : "rescue_unavailable");
+            var offer = rescue.Availability(game["rescue"], context, W.Obj("gold", W.Get(game["economy"], "gold")));
             if (engine.Status == "lost" && engine.LegalMoves().Count == 0) { offer["eligible"] = false; offer["reason"] = "no_legal_swaps"; foreach (string method in new[] { "ad", "gold" }) { W.Map(offer[method])["allowed"] = false; W.Map(offer[method])["reason"] = "no_legal_swaps"; } } return offer;
         }
         public Dictionary<string, object> ResumeForSecondChance(int index, SessionCommand command = null)
@@ -70,7 +72,8 @@ namespace Hexrota.Application
         public Dictionary<string, object> BeginRescueAd(SessionCommand command = null)
         {
             if (HasPendingRescueDelivery) return Result(false, "pending_rescue_delivery");
-            var denied = Guard(command); if (denied != null) return denied; var context = RescueContext(); if (context == null) return Result(false, "no_attempt");
+            var denied = Guard(command); if (denied != null) return denied; var context = RescueContext();
+            if (context == null) return Result(false, engine == null ? "no_attempt" : "rescue_unavailable");
             if (engine.Status == "lost" && engine.LegalMoves().Count == 0) return Result(false, "no_legal_swaps");
             var proposal = rescue.BeginAd(game["rescue"], context);
             if (W.Equal(proposal["reason"], "receipt_pending_delivery")) return Result(false, "receipt_pending_delivery");
@@ -91,7 +94,8 @@ namespace Hexrota.Application
         public Dictionary<string, object> RescueWithGold(string operationId, SessionCommand command = null)
         {
             if (HasPendingRescueDelivery) return Result(false, "pending_rescue_delivery");
-            var denied = Guard(command); if (denied != null) return denied; var context = RescueContext(); if (context == null) return Result(false, "no_attempt");
+            var denied = Guard(command); if (denied != null) return denied; var context = RescueContext();
+            if (context == null) return Result(false, engine == null ? "no_attempt" : "rescue_unavailable");
             if (engine.Status == "lost" && engine.LegalMoves().Count == 0) return Result(false, "no_legal_swaps");
             var proposal = rescue.ApplyGold(game["rescue"], context, operationId, W.Obj("gold", W.Get(game["economy"], "gold")));
             if (!W.Equal(proposal["applied"], true)) return Result(false, proposal["reason"] as string);

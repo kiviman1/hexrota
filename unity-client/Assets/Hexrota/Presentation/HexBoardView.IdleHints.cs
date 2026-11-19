@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using Hexrota.Gameplay;
 using UnityEngine;
 
@@ -10,17 +9,38 @@ namespace Hexrota.UnityClient.Presentation
     public sealed partial class HexBoardView
     {
         private readonly IdleHintClock idleClock = new IdleHintClock();
-        private readonly Dictionary<int,Renderer[]> idleModels = new Dictionary<int,Renderer[]>();
+        private readonly List<Renderer> sourceModels = new List<Renderer>();
+        private readonly List<Renderer> matchModels = new List<Renderer>();
+        private readonly List<Renderer> rendererBuffer = new List<Renderer>();
         private string idleAttempt;
-        private Func<int[],VisibleIdleHint> chooseIdleHint;
-        private VisibleIdleHint paintedHint;
-        public bool ShowingIdleHint { get { return paintedHint != null; } }
+        private Func<int[], VisibleIdleHint> chooseIdleHint;
+        private VisibleIdleHint cachedHint, paintedHint;
+        private TutorialGestureArrow idleArrow;
+        private float lastPulse = -1f;
+        public bool ShowingIdleHint => paintedHint != null;
 
-        public void BindIdleHints(string attemptId,Func<int[],VisibleIdleHint> choose)
+        internal void BindIdleHintOverlay(TutorialGestureArrow template)
         {
-            StopIdleHint(); idleAttempt = attemptId; chooseIdleHint = choose;
+            // Keep tutorial gestures and ordinary hints independently visible, but
+            // share the artist's colours and stroke settings from the tools prefab.
+            idleArrow = Instantiate(template, transform, false);
+            idleArrow.name = "IdleSwapDirection";
+            idleArrow.raycastTarget = false;
+            idleArrow.gameObject.SetActive(false);
         }
-        public void PlayerMoved(GameSnapshot after) { idleClock.PlayerMoved(VisibleKey(after)); }
+
+        public void BindIdleHints(string attemptId, Func<int[], VisibleIdleHint> choose)
+        {
+            StopIdleHint();
+            idleAttempt = attemptId;
+            chooseIdleHint = choose;
+        }
+
+        public void PlayerMoved(GameSnapshot after)
+        {
+            ClearHintAppearance();
+            idleClock.PlayerMoved(VisibleKey(after));
+        }
 
         private static string VisibleKey(GameSnapshot board)
         {
@@ -35,55 +55,96 @@ namespace Hexrota.UnityClient.Presentation
         private void LateUpdate()
         {
             if (idleAttempt == null || chooseIdleHint == null) return;
-            bool interactive = InputEnabled && !IsAnimating && BoardCamera != null && isActiveAndEnabled &&
+            bool interactive = InputEnabled && !IsAnimating && BoardCamera != null && BoardCamera.enabled &&
                 pointer == int.MinValue && selected < 0 && targetCell == null && world != null;
-            if (Input.anyKeyDown || Input.touchCount > 0 || Input.mouseScrollDelta.sqrMagnitude > 0) StopIdleHint();
-            idleClock.Tick(Time.unscaledTimeAsDouble,interactive,chooseIdleHint);
-            if (paintedHint != idleClock.Visible)
+            if (!interactive || Input.anyKeyDown || Input.touchCount > 0 || Input.mouseScrollDelta.sqrMagnitude > 0)
             {
-                ClearPaintedHint();
-                paintedHint = idleClock.Visible;
-                if (paintedHint != null && HasVisuals)
-                    foreach (int i in paintedHint.FocusSources)
-                        idleModels[i] = stones[i].GetComponentsInChildren<Renderer>().Where(r => !r.GetComponent<TextMesh>()).ToArray();
+                StopIdleHint();
+                return;
             }
-            if (paintedHint == null || !HasVisuals) return;
-            float phase = idleClock.Phase;
-            float pulse = ReducedMotion ? 0 : Mathf.SmoothStep(0,1,1-Mathf.Abs(2*phase-1));
-            Vector3 direction = (positions[paintedHint.MovingTarget]-positions[paintedHint.MovingSource]).normalized;
-            float displacement = 2.5f*(Screen.width/390f)*2*BoardCamera.orthographicSize/Mathf.Max(1,BoardCamera.pixelHeight);
-            foreach (var entry in idleModels)
+
+            idleClock.Tick(Time.unscaledTimeAsDouble, true, chooseIdleHint);
+            // Reduced motion keeps one static direction, without repeated flashes.
+            var next = ReducedMotion ? idleClock.ActiveCue : idleClock.Visible;
+            if (next == null)
             {
-                int i = entry.Key; bool moving = i == paintedHint.MovingSource;
-                stones[i].transform.localScale = Vector3.one*(1 + (moving ? .07f : .05f)*pulse);
-                stones[i].transform.position = positions[i]+Vector3.back*.15f + (moving ? direction*displacement*pulse : Vector3.zero);
-                SetIdleGlow(entry.Value, moving ? 1 : .7f, pulse*(moving ? .08f : .05f));
+                HidePaintedHint();
+                return;
             }
+            if (next != cachedHint)
+            {
+                if (!HasVisuals) { StopIdleHint(); return; }
+                CacheHintModels(next);
+            }
+            if (paintedHint == null)
+            {
+                paintedHint = next;
+                if (idleArrow != null)
+                {
+                    idleArrow.SetPair(ViewportCell(next.MovingSource), ViewportCell(next.MovingTarget));
+                    idleArrow.gameObject.SetActive(true);
+                }
+            }
+
+            float progress = Mathf.Clamp01(idleClock.Phase);
+            float pulse = ReducedMotion ? 0f : Mathf.Sin(progress * Mathf.PI);
+            if (idleArrow != null)
+                idleArrow.SetSweep(ReducedMotion ? -1f : Mathf.SmoothStep(0f, 1f, progress));
+            if (Mathf.Approximately(lastPulse, pulse)) return;
+            lastPulse = pulse;
+            SetIdleGlow(sourceModels, .75f, .13f * pulse);
+            SetIdleGlow(matchModels, .32f, .045f * pulse);
         }
 
-        private void SetIdleGlow(Renderer[] models,float outline,float sheen)
+        private void CacheHintModels(VisibleIdleHint hint)
+        {
+            ClearHintAppearance();
+            cachedHint = hint;
+            foreach (int index in hint.FocusSources)
+            {
+                stones[index].GetComponentsInChildren(false, rendererBuffer);
+                var list = index == hint.MovingSource ? sourceModels : matchModels;
+                foreach (var renderer in rendererBuffer)
+                    if (!renderer.TryGetComponent<TextMesh>(out _)) list.Add(renderer);
+            }
+            rendererBuffer.Clear();
+        }
+
+        private void SetIdleGlow(List<Renderer> models, float outline, float sheen)
         {
             if (tint == null) return;
             foreach (var model in models)
             {
                 if (model == null) continue;
-                model.GetPropertyBlock(tint); tint.SetFloat("_IdleOutline",outline); tint.SetFloat("_IdleSheen",sheen); model.SetPropertyBlock(tint);
+                model.GetPropertyBlock(tint);
+                tint.SetFloat("_IdleOutline", outline);
+                tint.SetFloat("_IdleSheen", sheen);
+                model.SetPropertyBlock(tint);
             }
         }
 
-        private void StopIdleHint() { idleClock.Interrupt(); ClearPaintedHint(); }
-
-        private void ClearPaintedHint()
+        private void StopIdleHint()
         {
-            foreach (var entry in idleModels)
-            {
-                int i = entry.Key;
-                if (i >= stones.Count || stones[i] == null) continue;
-                stones[i].transform.localScale = Vector3.one;
-                stones[i].transform.position = positions[i] + Vector3.back*.15f;
-                SetIdleGlow(entry.Value,0,0);
-            }
-            paintedHint = null; idleModels.Clear();
+            idleClock.Interrupt();
+            ClearHintAppearance();
+        }
+
+        private void HidePaintedHint()
+        {
+            if (paintedHint == null) return;
+            paintedHint = null;
+            lastPulse = -1f;
+            if (idleArrow != null) idleArrow.gameObject.SetActive(false);
+            SetIdleGlow(sourceModels, 0, 0);
+            SetIdleGlow(matchModels, 0, 0);
+        }
+
+        private void ClearHintAppearance()
+        {
+            HidePaintedHint();
+            cachedHint = null;
+            sourceModels.Clear();
+            matchModels.Clear();
         }
     }
 }

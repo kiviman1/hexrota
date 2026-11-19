@@ -16,7 +16,7 @@
     {
       "source": "unity/Application/GameSessionController.Assistance.cs",
       "destination": "unity-client/Assets/Hexrota/Core/Application/GameSessionController.Assistance.cs",
-      "sha256": "dc397755fb25640fa13b6cdafeca168b89719c8a170e7609ba59c87f759db081"
+      "sha256": "dd6e09101997943582c3882cbe9270e47f10a94cbeb84a6ed7f1618b3013ddcd"
     },
     {
       "source": "unity/Application/GameSessionController.Preferences.cs",
@@ -26,7 +26,7 @@
     {
       "source": "unity/Application/GameSessionController.Rescue.cs",
       "destination": "unity-client/Assets/Hexrota/Core/Application/GameSessionController.Rescue.cs",
-      "sha256": "de1bcd7cbfe46263a2bc92d75026afa891d47bffa37cd7611deee2f972dc7a60"
+      "sha256": "90049a315cb05494c58674160883d740ce6a5d0add3f0fc7ee51dbca4c614701"
     },
     {
       "source": "unity/Application/GameSessionController.cs",
@@ -61,7 +61,7 @@
     {
       "source": "unity/Catalog/LevelCatalog.cs",
       "destination": "unity-client/Assets/Hexrota/Core/Catalog/LevelCatalog.cs",
-      "sha256": "abc2a8531dd28100a01bb9c69a0469a0931c3a534fcd30be520babda87ebfcf3"
+      "sha256": "1c733d464d9dd54351577de20ce75d2e7690885dfb030f82b1a01462384fe7e8"
     },
     {
       "source": "unity/Catalog/MaterialAlphaCatalog.cs",

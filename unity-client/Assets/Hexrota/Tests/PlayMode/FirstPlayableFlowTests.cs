@@ -55,7 +55,7 @@ namespace Hexrota.UnityClientTests
         {
             Assert.That(view.Session.HasAttempt, Is.False);
             view.BeginLevelOne();
-            yield return null;
+            yield return ChapterEntryWait.Ready(view);
             Assert.That(view.Session.HasAttempt, Is.True, view.Session.LastError);
             Assert.That(view.Board.InputEnabled, Is.True);
             var pair = new HexMatch(view.Session.Level, view.Session.Snapshot).LegalMoves()[0];
@@ -79,9 +79,49 @@ namespace Hexrota.UnityClientTests
             Assert.That(view.Session.IsPresenting, Is.False);
             Assert.That(view.Board.InputEnabled, Is.True);
         }
+        [UnityTest] public IEnumerator RejectedDragReturnsFromTheFingerWithoutConsumingAMove()
+        {
+            view.BeginLevelOne();
+            yield return ChapterEntryWait.Ready(view);
+            var before = view.Session.Snapshot;
+            var model = new HexMatch(view.Session.Level, before);
+            int from = -1, to = -1;
+            for (int a = 0; a < before.values.Length && from < 0; a++)
+                for (int b = a + 1; b < before.values.Length; b++)
+                    if (before.values[a] != before.values[b] && model.Adjacent(a, b) && !model.Clone().Swap(a, b).ok)
+                    {
+                        from = a; to = b; break;
+                    }
+            Assert.That(from, Is.GreaterThanOrEqualTo(0));
+            var source = GameObject.Find("Stone_" + from).transform;
+            var target = GameObject.Find("Stone_" + to).transform;
+            Vector3 sourceStart = source.position, targetStart = target.position;
+            Pointer(from, true);
+            var drag = new PointerEventData(EventSystem.current) { pointerId = 7, position = ScreenPoint(to) };
+            ExecuteEvents.Execute(view.Board.gameObject, drag, ExecuteEvents.dragHandler);
+            Vector3 held = source.position;
+            float heldDistance = Vector3.Distance(sourceStart, held);
+            Assert.That(heldDistance, Is.GreaterThan(.05f));
+            Pointer(to, false);
+            Assert.That(view.Board.IsAnimating, Is.True);
+            Assert.That(Vector3.Distance(source.position, held), Is.LessThan(.001f));
+            float deadline = Time.realtimeSinceStartup + 4;
+            while (view.Board.IsAnimating && Time.realtimeSinceStartup < deadline)
+            {
+                Assert.That(Vector3.Distance(source.position, sourceStart), Is.LessThanOrEqualTo(heldDistance + .001f));
+                yield return null;
+            }
+            Assert.That(view.Board.InputEnabled && !view.Board.IsAnimating, Is.True);
+            Assert.That(source.position, Is.EqualTo(sourceStart));
+            Assert.That(target.position, Is.EqualTo(targetStart));
+            Assert.That(view.Session.Snapshot.movesLeft, Is.EqualTo(before.movesLeft));
+            Assert.That(view.Session.Snapshot.turn, Is.EqualTo(before.turn));
+        }
+
         [UnityTest] public IEnumerator BackgroundPauseAndRestartCancelDisposableAnimation()
         {
-            view.BeginLevelOne(); yield return null;
+            view.BeginLevelOne();
+            yield return ChapterEntryWait.Ready(view);
             var pair = new HexMatch(view.Session.Level, view.Session.Snapshot).LegalMoves()[0];
             view.RequestSwap(pair[0], pair[1]);
             Assert.That(view.Board.IsAnimating, Is.True);
@@ -96,7 +136,8 @@ namespace Hexrota.UnityClientTests
             Assert.That(view.Board.InputEnabled, Is.False, "Backgrounded board stays behind pause UI.");
             view.OnWebVisibilityChanged("visible");
             view.Resume();
-            view.Restart(); yield return null;
+            view.Restart();
+            yield return ChapterEntryWait.Ready(view);
             Assert.That(view.Session.Snapshot.turn, Is.Zero);
             Assert.That(view.Session.IsPresenting, Is.False);
             Assert.That(view.Board.IsAnimating, Is.False);
@@ -108,7 +149,7 @@ namespace Hexrota.UnityClientTests
         [UnityTest] public IEnumerator AllLevelOneCellsPickThroughTheCanvasAndTapsAndDragCommitRealTurns()
         {
             view.BeginLevelOne();
-            yield return null;
+            yield return ChapterEntryWait.Ready(view);
             Canvas.ForceUpdateCanvases();
             var events=EventSystem.current;
             var module=events.GetComponent<StandaloneInputModule>();

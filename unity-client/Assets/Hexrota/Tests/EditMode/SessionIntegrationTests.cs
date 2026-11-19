@@ -55,11 +55,7 @@ namespace Hexrota.UnityClientTests
         }
         private int[][] CertifiedRoute()
         {
-            var variants = JObject.Parse(Document("HexrotaData/variants"));
-            var level = variants["levels"].Single(x => x["levelId"].Value<int>() == Convert.ToInt32(session.Level.id));
-            var initial = session.Level.initial.Select(x => x.Value).ToArray();
-            var variant = level["variants"].Single(v => v["initial"].Values<int>().SequenceEqual(initial));
-            return variant["solutions"][0].Select(pair => pair.Values<int>().ToArray()).ToArray();
+            return CampaignTestRoute.ForActiveAttempt(data, session, storage);
         }
         private static void SameSnapshot(GameSnapshot expected, GameSnapshot actual)
         {
@@ -301,16 +297,12 @@ namespace Hexrota.UnityClientTests
             }
         }
 
-        [Test] public void EarnedGoldRescuesTheSameAttemptOnceAndRestoresTheGrantedMoves()
+        private void CompleteStagesBefore(int nextIndex)
         {
-            // Earn the welcome reward and campaign gold through actual clears.
-            // No changes to wallet, snapshots or rules to manufacture this offer.
-            for (int stage = 0; stage < 8; stage++)
+            for (int stage = 0; stage < nextIndex; stage++)
             {
                 Assert.That(session.EnterStage(stage), Is.True, session.LastError);
-                var route = session.IsTutorial
-                    ? W.List(data.Levels[stage]["solution"]).Select(p => W.List(p).Select(W.Int32).ToArray()).ToArray()
-                    : CertifiedRoute();
+                var route = CertifiedRoute();
                 foreach (var pair in route)
                 {
                     if (session.NeedsTutorialAcknowledgement) Assert.That(session.AcknowledgeTutorial(), Is.True);
@@ -320,8 +312,51 @@ namespace Hexrota.UnityClientTests
                 }
                 Assert.That(session.Status, Is.EqualTo("won"));
             }
+        }
+
+        [Test] public void MaskedCampaignLossOffersNoAssistanceAndStartsFreshOnReentry()
+        {
+            int sixth = session.TutorialCount + 5;
+            CompleteStagesBefore(sixth);
+            Assert.That(session.EnterStage(sixth), Is.True, session.LastError);
+            Assert.That(session.UsesNineByNineFrame, Is.True);
+            var profile = storage.Read(ProfileRepository.ProfileKey);
+            Assert.That(session.InventoryAvailable, Is.False);
+            Assert.That(session.PreviewInventoryItem("greenBrush", 0, null), Is.Null);
+            Assert.That(session.BuyInventoryItem("greenBrush", session.Revision), Is.False);
+            Assert.That(W.Equal(profile, storage.Read(ProfileRepository.ProfileKey)), Is.True);
+            PlayALosingRoute();
+            string lostAttempt = session.AttemptId;
+            profile = storage.Read(ProfileRepository.ProfileKey);
+            Assert.That(session.GetGoldRescueOffer(), Is.Null);
+            Assert.That(session.ReadRescueAd(), Is.Null);
+            Assert.That(session.BeginMobileRescueAd(), Is.Null);
+            Assert.That(session.GetChapterPreview(sixth).Rescue, Is.False);
+            Assert.That(W.Equal(profile, storage.Read(ProfileRepository.ProfileKey)), Is.True);
+            session.ReturnToMenu();
+            session = new UnityGameSession(data, storage, new Clock());
+            Assert.That(session.EnterStage(sixth), Is.True, session.LastError);
+            Assert.That(session.AttemptId, Is.Not.EqualTo(lostAttempt));
+            Assert.That(session.Snapshot.turn, Is.Zero);
+            Assert.That(session.UsesNineByNineFrame, Is.True);
+        }
+
+        [Test] public void EarnedGoldRescuesTheSameAttemptOnceAndRestoresTheGrantedMoves()
+        {
+            // Start an archived classic attempt with enough earned gold. Its saved identity
+            // must still support rescue after the application adopts the larger chapter layouts.
+            data = ClientGameData.FromResources(false);
+            session = new UnityGameSession(data, storage, new Clock());
+            CompleteStagesBefore(8);
             int next = session.NextCampaignStage;
             Assert.That(session.EnterStage(next), Is.True);
+            string classicAttempt = session.AttemptId;
+            session.ReturnToMenu();
+            data = ClientGameData.FromResources();
+            session = new UnityGameSession(data, storage, new Clock());
+            Assert.That(session.EnterStage(next), Is.True, session.LastError);
+            Assert.That(session.AttemptId, Is.EqualTo(classicAttempt));
+            Assert.That(session.Level.rulesVersion, Is.EqualTo("classic-v4"));
             PlayALosingRoute();
             var offer = session.GetGoldRescueOffer();
             Assert.That(offer, Is.Not.Null);
