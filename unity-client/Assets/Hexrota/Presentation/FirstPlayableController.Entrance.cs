@@ -33,24 +33,24 @@ namespace Hexrota.UnityClient.Presentation
             Board.InputEnabled = false;
             gameplayInput.interactable = gameplayInput.blocksRaycasts = false;
             bool reduced = Session.ReducedMotion;
-            int chapterIndex = Session.IsTutorial ? Session.ActiveStage : Session.ActiveStage - Session.TutorialCount;
-            chapterLoading.Show(chapterIndex, Session.CompletedSceneTutorials, reduced);
+            chapterLoading.Show(Session.CompletedSceneTutorials, reduced);
             entrance = StartCoroutine(EnterChapter(reduced));
         }
 
         private IEnumerator EnterChapter(bool reduced)
         {
             float closeTime = reduced ? 0f : .43f;
-            const float hold = 2.25f;
+            const float hold = .42f;
             float openTime = reduced ? 0f : .42f;
             float elapsed = 0f;
             while (elapsed < closeTime)
             {
-                chapterLoading.SetTransition(elapsed / closeTime, 0f);
+                chapterLoading.SetCoverage(elapsed / closeTime);
                 yield return null;
                 elapsed += Time.unscaledDeltaTime;
             }
-            chapterLoading.SetTransition(1f, 0f);
+            chapterLoading.SetCoverage(1f);
+            chapterLoading.SetLoadingLabel(true);
             // Present an opaque frame before instantiating the board beneath it.
             yield return null;
             PrepareCurrentBoard();
@@ -62,14 +62,11 @@ namespace Hexrota.UnityClient.Presentation
             SetBoardSlide(reduced ? 1f : 0f);
             if (reduced) Board.SetEntranceFill(1f);
 
-            for (float t = 0; t < hold; t += Time.unscaledDeltaTime)
-            {
-                chapterLoading.SetTransition(1f, t / hold);
-                yield return null;
-            }
+            yield return new WaitForSecondsRealtime(hold);
+            chapterLoading.SetLoadingLabel(false);
             for (float t = 0; t < openTime; t += Time.unscaledDeltaTime)
             {
-                chapterLoading.SetTransition(1f - t / openTime, 1f);
+                chapterLoading.SetCoverage(1f - t / openTime);
                 yield return null;
             }
             chapterLoading.Hide();

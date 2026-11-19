@@ -58,46 +58,27 @@ namespace Hexrota.UnityClientTests
         }
 
         [Test]
-        public void LoadingFieldGuideProvidesAnEditableIllustrationForEachTip()
+        public void LoadingPrefabContainsOnlyTheBackdropAndEditableCenteredLabel()
         {
             var prefab = Resources.Load<GameObject>("CastleGame/ChapterLoading");
             Assert.That(PrefabUtility.IsPartOfPrefabAsset(prefab), Is.True);
-            var guide = new SerializedObject(prefab.GetComponent<ChapterLoadingView>());
-            var tips = guide.FindProperty("tips");
-            Assert.That(tips.arraySize, Is.GreaterThan(1));
-            for (int i = 0; i < tips.arraySize; i++)
-            {
-                var tip = tips.GetArrayElementAtIndex(i);
-                Assert.That(tip.FindPropertyRelative("heading").stringValue, Is.Not.Empty);
-                Assert.That(tip.FindPropertyRelative("body").stringValue, Is.Not.Empty);
-                var diagram = tip.FindPropertyRelative("diagram").objectReferenceValue as GameObject;
-                Assert.That(diagram, Is.Not.Null);
-                Assert.That(diagram.transform.childCount, Is.Positive);
-            }
+            var loading = new SerializedObject(prefab.GetComponent<ChapterLoadingView>());
             Assert.That(prefab.GetComponent<CanvasGroup>().blocksRaycasts, Is.True);
             var landscape = prefab.transform.Find("CastleLandscape");
             AssertSprite(landscape, "foundation_0");
             Assert.That(landscape.GetComponent<UnityEngine.UI.Image>().raycastTarget, Is.True);
             Assert.That(landscape.GetComponent<CastleHomeBackdrop>(), Is.Not.Null);
-            var backdrops = guide.FindProperty("coopStages");
+            var backdrops = loading.FindProperty("coopStages");
             Assert.That(Enumerable.Range(0, backdrops.arraySize).Select(i =>
                 backdrops.GetArrayElementAtIndex(i).objectReferenceValue.name),
                 Is.EqualTo(new[] { "foundation_0", "frame_0", "finished_0" }));
-            var card = prefab.transform.Find("SafeContent/TipCard");
-            AssertSprite(card.Find("GildedTitleCrest"), "CrestBanner");
-            var tavik = card.Find("IllustrationFrame/InlaidEnamel/TavikPoints").GetComponent<UnityEngine.UI.RawImage>();
-            Assert.That(tavik.texture.name, Is.EqualTo("point"));
-            Assert.That(tavik.uvRect, Is.EqualTo(new Rect(0, 0, 1, 1)));
-            Assert.That(guide.FindProperty("progressFill").objectReferenceValue, Is.EqualTo(
-                card.Find("LoadingStatus/LoadingTrack/TrackInterior/GreenProgress")));
-
-            var digits = prefab.GetComponentsInChildren<UnityEngine.UI.Text>(true).Where(label => label.name == "Digit").ToArray();
-            Assert.That(digits.Select(label => label.text), Is.EquivalentTo(new[] { "2", "2", "2", "4", "4", "4" }));
-            foreach (var digit in digits)
-            {
-                AssertSprite(digit.transform.parent, digit.text == "2" ? "TipStone_02_Yellow" : "TipStone_04_Turquoise");
-                Assert.That(digit.GetComponent<UnityEngine.UI.Outline>(), Is.Not.Null);
-            }
+            Assert.That(prefab.transform.childCount, Is.EqualTo(2));
+            var label = prefab.GetComponentsInChildren<UnityEngine.UI.Text>(true).Single();
+            Assert.That(loading.FindProperty("loadingLabel").objectReferenceValue, Is.SameAs(label));
+            Assert.That(label.text, Is.EqualTo("Yükleniyor…"));
+            Assert.That(label.gameObject.activeSelf, Is.False);
+            Assert.That(label.alignment, Is.EqualTo(TextAnchor.MiddleCenter));
+            Assert.That(label.rectTransform.anchoredPosition, Is.EqualTo(Vector2.zero));
         }
 
         [Test]
