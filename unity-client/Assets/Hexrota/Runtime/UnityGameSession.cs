@@ -247,10 +247,12 @@ namespace Hexrota.UnityClient
             }
         }
         public UnityGameSession(ClientGameData data, IProfileStorage storage, IUtcClock clock, uint selectionSeed = 4303818,
-            Func<long> playtestMilliseconds = null)
+            Func<long> playtestMilliseconds = null, CoopConfig coop = null)
         {
             if (data == null) throw new ArgumentNullException("data");
             this.data = data;
+            profileStorage = storage;
+            coopConfig = coop != null ? coop : CoopConfig.Load();
             controller = new GameSessionController(data.Catalog, data.Levels, data.TutorialCount,
                 new ProfileRepository(storage), data.LifeConfig, clock, selectionSeed,
                 "hexrota-unity-test", data.RewardRules, economyConfig: data.EconomyConfig,
