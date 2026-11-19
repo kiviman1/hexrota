@@ -29,13 +29,14 @@ namespace Hexrota.UnityClientTests
             FirstPlayableController.SessionFactory = () => new UnityGameSession(ClientGameData.FromResources(),
                 new MemoryProfileStorage(), new SystemUtcClock());
             yield return SceneManager.LoadSceneAsync("FirstPlayable");
-            game = UnityEngine.Object.FindFirstObjectByType<FirstPlayableController>();
+            game = UnityEngine.Object.FindAnyObjectByType<FirstPlayableController>();
         }
 
         private IEnumerator OpenLesson(bool reduced = false)
         {
             Assert.That(game.Session.SetPreferences(motion: reduced ? "reduce" : "full"), Is.True);
-            game.BeginJourney();
+            // This fixture has neighbours one and two hexes along the same swipe axis.
+            game.BeginStage(0);
             yield return ChapterEntryWait.Ready(game);
             board = game.Board;
             int[] pair = game.Session.TutorialPair;
@@ -104,6 +105,40 @@ namespace Hexrota.UnityClientTests
         }
 
         [UnityTest]
+        public IEnumerator DirectionCommitsBeforeReleaseAndTheHeldFingerCannotSendAnotherMove()
+        {
+            yield return OpenLesson();
+            var source = GameObject.Find("Stone_" + legalSwap.x).transform;
+            Vector3 home = source.position;
+            Vector3 shape = source.localScale;
+            Quaternion orientation = source.localRotation;
+            var art = source.Find("Model");
+            Quaternion artOrientation = art.rotation;
+            var finger = Down(start);
+            Drag(finger, start + (end - start).normalized * 8f + new Vector2(.5f, -.5f));
+            Assert.That(source.position, Is.EqualTo(home));
+            Assert.That(source.localScale, Is.Not.EqualTo(shape));
+            Assert.That(Quaternion.Angle(art.rotation, artOrientation), Is.LessThan(.1f));
+            Assert.That(requests, Is.Empty);
+            Drag(finger, start);
+            Assert.That(source.localScale, Is.EqualTo(shape));
+            Drag(finger, start + (end - start).normalized * 8f);
+            ExecuteEvents.Execute(board.gameObject, finger, ExecuteEvents.cancelHandler);
+            Assert.That(source.localScale, Is.EqualTo(shape));
+            Assert.That(source.localRotation, Is.EqualTo(orientation));
+            Assert.That(Quaternion.Angle(art.rotation, artOrientation), Is.LessThan(.1f));
+            finger = Down(start);
+            Drag(finger, end);
+            AssertOnlyLegalSwap();
+            float deadline = Time.realtimeSinceStartup + 8f;
+            while (board.IsAnimating && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.That(board.IsAnimating, Is.False);
+            Drag(finger, start);
+            Up(finger, end);
+            AssertOnlyLegalSwap();
+        }
+
+        [UnityTest]
         public IEnumerator PassingAcrossTheNeighbourToTheNextStoneStillCommitsOneAdjacentSwap()
         {
             yield return OpenLesson();
@@ -118,7 +153,7 @@ namespace Hexrota.UnityClientTests
         }
 
         [UnityTest]
-        public IEnumerator BetweenAxesAndConflictingDirectionsRestoreTheBoardWithoutSendingACommand()
+        public IEnumerator BetweenAxesDoesNotSendACommand()
         {
             yield return OpenLesson();
             Vector2 axis = end - start;
@@ -131,25 +166,20 @@ namespace Hexrota.UnityClientTests
             Drag(finger, between);
             Assert.That(source.position, Is.EqualTo(home), "A bisector is outside both recognition cones.");
             Up(finger, between);
-            finger = Down(start);
-            Drag(finger, end);
-            Assert.That(source.position, Is.Not.EqualTo(home));
-            Drag(finger, start + otherAxis);
-            Up(finger, end);
-            Assert.That(requests, Is.Empty, "Returning to the first axis must not revive a conflicted swipe.");
+            Assert.That(requests, Is.Empty);
             Assert.That(source.position, Is.EqualTo(home));
             Assert.That(game.Session.Snapshot.turn, Is.Zero);
         }
 
         [UnityTest]
-        public IEnumerator SecondFingerClearsThePreviewAndBothContactsBeforeTheNextTapPair()
+        public IEnumerator SecondFingerCancelsAnUncommittedSwipeBeforeTheNextTapPair()
         {
             yield return OpenLesson();
             var source = GameObject.Find("Stone_" + legalSwap.x).transform;
             Vector3 home = source.position;
             var first = Down(start);
-            Drag(first, end);
-            Assert.That(source.position, Is.Not.EqualTo(home));
+            Drag(first, start + (end - start).normalized * 4f);
+            Assert.That(source.position, Is.EqualTo(home));
             var second = Down(end, 8);
             Assert.That(source.position, Is.EqualTo(home));
             Up(second, end);
@@ -174,6 +204,7 @@ namespace Hexrota.UnityClientTests
             Vector2 flick = Vector2.Lerp(start, end, .43f);
             var finger = Down(start);
             Drag(finger, flick);
+            AssertOnlyLegalSwap();
             Assert.That(board.ReducedMotion, Is.True);
             Assert.That(source.position, Is.EqualTo(sourceHome));
             Assert.That(target.position, Is.EqualTo(targetHome));

@@ -7,19 +7,89 @@ namespace Hexrota.UnityClient
 {
     public sealed partial class UnityGameSession
     {
-        // Match state-selectors.js committedTutorialProgress, including a numbered
-        // attempt started from the map before the lessons have been replayed.
+        private long openingRevision = -1;
+        private int[] openingPair, openingMatches;
+
+        private bool FirstAttemptAtTurn(int chapter, int turn)
+        {
+            if (!HasAttempt || ActiveStage != TutorialCount + chapter - 1 || Status != "playing" || Snapshot.turn != turn)
+                return false;
+            var stats = W.Get(controller.GameSave["attemptStats"], ActiveStage.ToString());
+            return W.Equal(W.Get(stats, "attemptNumber"), 1L);
+        }
+
+        private void ReadOpeningMove()
+        {
+            if (!inGame) { openingRevision = -1; openingPair = openingMatches = null; return; }
+            if (openingRevision == Revision) return;
+            openingRevision = Revision;
+            openingPair = openingMatches = null;
+            if (!HasAttempt || ActiveStage != TutorialCount || Status != "playing" || Snapshot.turn != 0 ||
+                IsStageComplete(TutorialCount - 1) || PlayedEarlierFirstChapterAttempt()) return;
+            var level = ActiveLevelWire;
+            var archive = W.Get(data.ArchivedOpeningSolutions, (string)W.Get(level, "levelDataVersion", LevelCatalog.LegacyDataVersion));
+            var route = W.List(W.Get(archive, (string)W.Get(level, "variantId", LevelCatalog.LegacyVariantId), level["solution"]));
+            if (route.Count == 0) return;
+            var pair = W.List(route[0]);
+            int from = W.Int32(pair[0]), to = W.Int32(pair[1]);
+            var board = new Hexrota.Gameplay.HexMatch(LevelCatalog.GameplayConfig(level), Snapshot);
+            var swap = board.Swap(from, to);
+            if (!swap.ok || swap.frames.Length != 1 || swap.frames[0].matched.Length != 3) return;
+            openingMatches = swap.frames[0].matched;
+            openingPair = !openingMatches.Contains(to) && openingMatches.Contains(from)
+                ? new[] { to, from } : new[] { from, to };
+        }
+
+        public bool ShouldTeachOpening { get { ReadOpeningMove(); return openingPair != null; } }
+        public int[] OpeningLessonPair { get { ReadOpeningMove(); return openingPair?.ToArray(); } }
+        public int[] OpeningLessonMatchIndices { get { ReadOpeningMove(); return openingMatches?.ToArray(); } }
+        public enum MechanicLesson { None, DoubleGround, Crates, FiveStone }
+
+        public MechanicLesson ChapterMechanicLesson
+        {
+            get
+            {
+                int chapter = ActiveStage - TutorialCount + 1;
+                if ((chapter != 3 && chapter != 6 && chapter != 8) || !FirstAttemptAtTurn(chapter, 0))
+                    return MechanicLesson.None;
+                // Saved attempts can resolve to an archived variant of the chapter.
+                var level = Level;
+                switch (chapter)
+                {
+                    case 3 when level.cells.Any(cell => cell.layers == 2): return MechanicLesson.DoubleGround;
+                    case 6 when level.obstacles?.blockers?.Length > 0: return MechanicLesson.Crates;
+                    case 8 when level.palette.Contains(5): return MechanicLesson.FiveStone;
+                    default: return MechanicLesson.None;
+                }
+            }
+        }
+
+        private bool PlayedEarlierFirstChapterAttempt()
+        {
+            // A fresh board replaces its predecessor. The life ledger retains the moves
+            // used on the settled attempt, including restarts whose charge was waived.
+            var life = W.Required(controller.EnergySave, "life");
+            var levelId = data.Levels[TutorialCount]["id"];
+            if (W.Map(W.Required(life, "settledAttempts")).Values.Any(row =>
+                W.Equal(W.Get(row, "levelId"), levelId) && W.Integer(W.Get(row, "movesUsed")) > 0)) return true;
+            var archive = W.Get(life, "settledArchive");
+            return archive != null && W.Map(archive).Values.Select(W.List)
+                .Any(row => W.Equal(row[0], levelId) && W.Integer(row[3]) > 0);
+        }
+
+        // The coop follows a real first swap and the first chapter win. Archived
+        // lesson checkpoints still contribute their earned scene progress.
         public int CompletedSceneTutorials
         {
             get
             {
                 var save=controller.GameSave;
-                int furthest=(int)W.Integer(W.Get(save,"current") ?? 0L);
-                foreach(string key in W.Map(save["boards"]).Keys.Concat(W.Map(save["attempts"]).Keys))
-                    furthest=Math.Max(furthest,int.Parse(key,System.Globalization.CultureInfo.InvariantCulture));
-                var done=W.List(save["done"]);
-                if(furthest>=TutorialCount || done.Any(value=>W.Int32(value)>=1)) return 2;
-                return furthest==1 || done.Any(value=>W.Int32(value)==0) ? 1 : 0;
+                var done = W.List(save["done"]);
+                if (done.Any(value => W.Int32(value) >= TutorialCount - 1)) return 2;
+                var boards = W.Map(save["boards"]);
+                var firstChapter = W.Get(boards, TutorialCount.ToString());
+                return done.Contains(0L) || boards.ContainsKey("1") ||
+                    W.Int32(W.Get(firstChapter, "turn", 0L)) > 0 || PlayedEarlierFirstChapterAttempt() ? 1 : 0;
             }
         }
 

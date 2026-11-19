@@ -28,7 +28,7 @@ namespace Hexrota.UnityClientTests
             FirstPlayableController.SessionFactory = () => new UnityGameSession(
                 ClientGameData.FromResources(), new MemoryProfileStorage(), new Clock());
             yield return SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
-            view = UnityEngine.Object.FindFirstObjectByType<FirstPlayableController>();
+            view = UnityEngine.Object.FindAnyObjectByType<FirstPlayableController>();
             Assert.That(view, Is.Not.Null, "Build settings must contain the checked-in gameplay scene.");
             Assert.That(view.Session, Is.Not.Null);
             yield return null;
@@ -58,7 +58,7 @@ namespace Hexrota.UnityClientTests
             yield return ChapterEntryWait.Ready(view);
             Assert.That(view.Session.HasAttempt, Is.True, view.Session.LastError);
             Assert.That(view.Board.InputEnabled, Is.True);
-            var pair = new HexMatch(view.Session.Level, view.Session.Snapshot).LegalMoves()[0];
+            var pair = view.Session.OpeningLessonPair;
             Pointer(pair[0], true); Pointer(pair[0], false);
             Assert.That(view.Board.SelectedIndex, Is.EqualTo(pair[0]));
             // Touch-sized drag through the board's EventSystem interfaces.
@@ -79,10 +79,11 @@ namespace Hexrota.UnityClientTests
             Assert.That(view.Session.IsPresenting, Is.False);
             Assert.That(view.Board.InputEnabled, Is.True);
         }
-        [UnityTest] public IEnumerator RejectedDragReturnsFromTheFingerWithoutConsumingAMove()
+        [UnityTest] public IEnumerator RejectedSwipeNudgesAndReturnsWithoutConsumingAMove()
         {
             view.BeginLevelOne();
             yield return ChapterEntryWait.Ready(view);
+            yield return ChapterEntryWait.PlayOpeningMove(view);
             var before = view.Session.Snapshot;
             var model = new HexMatch(view.Session.Level, before);
             int from = -1, to = -1;
@@ -99,18 +100,17 @@ namespace Hexrota.UnityClientTests
             Pointer(from, true);
             var drag = new PointerEventData(EventSystem.current) { pointerId = 7, position = ScreenPoint(to) };
             ExecuteEvents.Execute(view.Board.gameObject, drag, ExecuteEvents.dragHandler);
-            Vector3 held = source.position;
-            float heldDistance = Vector3.Distance(sourceStart, held);
-            Assert.That(heldDistance, Is.GreaterThan(.05f));
-            Pointer(to, false);
             Assert.That(view.Board.IsAnimating, Is.True);
-            Assert.That(Vector3.Distance(source.position, held), Is.LessThan(.001f));
+            Pointer(to, false);
+            float furthest = 0f;
             float deadline = Time.realtimeSinceStartup + 4;
             while (view.Board.IsAnimating && Time.realtimeSinceStartup < deadline)
             {
-                Assert.That(Vector3.Distance(source.position, sourceStart), Is.LessThanOrEqualTo(heldDistance + .001f));
+                furthest = Mathf.Max(furthest, Vector3.Distance(source.position, sourceStart));
                 yield return null;
             }
+            Assert.That(furthest, Is.GreaterThan(.05f));
+            Assert.That(furthest, Is.LessThan(Vector3.Distance(sourceStart, targetStart) * .5f));
             Assert.That(view.Board.InputEnabled && !view.Board.IsAnimating, Is.True);
             Assert.That(source.position, Is.EqualTo(sourceStart));
             Assert.That(target.position, Is.EqualTo(targetStart));
@@ -122,7 +122,7 @@ namespace Hexrota.UnityClientTests
         {
             view.BeginLevelOne();
             yield return ChapterEntryWait.Ready(view);
-            var pair = new HexMatch(view.Session.Level, view.Session.Snapshot).LegalMoves()[0];
+            var pair = view.Session.OpeningLessonPair;
             view.RequestSwap(pair[0], pair[1]);
             Assert.That(view.Board.IsAnimating, Is.True);
             var committed = view.Session.Snapshot;
@@ -169,7 +169,7 @@ namespace Hexrota.UnityClientTests
                     var target=ExecuteEvents.GetEventHandler<IPointerDownHandler>(hits[0].gameObject);
                     Assert.That(target,Is.SameAs(view.Board.gameObject),"Cell "+i+" hit "+hits[0].gameObject.name);
                 }
-                var pair=new HexMatch(view.Session.Level,view.Session.Snapshot).LegalMoves()[0];
+                var pair=view.Session.OpeningLessonPair;
                 Vector2 first=ScreenPoint(pair[0]),second=ScreenPoint(pair[1]);
                 device.Sample(module,TouchPhase.Began,first);
                 device.Sample(module,TouchPhase.Ended,first);

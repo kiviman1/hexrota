@@ -14,13 +14,17 @@ namespace Hexrota.UnityClient.Presentation
 
         private readonly List<OpeningStone> openingStones = new List<OpeningStone>();
         private float entranceSlide = 1f;
+        internal float EntranceFillSeconds { get; private set; }
 
         public void BeginEntrance(GameSnapshot snapshot)
         {
             EndEntrance();
             if (snapshot == null || !HasVisuals || snapshot.values.Length != positions.Length) return;
+            int movingColumns = 0;
             foreach (var column in columns)
             {
+                int firstStone = openingStones.Count;
+                int longestRun = 0;
                 int top = 0;
                 while (top < column.Length)
                 {
@@ -33,13 +37,13 @@ namespace Hexrota.UnityClient.Presentation
                     // closed cells and void spaces split a column into separate runs.
                     float ceiling = positions[column[top]].y + RowSpacing * .5f;
                     float distance = RowSpacing * (end - top);
+                    longestRun = Mathf.Max(longestRun, end - top);
                     for (int i = top; i < end; i++)
                     {
                         int cell = column[i];
                         Vector3 to = positions[cell] + Vector3.forward * StoneDepth;
                         var drop = new Drop { cell = cell, spawn = true, to = to,
-                            from = to + Vector3.up * distance, ceiling = ceiling,
-                            delay = Mathf.Min(.14f, (motionCells[cell].q - firstColumn) * .0175f) };
+                            from = to + Vector3.up * distance, ceiling = ceiling };
                         var stone = stones[cell];
                         openingStones.Add(new OpeningStone { drop = drop, restScale = stone.transform.localScale });
                         stone.transform.position = drop.from;
@@ -47,6 +51,17 @@ namespace Hexrota.UnityClient.Presentation
                     }
                     top = end;
                 }
+                if (longestRun == 0) continue;
+                float delay = movingColumns++ * .068f;
+                float duration = DropDuration(longestRun, 1f);
+                for (int i = firstStone; i < openingStones.Count; i++)
+                {
+                    var entry = openingStones[i];
+                    entry.drop.delay = delay;
+                    entry.drop.duration = duration;
+                    openingStones[i] = entry;
+                }
+                EntranceFillSeconds = Mathf.Max(EntranceFillSeconds, delay + duration);
             }
             SetEntranceSlide(0f);
         }
@@ -63,10 +78,11 @@ namespace Hexrota.UnityClient.Presentation
         public void SetEntranceFill(float progress)
         {
             if (entranceSlide < 1f || !HasVisuals) return;
+            float elapsed = Mathf.Clamp01(progress) * EntranceFillSeconds;
             foreach (var entry in openingStones)
             {
                 var drop = entry.drop;
-                float t = Mathf.InverseLerp(drop.delay, 1f, progress);
+                float t = Mathf.Clamp01((elapsed - drop.delay) / drop.duration);
                 DrawFall(drop, t);
                 var stone = stones[drop.cell];
                 bool inside = stone.transform.position.y < drop.ceiling;
@@ -88,6 +104,7 @@ namespace Hexrota.UnityClient.Presentation
                 stone.SetActive(true);
             }
             openingStones.Clear();
+            EntranceFillSeconds = 0f;
         }
     }
 }

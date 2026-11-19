@@ -48,6 +48,9 @@ const brushWin=expected[suite.fixture.cases.findIndex(row=>row.name==='brush-win
 const keyWin=expected[suite.fixture.cases.findIndex(row=>row.name==='key-wins-with-real-match')];assert.equal(keyWin.steps[1].after.status,'won');assert(keyWin.steps[1].result.scoreGain>=3);
 const frozen=JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures/command-vectors.json'),'utf8'));assert.deepEqual(suite.fixture,frozen,'frozen complete-output SHA256 detects command drift');
 const protectedFiles=['dist/engine.js','unity/Gameplay/HexMatch.cs','unity/Gameplay/GameplayTypes.cs','unity/Gameplay/BoardTopology.cs'];
+const wireReview=require('./fixtures/unity-gameplay-wire-protected.json');
+assert.equal(wireReview.baseline,'9ad3e319543522120a72572cf4edb784e84a9a8e');
+assert.deepEqual(Object.keys(wireReview.sha256),['unity/Gameplay/GameplayTypes.cs']);
 const materialReview=require('./fixtures/material-objectives-9-14-protected.json');
 assert.equal(materialReview.baseline,'f8d6b454f3989dc25921e5eee968a983fd3a762a','v6 extends only the reviewed latest-main boundary; all command output goldens remain unchanged');
 const flow=require('./fixtures/flow-integration-protected.json');
@@ -58,5 +61,5 @@ assert.deepEqual(Object.keys(validationProtection.sha256).sort(),['dist/engine.j
 const solverProtection=require('./fixtures/solver-integrity-protected.json');
 assert.equal(solverProtection.baseline,'11b0161e913904199198ca61f477f47bb11ad390');
 assert.deepEqual(Object.keys(solverProtection.sha256).sort(),['dist/engine.js','lib/level-analysis.cjs','unity/Hints/HintSolver.cs','unity/HintParityHarness/Program.cs','unity/HintParityHarness/Hexrota.HintParity.csproj','audit-observable.cjs','audit-solvability-9-9.cjs'].sort(),'reviewed solver/hint boundaries only; command output goldens above remain unchanged');
-for(const file of protectedFiles){const fingerprint=crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname,file))).digest('hex');assert.equal(fingerprint,materialReview.sha256[file]||flow.sha256[file]||obstacles.sha256[file]||solverProtection.sha256[file]||validationProtection.sha256[file]||require('./fixtures/command-core-hashes.json')[file],file+' classic source matches original or reviewed 9.9b boundary');}
+for(const file of protectedFiles){const fingerprint=crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname,file))).digest('hex');assert.equal(fingerprint,wireReview.sha256[file]||materialReview.sha256[file]||flow.sha256[file]||obstacles.sha256[file]||solverProtection.sha256[file]||validationProtection.sha256[file]||require('./fixtures/command-core-hashes.json')[file],file+' classic source matches original or reviewed 9.9b boundary');}
 console.log('Command mechanics passed: '+JSON.stringify({...suite.fixture.counts,...counts,cases:expected.length,outputMutationChecks:2,assistedHintChecks:1,classicSourceHashes:protectedFiles.length}));

@@ -22,10 +22,12 @@ namespace Hexrota.UnityClient.Presentation
         [Tooltip("Parmak ucunun görseldeki normalize konumu, sol alt köşeden itibaren.")]
         [SerializeField] private Vector2 fingertip = new Vector2(.405f, .99f);
         [SerializeField] private Text feedback;
+        [SerializeField] private OpeningLessonView openingLesson;
         private Color handTint;
 
         internal Text Feedback => feedback;
         internal TutorialGestureArrow DirectionArrow => arrow;
+        internal OpeningLessonView Opening => openingLesson;
         internal bool ShowingLesson => coachRegion != null && coachRegion.gameObject.activeSelf;
 
         internal void Bind(FirstPlayableController game)
@@ -66,7 +68,7 @@ namespace Hexrota.UnityClient.Presentation
 
         internal void ShowGuide(bool visible)
         {
-            gestureRegion.gameObject.SetActive(visible);
+            if (gestureRegion != null) gestureRegion.gameObject.SetActive(visible);
         }
 
         internal void MoveGuide(Vector2 from, Vector2 to, float position, float opacity, float boardAspect)

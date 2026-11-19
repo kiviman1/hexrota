@@ -11,7 +11,7 @@ const core = `${project}/Assets/Hexrota/Core`;
 const data = `${project}/Assets/Hexrota/Resources/HexrotaData`;
 const modules = ['Application', 'Catalog', 'Commands', 'Contracts', 'Economy', 'Gameplay', 'Hints', 'Lives', 'Rescue', 'RewardAdapter', 'Rewards', 'Story', 'StoryAdapter'];
 const documents = [
-  'data/levels-original.json', 'data/tutorials-fixed.json', 'dist/variants.json',
+  'data/levels-original.json', 'data/tutorials-fixed.json', 'dist/variants.json', 'data/chapter-one-openings-v1.json',
   'dist/lives-config.json', 'dist/reward-rules.json', 'data/economy-config-9-5.json',
   'data/obstacle-levels-v1.json', 'data/campaign-flow-levels-v1.json', 'data/campaign-flow-levels-v2.json',
   'data/material-alpha-levels-v1.json', 'data/story-content-v1.json',

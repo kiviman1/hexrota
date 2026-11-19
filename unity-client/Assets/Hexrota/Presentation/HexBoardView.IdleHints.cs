@@ -10,23 +10,27 @@ namespace Hexrota.UnityClient.Presentation
     {
         private readonly IdleHintClock idleClock = new IdleHintClock();
         private readonly List<Renderer> sourceModels = new List<Renderer>();
-        private readonly List<Renderer> matchModels = new List<Renderer>();
         private readonly List<Renderer> rendererBuffer = new List<Renderer>();
+        private static readonly Vector2Int[] HintCorners = {
+            new Vector2Int(2, 0), new Vector2Int(1, 1), new Vector2Int(-1, 1),
+            new Vector2Int(-2, 0), new Vector2Int(-1, -1), new Vector2Int(1, -1)
+        };
         private string idleAttempt;
         private Func<int[], VisibleIdleHint> chooseIdleHint;
         private VisibleIdleHint cachedHint, paintedHint;
-        private TutorialGestureArrow idleArrow;
+        private TutorialGestureArrow idleOutline;
+        private Transform hintedStone;
+        private Vector3 hintHome, hintDirection, hintScale;
         private float lastPulse = -1f;
         public bool ShowingIdleHint => paintedHint != null;
 
         internal void BindIdleHintOverlay(TutorialGestureArrow template)
         {
-            // Keep tutorial gestures and ordinary hints independently visible, but
-            // share the artist's colours and stroke settings from the tools prefab.
-            idleArrow = Instantiate(template, transform, false);
-            idleArrow.name = "IdleSwapDirection";
-            idleArrow.raycastTarget = false;
-            idleArrow.gameObject.SetActive(false);
+            // The coach still uses arrows. The idle hint shares its authored stroke style.
+            idleOutline = Instantiate(template, transform, false);
+            idleOutline.name = "IdleMatchOutline";
+            idleOutline.raycastTarget = false;
+            idleOutline.gameObject.SetActive(false);
         }
 
         public void BindIdleHints(string attemptId, Func<int[], VisibleIdleHint> choose)
@@ -54,7 +58,7 @@ namespace Hexrota.UnityClient.Presentation
 
         private void LateUpdate()
         {
-            if (idleAttempt == null || chooseIdleHint == null) return;
+            if (lessonPair != null || idleAttempt == null || chooseIdleHint == null) return;
             bool interactive = InputEnabled && !IsAnimating && BoardCamera != null && BoardCamera.enabled &&
                 pointer == int.MinValue && selected < 0 && targetCell == null && world != null;
             if (!interactive || Input.anyKeyDown || Input.touchCount > 0 || Input.mouseScrollDelta.sqrMagnitude > 0)
@@ -64,8 +68,7 @@ namespace Hexrota.UnityClient.Presentation
             }
 
             idleClock.Tick(Time.unscaledTimeAsDouble, true, chooseIdleHint);
-            // Reduced motion keeps one static direction, without repeated flashes.
-            var next = ReducedMotion ? idleClock.ActiveCue : idleClock.Visible;
+            var next = idleClock.ActiveCue;
             if (next == null)
             {
                 HidePaintedHint();
@@ -79,36 +82,74 @@ namespace Hexrota.UnityClient.Presentation
             if (paintedHint == null)
             {
                 paintedHint = next;
-                if (idleArrow != null)
+                if (idleOutline != null)
                 {
-                    idleArrow.SetPair(ViewportCell(next.MovingSource), ViewportCell(next.MovingTarget));
-                    idleArrow.gameObject.SetActive(true);
+                    idleOutline.SetPair(ViewportCell(next.MovingSource), ViewportCell(next.MovingTarget));
+                    idleOutline.gameObject.SetActive(true);
                 }
             }
 
-            float progress = Mathf.Clamp01(idleClock.Phase);
-            float pulse = ReducedMotion ? 0f : Mathf.Sin(progress * Mathf.PI);
-            if (idleArrow != null)
-                idleArrow.SetSweep(ReducedMotion ? -1f : Mathf.SmoothStep(0f, 1f, progress));
+            float phase = idleClock.Phase;
+            float pulse = ReducedMotion ? 0f : .5f - .5f * Mathf.Cos(phase * Mathf.PI);
+            if (idleOutline != null)
+                idleOutline.canvasRenderer.SetAlpha(ReducedMotion ? 1f : Mathf.Lerp(.66f, 1f, pulse));
+            // Three soft nudges, then a rest. The outline stays aligned to the board.
+            float tick = Mathf.Repeat(phase * 3f, 1f);
+            float lift = ReducedMotion || phase >= 1f ? 0f : Mathf.Sin(Mathf.PI * Mathf.Clamp01(tick / .82f));
+            float nudge = lift * lift;
+            if (hintedStone != null)
+            {
+                hintedStone.position = hintHome + hintDirection * nudge;
+                hintedStone.localScale = Vector3.Scale(hintScale, new Vector3(1f + .032f * nudge, 1f + .032f * nudge, 1f));
+            }
             if (Mathf.Approximately(lastPulse, pulse)) return;
             lastPulse = pulse;
-            SetIdleGlow(sourceModels, .75f, .13f * pulse);
-            SetIdleGlow(matchModels, .32f, .045f * pulse);
+            SetIdleGlow(sourceModels, .48f, .12f * pulse);
         }
 
         private void CacheHintModels(VisibleIdleHint hint)
         {
             ClearHintAppearance();
             cachedHint = hint;
-            foreach (int index in hint.FocusSources)
-            {
-                stones[index].GetComponentsInChildren(false, rendererBuffer);
-                var list = index == hint.MovingSource ? sourceModels : matchModels;
-                foreach (var renderer in rendererBuffer)
-                    if (!renderer.TryGetComponent<TextMesh>(out _)) list.Add(renderer);
-            }
+            var source = stones[hint.MovingSource];
+            hintedStone = source.transform;
+            hintHome = hintedStone.position;
+            hintScale = hintedStone.localScale;
+            hintDirection = (positions[hint.MovingTarget] - positions[hint.MovingSource]) * .108f;
+            source.GetComponentsInChildren(false, rendererBuffer);
+            foreach (var renderer in rendererBuffer)
+                if (!renderer.TryGetComponent<TextMesh>(out _)) sourceModels.Add(renderer);
             rendererBuffer.Clear();
+            if (idleOutline != null) idleOutline.SetMatchEdges(MatchPerimeter(hint));
         }
+
+        private Vector2[] MatchPerimeter(VisibleIdleHint hint)
+        {
+            // Shared edges have opposite directions on the integer hex lattice.
+            var edges = new HashSet<(Vector2Int from, Vector2Int to)>();
+            var cells = new HashSet<int>(hint.MatchDestinations) { hint.MovingSource };
+            foreach (int index in cells)
+            {
+                var cell = motionCells[index];
+                var center = new Vector2Int(3 * cell.q, -2 * cell.r - cell.q);
+                for (int i = 0; i < HintCorners.Length; i++)
+                {
+                    Vector2Int from = center + HintCorners[i], to = center + HintCorners[(i + 1) % HintCorners.Length];
+                    if (!edges.Remove((to, from))) edges.Add((from, to));
+                }
+            }
+            var perimeter = new Vector2[edges.Count * 2];
+            int point = 0;
+            foreach (var edge in edges)
+            {
+                perimeter[point++] = ProjectCorner(edge.from);
+                perimeter[point++] = ProjectCorner(edge.to);
+            }
+            return perimeter;
+        }
+
+        private Vector2 ProjectCorner(Vector2Int corner) =>
+            BoardCamera.WorldToViewportPoint(new Vector3(corner.x * .28f, corner.y * RowSpacing * .5f, 0f));
 
         private void SetIdleGlow(List<Renderer> models, float outline, float sheen)
         {
@@ -134,17 +175,21 @@ namespace Hexrota.UnityClient.Presentation
             if (paintedHint == null) return;
             paintedHint = null;
             lastPulse = -1f;
-            if (idleArrow != null) idleArrow.gameObject.SetActive(false);
+            if (idleOutline != null) idleOutline.gameObject.SetActive(false);
+            if (hintedStone != null)
+            {
+                hintedStone.position = hintHome;
+                hintedStone.localScale = hintScale;
+            }
             SetIdleGlow(sourceModels, 0, 0);
-            SetIdleGlow(matchModels, 0, 0);
         }
 
         private void ClearHintAppearance()
         {
             HidePaintedHint();
             cachedHint = null;
+            hintedStone = null;
             sourceModels.Clear();
-            matchModels.Clear();
         }
     }
 }

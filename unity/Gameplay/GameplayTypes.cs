@@ -1,9 +1,7 @@
-using System;
-
 namespace Hexrota.Gameplay
 {
-    // Wire names intentionally match the existing classic-v4 JSON contract.
-    [Serializable]
+    // These runtime records use the game's JSON adapters. The public fields and their
+    // wire names preserve nullable cells, mixed level IDs and the move history.
     public sealed class Cell
     {
         public int q;
@@ -11,7 +9,6 @@ namespace Hexrota.Gameplay
         public int layers = 1;
     }
 
-    [Serializable]
     public sealed class BlockerConfig
     {
         public string id;
@@ -20,7 +17,6 @@ namespace Hexrota.Gameplay
         public string regionId;
         public bool? required;
     }
-    [Serializable]
     public sealed class RegionConfig
     {
         public string id;
@@ -28,7 +24,6 @@ namespace Hexrota.Gameplay
         public string[] requires;
         public bool? required;
     }
-    [Serializable]
     public sealed class ObstaclesConfig
     {
         public string version;
@@ -37,7 +32,6 @@ namespace Hexrota.Gameplay
         public BlockerConfig[] blockers;
         public RegionConfig[] regions;
     }
-    [Serializable]
     public sealed class BlockerHit
     {
         public string id;
@@ -46,12 +40,10 @@ namespace Hexrota.Gameplay
         public int hp;
     }
 
-    [Serializable]
     public sealed class MaterialDefinition
     {
         public string id;
     }
-    [Serializable]
     public sealed class MaterialSource
     {
         public string id;
@@ -61,20 +53,17 @@ namespace Hexrota.Gameplay
         public int cell;
         public string blockerId;
     }
-    [Serializable]
     public sealed class MaterialConfig
     {
         public string version;
         public MaterialDefinition[] definitions;
         public MaterialSource[] sources;
     }
-    [Serializable]
     public sealed class MaterialGoal
     {
         public string materialId;
         public int quantity;
     }
-    [Serializable]
     public sealed class ObjectiveConfig
     {
         public string version;
@@ -82,7 +71,6 @@ namespace Hexrota.Gameplay
         public bool? ground;
         public MaterialGoal[] materials;
     }
-    [Serializable]
     public sealed class MaterialEvent
     {
         public string sourceId;
@@ -92,7 +80,6 @@ namespace Hexrota.Gameplay
         public string kind;
     }
 
-    [Serializable]
     public sealed class LevelConfig
     {
         // Campaign IDs are numbers; tutorial IDs are strings. The host JSON adapter
@@ -111,7 +98,6 @@ namespace Hexrota.Gameplay
         public ObjectiveConfig objectives;
     }
 
-    [Serializable]
     public sealed class GameSnapshot
     {
         public int version = 4;
@@ -134,7 +120,6 @@ namespace Hexrota.Gameplay
         public string status;
     }
 
-    [Serializable]
     public sealed class RefillTile
     {
         public int index;
@@ -143,7 +128,6 @@ namespace Hexrota.Gameplay
         public int minMatches;
     }
 
-    [Serializable]
     public sealed class FallTile
     {
         public int? from;
@@ -155,7 +139,6 @@ namespace Hexrota.Gameplay
         public int? spawnCount;
     }
 
-    [Serializable]
     public sealed class GravityResult
     {
         public int?[] compacted;
@@ -163,7 +146,6 @@ namespace Hexrota.Gameplay
         public FallTile[] falls;
     }
 
-    [Serializable]
     public sealed class WaveFrame
     {
         public MaterialEvent[] materialEvents;
@@ -186,7 +168,6 @@ namespace Hexrota.Gameplay
         public FallTile[] falls;
     }
 
-    [Serializable]
     public sealed class SwapResult
     {
         public bool ok;

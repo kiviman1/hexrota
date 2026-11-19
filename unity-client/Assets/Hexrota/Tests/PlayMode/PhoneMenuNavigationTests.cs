@@ -188,8 +188,8 @@ namespace Hexrota.UnityClientTests
         {
             TapHomeButton("PlayButton");
             yield return ChapterEntryWait.Ready(controller);
-            Assert.That(controller.Session.ActiveStage,Is.Zero);
-            Assert.That(controller.Session.CompletedSceneTutorials,Is.Zero);
+            Assert.That(controller.Session.ActiveStage,Is.EqualTo(controller.Session.TutorialCount));
+            Assert.That(controller.Session.OpeningLessonPair,Has.Length.EqualTo(2));
             controller.ReturnToMenu();
             yield return null;
             TapHomeButton("JourneyButton");
@@ -206,7 +206,7 @@ namespace Hexrota.UnityClientTests
             yield return ChapterEntryWait.Ready(controller);
             Assert.That(controller.CurrentScreen,Is.EqualTo("playing"));
             Assert.That(controller.Session.ActiveStage,Is.EqualTo(2));
-            Assert.That(controller.Session.CompletedSceneTutorials,Is.EqualTo(2));
+            Assert.That(controller.Session.CompletedSceneTutorials,Is.Zero);
             Assert.That(controller.Session.Snapshot.values.Length,Is.EqualTo(19));
             yield return null;
             LogAssert.NoUnexpectedReceived();

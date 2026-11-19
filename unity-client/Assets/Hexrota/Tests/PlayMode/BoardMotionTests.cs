@@ -28,7 +28,8 @@ namespace Hexrota.UnityClientTests
             FirstPlayableController.SessionFactory = () => new UnityGameSession(ClientGameData.FromResources(), storage, new SystemUtcClock());
             yield return SceneManager.LoadSceneAsync("FirstPlayable");
             game = UnityEngine.Object.FindAnyObjectByType<FirstPlayableController>();
-            game.BeginJourney();
+            // The archived fixture has a known first-wave survivor for this motion test.
+            game.BeginStage(0);
             yield return ChapterEntryWait.Ready(game);
             world = game.gameObject.scene.GetRootGameObjects().Single(obj => obj.name == "BoardVisuals_PLACEHOLDER").transform;
         }
@@ -44,7 +45,7 @@ namespace Hexrota.UnityClientTests
         private Transform Stone(int index) => world.Find("Stone_" + index);
 
         [UnityTest]
-        public IEnumerator DragTracksTheFingerAndHandsTheSameStonesToTheCommittedWave()
+        public IEnumerator SwipeHandsTheSameStonesToTheCommittedWaveBeforeRelease()
         {
             var board = game.Board;
             var pair = game.Session.TutorialPair;
@@ -55,11 +56,6 @@ namespace Hexrota.UnityClientTests
             pointer.position = board.BoardCamera.WorldToScreenPoint(a0);
             board.OnPointerDown(pointer);
             pointer.position = board.BoardCamera.WorldToScreenPoint(b0);
-            board.OnDrag(pointer);
-            Vector3 held = a.position;
-            Assert.That(Vector3.Distance(held, a0), Is.GreaterThan(.05f));
-            Assert.That(Vector3.Distance(b.position, b0), Is.GreaterThan(.05f));
-            Assert.That(game.Session.Snapshot.turn, Is.Zero);
 
             var beforeFalls = new Dictionary<int, Transform>();
             var effects = world.Find("Effects");
@@ -79,9 +75,9 @@ namespace Hexrota.UnityClientTests
                     if (Stone(survivor.Key) != survivor.Value) identityLost = true;
                 movingSurvivors = beforeFalls.Count;
             };
-            board.OnPointerUp(pointer);
-            Assert.That(Vector3.Distance(a.position, held), Is.LessThan(.02f), "Release must continue from the rendered drag pose.");
+            board.OnDrag(pointer);
             Assert.That(game.Session.Snapshot.turn, Is.EqualTo(1));
+            board.OnPointerUp(pointer);
             float deadline = Time.realtimeSinceStartup + 6;
             while (board.IsAnimating && Time.realtimeSinceStartup < deadline) yield return null;
             Assert.That(board.IsAnimating, Is.False);
@@ -104,9 +100,10 @@ namespace Hexrota.UnityClientTests
             {
                 p.position = board.BoardCamera.WorldToScreenPoint(a0);
                 board.OnPointerDown(p);
-                p.position = board.BoardCamera.WorldToScreenPoint(b0);
+                Vector2 heading = board.BoardCamera.WorldToScreenPoint(b0) - board.BoardCamera.WorldToScreenPoint(a0);
+                p.position += heading.normalized * 4f;
                 board.OnDrag(p);
-                Assert.That(Vector3.Distance(a.position, a0), Is.GreaterThan(.05f));
+                Assert.That(a.position, Is.EqualTo(a0));
                 if (cancel) board.OnCancel(p);
                 else
                 {

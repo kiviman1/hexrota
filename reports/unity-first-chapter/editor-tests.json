@@ -1,0 +1,384 @@
+{
+  "verifiedProjectFiles": 590,
+  "manifest": "88EFAA0A500C4A866849E44B54D39CC99284D88F0003208E0A6C449F83842996",
+  "editor": "6000.6.9f1",
+  "editMode": 48,
+  "playMode": 62,
+  "playModeFixtures": 17,
+  "pixelCapture": 1,
+  "skipped": 0,
+  "playModeCases": [
+    {
+      "name": "Hexrota.UnityClientTests.BoardCapacityTests.BreakingCratesRevealsAndRefillsTheNewlyConnectedCellsDuringTheWave",
+      "fixture": "BoardCapacityTests",
+      "result": "Passed",
+      "seconds": 2.004828
+    },
+    {
+      "name": "Hexrota.UnityClientTests.BoardCapacityTests.FiveMasksShareTheOddQFrameAndVoidsNeverBecomeTargets",
+      "fixture": "BoardCapacityTests",
+      "result": "Passed",
+      "seconds": 0.265212
+    },
+    {
+      "name": "Hexrota.UnityClientTests.BoardCapacityTests.OpeningGemsFallThroughTheirOwnColumnAndCancelRestoresTheExactMask",
+      "fixture": "BoardCapacityTests",
+      "result": "Passed",
+      "seconds": 0.204276
+    },
+    {
+      "name": "Hexrota.UnityClientTests.CampaignJourneyTests.HomePlayTeachesOnChapterOneAndTheSameSavedBoardWinsAndLeadsToChapterTwo",
+      "fixture": "CampaignJourneyTests",
+      "result": "Passed",
+      "seconds": 24.891039
+    },
+    {
+      "name": "Hexrota.UnityClientTests.CastleGameplayFlowTests.PlayShowsTutorialGoalsAndItsFirstSwapUpdatesEachVisibleLayer",
+      "fixture": "CastleGameplayFlowTests",
+      "result": "Passed",
+      "seconds": 6.102171
+    },
+    {
+      "name": "Hexrota.UnityClientTests.CastleGameplayFlowTests.TopSettingsKeepsOneHudAndTheCommittedMoveOnReturnToTheLevel",
+      "fixture": "CastleGameplayFlowTests",
+      "result": "Passed",
+      "seconds": 8.8903
+    },
+    {
+      "name": "Hexrota.UnityClientTests.CastleGameplayFlowTests.TutorialGloveShowsTheSwipeWhileBothPlayableStonesStayOnTheirCells",
+      "fixture": "CastleGameplayFlowTests",
+      "result": "Passed",
+      "seconds": 6.289368
+    },
+    {
+      "name": "Hexrota.UnityClientTests.HexBoardLifecycleTests.ControllerDisableAndEnablePausesCommittedSwapUntilResume",
+      "fixture": "HexBoardLifecycleTests",
+      "result": "Passed",
+      "seconds": 6.176972
+    },
+    {
+      "name": "Hexrota.UnityClientTests.HexBoardLifecycleTests.IdleControllerDisableLocksInputAndResumeAcceptsASwap",
+      "fixture": "HexBoardLifecycleTests",
+      "result": "Passed",
+      "seconds": 6.190685
+    },
+    {
+      "name": "Hexrota.UnityClientTests.HexBoardLifecycleTests.LevelOneShowsTintedNumberedStonesAndCompletesASwap",
+      "fixture": "HexBoardLifecycleTests",
+      "result": "Passed",
+      "seconds": 6.159863
+    },
+    {
+      "name": "Hexrota.UnityClientTests.HexBoardLifecycleTests.MissingDetachedVisualRootIsSafeDuringControllerTeardown",
+      "fixture": "HexBoardLifecycleTests",
+      "result": "Passed",
+      "seconds": 4.586032
+    },
+    {
+      "name": "Hexrota.UnityClientTests.HexBoardLifecycleTests.PauseDuringSwapPreservesCommittedBoardAndResumeAcceptsAnotherSwap",
+      "fixture": "HexBoardLifecycleTests",
+      "result": "Passed",
+      "seconds": 6.129029
+    },
+    {
+      "name": "Hexrota.UnityClientTests.HexBoardLifecycleTests.SceneUnloadDuringSwapLeavesNoCallbacksOrVisualRootsAndReloadCanSwap",
+      "fixture": "HexBoardLifecycleTests",
+      "result": "Passed",
+      "seconds": 10.529872
+    },
+    {
+      "name": "Hexrota.UnityClientTests.HexBoardLifecycleTests.ScorePacketFliesToTheHudAndPauseDiscardsItsVisuals",
+      "fixture": "HexBoardLifecycleTests",
+      "result": "Passed",
+      "seconds": 6.798163
+    },
+    {
+      "name": "Hexrota.UnityClientTests.HexBoardLifecycleTests.VisualRootDestroyedDuringSwapCancelsWithoutCommittingInvisibleMoves",
+      "fixture": "HexBoardLifecycleTests",
+      "result": "Passed",
+      "seconds": 4.601183
+    },
+    {
+      "name": "Hexrota.UnityClientTests.MatchScoreFlightTests.ARealCascadeDeliversEachWaveOnceToTheSameCounter",
+      "fixture": "MatchScoreFlightTests",
+      "result": "Passed",
+      "seconds": 9.737948
+    },
+    {
+      "name": "Hexrota.UnityClientTests.MatchScoreFlightTests.RealStonesMergeThenOneGainFliesToTheCounterBeforeItsImpact",
+      "fixture": "MatchScoreFlightTests",
+      "result": "Passed",
+      "seconds": 7.67781
+    },
+    {
+      "name": "Hexrota.UnityClientTests.MatchScoreFlightTests.ReducedMotionAppliesTheExactScoreWithoutPlayingTheCollectionOrFlight",
+      "fixture": "MatchScoreFlightTests",
+      "result": "Passed",
+      "seconds": 2.722447
+    },
+    {
+      "name": "Hexrota.UnityClientTests.MobileProgressPanelsTests.GardenShowsCanonicalMilestonesAndLinksToAllTenRecords",
+      "fixture": "MobileProgressPanelsTests",
+      "result": "Passed",
+      "seconds": 0.242575
+    },
+    {
+      "name": "Hexrota.UnityClientTests.MobileProgressPanelsTests.PauseResumeAndLockedInventoryUseTheCampaignBoard",
+      "fixture": "MobileProgressPanelsTests",
+      "result": "Passed",
+      "seconds": 4.554751
+    },
+    {
+      "name": "Hexrota.UnityClientTests.MobileProgressPanelsTests.PlaytestToggleAndClearKeepTheAttemptPlayable",
+      "fixture": "MobileProgressPanelsTests",
+      "result": "Passed",
+      "seconds": 4.566575
+    },
+    {
+      "name": "Hexrota.UnityClientTests.OpeningLessonFeedbackTests.ClassicChapterSixWithoutCratesGetsNoCrateLesson",
+      "fixture": "OpeningLessonFeedbackTests",
+      "result": "Passed",
+      "seconds": 5.264749
+    },
+    {
+      "name": "Hexrota.UnityClientTests.OpeningLessonFeedbackTests.HighlightShowsTheCommittedMatchAndTheSecondTurnIsFree",
+      "fixture": "OpeningLessonFeedbackTests",
+      "result": "Passed",
+      "seconds": 2.690412
+    },
+    {
+      "name": "Hexrota.UnityClientTests.OpeningLessonFeedbackTests.LaterChaptersIntroduceMechanicsOnlyWhereTheyFirstAppear",
+      "fixture": "OpeningLessonFeedbackTests",
+      "result": "Passed",
+      "seconds": 28.022154
+    },
+    {
+      "name": "Hexrota.UnityClientTests.OpeningLessonFeedbackTests.RemovingTheCoachViewReleasesItsInputAndDimming",
+      "fixture": "OpeningLessonFeedbackTests",
+      "result": "Passed",
+      "seconds": 2.698482
+    },
+    {
+      "name": "Hexrota.UnityClientTests.PhoneOptionsTests.BoardSettingsPersistAndTestCreditRequiresConfirmation",
+      "fixture": "PhoneOptionsTests",
+      "result": "Passed",
+      "seconds": 4.735047
+    },
+    {
+      "name": "Hexrota.UnityClientTests.BoardMotionTests.DragTracksTheFingerAndHandsTheSameStonesToTheCommittedWave",
+      "fixture": "BoardMotionTests",
+      "result": "Passed",
+      "seconds": 6.028697
+    },
+    {
+      "name": "Hexrota.UnityClientTests.BoardMotionTests.InterruptedOrOutOfBoardDragsRestoreBothStonesWithoutSpendingAMove",
+      "fixture": "BoardMotionTests",
+      "result": "Passed",
+      "seconds": 4.440323
+    },
+    {
+      "name": "Hexrota.UnityClientTests.BoardMotionTests.StackedRefillsEnterOneRowApartBelowAnIntactCrate",
+      "fixture": "BoardMotionTests",
+      "result": "Passed",
+      "seconds": 5.674763
+    },
+    {
+      "name": "Hexrota.UnityClientTests.BoardSwipeInputTests.BetweenAxesAndConflictingDirectionsRestoreTheBoardWithoutSendingACommand",
+      "fixture": "BoardSwipeInputTests",
+      "result": "Passed",
+      "seconds": 4.547802
+    },
+    {
+      "name": "Hexrota.UnityClientTests.BoardSwipeInputTests.FastReleaseInsideSourceCommitsTheDirectionWithoutAnIntermediateDragEvent",
+      "fixture": "BoardSwipeInputTests",
+      "result": "Passed",
+      "seconds": 4.542208
+    },
+    {
+      "name": "Hexrota.UnityClientTests.BoardSwipeInputTests.PassingAcrossTheNeighbourToTheNextStoneStillCommitsOneAdjacentSwap",
+      "fixture": "BoardSwipeInputTests",
+      "result": "Passed",
+      "seconds": 4.536771
+    },
+    {
+      "name": "Hexrota.UnityClientTests.BoardSwipeInputTests.ReducedMotionAcceptsAShortFlickWithoutDisplacingEitherStone",
+      "fixture": "BoardSwipeInputTests",
+      "result": "Passed",
+      "seconds": 2.684151
+    },
+    {
+      "name": "Hexrota.UnityClientTests.BoardSwipeInputTests.SecondFingerClearsThePreviewAndBothContactsBeforeTheNextTapPair",
+      "fixture": "BoardSwipeInputTests",
+      "result": "Passed",
+      "seconds": 4.542894
+    },
+    {
+      "name": "Hexrota.UnityClientTests.ChapterEntranceFlowTests.BackgroundAndComponentDisableDuringEntryRestoreTheSameAttempt",
+      "fixture": "ChapterEntranceFlowTests",
+      "result": "Passed",
+      "seconds": 3.005731
+    },
+    {
+      "name": "Hexrota.UnityClientTests.ChapterEntranceFlowTests.OnlyTheCompletedEntranceAcceptsASwap",
+      "fixture": "ChapterEntranceFlowTests",
+      "result": "Passed",
+      "seconds": 4.536474
+    },
+    {
+      "name": "Hexrota.UnityClientTests.ChapterEntranceFlowTests.ReducedMotionShowsASteadyTipAndMenuCancelsTheEntrance",
+      "fixture": "ChapterEntranceFlowTests",
+      "result": "Passed",
+      "seconds": 0.491726
+    },
+    {
+      "name": "Hexrota.UnityClientTests.ChapterVictoryTests.BackgroundDuringReducedMotionKeepsTheWinAndReleasesTheOverlay",
+      "fixture": "ChapterVictoryTests",
+      "result": "Passed",
+      "seconds": 3.993111
+    },
+    {
+      "name": "Hexrota.UnityClientTests.ChapterVictoryTests.LiveWinShowsTavikAfterScoreAndSkipsToTheSameEarnedResult",
+      "fixture": "ChapterVictoryTests",
+      "result": "Passed",
+      "seconds": 6.562189
+    },
+    {
+      "name": "Hexrota.UnityClientTests.FirstPlayableFlowTests.AllLevelOneCellsPickThroughTheCanvasAndTapsAndDragCommitRealTurns",
+      "fixture": "FirstPlayableFlowTests",
+      "result": "Passed",
+      "seconds": 6.18553
+    },
+    {
+      "name": "Hexrota.UnityClientTests.FirstPlayableFlowTests.BackgroundPauseAndRestartCancelDisposableAnimation",
+      "fixture": "FirstPlayableFlowTests",
+      "result": "Passed",
+      "seconds": 8.92523
+    },
+    {
+      "name": "Hexrota.UnityClientTests.FirstPlayableFlowTests.MissingOptionalVisualsKeepRealBoardAndTouchTargetsUsable",
+      "fixture": "FirstPlayableFlowTests",
+      "result": "Passed",
+      "seconds": 0.256735
+    },
+    {
+      "name": "Hexrota.UnityClientTests.FirstPlayableFlowTests.MobileViewportStaysInsideSafeArea(320,568,0,20,0,0)",
+      "fixture": "FirstPlayableFlowTests",
+      "result": "Passed",
+      "seconds": 0.179822
+    },
+    {
+      "name": "Hexrota.UnityClientTests.FirstPlayableFlowTests.MobileViewportStaysInsideSafeArea(375,667,0,20,0,0)",
+      "fixture": "FirstPlayableFlowTests",
+      "result": "Passed",
+      "seconds": 0.182255
+    },
+    {
+      "name": "Hexrota.UnityClientTests.FirstPlayableFlowTests.MobileViewportStaysInsideSafeArea(390,844,0,47,0,34)",
+      "fixture": "FirstPlayableFlowTests",
+      "result": "Passed",
+      "seconds": 0.185255
+    },
+    {
+      "name": "Hexrota.UnityClientTests.FirstPlayableFlowTests.MobileViewportStaysInsideSafeArea(430,932,0,59,0,34)",
+      "fixture": "FirstPlayableFlowTests",
+      "result": "Passed",
+      "seconds": 0.191741
+    },
+    {
+      "name": "Hexrota.UnityClientTests.FirstPlayableFlowTests.MobileViewportStaysInsideSafeArea(844,390,47,0,47,21)",
+      "fixture": "FirstPlayableFlowTests",
+      "result": "Passed",
+      "seconds": 0.181641
+    },
+    {
+      "name": "Hexrota.UnityClientTests.FirstPlayableFlowTests.RejectedDragReturnsFromTheFingerWithoutConsumingAMove",
+      "fixture": "FirstPlayableFlowTests",
+      "result": "Passed",
+      "seconds": 6.40369
+    },
+    {
+      "name": "Hexrota.UnityClientTests.FirstPlayableFlowTests.SceneMenuEntryTapSelectionAndDragReachTheRealCore",
+      "fixture": "FirstPlayableFlowTests",
+      "result": "Passed",
+      "seconds": 5.98717
+    },
+    {
+      "name": "Hexrota.UnityClientTests.InventoryFlowTests.PurchasedAndGrantedItemsRequireValidPreviewAndRestoreTheirBoard",
+      "fixture": "InventoryFlowTests",
+      "result": "Passed",
+      "seconds": 4.600149
+    },
+    {
+      "name": "Hexrota.UnityClientTests.PhoneGameplayTests.SettingsAndIdleHintsWorkOnTheSameBoardAsTheOpeningLesson",
+      "fixture": "PhoneGameplayTests",
+      "result": "Passed",
+      "seconds": 16.010071
+    },
+    {
+      "name": "Hexrota.UnityClientTests.PhoneMenuNavigationTests.HomeControlsFitShortAndTallPortraitSafeAreas",
+      "fixture": "PhoneMenuNavigationTests",
+      "result": "Passed",
+      "seconds": 0.247085
+    },
+    {
+      "name": "Hexrota.UnityClientTests.PhoneMenuNavigationTests.HomeCountersMatchTheProfileAndMenuNavigationDoesNotStartAnAttempt",
+      "fixture": "PhoneMenuNavigationTests",
+      "result": "Passed",
+      "seconds": 0.284137
+    },
+    {
+      "name": "Hexrota.UnityClientTests.PhoneMenuNavigationTests.InsetSafeAreaKeepsControlsVisibleAndBackgroundFillsTheDisplay",
+      "fixture": "PhoneMenuNavigationTests",
+      "result": "Passed",
+      "seconds": 0.233414
+    },
+    {
+      "name": "Hexrota.UnityClientTests.PhoneMenuNavigationTests.ReturningMenuAndMapOpenReadOnlyGoalsBeforeStartingTheRealNumberedBoard",
+      "fixture": "PhoneMenuNavigationTests",
+      "result": "Passed",
+      "seconds": 8.920138
+    },
+    {
+      "name": "Hexrota.UnityClientTests.SwapDirectionHintTests.ArrowheadPointsIntoTheRequestedNeighbourAndLeavesBothNumbersVisible(30)",
+      "fixture": "SwapDirectionHintTests",
+      "result": "Passed",
+      "seconds": 0.003486
+    },
+    {
+      "name": "Hexrota.UnityClientTests.SwapDirectionHintTests.ArrowheadPointsIntoTheRequestedNeighbourAndLeavesBothNumbersVisible(90)",
+      "fixture": "SwapDirectionHintTests",
+      "result": "Passed",
+      "seconds": 0.000219
+    },
+    {
+      "name": "Hexrota.UnityClientTests.SwapDirectionHintTests.ArrowheadPointsIntoTheRequestedNeighbourAndLeavesBothNumbersVisible(150)",
+      "fixture": "SwapDirectionHintTests",
+      "result": "Passed",
+      "seconds": 0.000165
+    },
+    {
+      "name": "Hexrota.UnityClientTests.SwapDirectionHintTests.ArrowheadPointsIntoTheRequestedNeighbourAndLeavesBothNumbersVisible(210)",
+      "fixture": "SwapDirectionHintTests",
+      "result": "Passed",
+      "seconds": 0.000153
+    },
+    {
+      "name": "Hexrota.UnityClientTests.SwapDirectionHintTests.ArrowheadPointsIntoTheRequestedNeighbourAndLeavesBothNumbersVisible(270)",
+      "fixture": "SwapDirectionHintTests",
+      "result": "Passed",
+      "seconds": 0.000152
+    },
+    {
+      "name": "Hexrota.UnityClientTests.SwapDirectionHintTests.ArrowheadPointsIntoTheRequestedNeighbourAndLeavesBothNumbersVisible(330)",
+      "fixture": "SwapDirectionHintTests",
+      "result": "Passed",
+      "seconds": 0.000146
+    },
+    {
+      "name": "Hexrota.UnityClientTests.SwapDirectionHintTests.ReducedMotionShowsOneStaticDirectionUntilThePointedSwapAndNeverMovesByItself",
+      "fixture": "SwapDirectionHintTests",
+      "result": "Passed",
+      "seconds": 13.751963
+    }
+  ]
+}

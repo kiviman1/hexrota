@@ -1,0 +1,176 @@
+{
+  "editor": "6000.6.9f1",
+  "scene": "FirstPlayable",
+  "runs": [
+    {
+      "name": "EditMode-final",
+      "startedUtc": "2026-11-19 01:26:37Z",
+      "result": "Passed",
+      "passed": 49,
+      "failed": 0,
+      "skipped": 0,
+      "fixtures": [
+        {
+          "name": "Hexrota.UnityClientTests.CastleGameplayAssetTests",
+          "passed": 5
+        },
+        {
+          "name": "Hexrota.UnityClientTests.CompleteCampaignTests",
+          "passed": 1
+        },
+        {
+          "name": "Hexrota.UnityClientTests.InChapterOnboardingTests",
+          "passed": 7
+        },
+        {
+          "name": "Hexrota.UnityClientTests.MainResourceImportTests",
+          "passed": 5
+        },
+        {
+          "name": "Hexrota.UnityClientTests.MaskedCampaignSaveTests",
+          "passed": 2
+        },
+        {
+          "name": "Hexrota.UnityClientTests.PassiveHintTests",
+          "passed": 6
+        },
+        {
+          "name": "Hexrota.UnityClientTests.PhoneGameplayLayoutTests",
+          "passed": 4
+        },
+        {
+          "name": "Hexrota.UnityClientTests.SceneAndAssetImportTests",
+          "passed": 4
+        },
+        {
+          "name": "Hexrota.UnityClientTests.SessionIntegrationTests",
+          "passed": 15
+        }
+      ]
+    },
+    {
+      "name": "PlayMode-final",
+      "startedUtc": "2026-11-19 01:26:21Z",
+      "result": "Passed",
+      "passed": 63,
+      "failed": 0,
+      "skipped": 0,
+      "fixtures": [
+        {
+          "name": "Hexrota.UnityClientTests.BoardCapacityTests",
+          "passed": 3
+        },
+        {
+          "name": "Hexrota.UnityClientTests.BoardMotionTests",
+          "passed": 3
+        },
+        {
+          "name": "Hexrota.UnityClientTests.BoardSwipeInputTests",
+          "passed": 5
+        },
+        {
+          "name": "Hexrota.UnityClientTests.CampaignJourneyTests",
+          "passed": 1
+        },
+        {
+          "name": "Hexrota.UnityClientTests.CastleGameplayFlowTests",
+          "passed": 3
+        },
+        {
+          "name": "Hexrota.UnityClientTests.ChapterEntranceFlowTests",
+          "passed": 3
+        },
+        {
+          "name": "Hexrota.UnityClientTests.ChapterVictoryTests",
+          "passed": 2
+        },
+        {
+          "name": "Hexrota.UnityClientTests.FirstPlayableFlowTests",
+          "passed": 10
+        },
+        {
+          "name": "Hexrota.UnityClientTests.HexBoardLifecycleTests",
+          "passed": 8
+        },
+        {
+          "name": "Hexrota.UnityClientTests.InventoryFlowTests",
+          "passed": 1
+        },
+        {
+          "name": "Hexrota.UnityClientTests.MatchScoreFlightTests",
+          "passed": 3
+        },
+        {
+          "name": "Hexrota.UnityClientTests.MobileProgressPanelsTests",
+          "passed": 4
+        },
+        {
+          "name": "Hexrota.UnityClientTests.OpeningLessonFeedbackTests",
+          "passed": 4
+        },
+        {
+          "name": "Hexrota.UnityClientTests.PhoneGameplayTests",
+          "passed": 1
+        },
+        {
+          "name": "Hexrota.UnityClientTests.PhoneMenuNavigationTests",
+          "passed": 4
+        },
+        {
+          "name": "Hexrota.UnityClientTests.PhoneOptionsTests",
+          "passed": 1
+        },
+        {
+          "name": "Hexrota.UnityClientTests.SwapDirectionHintTests",
+          "passed": 7
+        }
+      ]
+    },
+    {
+      "name": "PlayMode-panels",
+      "startedUtc": "2026-11-19 01:30:45Z",
+      "result": "Passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "fixtures": [
+        {
+          "name": "Hexrota.UnityClientTests.MobileProgressPanelsTests",
+          "passed": 4
+        }
+      ]
+    },
+    {
+      "name": "Capture-final",
+      "startedUtc": "2026-11-19 01:29:08Z",
+      "result": "Passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "fixtures": [
+        {
+          "name": "CastleWindowCapture",
+          "passed": 1
+        }
+      ]
+    },
+    {
+      "name": "Compact-final",
+      "startedUtc": "2026-11-19 01:29:07Z",
+      "result": "Passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "fixtures": [
+        {
+          "name": "CastleWindowCapture",
+          "passed": 1
+        }
+      ]
+    }
+  ],
+  "gameView": [
+    "6000.6.9f1 AMD Radeon RX 9070 XT 540x960 chapter-one-v1/v3 pair 14→9, first match 3, waves 1, cells 4,1,2,2,3,4,4,1,4,2,3,1,2,4,1,1,3,3,2",
+    "6000.6.9f1 AMD Radeon RX 9070 XT 360x640 chapter-one-v1/v3 pair 14→9, first match 3, waves 1, cells 4,1,2,2,3,4,4,1,4,2,3,1,2,4,1,1,3,3,2"
+  ]
+}

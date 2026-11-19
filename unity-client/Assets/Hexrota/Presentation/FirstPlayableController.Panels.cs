@@ -9,9 +9,8 @@ namespace Hexrota.UnityClient.Presentation
         private enum SheetStyle { Primary, Secondary, Plain, Danger }
         private RectTransform sheetContent, sheetFrame, sheetDecor;
         private Text sheetEyebrow;
-        private Image sheetRibbon;
-        private PhoneRibbonTails sheetTails;
-        private static readonly Color PurpleText = new Color32(75,44,84,255);
+        private CastlePopupChrome sheetChrome;
+        private Color SheetInk => sheetChrome.Paper;
         private static Color Tone(int rgb) { return new Color32((byte)(rgb>>16),(byte)(rgb>>8),(byte)rgb,255); }
 
         private static void At(RectTransform r,float x,float y,float w,float h)
@@ -43,46 +42,45 @@ namespace Hexrota.UnityClient.Presentation
             var button=MakeButton(name,sheetDecor,Vector2.zero,Vector2.one,action);
             At((RectTransform)button.transform,x,y,width,height);
             var label=button.GetComponentInChildren<Text>();
-            label.color=style==SheetStyle.Plain?Tone(0x725374):Tone(0xfff6df);
-            label.fontSize=style==SheetStyle.Primary?15:12;label.resizeTextMaxSize=label.fontSize;label.resizeTextMinSize=10;
+            label.color=sheetChrome.Paper;
+            label.fontSize=style==SheetStyle.Primary?18:14; label.resizeTextMaxSize=label.fontSize; label.resizeTextMinSize=10;
             if(style==SheetStyle.Plain) button.GetComponent<Image>().color=Color.clear;
-            else
-            {
-                int top=style==SheetStyle.Primary?0x88c83d:style==SheetStyle.Danger?0xed7185:0x8859a7;
-                int bottom=style==SheetStyle.Primary?0x2b771c:style==SheetStyle.Danger?0xab3057:0x583279;
-                int border=style==SheetStyle.Primary?0xcce77d:style==SheetStyle.Danger?0xffaaa0:0xae87cb;
-                PhoneSkin.Plate(button.gameObject,Tone(top),Tone(bottom),Tone(border),11,2);
-                var shadow=button.gameObject.AddComponent<Shadow>();
-                shadow.effectDistance=new Vector2(0,-2);shadow.effectColor=Tone(style==SheetStyle.Primary?0x235d24:0x41284f);
-            }
+            else sheetChrome.Paint(button.gameObject, style==SheetStyle.Primary?CastlePopupChrome.Finish.Primary:
+                style==SheetStyle.Danger?CastlePopupChrome.Finish.Danger:CastlePopupChrome.Finish.Secondary);
+            if(style==SheetStyle.Primary) CastlePopupChrome.EmbossAction(label);
             if(symbol!=null)
             {
-                float fraction=18f/width; bool trailing=style==SheetStyle.Primary;
-                float offset=Mathf.Min(.41f,(name.Length*3.6f+12f)/width);
-                float cx=.5f+(trailing?offset:-offset);
-                label.rectTransform.anchoredPosition=new Vector2(trailing?-9:9,0);
-                PhoneSkin.Icon(button.transform,symbol,new Vector2(cx-fraction*.5f,.30f),new Vector2(cx+fraction*.5f,.7f),label.color);
+                bool trailing=style==SheetStyle.Primary;
+                float inset=style==SheetStyle.Plain?5f:14f;
+                float iconWidth=Mathf.Min(18f,width*.18f);
+                float left=trailing?width-inset-iconWidth:inset;
+                var caption=label.rectTransform;
+                caption.anchorMin=Vector2.zero;caption.anchorMax=Vector2.one;
+                caption.offsetMin=new Vector2(trailing?7:inset+iconWidth+4,2);
+                caption.offsetMax=new Vector2(trailing?-inset-iconWidth-4:-7,-2);
+                PhoneSkin.Icon(button.transform,symbol,new Vector2(left/width,.30f),new Vector2((left+iconWidth)/width,.70f),label.color);
             }
             return button;
         }
 
-        private void BeginSheet(float height)
+        private void BeginSheet(string heading,float height,Action close)
         {
             HideReviewControl();
             modal.SetActive(true); modal.transform.SetAsLastSibling();
-            modalTitle.transform.SetParent(modal.transform,false);
             modalCopy.transform.SetParent(modal.transform,false);
             actions.SetParent(modal.transform,false);
             foreach(Transform item in actions) { item.gameObject.SetActive(false); Destroy(item.gameObject); }
             if(sheetFrame!=null) {sheetFrame.gameObject.SetActive(false);Destroy(sheetFrame.gameObject);}
             modal.GetComponent<Image>().color=new Color(0.063f,0.04f,0.161f,.74f);
             PhoneBackdrop.Show(modal);
-            var frame=Panel("PhoneSheet",modal.transform,Vector2.zero,Vector2.one,Color.white);
-            sheetFrame=(RectTransform)frame.transform;
-            PhoneSkin.Plate(frame,Tone(0xfff9e6),Tone(0xf4dfb0),Tone(0xbd8247),25,4);
-            var shadow=frame.AddComponent<Shadow>();shadow.effectDistance=new Vector2(0,-7);shadow.effectColor=Tone(0x633f33);
+            sheetChrome=CastlePopupChrome.Create(modal.transform,"PhoneSheet","ModalTitle",heading,close);
+            var frame=sheetChrome.gameObject;
+            sheetFrame=(RectTransform)sheetChrome.transform;
             var viewport=Rect("Viewport",sheetFrame,Vector2.zero,Vector2.one);
+            viewport.offsetMin=new Vector2(0,10); viewport.offsetMax=new Vector2(0,-62);
+            sheetChrome.PlaceContent(viewport);
             viewport.gameObject.AddComponent<RectMask2D>();
+            viewport.gameObject.AddComponent<Image>().color=Color.clear;
             var scroll=frame.AddComponent<ScrollRect>();scroll.horizontal=false;scroll.movementType=ScrollRect.MovementType.Clamped;
             scroll.scrollSensitivity=24;scroll.viewport=viewport;
             sheetContent=Rect("ScrollableContent",viewport,Vector2.zero,Vector2.one);
@@ -90,76 +88,43 @@ namespace Hexrota.UnityClient.Presentation
             scroll.content=sheetContent;
             frame.AddComponent<MobileSheetViewport>().Configure((RectTransform)modal.transform,sheetFrame,sheetContent,scroll,height);
             actions.SetParent(sheetContent,false); At(actions,22,210,316,216);
-            modalTitle.gameObject.SetActive(true);modalCopy.gameObject.SetActive(true);
+            modalCopy.gameObject.SetActive(true);
         }
 
         private void ShowPhoneSheet(string heading,string copy,string eyebrow,float height,Action close=null)
         {
-            BeginSheet(height);
-            sheetEyebrow=SheetText("Eyebrow",eyebrow,22,30,280,26,10,Tone(0x8b5d66),TextAnchor.MiddleLeft,true);
-            sheetRibbon=SheetPlate("Ribbon",22,68,316,50,0xf27791,0xbd3767,0xffa9a1).GetComponent<Image>();
-            var shadow=sheetRibbon.gameObject.AddComponent<Shadow>();shadow.effectDistance=new Vector2(0,-4);shadow.effectColor=Tone(0x7c2f57);
-            sheetTails=Rect("RibbonTails",sheetRibbon.transform,Vector2.zero,Vector2.one).gameObject.AddComponent<PhoneRibbonTails>();
-            sheetTails.raycastTarget=false;
-            modalTitle.transform.SetParent(sheetRibbon.transform,false);
-            At(modalTitle.rectTransform,12,0,292,50);
-            modalTitle.text=heading;modalTitle.color=Tone(0xfff6df);modalTitle.alignment=TextAnchor.MiddleLeft;
-            modalTitle.fontSize=24;modalTitle.resizeTextMinSize=16;modalTitle.resizeTextMaxSize=24;modalTitle.fontStyle=FontStyle.Bold;
-            modalCopy.transform.SetParent(sheetDecor,false);At(modalCopy.rectTransform,22,132,316,52);
-            modalCopy.text=copy;modalCopy.color=Tone(0x715266);modalCopy.alignment=TextAnchor.UpperLeft;
-            modalCopy.fontSize=13;modalCopy.resizeTextMinSize=11;modalCopy.resizeTextMaxSize=13;modalCopy.fontStyle=FontStyle.Normal;
-            if(close!=null)
-            {
-                var cross=SheetButton("Kapat",304,16,40,43,close,SheetStyle.Danger);
-                PhoneSkin.Plate(cross.gameObject,Tone(0xff9d9b),Tone(0xdf416b),Tone(0xffd1b7),22,2);
-                cross.GetComponentInChildren<Text>().text="";
-                PhoneSkin.Icon(cross.transform,"close",new Vector2(.28f,.28f),new Vector2(.72f,.72f),Color.white);
-            }
+            BeginSheet(heading,height,close);
+            sheetEyebrow=SheetText("Eyebrow",eyebrow,22,14,316,23,12,sheetChrome.Gold,TextAnchor.MiddleCenter,true);
+            sheetEyebrow.gameObject.SetActive(!string.IsNullOrWhiteSpace(eyebrow));
+            modalCopy.transform.SetParent(sheetDecor,false);
+            At(modalCopy.rectTransform,25,44,310,85);
+            modalCopy.text=copy; modalCopy.color=sheetChrome.Paper; modalCopy.alignment=TextAnchor.MiddleCenter;
+            modalCopy.fontStyle=FontStyle.Normal;
+            modalCopy.fontSize=15; modalCopy.resizeTextMinSize=12; modalCopy.resizeTextMaxSize=15;
         }
 
-        private void CenterTitle(float y)
+        private void SheetHero(CastlePopupChrome.Art art, float top, float height)
         {
-            At(sheetRibbon.rectTransform,22,y,316,50);modalTitle.alignment=TextAnchor.MiddleCenter;
-            modalTitle.fontStyle=FontStyle.BoldAndItalic;
+            var well=Rect("IllustrationWell",sheetDecor,Vector2.zero,Vector2.one);
+            At(well,17,top,326,height);
+            sheetChrome.Illustrate(well,art);
         }
 
-        private void SheetSymbol(string symbol,float y,bool large)
-        {
-            float w=large?68:48,h=large?74:54;
-            var rect=Rect("Symbol",sheetDecor,Vector2.zero,Vector2.one);
-            At(rect,(360-w)/2,y,w,h);
-            var badge=rect.gameObject.AddComponent<PhoneChapterBadge>();
-            badge.color=Tone(0xead9f3);badge.raycastTarget=false;
-            PhoneSkin.Icon(rect,symbol,new Vector2(.23f,.23f),new Vector2(.77f,.77f),Tone(0x714695));
-        }
-
-        private void EnableSheetButton(Button button,bool enabled,SheetStyle style)
+        private void EnableSheetButton(Button button,bool enabled)
         {
             button.interactable=enabled;
-            if(enabled)return;
-            // The phone applies saturate(.3) with 55% opacity over parchment.
-            bool primary=style==SheetStyle.Primary;
-            Color Dim(int rgb)
-            {
-                var original=Tone(rgb);
-                float gray=.2126f*original.r+.7152f*original.g+.0722f*original.b;
-                return Color.Lerp(new Color(gray,gray,gray),original,.3f);
-            }
-            button.transition=Selectable.Transition.None;button.targetGraphic.CrossFadeColor(Color.white,0,true,true);
-            PhoneSkin.Plate(button.gameObject,Dim(primary?0x88c83d:0x8859a7),Dim(primary?0x2b771c:0x583279),Dim(primary?0xcce77d:0xae87cb),11,2);
-            button.gameObject.AddComponent<CanvasGroup>().alpha=.55f;
+            if (!enabled) button.gameObject.AddComponent<CanvasGroup>().alpha=.60f;
         }
 
         private void DrawPause()
         {
-            ShowPhoneSheet("Rota seni bekler.","Tahtan ve kalan hamlelerin burada korunuyor.","KÜÇÜK BİR MOLA",500,Resume);
-            SheetSymbol("pause",30,false);
-            At(sheetEyebrow.rectTransform,22,103,316,18);sheetEyebrow.alignment=TextAnchor.MiddleCenter;
-            CenterTitle(143); At(modalCopy.rectTransform,22,209,316,24);modalCopy.alignment=TextAnchor.MiddleCenter;
-            resumeButton=SheetButton("Devam et",22,255,316,50,Resume,SheetStyle.Primary,"play");
-            SheetButton("Bölümü yeniden başlat",22,315,316,46,ConfirmRestart,SheetStyle.Secondary,"reset");
-            SheetButton("Ayarlar",22,371,316,46,OpenMobileSettings,SheetStyle.Secondary,"settings");
-            SheetButton("Ana menüye dön",22,434,316,40,ReturnToMenu,SheetStyle.Plain,"home");
+            ShowPhoneSheet("Rota seni bekler.","Tahtan ve kalan hamlelerin burada korunuyor.","",435,Resume);
+            SheetHero(CastlePopupChrome.Art.Map,4,100);
+            At(modalCopy.rectTransform,22,111,316,36);
+            resumeButton=SheetButton("Devam et",50,154,260,51,Resume,SheetStyle.Primary,"play");
+            SheetButton("Bölümü yeniden başlat",30,220,300,43,ConfirmRestart,SheetStyle.Secondary,"reset");
+            SheetButton("Ayarlar",30,272,300,43,OpenMobileSettings,SheetStyle.Secondary,"settings");
+            SheetButton("Ana menüye dön",22,322,316,36,ReturnToMenu,SheetStyle.Plain,"home");
         }
 
         private void DrawRestart()
@@ -176,9 +141,11 @@ namespace Hexrota.UnityClient.Presentation
                     (Convert.ToInt32(life["lives"])==1?"Son canını kullanıyorsun. Yeni tahta açmak için sonra beklemen veya can alman gerekecek.":"Yeni bir tahta açılacak.");
             else if(Session.Snapshot.turn>0 && !Convert.ToBoolean(life["canStart"]))
                 text="Bu deneme kapanacak. Canın olmadığı için can harcanmaz. Yeni deneme için can gerekir.";
-            ShowPhoneSheet("Baştan başlamak ister misin?",text,"",355,cancel);
-            SheetButton("Yeni tahtayla başla",22,207,316,50,()=>RestartWithQuote(cost),SheetStyle.Danger);
-            SheetButton("Vazgeç",22,269,316,46,cancel,SheetStyle.Secondary);
+            ShowPhoneSheet("Baştan başlamak ister misin?",text,"",371,cancel);
+            SheetHero(CastlePopupChrome.Art.Heart,4,78);
+            At(modalCopy.rectTransform,25,93,310,65);
+            SheetButton("Yeni tahtayla başla",30,172,300,48,()=>RestartWithQuote(cost),SheetStyle.Danger);
+            SheetButton("Vazgeç",30,234,300,44,cancel,SheetStyle.Secondary);
         }
     }
 }

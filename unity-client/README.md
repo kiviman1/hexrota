@@ -14,7 +14,9 @@ Open `Assets/Hexrota/Scenes/FirstPlayable.unity` and enter Play Mode. The checke
 - `Assets/WebGLTemplates/HexrotaMobile`: phone template and exclusive profile lock.
 - `HostTests`: supplemental actual .NET tests for runtime/core/storage, outside Unity Assets.
 
-A fresh profile opens Tavik’s first coop. Choose **Başlayalım** for T1 and T2. Follow the authored moves, acknowledge the teaching cards and continue into the ten-stage campaign. Returning players can resume, inspect records and visit the garden. The default route uses the same classic catalog as the Web home page: four published variants per numbered stage. A successful move commits through the application controller before the board animates.
+A fresh profile opens the castle menu. **Oyna** enters Chapter 1, where Tavik highlights a real swap on the selected variant. After that move the player works toward the score and green-ground targets on the same board. Chapters 3, 6 and 8 introduce double-layer ground, crates and the number 5 when they first appear. A numbered chapter win plays a short celebration before the result sheet. The original tutorial IDs and checkpoints remain readable for returning players. A successful move commits through the application controller before the board animates.
+
+Chapter 1 uses four layouts from `data/chapter-one-openings-v1.json` for new mobile attempts. Each opens without a match. The guided swap lines up exactly three stones, and each layout has two verified winning routes. At turn zero, an archived attempt uses a teaching move verified for its original layout. Edit dialog faces, title plates and button finishes in `Assets/Hexrota/Resources/CastleGame/CastlePopup.prefab`, loading art in `ChapterLoading.prefab`, and the on-board coach in `CastleGameTools.prefab`.
 
 The versioned obstacle, flow, material and story modules and data also ship in the Unity source set. See the [feature matrix](../docs/UNITY_MAIN_FEATURE_MATRIX.md) for player-facing availability, and the [roadmap](../docs/UNITY_MAIN_PORT_ROADMAP.md) for remaining migration work.
 

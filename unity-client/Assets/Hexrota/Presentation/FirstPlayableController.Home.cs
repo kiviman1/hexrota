@@ -11,6 +11,10 @@ namespace Hexrota.UnityClient.Presentation
         private Text homeLifeLabel, homeLifeTimer;
         private RawImage[] homeHearts;
         private float nextLifeDisplay;
+        private UnityGameSession.EarnedResult pendingHomeRewards;
+        internal bool HomePanelOpen => (modal != null && modal.activeInHierarchy) ||
+            (previewLayer != null && previewLayer.activeInHierarchy) || (optionsShade != null && optionsShade.activeInHierarchy);
+        internal Vector2 HomeRewardSource => castleHome.RewardSource;
         private static readonly Color MenuCream = new Color32(255,245,217,255);
         private static readonly Color MenuGold = new Color32(255,211,106,255);
         private static readonly Color PlumTop = new Color32(125,85,151,255);
@@ -33,7 +37,7 @@ namespace Hexrota.UnityClient.Presentation
             {
                 castleHome.transform.SetParent(menu.transform, false);
             }
-            castleHome.Bind(this);
+            castleHome.Bind(this, phoneAudio);
         }
 
         private RectTransform MenuFrame(Transform parent,string name)
@@ -142,13 +146,27 @@ namespace Hexrota.UnityClient.Presentation
             if (castleHome == null) return;
             castleHome.gameObject.SetActive(true);
             castleHome.ShowStage(Session.NextStage, Session.TutorialCount);
-            castleHome.ShowWallet(Session.ReadPhoneWallet());
+            var wallet = Session.ReadPhoneWallet();
+            castleHome.ShowWallet(wallet);
             nextLifeDisplay = Time.unscaledTime + 1;
+            var earned = pendingHomeRewards;
+            pendingHomeRewards = null;
+            if (earned == null) return;
+            Canvas.ForceUpdateCanvases();
+            castleHome.Rewards.PlayWin(HomeRewardSource, earned.Stars, earned.Gold, wallet);
         }
 
-        private void ReplayFirstLesson()
+        private void RememberHomeRewards()
         {
-            if (Session.StartChapterFresh(0)) OpenCurrentBoard(); else ShowCommandFailure(Session.LastError);
+            if (!Session.HasAttempt || Session.IsTutorial || Session.Status != "won") return;
+            var earned = Session.ReadEarnedResult();
+            if (earned.Stars > 0 || earned.Gold > 0) pendingHomeRewards = earned;
+        }
+
+        private void CancelHomeRewards()
+        {
+            pendingHomeRewards = null;
+            if (castleHome != null) castleHome.Rewards.Cancel();
         }
 
         private void DrawPhoneHeaderBody(RectTransform body)
@@ -165,12 +183,16 @@ namespace Hexrota.UnityClient.Presentation
             MenuIcon(settings,"settings",8,12,21,MenuCream); MenuClick(settings,OpenMobileSettings);
         }
 
+        private const string PlayingInstructions = "Komşu iki taşı kaydırarak veya sırayla dokunarak yer değiştir. Aynı sayıdan en az üç taş düz bir hat oluşturunca eşleşir.\n\nÜç tane 3, 9 puan kazandırır. Eşleşmenin altındaki zemin bir kat açılır. Hamlelerin bitmeden puan hedefine ulaş ve bütün zemini yeşert.";
+
         private void ShowHomeRules()
         {
             string back=CurrentScreen;
-            ShowModal("Nasıl oynanır?","Yan yana iki taşa sırayla dokun ya da birini diğerine kaydır.\n\nÜç tane 3 eşleşirse 9 puan kazanırsın. Eşleşen taşların altı yeşil olur, yerlerine yeni taşlar gelir.\n\nHedef puana ulaş ve her yeri yeşile boya.");
-            AddAction("Birlikte deneyelim",0,ReplayFirstLesson);
-            AddAction("Kapat",1,()=>{modal.SetActive(false);CurrentScreen=back;});
+            Action close=()=>{modal.SetActive(false); CurrentScreen=back;};
+            ShowModal("Nasıl oynanır?",PlayingInstructions,close);
+            if (Session.NextStage == Session.TutorialCount)
+                AddAction("Bölüm 1’i oyna",0,()=>BeginStage(Session.TutorialCount));
+
         }
 
         private void DrawPhoneNav(Transform parent,string active)
@@ -225,6 +247,7 @@ namespace Hexrota.UnityClient.Presentation
             if (Time.unscaledTime < nextLifeDisplay) return;
             if (CurrentScreen == "menu" && castleHome != null)
             {
+                if (castleHome.Rewards.IsPlaying) return;
                 castleHome.ShowWallet(Session.ReadPhoneWallet());
             }
             else if (CurrentScreen == "journey" && homeLifeTimer != null && homeLifeLabel != null)

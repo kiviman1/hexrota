@@ -33,23 +33,24 @@ namespace Hexrota.UnityClient.Presentation
             Board.InputEnabled = false;
             gameplayInput.interactable = gameplayInput.blocksRaycasts = false;
             bool reduced = Session.ReducedMotion;
-            chapterLoading.Show(Session.ActiveStage, reduced);
+            chapterLoading.Show(Session.CompletedSceneTutorials, reduced);
             entrance = StartCoroutine(EnterChapter(reduced));
         }
 
         private IEnumerator EnterChapter(bool reduced)
         {
-            float fadeIn = reduced ? .09f : .24f;
-            const float hold = 2.25f;
-            float fadeOut = reduced ? .1f : .26f;
+            float closeTime = reduced ? 0f : .43f;
+            const float hold = .42f;
+            float openTime = reduced ? 0f : .42f;
             float elapsed = 0f;
-            while (elapsed < fadeIn)
+            while (elapsed < closeTime)
             {
-                chapterLoading.SetTransition(Mathf.SmoothStep(0, 1, elapsed / fadeIn), elapsed);
+                chapterLoading.SetCoverage(elapsed / closeTime);
                 yield return null;
                 elapsed += Time.unscaledDeltaTime;
             }
-            chapterLoading.SetTransition(1f, elapsed);
+            chapterLoading.SetCoverage(1f);
+            chapterLoading.SetLoadingLabel(true);
             // Present an opaque frame before instantiating the board beneath it.
             yield return null;
             PrepareCurrentBoard();
@@ -61,16 +62,18 @@ namespace Hexrota.UnityClient.Presentation
             SetBoardSlide(reduced ? 1f : 0f);
             if (reduced) Board.SetEntranceFill(1f);
 
-            for (float t = 0; t < hold + fadeOut; t += Time.unscaledDeltaTime)
+            yield return new WaitForSecondsRealtime(hold);
+            chapterLoading.SetLoadingLabel(false);
+            for (float t = 0; t < openTime; t += Time.unscaledDeltaTime)
             {
-                float visibility = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(hold, hold + fadeOut, t));
-                chapterLoading.SetTransition(visibility, fadeIn + t);
+                chapterLoading.SetCoverage(1f - t / openTime);
                 yield return null;
             }
             chapterLoading.Hide();
             if (!reduced)
             {
-                const float hudEnd = .32f, boardEnd = .76f, fillEnd = 1.52f;
+                const float hudEnd = .32f, boardEnd = .76f;
+                float fillEnd = boardEnd + Board.EntranceFillSeconds;
                 for (float t = 0; t < fillEnd; t += Time.unscaledDeltaTime)
                 {
                     SetHudEntrance(Mathf.SmoothStep(0, 1, Mathf.Clamp01(t / hudEnd)));

@@ -43,6 +43,7 @@ namespace Hexrota.UnityClient.Presentation
         private bool dragged;
         private GameObject selection;
         private Coroutine animation;
+        private GameSnapshot settledSnapshot;
         private MaterialPropertyBlock tint;
         private Material digitsMaterial;
         private Font digitsFont;
@@ -226,12 +227,13 @@ namespace Hexrota.UnityClient.Presentation
         {
             if (snapshot == null) return;
             if (!HasVisuals || stones.Count != snapshot.values.Length) return;
+            settledSnapshot = snapshot;
             StopIdleHint(); idleClock.Bind(idleAttempt,VisibleKey(snapshot));
             if (hasMutedTiles) MarkPair(null);
             for (int i = 0; i < stones.Count; i++)
             {
                 stones[i].transform.position = positions[i] + Vector3.back * .15f;
-                stones[i].transform.localScale = Vector3.one;
+                DeformStone(stones[i], Vector2.right);
                 SetMotionInk(stones[i], 1f, 0f);
                 PaintStone(i, snapshot.values[i]);
                 PaintFloor(i, snapshot.layers[i]);
@@ -254,7 +256,7 @@ namespace Hexrota.UnityClient.Presentation
                 if (cells[i].GetComponent<PlaceholderHexMesh>() != null)
                     cells[i].transform.localScale = new Vector3(focus ? .973f : .926f,focus ? .973f : .926f,1);
                 stones[i].transform.position = positions[i] + Vector3.back * .15f;
-                stones[i].transform.localScale = focus ? Vector3.one * 1.025f : Vector3.one;
+                DeformStone(stones[i], Vector2.right, uniform: focus ? 1.025f : 1f);
                 if (guide || hasMutedTiles)
                 {
                     float opacity = guide && !focus && !support ? .30f : 1f;
@@ -276,13 +278,16 @@ namespace Hexrota.UnityClient.Presentation
         internal bool CanShowTutorialGesture => InputEnabled && !IsAnimating && pointer == int.MinValue &&
             selected < 0 && targetCell == null && CanPresent;
 
-        private void MoveAlongSwap(int a, int b, float t)
+        private void MoveAlongSwap(int a, int b, float t, float strain, float handoff)
         {
             Vector3 delta = positions[b] - positions[a];
-            var normal = new Vector3(delta.y,-delta.x,0).normalized;
-            Vector3 offset = delta*t + normal*(Mathf.Min(.56f*38/44,delta.magnitude*.5f)*Mathf.Sin(Mathf.PI*t));
-            stones[a].transform.position = positions[a] + offset + Vector3.back*.15f;
-            stones[b].transform.position = positions[b] - offset + Vector3.back*.15f;
+            float arc = 4f * t * (1f - t);
+            Vector3 offset = delta * t + new Vector3(delta.y, -delta.x, 0f) * (.14f * arc);
+            Vector3 depth = Vector3.forward * StoneDepth;
+            stones[a].transform.position = positions[a] + offset + depth + Vector3.back * (.40f * arc);
+            stones[b].transform.position = positions[b] - offset + depth + Vector3.back * (.08f * arc);
+            DeformStone(stones[a], delta, strain + handoff);
+            DeformStone(stones[b], delta, strain);
         }
 
         private void SetGuideOpacity(GameObject tile, float opacity, float cutout = 0)
@@ -298,7 +303,6 @@ namespace Hexrota.UnityClient.Presentation
 
         public void Present(MovePresentation receipt)
         {
-            float releasedAt = releasedFraction;
             Cancel(receipt.Before);
             if (!CanPresent) return;
             PresentationStarted?.Invoke(receipt);
@@ -309,11 +313,25 @@ namespace Hexrota.UnityClient.Presentation
                 return;
             }
             IsAnimating = true;
-            if (releasedAt > 0f) MoveAlongSwap(receipt.A, receipt.B, releasedAt);
-            animation = StartCoroutine(Animate(receipt, releasedAt));
+            settledSnapshot = receipt.After;
+            animation = StartCoroutine(Animate(receipt, swipeStretch));
         }
 
         private Action<int> targetCell;
+        private int[] lessonPair;
+
+        internal void SetOpeningPair(int[] pair)
+        {
+            lessonPair = pair;
+            if (pair != null) StopIdleHint();
+            else if (hasMutedTiles) MarkPair(null);
+        }
+
+        internal bool AcceptsOpeningSwap(int from, int to)
+        {
+            return lessonPair == null || (from == lessonPair[0] && to == lessonPair[1]) ||
+                   (from == lessonPair[1] && to == lessonPair[0]);
+        }
 
         public void SelectCellForItem(Action<int> onTap)
         {
@@ -332,7 +350,7 @@ namespace Hexrota.UnityClient.Presentation
             if (this != null && animation != null) StopCoroutine(animation);
             animation = null; IsAnimating = false;
             ClearSelection();
-            ClearEffects(); Render(authoritative);
+            ClearEffects(); Render(authoritative ?? settledSnapshot);
             if (wasAnimating && PresentationCancelled != null) PresentationCancelled();
         }
 
@@ -349,6 +367,7 @@ namespace Hexrota.UnityClient.Presentation
             int start = Hit(e.position);
             if (start < 0 || (closedCells != null && closedCells[start]) ||
                 (targetCell == null && !stones[start].activeSelf)) return;
+            if (lessonPair != null && start != lessonPair[0] && start != lessonPair[1]) return;
             pointer = e.pointerId;
             down = e.position;
             pressed = start;
@@ -358,16 +377,15 @@ namespace Hexrota.UnityClient.Presentation
         }
         public void OnDrag(PointerEventData e)
         {
-            if (e.pointerId == pointer) SampleSwipe(e.position, true);
+            if (e.pointerId == pointer) SampleSwipe(e.position);
         }
         public void OnPointerUp(PointerEventData e)
         {
             if (e.pointerId != pointer) return;
-            SampleSwipe(e.position, false);
+            SampleSwipe(e.position);
             if (e.pointerId != pointer) return;
-            int from = pressed, locked = swipeTarget;
+            int from = pressed;
             bool wasDrag = dragged;
-            float handoff = dragFraction;
             int to = wasDrag ? -1 : Hit(e.position);
             ResetGesture();
             if (targetCell != null)
@@ -381,13 +399,7 @@ namespace Hexrota.UnityClient.Presentation
             }
             if (wasDrag)
             {
-                if (locked >= 0)
-                {
-                    releasedFraction = handoff;
-                    try { Request(from, locked); }
-                    finally { releasedFraction = 0f; }
-                }
-                else ClearSelection();
+                ClearSelection();
                 return;
             }
             if (from != to) { ClearSelection(); return; }
@@ -489,6 +501,7 @@ namespace Hexrota.UnityClient.Presentation
             foreach (var o in grounds) if (o != null) { o.SetActive(false); Destroy(o); }
             foreach (var o in stones) if (o != null) { o.SetActive(false); Destroy(o); }
             cells.Clear(); grounds.Clear(); stones.Clear(); numbers.Clear(); motionInk.Clear();
+            settledSnapshot = null;
         }
         private void OnDisable() { InputEnabled = false; Cancel(null); }
         private void OnDestroy()

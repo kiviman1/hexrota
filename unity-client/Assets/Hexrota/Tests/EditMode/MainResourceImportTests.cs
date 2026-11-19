@@ -19,6 +19,19 @@ namespace Hexrota.UnityClientTests
             return WireJsonCodec.Parse(asset.text);
         }
 
+        [Test]
+        public void ClassicCheckpointKeepsNullStonesAndMovePairsAcrossJsonSave()
+        {
+            const string stored = "{\"version\":4,\"rulesVersion\":\"classic-v4\",\"values\":[3,null,1]," +
+                "\"layers\":[1,0,1],\"score\":9,\"movesLeft\":8,\"turn\":2,\"rngState\":4294967295,\"history\":[[0,1],[2,1]]}";
+            var wire = WireJsonCodec.Parse(stored);
+            var checkpoint = LevelCatalog.ReadSnapshot(wire);
+            Assert.That(checkpoint.values, Is.EqualTo(new int?[] { 3, null, 1 }));
+            Assert.That(checkpoint.history, Is.EqualTo(new[] { new[] { 0, 1 }, new[] { 2, 1 } }));
+            var saved = WireJsonCodec.Serialize(LevelCatalog.SnapshotWire(checkpoint));
+            Assert.That(W.Equal(wire, WireJsonCodec.Parse(saved)), Is.True);
+        }
+
         [TestCase("obstacle-levels-v1", 6)]
         [TestCase("campaign-flow-levels-v1", 2)]
         [TestCase("campaign-flow-levels-v2", 10)]

@@ -27,6 +27,7 @@ namespace Hexrota.Application
         private readonly LevelCatalog catalog;
         private readonly IList<Dictionary<string, object>> levels;
         private readonly int tutorialCount;
+        private readonly bool onboardingInFirstChapter;
         private readonly ProfileRepository repository;
         private readonly AttemptRepository attempts;
         private readonly IUtcClock clock;
@@ -55,10 +56,11 @@ namespace Hexrota.Application
         {
             internal int index; internal Dictionary<string, object> level, metadata, stats; internal HexMatch engine; internal AssistedGame assistance;
         }
-        public GameSessionController(LevelCatalog catalog, IList<Dictionary<string, object>> orderedLevels, int tutorialCount, ProfileRepository repository, Dictionary<string, object> lifeConfig, IUtcClock clock, uint initialSelectionSeed, string providerNamespace = "hexrota-test", RewardRules rewardRules = null, IReceiptVerifier recoveryReceiptVerifier = null, Dictionary<string, object> economyConfig = null, IRescueReceiptVerifier rescueReceiptVerifier = null, string rescueProviderNamespace = null)
+        public GameSessionController(LevelCatalog catalog, IList<Dictionary<string, object>> orderedLevels, int tutorialCount, ProfileRepository repository, Dictionary<string, object> lifeConfig, IUtcClock clock, uint initialSelectionSeed, string providerNamespace = "hexrota-test", RewardRules rewardRules = null, IReceiptVerifier recoveryReceiptVerifier = null, Dictionary<string, object> economyConfig = null, IRescueReceiptVerifier rescueReceiptVerifier = null, string rescueProviderNamespace = null, bool onboardingInFirstChapter = false)
         {
             if (catalog == null || orderedLevels == null || repository == null || clock == null || tutorialCount < 0 || tutorialCount > orderedLevels.Count || initialSelectionSeed == 0) throw new ArgumentException("Invalid application dependencies");
             this.catalog = catalog; this.levels = orderedLevels.Select(W.Copy).ToList(); this.tutorialCount = tutorialCount; this.repository = repository; this.clock = clock; this.initialSelectionSeed = initialSelectionSeed; this.rewardRules = rewardRules; this.recoveryReceiptVerifier = recoveryReceiptVerifier;
+            this.onboardingInFirstChapter = onboardingInFirstChapter;
             lives = new LifeManager(lifeConfig, clock, new Verifier { owner = this }); economy = new EconomyManager(economyConfig);
             object raw = repository.Read(ProfileRepository.GameKey); string source = ProfileRepository.GameKey;
             // Present null is corrupt progression, not a new player. Never fall
@@ -210,9 +212,10 @@ namespace Hexrota.Application
                 game["economy"] = completion["state"];
                 SyncCompletedCampaign();
             }
-            else if (played && engine.Status == "won" && active == tutorialCount - 1)
+            bool taughtInChapter = onboardingInFirstChapter && active == tutorialCount && !done.Contains((long) tutorialCount - 1);
+            if (played && engine.Status == "won" && (active == tutorialCount - 1 || taughtInChapter))
             {
-                var welcome = economy.ClaimWelcome(W.Map(game["economy"]), W.Obj("levelId", activeLevel["id"], "attemptId", metadata["attemptId"], "status", "won", "verified", true));
+                var welcome = economy.ClaimWelcome(W.Map(game["economy"]), W.Obj("levelId", activeLevel["id"], "attemptId", metadata["attemptId"], "status", "won", "verified", true), taughtInChapter);
                 game["economy"] = welcome["state"];
             }
         }

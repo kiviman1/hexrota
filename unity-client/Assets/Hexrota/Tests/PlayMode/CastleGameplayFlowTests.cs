@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Linq;
 using Hexrota.Application;
-using Hexrota.Gameplay;
 using Hexrota.UnityClient;
 using Hexrota.UnityClient.Presentation;
 using NUnit.Framework;
@@ -73,10 +72,10 @@ namespace Hexrota.UnityClientTests
         {
             Click("PlayButton");
             yield return ChapterEntryWait.Ready(game);
-            Assert.That(game.Session.ActiveStage, Is.Zero);
+            Assert.That(game.Session.ActiveStage, Is.EqualTo(game.Session.TutorialCount));
             CheckHudAndBoard();
             int previousMoves = game.Session.Snapshot.movesLeft;
-            int[] pair = game.Session.TutorialPair;
+            int[] pair = game.Session.OpeningLessonPair;
             game.RequestSwap(pair[0], pair[1]);
             float deadline = Time.realtimeSinceStartup + 15;
             while (game.Board.IsAnimating && Time.realtimeSinceStartup < deadline) yield return null;
@@ -94,7 +93,7 @@ namespace Hexrota.UnityClientTests
             var gesture = tools.transform.Find("GestureRegion");
             var hand = (RectTransform)gesture.Find("GuidePosition");
             Assert.That(gesture.gameObject.activeInHierarchy, Is.True);
-            int[] pair = game.Session.TutorialPair;
+            int[] pair = game.Session.OpeningLessonPair;
             var source = GameObject.Find("Stone_" + pair[0]).transform;
             var target = GameObject.Find("Stone_" + pair[1]).transform;
             Vector3 from = source.position, to = target.position;
@@ -125,11 +124,9 @@ namespace Hexrota.UnityClientTests
         {
             Click("PlayButton");
             yield return ChapterEntryWait.Ready(game);
-            Click("Geç");
-            yield return ChapterEntryWait.Ready(game);
             Assert.That(game.Session.ActiveStage, Is.EqualTo(game.Session.TutorialCount));
             CheckHudAndBoard();
-            int[] pair = new HexMatch(game.Session.Level, game.Session.Snapshot).LegalMoves()[0];
+            int[] pair = game.Session.OpeningLessonPair;
             game.RequestSwap(pair[0], pair[1]);
             Assert.That(game.Board.IsAnimating, Is.True);
             Assert.That(game.Session.Snapshot.turn, Is.EqualTo(1));

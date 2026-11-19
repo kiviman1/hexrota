@@ -5,23 +5,37 @@ namespace Hexrota.UnityClient.Presentation
 {
     public sealed partial class FirstPlayableController
     {
-        private void ResultArt(string name,string texture,float x,float y,float width,float height)
+        private ChapterVictoryView chapterVictory;
+
+        private void ShowChapterVictory()
         {
-            var rect=Rect(name,sheetDecor,Vector2.zero,Vector2.one);
-            At(rect,x,y,width,height);
-            var image=rect.gameObject.AddComponent<RawImage>();
-            image.texture=Resources.Load<Texture2D>(texture);image.raycastTarget=false;
+            if (chapterVictory == null)
+            {
+                var prefab = Resources.Load<GameObject>("CastleGame/ChapterVictory").GetComponent<ChapterVictoryView>();
+                chapterVictory = Instantiate(prefab, safe.GetComponentInParent<Canvas>().rootCanvas.transform, false);
+            }
+            CurrentScreen = "celebration";
+            modal.SetActive(false);
+            chapterVictory.Show(Session.ReducedMotion, FinishChapterVictory);
+        }
+
+        private void FinishChapterVictory()
+        {
+            if (chapterVictory != null) chapterVictory.Hide();
+            if (!ready || !HasInterface || CurrentScreen != "celebration") return;
+            CurrentScreen = "result";
+            DrawWin();
         }
 
         private void ResultStats(string[] names,string[] values,float top)
         {
-            SheetPlate("ResultStats",22,top,316,84,0xf5e7ca,0xf1dfbd,0xd0aa76,14);
+            SheetPlate("ResultStats",22,top,316,84,0x6f489f,0x50347a,0xc69ed7,14);
             float width=316f/names.Length;
             for(int i=0;i<names.Length;i++)
             {
                 float x=22+width*i;
-                SheetText("StatName"+i,names[i],x,top+15,width,19,9,Tone(0x805c71),TextAnchor.MiddleCenter);
-                SheetText("StatValue"+i,values[i],x,top+35,width,36,25,Tone(0x654381),TextAnchor.MiddleCenter,true);
+                SheetText("StatName"+i,names[i],x,top+15,width,19,9,sheetChrome.Gold,TextAnchor.MiddleCenter);
+                SheetText("StatValue"+i,values[i],x,top+35,width,36,25,sheetChrome.Paper,TextAnchor.MiddleCenter,true);
             }
         }
 
@@ -32,51 +46,50 @@ namespace Hexrota.UnityClient.Presentation
             bool tutorial=Session.IsTutorial,first=Session.ActiveStage==0,final=!tutorial && Session.NextCampaignStage<0;
             string next=final?"Bahçeni gör":first?"Birlikte devam edelim":tutorial?"İlk bölüme başla":
                 "Bölüm "+(Session.NextCampaignStage-Session.TutorialCount+1).ToString("00")+" ile devam et";
-            if(result.Welcome)
+            if(tutorial && result.Welcome)
             {
-                ShowPhoneSheet("İlk hediyen hazır!","İki görevi de tamamladın. Bu Altın senin!","BAŞLANGIÇ HEDİYEN",495);
-                PhoneSkin.Plate(sheetFrame.gameObject,Tone(0x472a62),Tone(0x51336a),Tone(0xffdb86),25,4);
-                At(sheetEyebrow.rectTransform,22,31,316,20);sheetEyebrow.color=Gold;sheetEyebrow.alignment=TextAnchor.MiddleCenter;
-                sheetRibbon.enabled=false;sheetTails.enabled=false;CenterTitle(54);modalTitle.fontSize=30;modalTitle.resizeTextMaxSize=30;
-                At(modalCopy.rectTransform,34,103,292,29);modalCopy.alignment=TextAnchor.MiddleCenter;modalCopy.color=Paper;
-                ResultArt("WelcomeChest","CoopArt/welcome-chest",56,130,248,200);
-                SheetPlate("GoldCoin",80,325,43,43,0xffdb63,0xe7a735,0xfff1a4,22);
-                SheetText("CoinMark","✦",80,323,43,43,26,Tone(0xfff5ac),TextAnchor.MiddleCenter,true);
-                SheetText("WelcomeGold","+"+result.Gold+" Altın",132,317,177,58,32,Gold,TextAnchor.MiddleLeft,true);
-                SheetText("WelcomeSaved","Hediyen hesabına eklendi.",22,370,316,34,12,Paper,TextAnchor.MiddleCenter);
+                ShowPhoneSheet("İlk hediyen hazır!","İki görevi de tamamladın. Bu Altın senin!","BAŞLANGIÇ HEDİYEN",441,ShowBoardReview);
+                SheetHero(CastlePopupChrome.Art.Reward,4,142);
+                At(sheetEyebrow.rectTransform,22,150,316,20);
+                At(modalCopy.rectTransform,22,174,316,34);
+                SheetText("WelcomeGold","+"+result.Gold+" Altın",22,212,316,44,27,sheetChrome.Gold,TextAnchor.MiddleCenter,true);
+                SheetText("WelcomeSaved","Hediyen hesabına eklendi.",22,258,316,27,13,sheetChrome.Paper,TextAnchor.MiddleCenter);
                 CelebrateWin();
-                SheetButton(next,22,418,316,50,ContinueAfterWin,SheetStyle.Primary,"arrow");return;
+                SheetButton(next,38,301,284,50,ContinueAfterWin,SheetStyle.Primary,"arrow");return;
             }
             string title=tutorial?(first?"İlk alan yeşerdi!":"Hazırsın!"):result.Headline??(final?"Usta işi!":"Harika eşleşme!");
             string description=tutorial?(first?"Aynı sayıları eşleştirdin, altlarındaki yerleri yeşerttin.":"Puanı topladın, her yeri yeşerttin. İlk bölüm seni bekliyor."):
                 final?"10 bölümün hepsini bitirdin!":board.movesLeft+" hamlen kaldı. Bölümü bitirdin!";
             int assisted=result.Assisted?32:0,gift=result.Gift!=null?24:0;
-            int rewardHeight=result.Stars>0?82+gift:0;
-            int nextY=412+assisted+rewardHeight;
-            ShowPhoneSheet(title,description,final?"YOLCULUK TAMAMLANDI":Session.StageLabel(Session.ActiveStage)+" TAMAMLANDI",tutorial?362:nextY+197);
-            CelebrateWin();
-            ResultArt("VictoryMark","CoopArt/victory-mark",139,30,82,90);
-            At(sheetEyebrow.rectTransform,22,145,316,20);sheetEyebrow.alignment=TextAnchor.MiddleCenter;
-            CenterTitle(173);At(modalCopy.rectTransform,22,238,316,25);modalCopy.alignment=TextAnchor.MiddleCenter;
-            if(tutorial){SheetButton(next,22,286,316,50,ContinueAfterWin,SheetStyle.Primary,"arrow");return;}
-            if(result.Assisted) SheetText("AssistedClear","Güçlendirici kullanarak tamamladın.",22,268,316,25,12,PurpleText,TextAnchor.MiddleCenter);
-            ResultStats(new[]{"TOPLAM PUAN","KALAN HAMLE","YEŞİL ALAN"},new[]{board.score.ToString(),board.movesLeft.ToString(),"%100"},286+assisted);
+            int welcome=result.WelcomeGold>0?24:0;
+            int rewardHeight=result.Stars>0?82+gift+welcome:0;
+            int rewardsY=262+assisted;
+            int nextY=rewardsY+rewardHeight+13;
+            ShowPhoneSheet(title,description,final?"YOLCULUK TAMAMLANDI":Session.StageLabel(Session.ActiveStage)+" TAMAMLANDI",
+                tutorial?338:nextY+233,ShowBoardReview);
+            if (tutorial) CelebrateWin();
+            SheetHero(CastlePopupChrome.Art.Reward,3,113);
+            At(sheetEyebrow.rectTransform,22,122,316,22);
+            At(modalCopy.rectTransform,22,147,316,27);
+            if(tutorial){SheetButton(next,38,191,284,48,ContinueAfterWin,SheetStyle.Primary,"arrow");return;}
+            if(result.Assisted) SheetText("AssistedClear","Güçlendirici kullanarak tamamladın.",22,173,316,24,12,SheetInk,TextAnchor.MiddleCenter);
+            ResultStats(new[]{"TOPLAM PUAN","KALAN HAMLE","YEŞİL ALAN"},new[]{board.score.ToString(),board.movesLeft.ToString(),"%100"},176+assisted);
             if(result.Stars>0)
             {
-                int rewardsY=397+assisted;
-                SheetPlate("EarnedRewards",22,rewardsY,316,rewardHeight,0x654084,0x38214e,0xe5b660,18);
-                SheetText("Earned","+"+result.Gold+" Altın     +"+result.Stars+" yıldız",28,rewardsY+12,304,30,18,Tone(0xffe492),TextAnchor.MiddleCenter,true);
-                if(result.Gift!=null) SheetText("Gift",result.Gift,28,rewardsY+42,304,24,13,Tone(0xd2f4a7),TextAnchor.MiddleCenter,true);
-                SheetText("ResultSaved","Bu bölüm tamamlandı. Ödülün ve ilerlemen kaydedildi.",28,rewardsY+44+gift,304,25,11,Tone(0xf5e7fa),TextAnchor.MiddleCenter);
+                SheetPlate("EarnedRewards",22,rewardsY,316,rewardHeight,0x7650a6,0x51347b,0xdfb579,18);
+                SheetText("Earned","+"+result.Gold+" Altın     +"+result.Stars+" yıldız",28,rewardsY+9,304,30,19,sheetChrome.Gold,TextAnchor.MiddleCenter,true);
+                if(result.Gift!=null) SheetText("Gift",result.Gift,28,rewardsY+40,304,24,13,sheetChrome.Paper,TextAnchor.MiddleCenter,true);
+                if(welcome>0) SheetText("WelcomeIncluded","Bu ödüle "+result.WelcomeGold+" Altın başlangıç hediyen dahil.",28,rewardsY+40+gift,304,24,13,sheetChrome.Paper,TextAnchor.MiddleCenter);
+                SheetText("ResultSaved","Bu bölüm tamamlandı. Ödülün ve ilerlemen kaydedildi.",28,rewardsY+43+gift+welcome,304,25,11,sheetChrome.Paper,TextAnchor.MiddleCenter);
             }
-            SheetButton(next,22,nextY,316,50,ContinueAfterWin,SheetStyle.Primary,"arrow");
-            SheetButton("Tahtayı incele",132,nextY+57,96,40,ShowBoardReview,SheetStyle.Plain);
-            ResultLinks(nextY+113);
+            SheetButton(next,35,nextY,290,50,ContinueAfterWin,SheetStyle.Primary,"arrow");
+            SheetButton("Tahtayı incele",128,nextY+55,104,35,ShowBoardReview,SheetStyle.Plain);
+            ResultLinks(nextY+94);
         }
 
         private void ResultLinks(int y)
         {
-            SheetPlate("ResultDivider",22,y,316,1,0xe6ecdd,0xe6ecdd,0xe6ecdd,0);
+            SheetPlate("ResultDivider",22,y,316,1,0xad88ca,0xad88ca,0xad88ca,0);
             SheetButton("Bölümler",90,y+13,88,44,OpenJourney,SheetStyle.Plain,"map");
             SheetButton("Ana menü",179,y+13,91,44,ReturnToMenu,SheetStyle.Plain,"home");
         }
@@ -104,26 +117,25 @@ namespace Hexrota.UnityClient.Presentation
         {
             var board=Session.Snapshot;int green=0;foreach(int layer in board.layers)if(layer==0)green++;
             var ad=Session.ReadRescueAd();var gold=Session.GetGoldRescueOffer();
-            int retryY=ad==null?413:782;
-            ShowPhoneSheet("Bir plan daha?","Hamlelerin bitti. Altı yeşil olmayan taşları eşleştirmeyi dene.","BİR YOL DAHA VAR",retryY+187,ShowBoardReview);
-            SheetSymbol("reset",30,true);
-            At(sheetEyebrow.rectTransform,22,128,316,28);sheetEyebrow.alignment=TextAnchor.MiddleCenter;
-            CenterTitle(166);At(modalCopy.rectTransform,22,232,316,44);modalCopy.alignment=TextAnchor.MiddleCenter;
-            ResultStats(new[]{"TOPLAM PUAN","YEŞİL ALAN"},new[]{board.score+" / "+Session.Level.target,green+" / "+board.layers.Length},302);
+            int retryY=ad==null?292:658;
+            ShowPhoneSheet("Bir plan daha?","Hamlelerin bitti. Altı yeşil olmayan taşları eşleştirmeyi dene.","",retryY+240,ShowBoardReview);
+            SheetHero(CastlePopupChrome.Art.Heart,3,102);
+            At(modalCopy.rectTransform,22,125,316,43);
+            ResultStats(new[]{"TOPLAM PUAN","YEŞİL ALAN"},new[]{board.score+" / "+Session.Level.target,green+" / "+board.layers.Length},190);
             if(ad!=null)
             {
-                SheetPlate("SecondChance",22,413,316,350,0xf1e7fa,0xdec9ed,0xb89cd1,18);
-                SheetText("SecondChanceTitle","Aynı tahtada +"+ad.Moves+" hamle",40,427,280,30,18,Tone(0x60337f),TextAnchor.MiddleLeft,true);
-                SheetText("SecondChanceCopy","Taşların, yeşil alanların ve puanın korunur. Bir denemede bir kez kullanabilirsin.",40,461,280,44,12,PurpleText);
+                SheetPlate("SecondChance",22,288,316,350,0x754eb0,0x51347e,0xc198d1,18);
+                SheetText("SecondChanceTitle","Aynı tahtada +"+ad.Moves+" hamle",40,302,280,30,18,sheetChrome.Gold,TextAnchor.MiddleLeft,true);
+                SheetText("SecondChanceCopy","Taşların, yeşil alanların ve puanın korunur. Bir denemede bir kez kullanabilirsin.",40,336,280,44,12,SheetInk);
                 string label=ad.PendingDelivery?"Saklanan ödülünü kullan":ad.PendingId!=null?"Yarım kalan TEST reklamını aç":"TEST reklamı · +"+ad.Moves+" hamle";
-                EnableSheetButton(SheetButton(label,40,516,280,47,()=>DrawRescueAd(ad)),ad.Available,SheetStyle.Primary);
-                EnableSheetButton(SheetButton(ad.Price+" Altın · +"+ad.Moves+" hamle",40,572,280,46,()=>UseGoldRescue(gold),SheetStyle.Secondary),
-                    gold!=null&&gold.Affordable&&!ad.PendingDelivery,SheetStyle.Secondary);
-                SheetText("RescueAvailability",RescueAvailability(ad,gold),40,626,280,68,12,Tone(0x67486d),TextAnchor.MiddleLeft,true);
-                SheetText("TestProviderNote","TEST reklamında gerçek reklam gösterilmez. Gerçek para işlemi yoktur.",40,701,280,48,11,Tone(0x67486d));
+                EnableSheetButton(SheetButton(label,40,391,280,47,()=>DrawRescueAd(ad)),ad.Available);
+                EnableSheetButton(SheetButton(ad.Price+" Altın · +"+ad.Moves+" hamle",40,447,280,46,()=>UseGoldRescue(gold),SheetStyle.Secondary),
+                    gold!=null&&gold.Affordable&&!ad.PendingDelivery);
+                SheetText("RescueAvailability",RescueAvailability(ad,gold),40,501,280,68,12,SheetInk,TextAnchor.MiddleLeft,true);
+                SheetText("TestProviderNote","TEST reklamında gerçek reklam gösterilmez. Gerçek para işlemi yoktur.",40,576,280,48,11,SheetInk);
             }
             SheetButton("Yeniden dene",22,retryY,316,50,Retry,SheetStyle.Primary,"reset");
-            SheetText("RetryNote","Yeni bir tahta ile başlayacaksın.",22,retryY+65,316,23,11,PurpleText,TextAnchor.MiddleCenter);
+            SheetText("RetryNote","Yeni bir tahta ile başlayacaksın.",22,retryY+65,316,23,11,SheetInk,TextAnchor.MiddleCenter);
             ResultLinks(retryY+102);
         }
 
@@ -158,12 +170,12 @@ namespace Hexrota.UnityClient.Presentation
             if(!offer.PendingDelivery && id==null){DrawLoss();return;}
             string description=offer.PendingDelivery?"Bu ödül kaydedilmeyi bekliyor. Aynı denemeye eklemeyi tekrar deneyebilirsin.":
                 "Bu yerel test gerçek reklam göstermez. Yalnız tamamladığında aynı tahtana "+offer.Moves+" hamle eklenir.";
-            ShowPhoneSheet(offer.PendingDelivery?"Saklanan reklam ödülün":"TEST reklamı: +"+offer.Moves+" hamle",description,"GELİŞTİRME TESTİ",350);
-            SheetButton(offer.PendingDelivery?"Ödülü kullanmayı dene":"TEST reklamını tamamla",22,208,316,48,()=>{
+            ShowPhoneSheet(offer.PendingDelivery?"Saklanan reklam ödülün":"TEST reklamı: +"+offer.Moves+" hamle",description,"GELİŞTİRME TESTİ",380,()=>{if(!offer.PendingDelivery)Session.CompleteMobileRescueAd(id,false);DrawLoss();});
+            SheetButton(offer.PendingDelivery?"Ödülü kullanmayı dene":"TEST reklamını tamamla",22,158,316,48,()=>{
                 if(offer.PendingDelivery?Session.DeliverMobileRescueAd():Session.CompleteMobileRescueAd(id,true)) OpenCurrentBoard(false);
                 else DrawLoss();
             });
-            SheetButton("Vazgeç",22,267,316,46,()=>{if(!offer.PendingDelivery)Session.CompleteMobileRescueAd(id,false);DrawLoss();},SheetStyle.Secondary);
+            SheetButton("Vazgeç",22,219,316,46,()=>{if(!offer.PendingDelivery)Session.CompleteMobileRescueAd(id,false);DrawLoss();},SheetStyle.Secondary);
         }
     }
 }

@@ -30,7 +30,7 @@ namespace Hexrota.UnityClientTests
             FirstPlayableController.SessionFactory = () => new UnityGameSession(
                 ClientGameData.FromResources(), new MemoryProfileStorage(), new Clock());
             yield return SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
-            view = UnityEngine.Object.FindFirstObjectByType<FirstPlayableController>();
+            view = UnityEngine.Object.FindAnyObjectByType<FirstPlayableController>();
             Assert.That(view, Is.Not.Null);
             Assert.That(view.Session, Is.Not.Null);
             yield return null;
@@ -69,7 +69,8 @@ namespace Hexrota.UnityClientTests
             int turn = view.Session.Snapshot.turn;
             var moves = new HexMatch(view.Session.Level, view.Session.Snapshot).LegalMoves();
             Assert.That(moves, Is.Not.Empty);
-            view.RequestSwap(moves[0][0], moves[0][1]);
+            var pair = view.Session.OpeningLessonPair ?? moves[0];
+            view.RequestSwap(pair[0], pair[1]);
             Assert.That(view.Session.Snapshot.turn, Is.EqualTo(turn + 1), view.Session.LastError);
             Assert.That(view.Board.IsAnimating, Is.True);
             Assert.That(view.Session.IsPresenting, Is.True);
@@ -232,10 +233,10 @@ namespace Hexrota.UnityClientTests
             Assert.That(oldWorld == null, Is.True, "The detached visual root belongs to the unloaded scene.");
             Assert.That(session.IsPresenting, Is.False);
             Assert.That(completions, Is.Zero);
-            Assert.That(UnityEngine.Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+            Assert.That(UnityEngine.Object.FindObjectsByType<Transform>(FindObjectsInactive.Include)
                 .Any(item => item.name == "BoardVisuals_PLACEHOLDER"), Is.False);
             yield return SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
-            view = UnityEngine.Object.FindFirstObjectByType<FirstPlayableController>();
+            view = UnityEngine.Object.FindAnyObjectByType<FirstPlayableController>();
             Assert.That(view, Is.Not.Null);
             yield return BeginLevel();
             StartLegalSwap();

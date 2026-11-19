@@ -5,11 +5,15 @@ namespace Hexrota.UnityClient.Presentation
 {
     public sealed partial class FirstPlayableController
     {
+        [SerializeField] private HexBoardView.StoneMotionSettings stoneMotion = new HexBoardView.StoneMotionSettings();
         [SerializeField] private CastleHudView castleHudPrefab;
         private CastleHudView castleHud;
         [SerializeField] private CastleGameToolsView gameToolsPrefab;
         private CastleGameToolsView gameTools;
         private int[] guidePair;
+        private int[] openingPair, openingMatch;
+        private string pendingGroundTip, shownMechanicTip;
+        private float tipEnds;
         private float guideStarted, speechStarted;
         private string coachCue;
 
@@ -35,6 +39,7 @@ namespace Hexrota.UnityClient.Presentation
             boardInput = Rect("BoardInput",gameplay.transform,Vector2.zero,Vector2.one);
             var touch = boardInput.gameObject.AddComponent<Image>(); touch.color = Color.clear;
             Board = boardInput.gameObject.AddComponent<HexBoardView>(); Board.Initialize(boardCamera,assetCatalog);
+            Board.SetStoneMotion(stoneMotion);
             Board.SwapRequested += RequestSwap; Board.PresentationCompleted += FinishPresentation;
             Board.PresentationCancelled += CancelBoardPresentation;
             Board.PresentationStarted += BeginScoreFeedback; Board.WaveProgress += DrawScoreWave;
@@ -68,6 +73,7 @@ namespace Hexrota.UnityClient.Presentation
                 safeRect.width * area.width,safeRect.height * area.height);
             Board.SetCameraArea(cameraArea);
             coopScene.SetBoardArea(cameraArea, Board, Session.Level.cells.Length);
+            if (gameTools.Opening != null && gameTools.Opening.gameObject.activeSelf) PositionOpeningPrompt();
         }
 
         private void RefreshCounters()
@@ -97,18 +103,91 @@ namespace Hexrota.UnityClient.Presentation
                 Board.MarkPair(Session.TutorialPair,Session.TutorialMatchIndices);
             }
             guidePair = lesson && !feedback && Board.InputEnabled ? Session.TutorialPair : null;
+            if (!lesson && CurrentScreen == "playing" && Session.Status == "playing")
+                RefreshOpeningLesson();
             guideStarted = Time.unscaledTime;
             gameTools.ShowGuide(guidePair != null);
         }
 
+        private void RefreshOpeningLesson()
+        {
+            if (gameTools.Opening == null) return;
+            if (Session.ShouldTeachOpening)
+            {
+                openingPair = Session.OpeningLessonPair;
+                openingMatch = Session.OpeningLessonMatchIndices;
+                Board.SetOpeningPair(openingPair);
+                Board.MarkPair(openingPair, openingMatch);
+                guidePair = openingPair;
+                gameTools.Opening.ShowSwap(Session.Snapshot.values[openingPair[0]].Value);
+                coopScene.FocusLesson(true);
+                PositionOpeningPrompt();
+                return;
+            }
+            if (pendingGroundTip != null && pendingGroundTip == Session.AttemptId && Session.Snapshot.turn == 1)
+            {
+                pendingGroundTip = null;
+                gameTools.Opening.ShowGround();
+            }
+            else
+            {
+                var lesson = Session.ChapterMechanicLesson;
+                if (lesson == UnityGameSession.MechanicLesson.None || shownMechanicTip == Session.AttemptId) return;
+                shownMechanicTip = Session.AttemptId;
+                gameTools.Opening.ShowMechanic(lesson);
+            }
+            tipEnds = Time.unscaledTime + 6f;
+            PositionOpeningPrompt();
+        }
+
+        private void PositionOpeningPrompt()
+        {
+            if (Board.BoardCamera == null) return;
+            // Non-blocking reminders sit along the top of the play area.
+            float low = 0, high = 1;
+            if (openingPair != null)
+            {
+                low = 1; high = 0;
+                foreach (int cell in openingPair) Include(cell);
+                foreach (int cell in openingMatch) Include(cell);
+            }
+            float radius = .56f / (2 * Board.BoardCamera.orthographicSize);
+            gameTools.Opening.Position(boardInput, Board.FrameVerticalLimits(), low, high, radius);
+
+            void Include(int cell)
+            {
+                float y = Board.ViewportCell(cell).y;
+                low = Mathf.Min(low, y); high = Mathf.Max(high, y);
+            }
+        }
+
+        private void HideOpeningLesson()
+        {
+            if (openingPair != null)
+            {
+                if (Board != null) Board.SetOpeningPair(null);
+                if (coopScene != null) coopScene.FocusLesson(false);
+                openingPair = openingMatch = guidePair = null;
+                if (gameTools != null) gameTools.ShowGuide(false);
+            }
+            if (gameTools != null && gameTools.Opening != null)
+                gameTools.Opening.gameObject.SetActive(false);
+        }
+
         private void LateUpdate()
         {
-            if (!ready || !HasInterface || !gameTools.ShowingLesson) return;
+            if (!ready || !HasInterface) return;
+            if (gameTools.Opening == null && openingPair != null) HideOpeningLesson();
+            if (gameTools.Opening != null && gameTools.Opening.gameObject.activeSelf &&
+                (CurrentScreen != "playing" || (openingPair == null && Time.unscaledTime >= tipEnds)))
+                HideOpeningLesson();
+            if (!gameTools.ShowingLesson && openingPair == null) return;
             bool showGesture = guidePair != null && CurrentScreen == "playing" && Board.CanShowTutorialGesture;
             gameTools.ShowGuide(showGesture);
             if (CurrentScreen != "playing") return;
             float elapsed = Time.unscaledTime - speechStarted;
-            gameTools.ShowPose(!Board.ReducedMotion && !Board.IsAnimating && elapsed < .99f && ((int)(elapsed/.165f) % 2 == 0));
+            if (gameTools.ShowingLesson)
+                gameTools.ShowPose(!Board.ReducedMotion && !Board.IsAnimating && elapsed < .99f && ((int)(elapsed/.165f) % 2 == 0));
             if (!showGesture) return;
             // Only the glove demonstrates the swipe. The two touch targets stay on their real cells.
             float clock = Mathf.Repeat((Time.unscaledTime-guideStarted)/2.2f,1);

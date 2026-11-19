@@ -2,6 +2,7 @@ using System.Linq;
 using Hexrota.UnityClient.Presentation;
 using NUnit.Framework;
 using UnityEditor;
+using UnityEditor.AssetImporters;
 using UnityEngine;
 
 namespace Hexrota.UnityClientTests
@@ -42,33 +43,42 @@ namespace Hexrota.UnityClientTests
         }
 
         [Test]
-        public void LoadingFieldGuideProvidesAnEditableIllustrationForEachTip()
+        public void ChapterLoadingPrefabReimportsWithoutErrors()
+        {
+            const string path = "Assets/Hexrota/Resources/CastleGame/ChapterLoading.prefab";
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate | ImportAssetOptions.ForceSynchronousImport);
+            var log = AssetImporter.GetImportLog(path);
+            if (log != null)
+            {
+                var errors = log.logEntries.Where(entry => (entry.flags & ImportLogFlags.Error) != 0);
+                Assert.That(errors.Select(entry => entry.message), Is.Empty, path);
+            }
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            Assert.That(PrefabUtility.GetPrefabAssetType(prefab), Is.EqualTo(PrefabAssetType.Regular));
+        }
+
+        [Test]
+        public void LoadingPrefabContainsOnlyTheBackdropAndEditableCenteredLabel()
         {
             var prefab = Resources.Load<GameObject>("CastleGame/ChapterLoading");
             Assert.That(PrefabUtility.IsPartOfPrefabAsset(prefab), Is.True);
-            var guide = new SerializedObject(prefab.GetComponent<ChapterLoadingView>());
-            var tips = guide.FindProperty("tips");
-            Assert.That(tips.arraySize, Is.GreaterThan(1));
-            for (int i = 0; i < tips.arraySize; i++)
-            {
-                var tip = tips.GetArrayElementAtIndex(i);
-                Assert.That(tip.FindPropertyRelative("heading").stringValue, Is.Not.Empty);
-                Assert.That(tip.FindPropertyRelative("body").stringValue, Is.Not.Empty);
-                var diagram = tip.FindPropertyRelative("diagram").objectReferenceValue as GameObject;
-                Assert.That(diagram, Is.Not.Null);
-                Assert.That(diagram.transform.childCount, Is.Positive);
-            }
+            var loading = new SerializedObject(prefab.GetComponent<ChapterLoadingView>());
             Assert.That(prefab.GetComponent<CanvasGroup>().blocksRaycasts, Is.True);
-            var curtain = prefab.transform.Find("NightSky").GetComponent<UnityEngine.UI.Image>();
-            Assert.That(curtain.raycastTarget, Is.True);
-
-            var digits = prefab.GetComponentsInChildren<UnityEngine.UI.Text>(true).Where(label => label.name == "Digit").ToArray();
-            Assert.That(digits.Select(label => label.text), Is.EquivalentTo(new[] { "2", "2", "2", "4", "4", "4" }));
-            foreach (var digit in digits)
-            {
-                AssertSprite(digit.transform.parent, digit.text == "2" ? "TipStone_02_Yellow" : "TipStone_04_Turquoise");
-                Assert.That(digit.GetComponent<UnityEngine.UI.Outline>(), Is.Not.Null);
-            }
+            var landscape = prefab.transform.Find("CastleLandscape");
+            AssertSprite(landscape, "foundation_0");
+            Assert.That(landscape.GetComponent<UnityEngine.UI.Image>().raycastTarget, Is.True);
+            Assert.That(landscape.GetComponent<CastleHomeBackdrop>(), Is.Not.Null);
+            var backdrops = loading.FindProperty("coopStages");
+            Assert.That(Enumerable.Range(0, backdrops.arraySize).Select(i =>
+                backdrops.GetArrayElementAtIndex(i).objectReferenceValue.name),
+                Is.EqualTo(new[] { "foundation_0", "frame_0", "finished_0" }));
+            Assert.That(prefab.transform.childCount, Is.EqualTo(2));
+            var label = prefab.GetComponentsInChildren<UnityEngine.UI.Text>(true).Single();
+            Assert.That(loading.FindProperty("loadingLabel").objectReferenceValue, Is.SameAs(label));
+            Assert.That(label.text, Is.EqualTo("Yükleniyor…"));
+            Assert.That(label.gameObject.activeSelf, Is.False);
+            Assert.That(label.alignment, Is.EqualTo(TextAnchor.MiddleCenter));
+            Assert.That(label.rectTransform.anchoredPosition, Is.EqualTo(Vector2.zero));
         }
 
         [Test]

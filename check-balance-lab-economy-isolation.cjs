@@ -18,18 +18,28 @@ const frozen=JSON.parse(fs.readFileSync(path.join(LAB,'fixtures/balance-lab-prot
 const storyReview=require('./fixtures/story-engine-9-15-protected.json');
 const unityEntry=require('./fixtures/unity-tutorial-entry-protected.json');
 const unityLayouts=require('./fixtures/unity-campaign-layout-protected.json');
+const unityOnboarding=require('./fixtures/unity-integrated-onboarding-protected.json');
+const chapterOpenings=require('./fixtures/unity-chapter-openings-protected.json');
+const wireReview=require('./fixtures/unity-gameplay-wire-protected.json');
+assert.equal(wireReview.baseline,'9ad3e319543522120a72572cf4edb784e84a9a8e');
+assert.deepEqual(Object.keys(wireReview.sha256),['unity/Gameplay/GameplayTypes.cs']);
+assert.equal(chapterOpenings.baseline,'6bc45f9fa65f8850d10d28647558bbe2c4717a8d');
+assert.deepEqual(Object.keys(chapterOpenings.sha256),['unity/Catalog/LevelCatalog.cs']);
+assert.equal(unityOnboarding.baseline,'cd34f296abdb35595065d71995bc2214186cdf4b');
+assert.deepEqual(Object.keys(unityOnboarding.sha256),['unity/Application/GameSessionController.cs','unity/Economy/EconomyManager.cs']);
 assert.equal(unityLayouts.baseline,'a3718217ac2f336658757054aad64f3e120977c8');
 assert.deepEqual(Object.keys(unityLayouts.sha256),['unity/Application/GameSessionController.Assistance.cs','unity/Application/GameSessionController.Rescue.cs','unity/Catalog/LevelCatalog.cs']);
 assert.equal(unityEntry.baseline,'b078da49a0a1c9632195f13aefefad812e7f92ab');
 assert.deepEqual(Object.keys(unityEntry.sha256),['unity/Application/GameSessionController.cs','unity/Application/GameSessionController.Rescue.cs']);
-for(const [file,expected] of Object.entries({...unityEntry.sha256,...unityLayouts.sha256})) assert.equal(sha(fs.readFileSync(path.join(ROOT,file))),expected,file+' Unity integration stays pinned');
+const unityProtected={...unityEntry.sha256,...unityLayouts.sha256,...unityOnboarding.sha256,...chapterOpenings.sha256,...wireReview.sha256};
+for(const [file,expected] of Object.entries(unityProtected)) assert.equal(sha(fs.readFileSync(path.join(ROOT,file))),expected,file+' Unity integration stays pinned');
 assert.equal(storyReview.baseline,'8859d0924a3f2c7ac5771097274c09c6e0b82c22');
 assert.deepEqual(Object.keys(storyReview.sha256),['dist/app.js','dist/app-state.js','dist/state-selectors.js','dist/state-effects.js','dist/session-store.js','dist/game-save.js','dist/index.html','dist/style.css','dist/sw.js','dist/hint-worker.js','dist/obstacles.html','dist/ui-kit.html','src/styles/manifest.json','src/styles/12-story.css','dist/story-engine.js','dist/story-events.js','dist/story-profile.js','dist/story-alpha.js','dist/story-content.js','dist/story-presentation.js','data/story-content-v1.json','scripts/generate-story-content.cjs','unity/Story/StoryEngine.cs','unity/StoryAdapter/CanonicalStoryFacts.cs','unity/StoryAdapter/StoryBindings.cs','unity/StoryParityHarness/Program.cs','unity/StoryParityHarness/Hexrota.StoryParity.csproj'],'only explicit narrative/profile/presentation/cache sources extend previous protection; gameplay and historical data remain unchanged');
 for(const [relative,expected]of Object.entries(storyReview.sha256))assert.equal(sha(fs.readFileSync(path.join(ROOT,relative))),expected,'Story boundary source drifted: '+relative);
 const materialReview=require('./fixtures/material-objectives-9-14-protected.json');
 assert.equal(materialReview.baseline,'f8d6b454f3989dc25921e5eee968a983fd3a762a');
 assert.deepEqual(Object.keys(materialReview.sha256),["dist/engine.js", "dist/app.js", "dist/board-view.js", "dist/move-presentation.js", "dist/session-store.js", "dist/idle-hints.js", "dist/idle-hint-view.js", "dist/index.html", "dist/style.css", "dist/sw.js", "dist/hint-worker.js", "dist/obstacles.html", "dist/ui-kit.html", "src/styles/manifest.json", "src/styles/11-material-objectives.css", "dist/material-view.js", "dist/material-alpha.js", "dist/material-alpha-levels.js", "data/material-alpha-levels-v1.json", "scripts/generate-material-alpha.cjs", "unity/Gameplay/GameplayTypes.cs", "unity/Gameplay/HexMatch.cs", "unity/Gameplay/HexMatch.Obstacles.cs", "unity/Gameplay/HexMatch.Materials.cs", "unity/Catalog/CatalogWire.cs", "unity/Catalog/MaterialAlphaCatalog.cs", "unity/Hints/HintSolver.cs", "unity/GameplayParityHarness/Program.cs", "unity/HintParityHarness/Program.cs", "unity/RewardAdapterParityHarness/Program.cs"],'only explicit canonical v6, alpha catalog, material presentation, hint and cache sources extend previous protection');
-for(const [relative,expected]of Object.entries(materialReview.sha256))assert.equal(sha(fs.readFileSync(path.join(ROOT,relative))),storyReview.sha256[relative]||expected,'Material objective source drifted: '+relative);
+for(const [relative,expected]of Object.entries(materialReview.sha256))assert.equal(sha(fs.readFileSync(path.join(ROOT,relative))),wireReview.sha256[relative]||storyReview.sha256[relative]||expected,'Material objective source drifted: '+relative);
 const focusReview=require('./fixtures/idle-focus-palette-9-12-protected.json');
 assert.equal(focusReview.baseline,'a3bb1c83afbb1b73e709eda482c7de5ed0eeeb49');
 assert.deepEqual(Object.keys(focusReview.sha256),["dist/app.js", "dist/idle-hints.js", "dist/idle-hint-view.js", "src/styles/03-presentation-and-learning.css", "src/styles/09-idle-hints.css", "src/styles/10-obstacle-flow.css", "dist/style.css", "dist/sw.js"],'only focused hint, palette paint and cache sources extend the prior protection');
@@ -54,12 +64,8 @@ for(const [relative,expected]of Object.entries(frozen.sha256)){
  assert.equal(sha(fs.readFileSync(path.join(LAB,relative))),expected,'The pinned Lab reference itself drifted: '+relative);
  if(relative==='docs/PRODUCT_ROADMAP_2026.md'){sourceOnlyFiles.push(relative);continue;}
  const actual=fs.readFileSync(path.join(ROOT,relative));
- if(Object.hasOwn(unityLayouts.sha256,relative)){
-  assert.equal(sha(actual),unityLayouts.sha256[relative],'Unity campaign catalog source drifted: '+relative);
-  reviewedRecoveryFiles.push(relative);continue;
- }
- if(Object.hasOwn(unityEntry.sha256,relative)){
-  assert.equal(sha(actual),unityEntry.sha256[relative],'Unity tutorial entry source drifted: '+relative);
+ if(Object.hasOwn(unityProtected,relative)){
+  assert.equal(sha(actual),unityProtected[relative],'Unity integration source drifted: '+relative);
   reviewedRecoveryFiles.push(relative);continue;
  }
  if(relative==='reports/observable-difficulty.json'){

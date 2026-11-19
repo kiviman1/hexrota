@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Linq;
 using Hexrota.Application;
 using Hexrota.UnityClient;
 using Hexrota.UnityClient.Presentation;
@@ -8,7 +9,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
-using System.Linq;
+using W = Hexrota.Contracts.Wire;
 
 namespace Hexrota.UnityClientTests
 {
@@ -17,12 +18,14 @@ namespace Hexrota.UnityClientTests
         private Func<UnityGameSession> original;
         private FirstPlayableController controller;
         private MemoryProfileStorage storage;
+        private ClientGameData data;
 
         [UnitySetUp] public IEnumerator StartScene()
         {
             original = FirstPlayableController.SessionFactory;
             storage = new MemoryProfileStorage();
-            FirstPlayableController.SessionFactory = () => new UnityGameSession(ClientGameData.FromResources(), storage, new SystemUtcClock());
+            data = ClientGameData.FromResources();
+            FirstPlayableController.SessionFactory = () => new UnityGameSession(data, storage, new SystemUtcClock());
             yield return Load();
         }
 
@@ -41,103 +44,73 @@ namespace Hexrota.UnityClientTests
             yield return null;
         }
 
-        private IEnumerator Move(int[] pair)
+        private void Click(string name)
         {
-            int turn = controller.Session.Snapshot.turn;
-            controller.RequestSwap(pair[0], pair[1]);
-            float end = Time.realtimeSinceStartup + 12;
-            while (controller.Board.IsAnimating && Time.realtimeSinceStartup < end) yield return null;
-            Assert.That(controller.Board.IsAnimating, Is.False);
-            Assert.That(controller.Session.Snapshot.turn, Is.EqualTo(turn + 1));
+            controller.GetComponentsInChildren<Button>().Single(b => b.name == name).onClick.Invoke();
         }
 
-        [UnityTest] public IEnumerator StartButtonRestoresTutorialAcknowledgementAndLeadsThroughBothLessonsToCampaign()
+        [UnityTest]
+        public IEnumerator HomePlayTeachesOnChapterOneAndTheSameSavedBoardWinsAndLeadsToChapterTwo()
         {
-            var start = controller.GetComponentsInChildren<Button>().Single(b => b.name == "PlayButton");
             Assert.That(controller.Session.FirstOpening, Is.True);
-            start.onClick.Invoke();
+            Click("PlayButton");
             yield return ChapterEntryWait.Ready(controller);
-            var sceneArt = controller.GetComponentsInChildren<RawImage>().Single(i => i.name == "CoopLandscape");
-            Assert.That(sceneArt.texture.name, Is.EqualTo("foundation"));
-            Assert.That(controller.Session.FirstOpening, Is.False);
-            Func<string, string> text = name => controller.GetComponentsInChildren<Text>().Single(label => label.name == name).text;
-            Assert.That(text("CoachHeading"), Is.EqualTo("ADIM 1 / 3"));
-            Assert.That(text("LessonCounter"), Is.EqualTo("Tahta 0/3"));
-            Assert.That(text("LessonTitle"), Is.EqualTo("2’yi 1’in yerine kaydır"));
-            Assert.That(text("LessonCopy"), Is.EqualTo("Aynı sayıdan üç taş yan yana gelsin."));
-            Assert.That(controller.Session.ActiveStage, Is.Zero);
-            for (int stage = 0; stage < 2; stage++)
-            {
-                if (stage == 1) Assert.That(text("LessonCounter"), Is.EqualTo("Çivi 0/4"));
-                for (int turn = 0; turn < (stage == 0 ? 3 : 4); turn++)
-                {
-                    var pair = controller.Session.TutorialPair;
-                    Assert.That(pair, Has.Length.EqualTo(2));
-                    // Build disposes the previous stage's visual root at end of frame.
-                    yield return null;
-                    var focus = pair.Concat(controller.Session.TutorialMatchIndices).ToArray();
-                    var properties = new MaterialPropertyBlock();
-                    for (int i = 0; i < controller.Session.Level.cells.Length; i++)
-                    {
-                        var model = GameObject.Find("Stone_" + i).transform.Find("Model");
-                        model.GetComponent<MeshRenderer>().GetPropertyBlock(properties);
-                        Assert.That(properties.GetFloat("_GuideOpacity"), Is.EqualTo(focus.Contains(i) ? 1f : .30f).Within(.01f),
-                            "Tutorial focus for cell " + i);
-                    }
-                    yield return Move(pair);
-                    if (controller.Session.NeedsTutorialAcknowledgement)
-                    {
-                        Assert.That(controller.Board.InputEnabled, Is.False);
-                        if (stage == 0 && turn == 0)
-                        {
-                            yield return Load();
-                            Assert.That(controller.Session.FirstOpening, Is.False, "A committed turn survives scene reload.");
-                            start = controller.GetComponentsInChildren<Button>().Single(b => b.name == "PlayButton");
-                            start.onClick.Invoke();
-                            yield return ChapterEntryWait.Ready(controller);
-                            sceneArt = controller.GetComponentsInChildren<RawImage>().Single(i => i.name == "CoopLandscape");
-                            Assert.That(text("CoachHeading"), Is.EqualTo("BU HAMLEDE"));
-                            Assert.That(text("LessonCounter"), Is.EqualTo("Tahta 1/3"));
-                            Assert.That(text("LessonTitle"), Is.EqualTo("İlk eşleşmen!"));
-                            Assert.That(text("LessonCopy"), Does.Contain("2 + 2 + 2 = 6 puan."));
-                            Assert.That(controller.Session.Snapshot.turn, Is.EqualTo(1));
-                            Assert.That(controller.Session.NeedsTutorialAcknowledgement, Is.True);
-                        }
-                        controller.AcknowledgeTutorial();
-                        Assert.That(controller.Board.InputEnabled, Is.True);
-                    }
-                }
-                Assert.That(controller.CurrentScreen, Is.EqualTo("result"));
-                Assert.That(text("ModalTitle"), Is.EqualTo(stage == 0 ? "İlk alan yeşerdi!" : "İlk hediyen hazır!"));
-                var resultArt = controller.GetComponentsInChildren<RawImage>()
-                    .Single(image => image.name == (stage == 0 ? "VictoryMark" : "WelcomeChest"));
-                Assert.That(resultArt.texture, Is.Not.Null);
-                Assert.That(controller.Session.IsStageComplete(stage), Is.True);
-                Assert.That(sceneArt.texture.name, Is.EqualTo(stage == 0 ? "frame" : "finished"));
-                controller.ContinueAfterWin();
-                if (stage==1)
-                {
-                    Assert.That(controller.CurrentScreen, Is.EqualTo("preview"));
-                    var begin = controller.GetComponentsInChildren<Button>().Single(b => b.name == "Başla");
-                    begin.onClick.Invoke();
-                }
-                yield return ChapterEntryWait.Ready(controller);
-                Assert.That(controller.Session.ActiveStage, Is.EqualTo(stage + 1));
-            }
+            int first = controller.Session.TutorialCount;
+            Assert.That(controller.Session.ActiveStage, Is.EqualTo(first));
             Assert.That(controller.Session.Level.id.ToString(), Is.EqualTo("1"));
-            Assert.That(controller.Session.IsTutorial, Is.False);
+            string attemptId = controller.Session.AttemptId;
+            var attempts = W.Required(W.Required(storage.Read(ProfileRepository.ProfileKey), "game"), "attempts");
+            var metadata = W.Required(attempts, first.ToString());
+            var level = data.Catalog.ResolveLevelWire(W.Required(metadata, "levelId"), (string)W.Required(metadata, "variantId"),
+                (string)W.Required(metadata, "levelDataVersion"));
+            var openings = W.List(level["solutions"]).Select(line => W.List(line)
+                .Select(step => W.List(step).Select(W.Int32).ToArray()).ToArray());
+            var pair = controller.Session.OpeningLessonPair;
+            var route = openings.First(line => line[0].OrderBy(i => i).SequenceEqual(pair.OrderBy(i => i)));
+            yield return ChapterEntryWait.PlayOpeningMove(controller);
+            var checkpoint = controller.Session.Snapshot;
+            controller.ReturnToMenu();
+            yield return Load();
+            Click("PlayButton");
+            yield return ChapterEntryWait.Ready(controller);
+            Assert.That(controller.Session.ActiveStage, Is.EqualTo(first));
+            Assert.That(controller.Session.AttemptId, Is.EqualTo(attemptId));
+            Assert.That(controller.Session.Snapshot.turn, Is.EqualTo(checkpoint.turn));
+            CollectionAssert.AreEqual(checkpoint.values, controller.Session.Snapshot.values);
+            Assert.That(controller.Session.OpeningLessonPair, Is.Null);
+
+            foreach (var step in route.Skip(1))
+            {
+                int turn = controller.Session.Snapshot.turn;
+                controller.RequestSwap(step[0], step[1]);
+                Assert.That(controller.Session.Snapshot.turn, Is.EqualTo(turn + 1));
+                float deadline = Time.realtimeSinceStartup + 12f;
+                while (controller.Board.IsAnimating && Time.realtimeSinceStartup < deadline) yield return null;
+                Assert.That(controller.Board.IsAnimating, Is.False);
+            }
+
+            float resultDeadline = Time.realtimeSinceStartup + 6f;
+            while (controller.CurrentScreen != "result" && Time.realtimeSinceStartup < resultDeadline) yield return null;
+            Assert.That(controller.CurrentScreen, Is.EqualTo("result"));
+            Assert.That(controller.Session.Status, Is.EqualTo("won"));
+            Assert.That(controller.Session.IsStageComplete(first), Is.True);
+            var wallet = controller.Session.ReadPhoneWallet();
+            Assert.That(wallet.Stars, Is.Positive);
+            Assert.That(wallet.Gold, Is.Positive);
+
+            Click("Bölüm 02 ile devam et");
+            Assert.That(controller.CurrentScreen, Is.EqualTo("preview"));
+            yield return null;
+            Click("Başla");
+            yield return ChapterEntryWait.Ready(controller);
+            Assert.That(controller.Session.ActiveStage, Is.EqualTo(first + 1));
+            Assert.That(controller.Session.OpeningLessonPair, Is.Null);
             controller.ReturnToMenu();
             var home = controller.GetComponentInChildren<CastleHomeView>();
-            var wallet = controller.Session.ReadPhoneWallet();
-            Assert.That(wallet.Gold, Is.Positive, "Completing the lessons awards the real welcome gift.");
-            var balance = home.GetComponentsInChildren<Text>().Single(label => label.name == "GoldValue");
-            Assert.That(balance.text, Is.EqualTo(wallet.Gold.ToString()));
-            controller.OpenJourney();
-            Assert.That(controller.CurrentScreen, Is.EqualTo("journey"));
+            Assert.That(home.GetComponentsInChildren<Text>().Single(t => t.name == "GoldValue").text, Is.EqualTo(wallet.Gold.ToString()));
             controller.OpenGarden();
-            Assert.That(controller.CurrentScreen, Is.EqualTo("garden"));
-            var garden = controller.GetComponentsInChildren<RawImage>().Single(i => i.name == "GardenIllustration");
-            Assert.That(garden.texture.name, Is.EqualTo("soil"));
+            Assert.That(controller.GetComponentsInChildren<RawImage>().Single(i => i.name == "GardenIllustration").texture.name,
+                Is.EqualTo(controller.Session.GardenTier));
             LogAssert.NoUnexpectedReceived();
         }
     }

@@ -10,7 +10,7 @@ namespace Hexrota.UnityClient.Presentation
         private RectTransform ProgressPage(string route,string eyebrow,string heading,string description,float height)
         {
             if (!ready || !HasInterface) return null;
-            if (Session.HasAttempt) { CancelPresentation(); Session.ReturnToMenu(); }
+            LeaveAttemptForMenu();
             CurrentScreen=route;
             Board.InputEnabled=false; boardCamera.enabled=false;
             gameplay.SetActive(false); modal.SetActive(false); menu.SetActive(true); RefreshScene();
@@ -73,8 +73,9 @@ namespace Hexrota.UnityClient.Presentation
             var achievements=Parchment(page,"Yolculuk izleri",14,326+tableHeight,362,347);
             MenuText(achievements,"Title","Yolculuk izleri",16,14,330,36,20,Ink,TextAnchor.MiddleLeft,true);
             string[] titles={"İlk eşleşme","İki hedef, bir plan","Yolun yarısı","Yeşil yolculuk"};
-            string[] copy={"İlk öğreticiyi tamamla.","İkinci öğreticiyi tamamla.","Beş ana bölümü tamamla.","On ana bölümü tamamla."};
-            bool[] earned={Session.ReadStageRecord(0)!=null,Session.ReadStageRecord(1)!=null,Session.ClearedCount>=5,Session.ClearedCount==count};
+            string[] copy={"İlk eşleşmeni yap.","İlk bölümün puan ve yeşil alan hedeflerine ulaş.","Beş ana bölümü tamamla.","On ana bölümü tamamla."};
+            int progress=Session.CompletedSceneTutorials;
+            bool[] earned={progress>=1,progress>=2,Session.ClearedCount>=5,Session.ClearedCount==count};
             for(int i=0;i<titles.Length;i++)
             {
                 float y=53+60*i;

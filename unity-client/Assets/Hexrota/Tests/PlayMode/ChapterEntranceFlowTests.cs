@@ -42,7 +42,7 @@ namespace Hexrota.UnityClientTests
             var curtain = UnityEngine.Object.FindAnyObjectByType<ChapterLoadingView>();
             Assert.That(curtain, Is.Not.Null);
             string attempt = game.Session.AttemptId;
-            var pair = game.Session.RequestHint();
+            var pair = game.Session.OpeningLessonPair;
             game.BeginStage(0);
             game.RequestSwap(pair[0], pair[1]);
             Assert.That(game.CurrentScreen, Is.EqualTo("loading"));
@@ -64,6 +64,44 @@ namespace Hexrota.UnityClientTests
             Assert.That(stones.Count(t => t.gameObject.activeSelf), Is.EqualTo(game.Session.Snapshot.values.Count(v => v.HasValue)));
             game.RequestSwap(pair[0], pair[1]);
             Assert.That(game.Session.Snapshot.turn, Is.EqualTo(1));
+        }
+
+        [UnityTest]
+        public IEnumerator ShuttersMeetAtTheCenterAndSeparateBeforeBoardEntry()
+        {
+            Assert.That(game.Session.SetPreferences(motion: "full"), Is.True);
+            game.BeginLevelOne();
+            var curtain = UnityEngine.Object.FindAnyObjectByType<ChapterLoadingView>();
+            var upper = (RectTransform)curtain.transform.Find("UpperShutter");
+            var lower = (RectTransform)curtain.transform.Find("LowerShutter");
+            Assert.That(upper.anchorMin.y, Is.EqualTo(1f));
+            Assert.That(lower.anchorMax.y, Is.EqualTo(0f));
+            var label = curtain.GetComponentsInChildren<UnityEngine.UI.Text>(true).Single();
+            Assert.That(label.text, Is.EqualTo("Yükleniyor…"));
+            Assert.That(label.gameObject.activeSelf, Is.False);
+
+            float deadline = Time.realtimeSinceStartup + 8f;
+            bool closing = false, joined = false, opening = false;
+            while (curtain.gameObject.activeSelf && Time.realtimeSinceStartup < deadline)
+            {
+                float gap = upper.anchorMin.y - lower.anchorMax.y;
+                Assert.That(upper.anchorMin.y + lower.anchorMax.y, Is.EqualTo(1f).Within(.001f));
+                Assert.That(game.Board.InputEnabled, Is.False);
+                if (label.gameObject.activeSelf)
+                {
+                    Assert.That(gap, Is.Zero.Within(.001f));
+                    joined = true;
+                }
+                if (gap > .05f && gap < .95f)
+                {
+                    if (joined) opening = true;
+                    else closing = true;
+                }
+                yield return null;
+            }
+            Assert.That(closing && joined && opening, Is.True);
+            Assert.That(curtain.gameObject.activeSelf, Is.False);
+            Assert.That(game.IsEnteringStage, Is.True);
         }
 
         [UnityTest]
@@ -98,13 +136,14 @@ namespace Hexrota.UnityClientTests
         }
 
         [UnityTest]
-        public IEnumerator ReducedMotionShowsASteadyTipAndMenuCancelsTheEntrance()
+        public IEnumerator ReducedMotionShowsTheLoadingLabelAndMenuCancelsTheEntrance()
         {
             Assert.That(game.Session.SetPreferences(motion: "reduce"), Is.True);
             game.BeginLevelOne();
             var curtain = UnityEngine.Object.FindAnyObjectByType<ChapterLoadingView>();
             yield return new WaitForSecondsRealtime(.25f);
             Assert.That(curtain.GetComponent<CanvasGroup>().alpha, Is.EqualTo(1f));
+            Assert.That(curtain.GetComponentsInChildren<UnityEngine.UI.Text>().Single().text, Is.EqualTo("Yükleniyor…"));
             var hud = (RectTransform)UnityEngine.Object.FindAnyObjectByType<CastleHudView>().transform;
             Assert.That(hud.anchoredPosition.y, Is.EqualTo(0f).Within(.01f));
             Assert.That(GameObject.Find("Stone_0"), Is.Not.Null);

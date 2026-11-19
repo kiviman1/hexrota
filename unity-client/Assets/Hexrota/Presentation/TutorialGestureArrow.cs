@@ -20,6 +20,13 @@ namespace Hexrota.UnityClient.Presentation
         };
         private Vector2 from, to;
         private float sweep = -1f;
+        private Vector2[] matchEdges;
+
+        internal void SetMatchEdges(Vector2[] edges)
+        {
+            matchEdges = edges;
+            SetVerticesDirty();
+        }
 
         public void SetPair(Vector2 source, Vector2 target)
         {
@@ -45,6 +52,12 @@ namespace Hexrota.UnityClient.Presentation
             Vector2 direction = end - start;
             float span = direction.magnitude;
             if (span < 1f) return;
+            if (matchEdges != null)
+            {
+                DrawMatchEdges(mesh, rect, span * (stroke + .038f), ink);
+                DrawMatchEdges(mesh, rect, span * stroke, destinationCorners);
+                return;
+            }
             Vector2 normal = new Vector2(-direction.y, direction.x);
 
             Ring(mesh, start, span, false, stroke + .038f, ink);
@@ -61,6 +74,20 @@ namespace Hexrota.UnityClient.Presentation
                 Vector2 glint = start + direction * Mathf.Lerp(.29f, .66f, sweep);
                 Quad(mesh, glint - direction * .036f, glint + normal * .024f,
                     glint + direction * .036f, glint - normal * .024f, Color.white);
+            }
+        }
+
+        private void DrawMatchEdges(VertexHelper mesh, Rect rect, float width, Color tint)
+        {
+            for (int i = 0; i < matchEdges.Length; i += 2)
+            {
+                Vector2 start = Rect.NormalizedToPoint(rect, matchEdges[i]);
+                Vector2 end = Rect.NormalizedToPoint(rect, matchEdges[i + 1]);
+                Vector2 axis = (end - start).normalized * (width * .5f);
+                Vector2 normal = new Vector2(-axis.y, axis.x);
+                // Overlap adjacent ends by half the stroke to keep the corners joined.
+                Quad(mesh, start - axis - normal, start - axis + normal,
+                    end + axis + normal, end + axis - normal, tint);
             }
         }
 

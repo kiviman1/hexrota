@@ -21,7 +21,7 @@ namespace Hexrota.UnityClient.Presentation
             float scale = Mathf.Min(lastSize.x / 390f, lastSize.y / 440f);
             frame.anchorMin = frame.anchorMax = frame.pivot = new Vector2(.5f, .5f);
             frame.anchoredPosition = Vector2.zero; frame.localScale = Vector3.one * scale;
-            frame.sizeDelta = new Vector2(360, Mathf.Min(requested, lastSize.y / scale - 32));
+            frame.sizeDelta = new Vector2(360, Mathf.Min(requested, lastSize.y / scale * .88f));
         }
     }
 }

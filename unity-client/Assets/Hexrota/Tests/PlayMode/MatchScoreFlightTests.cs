@@ -46,8 +46,6 @@ namespace Hexrota.UnityClientTests
             yield return null;
         }
 
-        private int[] LegalPair() => new HexMatch(game.Session.Level, game.Session.Snapshot).LegalMoves()[0];
-
         private Vector2 Cell(int index)
         {
             var cell = game.Session.Level.cells[index];
@@ -64,6 +62,7 @@ namespace Hexrota.UnityClientTests
         {
             game.BeginLevelOne();
             yield return ChapterEntryWait.Ready(game);
+            yield return ChapterEntryWait.PlayOpeningMove(game);
             var model = new HexMatch(game.Session.Level, game.Session.Snapshot);
             var pair = model.LegalMoves().First(move => model.Clone().Swap(move[0], move[1])
                 .frames[0].falls.Any(drop => drop.from.HasValue));
@@ -87,6 +86,10 @@ namespace Hexrota.UnityClientTests
             string initialGround = green.text;
             string waveGround = frame.layers.Count(layer => layer == 0) + " / " + frame.layers.Length;
             bool groundOutOfSync = false;
+            var firstDropPose = new Dictionary<int, float>();
+            var columnStarts = new Dictionary<int, float>();
+            var contacted = new HashSet<int>();
+            bool bounced = false;
             game.Board.WaveProgress += (wave, ordinal, phase) => {
                 if (ordinal != 1) return;
                 groundOutOfSync |= green.text != (phase < .29f ? initialGround : waveGround);
@@ -96,6 +99,23 @@ namespace Hexrota.UnityClientTests
                     foreach (int cell in wave.matched)
                         spread += Vector2.Distance(world.Find("Stone_" + cell).position, center);
                     minSpread = Mathf.Min(minSpread, spread);
+                }
+                else
+                {
+                    foreach (var fall in wave.falls)
+                    {
+                        var stone = world.Find("Stone_" + fall.to);
+                        float y = stone.position.y;
+                        if (!firstDropPose.TryGetValue(fall.to, out float firstY)) firstDropPose.Add(fall.to, y);
+                        else if (y < firstY - .005f)
+                        {
+                            int column = game.Session.Level.cells[fall.to].q;
+                            if (!columnStarts.ContainsKey(column)) columnStarts.Add(column, phase);
+                        }
+                        float height = y - Cell(fall.to).y;
+                        bounced |= contacted.Contains(fall.to) && height > .035f;
+                        if (Mathf.Abs(height) < .004f) contacted.Add(fall.to);
+                    }
                 }
                 if (packet.gameObject.activeInHierarchy)
                 {
@@ -130,6 +150,10 @@ namespace Hexrota.UnityClientTests
             Assert.That(centerError, Is.LessThan(3f), "The visible digits must originate at the board-space centroid.");
             Assert.That(launchScale, Is.GreaterThan(1.12f));
             Assert.That(movedInFlight && falling, Is.True, "Gravity overlaps the score, with distinct intermediate positions.");
+            Assert.That(columnStarts.Count, Is.GreaterThan(1));
+            Assert.That(columnStarts.OrderBy(start => start.Key).Select(start => start.Value).Last(),
+                Is.GreaterThan(columnStarts.OrderBy(start => start.Key).Select(start => start.Value).First()));
+            Assert.That(bounced, Is.True);
             Assert.That(closest, Is.LessThan(travel * .08f), "The amount must reach the visible score counter.");
             Assert.That(earlyCredit || wrongAmount || groundOutOfSync, Is.False);
             Assert.That(impactScale, Is.GreaterThan(1.10f), "The scored counter must pop on impact.");
@@ -144,6 +168,7 @@ namespace Hexrota.UnityClientTests
         {
             game.BeginLevelOne();
             yield return ChapterEntryWait.Ready(game);
+            yield return ChapterEntryWait.PlayOpeningMove(game);
             var initial = new HexMatch(game.Session.Level, game.Session.Snapshot);
             int[][] route = null;
             for (int depth = 1; depth <= 3 && route == null; depth++)
@@ -169,12 +194,15 @@ namespace Hexrota.UnityClientTests
             }
             var arrivals = new List<string>();
             var gains = new string[result.frames.Length];
+            var captions = new string[result.frames.Length];
+            var headline = packet.Find("PacketHeadline").GetComponent<Text>();
             string previousCounter = counter.text;
             bool creditedInFlight = false;
             game.Board.WaveProgress += (wave, number, phase) => {
                 if (packet.gameObject.activeInHierarchy)
                 {
                     gains[number - 1] = amount.text;
+                    if (headline.gameObject.activeSelf) captions[number - 1] = headline.text;
                     creditedInFlight |= counter.text == expectedCounters[number - 1];
                 }
                 if (counter.text == previousCounter) return;
@@ -188,6 +216,7 @@ namespace Hexrota.UnityClientTests
             Assert.That(game.Board.IsAnimating, Is.False);
             Assert.That(creditedInFlight, Is.False);
             CollectionAssert.AreEqual(result.frames.Select(wave => "+" + wave.scoreGain).ToArray(), gains);
+            CollectionAssert.AreEqual(Enumerable.Range(1, result.frames.Length).Select(number => number + ". ZİNCİR"), captions);
             CollectionAssert.AreEqual(expectedCounters, arrivals);
             Assert.That(game.Session.Snapshot.score, Is.EqualTo(start.score + result.scoreGain));
         }
@@ -212,7 +241,7 @@ namespace Hexrota.UnityClientTests
             Assert.That(game.Session.SetPreferences(motion: "reduce"), Is.True);
             game.BeginLevelOne();
             yield return ChapterEntryWait.Ready(game);
-            var pair = LegalPair();
+            var pair = game.Session.OpeningLessonPair;
             int score = game.Session.Snapshot.score;
             var plan = new HexMatch(game.Session.Level, game.Session.Snapshot).Swap(pair[0], pair[1]);
             int animatedFrames = 0;

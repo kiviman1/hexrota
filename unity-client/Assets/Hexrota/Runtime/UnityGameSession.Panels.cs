@@ -24,7 +24,7 @@ namespace Hexrota.UnityClient
         }
         public sealed class EarnedResult
         {
-            public int Gold,Stars;
+            public int Gold,Stars,WelcomeGold;
             public bool Welcome,Assisted;
             public string Gift,Headline;
         }
@@ -38,9 +38,10 @@ namespace Hexrota.UnityClient
                 switch(W.Get(row,"kind") as string)
                 {
                     case "welcome":
-                        earned.Welcome=true;earned.Gold=W.Int32(W.Required(data.EconomyConfig["welcome"],"gold"));break;
+                        earned.Welcome=true;earned.WelcomeGold=W.Int32(W.Required(data.EconomyConfig["welcome"],"gold"));
+                        earned.Gold+=earned.WelcomeGold;break;
                     case "clear":
-                        earned.Gold=W.Int32(W.Required(data.EconomyConfig["reward"],"gold"));
+                        earned.Gold+=W.Int32(W.Required(data.EconomyConfig["reward"],"gold"));
                         earned.Stars=W.Int32(W.Required(data.EconomyConfig["reward"],"stars"));
                         earned.Assisted=W.Equal(W.Get(row,"assisted"),true);break;
                     case "gift":

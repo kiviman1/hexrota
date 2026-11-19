@@ -12,7 +12,7 @@ namespace Hexrota.UnityClient.Presentation
         private const int Hz = 22050;
         private AudioSource sfx, music;
         private AudioClip motif;
-        private bool unlocked;
+        private bool unlocked, homePlaybackReady;
         private readonly Dictionary<string, AudioClip> clips = new Dictionary<string, AudioClip>();
 
         private void Awake()
@@ -58,6 +58,23 @@ namespace Hexrota.UnityClient.Presentation
             if (session.HapticsEnabled && cue.hapticMs > 0 && SystemInfo.supportsVibration)
                 Vibrate(Math.Min(60,cue.hapticMs));
             if (!session.SoundEnabled) return;
+            Reward(GetRewardClip(cue), session.Volume);
+        }
+
+        internal AudioClip PrepareHomeReward(RewardCue cue, float volume)
+        {
+            var clip = GetRewardClip(cue);
+            if (!homePlaybackReady)
+            {
+                // Warm Unity's one-shot audio path before any animated arrivals.
+                Reward(clip, volume, voiceScale: 0);
+                homePlaybackReady = true;
+            }
+            return clip;
+        }
+
+        private AudioClip GetRewardClip(RewardCue cue)
+        {
             string key = cue.tier + "/" + cue.pitchStep + "/" + cue.reason;
             if (!clips.TryGetValue(key, out var clip))
             {
@@ -70,7 +87,15 @@ namespace Hexrota.UnityClient.Presentation
                     i * .055, .22 + tier * .015 + (won ? .035 : 0), .065 / notes.Length, triangle:i > 0);
                 clips[key] = clip = Clip("Reward",data);
             }
-            sfx.volume = session.Volume; sfx.PlayOneShot(clip);
+            return clip;
+        }
+
+        internal void Reward(AudioClip clip, float volume, float voiceScale = 1)
+        {
+            if (clip == null) return;
+            unlocked = true;
+            sfx.volume = volume;
+            sfx.PlayOneShot(clip, voiceScale);
         }
         private static void Vibrate(int ms)
         {

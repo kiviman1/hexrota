@@ -15,5 +15,17 @@ namespace Hexrota.UnityClientTests
             Assert.That(game.CurrentScreen, Is.Not.EqualTo("loading"));
             yield return null;
         }
+
+        internal static IEnumerator PlayOpeningMove(FirstPlayableController game)
+        {
+            var pair = game.Session.OpeningLessonPair;
+            Assert.That(pair, Has.Length.EqualTo(2));
+            game.RequestSwap(pair[0], pair[1]);
+            float deadline = Time.realtimeSinceStartup + 12f;
+            while (game.Board.IsAnimating && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.That(game.Session.Snapshot.turn, Is.EqualTo(1));
+            Assert.That(game.Session.OpeningLessonPair, Is.Null);
+            Assert.That(game.Board.IsAnimating, Is.False);
+        }
     }
 }

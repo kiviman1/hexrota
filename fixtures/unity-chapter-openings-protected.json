@@ -1,0 +1,7 @@
+{
+  "baseline": "6bc45f9fa65f8850d10d28647558bbe2c4717a8d",
+  "scope": "Allow Unity to prefer its balanced chapter-one pack for new attempts in that chapter. Explicit saved versions and all other chapters keep their existing routes.",
+  "sha256": {
+    "unity/Catalog/LevelCatalog.cs": "17fe509a652a1268a9cc99963229e2033d09e557fbc59b05694084f2d2388220"
+  }
+}
