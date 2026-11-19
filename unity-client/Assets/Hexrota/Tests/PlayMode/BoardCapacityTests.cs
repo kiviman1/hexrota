@@ -155,6 +155,8 @@ namespace Hexrota.UnityClientTests
             var root = GameObject.Find("Ground_0").transform.parent;
             var stones = Enumerable.Range(0, level.cells.Length).Select(i => root.Find("Stone_" + i)).ToArray();
             var rest = stones.Select(s => s.position).ToArray();
+            var restScale = stones.Select(s => s.localScale).ToArray();
+            var restRotation = stones.Select(s => s.localRotation).ToArray();
             var home = camera.transform.position;
             board.BeginEntrance(snapshot);
             Assert.That(camera.transform.position.x, Is.LessThan(home.x));
@@ -174,7 +176,7 @@ namespace Hexrota.UnityClientTests
                 .Where(column => column.Any(i => snapshot.values[i].HasValue)).ToArray();
             int firstArrival = -1, lastArrival = -1;
             var touchedDown = new bool[stones.Length];
-            bool bounced = false;
+            bool bounced = false, stretched = false, squashed = false;
             for (int frame = 0; frame <= 120; frame++)
             {
                 board.SetEntranceFill(frame / 120f);
@@ -184,6 +186,10 @@ namespace Hexrota.UnityClientTests
                 {
                     if (!stones[i].gameObject.activeSelf) continue;
                     float height = stones[i].position.y - rest[i].y;
+                    Vector3 scale = stones[i].localScale;
+                    stretched |= height > .15f && scale.y > restScale[i].y * 1.04f;
+                    squashed |= Mathf.Abs(height) < .01f && scale.y < restScale[i].y * .94f &&
+                        scale.x > restScale[i].x * 1.03f;
                     bounced |= touchedDown[i] && height > .04f;
                     touchedDown[i] |= Mathf.Abs(height) < .002f;
                 }
@@ -191,10 +197,13 @@ namespace Hexrota.UnityClientTests
             Assert.That(firstArrival, Is.GreaterThanOrEqualTo(0));
             Assert.That(lastArrival, Is.GreaterThan(firstArrival));
             Assert.That(bounced, Is.True);
+            Assert.That(stretched && squashed, Is.True);
             board.Cancel(snapshot);
             for (int i = 0; i < stones.Length; i++)
             {
                 Assert.That(stones[i].position, Is.EqualTo(rest[i]));
+                Assert.That(stones[i].localScale, Is.EqualTo(restScale[i]));
+                Assert.That(stones[i].localRotation, Is.EqualTo(restRotation[i]));
                 Assert.That(stones[i].gameObject.activeSelf, Is.EqualTo(snapshot.values[i].HasValue));
             }
         }

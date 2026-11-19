@@ -5,6 +5,7 @@ namespace Hexrota.UnityClient.Presentation
 {
     public sealed partial class FirstPlayableController
     {
+        [SerializeField] private HexBoardView.StoneMotionSettings stoneMotion = new HexBoardView.StoneMotionSettings();
         [SerializeField] private CastleHudView castleHudPrefab;
         private CastleHudView castleHud;
         [SerializeField] private CastleGameToolsView gameToolsPrefab;
@@ -38,6 +39,7 @@ namespace Hexrota.UnityClient.Presentation
             boardInput = Rect("BoardInput",gameplay.transform,Vector2.zero,Vector2.one);
             var touch = boardInput.gameObject.AddComponent<Image>(); touch.color = Color.clear;
             Board = boardInput.gameObject.AddComponent<HexBoardView>(); Board.Initialize(boardCamera,assetCatalog);
+            Board.SetStoneMotion(stoneMotion);
             Board.SwapRequested += RequestSwap; Board.PresentationCompleted += FinishPresentation;
             Board.PresentationCancelled += CancelBoardPresentation;
             Board.PresentationStarted += BeginScoreFeedback; Board.WaveProgress += DrawScoreWave;

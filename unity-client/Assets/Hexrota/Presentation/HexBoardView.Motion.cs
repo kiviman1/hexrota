@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Hexrota.Gameplay;
@@ -16,9 +17,25 @@ namespace Hexrota.UnityClient.Presentation
         internal const float MatchCollected = .29f;
         private const float WaveSeconds = 1.25f;
 
+        [Serializable]
+        internal sealed class StoneMotionSettings
+        {
+            [Range(0f, 1f)] public float softness = .56f;
+            [Range(0f, .28f)] public float squashAmount = .14f;
+            [Range(0f, .24f)] public float stretchAmount = .115f;
+            [Range(2f, 10f)] public float bounceDamping = 5.2f;
+        }
+
+        private StoneMotionSettings stoneMotion = new StoneMotionSettings();
+        internal void SetStoneMotion(StoneMotionSettings settings) => stoneMotion = settings ?? new StoneMotionSettings();
+
         private sealed class StoneInk
         {
             public Renderer[] renderers;
+            public Vector3 scale;
+            public Quaternion rotation;
+            public (Transform node, Vector3 position, Quaternion rotation)[] art;
+            public bool angled;
             public float opacity = 1f;
             public float flash;
             public float ceiling = NoCeiling;
@@ -38,6 +55,9 @@ namespace Hexrota.UnityClient.Presentation
         private Rect pressedViewport;
         private float swipePixelScale;
         private bool segmentedGravity;
+        private GameObject tensionStone;
+        private float tensionRestScale;
+        private float swipeStretch;
 
         private void PrepareMotion(LevelConfig level)
         {
@@ -56,8 +76,41 @@ namespace Hexrota.UnityClient.Presentation
                 int q = level.cells[i].q;
                 if (!columnTop.TryGetValue(q, out float highest) || positions[i].y > highest)
                     columnTop[q] = positions[i].y;
-                motionInk.Add(stones[i], new StoneInk { renderers = stones[i].GetComponentsInChildren<Renderer>(true) });
+                var stone = stones[i];
+                var root = stone.transform;
+                var art = new (Transform, Vector3, Quaternion)[root.childCount];
+                for (int child = 0; child < art.Length; child++)
+                {
+                    var node = root.GetChild(child);
+                    art[child] = (node, node.localPosition, node.localRotation);
+                }
+                motionInk.Add(stone, new StoneInk { renderers = stone.GetComponentsInChildren<Renderer>(true),
+                    scale = root.localScale, rotation = root.localRotation, art = art });
             }
+        }
+
+        private void DeformStone(GameObject stone, Vector2 direction, float strain = 0f, float uniform = 1f)
+        {
+            var pose = motionInk[stone];
+            var root = stone.transform;
+            float along = 1f + strain, across = 1f - .65f * strain;
+            bool angled = strain != 0f && Mathf.Abs(direction.x) > .0001f && Mathf.Abs(direction.y) > .0001f;
+            bool vertical = !angled && Mathf.Abs(direction.y) > Mathf.Abs(direction.x);
+            root.localScale = Vector3.Scale(pose.scale,
+                new Vector3((vertical ? across : along) * uniform, (vertical ? along : across) * uniform, 1f));
+            if (!angled && !pose.angled) return;
+            // Rotate the stretch axes and counter-rotate the art so the number does not spin.
+            float angle = angled ? Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg : 0f;
+            var basis = Quaternion.AngleAxis(angle, Vector3.forward);
+            var inverse = Quaternion.Inverse(basis);
+            root.localRotation = pose.rotation * basis;
+            foreach (var part in pose.art)
+            {
+                if (part.node == null) continue;
+                part.node.localPosition = inverse * part.position;
+                part.node.localRotation = inverse * part.rotation;
+            }
+            pose.angled = angled;
         }
 
         private void SetMotionInk(GameObject stone, float opacity, float flash, float ceiling = NoCeiling)
@@ -103,7 +156,19 @@ namespace Hexrota.UnityClient.Presentation
             Vector2 delta = cursor - down;
             float distance = delta.magnitude;
             if (distance >= 12f * swipePixelScale) dragged = true;
-            if (!dragged || targetCell != null) return;
+            if (targetCell != null) return;
+            float tension = 0f;
+            if (!ReducedMotion && (distance > 0f || tensionStone != null))
+            {
+                if (tensionStone == null)
+                {
+                    tensionStone = stones[pressed];
+                    tensionRestScale = tensionStone.transform.localScale.x / motionInk[tensionStone].scale.x;
+                }
+                tension = stoneMotion.stretchAmount * .74f * Mathf.SmoothStep(0f, 1f, distance / (20f * swipePixelScale));
+                DeformStone(tensionStone, delta, tension, tensionRestScale);
+            }
+            if (!dragged) return;
 
             Vector2 origin = BoardCamera.WorldToScreenPoint(positions[pressed]);
             Vector2 heading = distance > 0f ? delta / distance : Vector2.zero;
@@ -120,24 +185,29 @@ namespace Hexrota.UnityClient.Presentation
                 int from = pressed;
                 // Consume the gesture before dispatch. Subsequent drag and release events cannot swap again.
                 ResetGesture();
-                Request(from, neighbor);
+                swipeStretch = tension;
+                try { Request(from, neighbor); }
+                finally { swipeStretch = 0f; }
                 return;
             }
         }
 
         private void ResetGesture()
         {
+            if (tensionStone != null && motionInk.ContainsKey(tensionStone))
+                DeformStone(tensionStone, Vector2.right, uniform: tensionRestScale);
+            tensionStone = null;
             pointer = int.MinValue;
             pressed = -1;
             dragged = false;
         }
 
-        private IEnumerator Animate(MovePresentation receipt)
+        private IEnumerator Animate(MovePresentation receipt, float contactStretch)
         {
             bool pair = receipt.A >= 0 && receipt.B >= 0 && receipt.A < stones.Count && receipt.B < stones.Count;
             if (pair)
             {
-                yield return SwapMotion(receipt.A, receipt.B, receipt.Ok);
+                yield return SwapMotion(receipt.A, receipt.B, receipt.Ok, contactStretch);
                 if (!HasVisuals) { Cancel(null); yield break; }
                 if (receipt.Ok)
                 {
@@ -170,10 +240,10 @@ namespace Hexrota.UnityClient.Presentation
             PresentationCompleted?.Invoke();
         }
 
-        private IEnumerator SwapMotion(int a, int b, bool valid)
+        private IEnumerator SwapMotion(int a, int b, bool valid, float contactStretch)
         {
             const float nudgeTime = .092f;
-            float duration = valid ? .22f : .24f;
+            float duration = valid ? Mathf.Lerp(.22f, .28f, stoneMotion.softness) : .24f;
             for (float elapsed = 0; ; elapsed += Time.unscaledDeltaTime)
             {
                 if (!HasVisuals) yield break;
@@ -185,7 +255,11 @@ namespace Hexrota.UnityClient.Presentation
                     fraction = Mathf.SmoothStep(0f, .24f, elapsed / nudgeTime);
                 else
                     fraction = Mathf.SmoothStep(.24f, 0f, Mathf.InverseLerp(nudgeTime, duration, elapsed));
-                MoveAlongSwap(a, b, fraction);
+                float arrival = Mathf.InverseLerp(.64f, 1f, t);
+                float stretch = valid ? stoneMotion.stretchAmount * .66f * Mathf.Sin(Mathf.PI * fraction) : 0f;
+                float settle = valid ? stoneMotion.squashAmount * .24f * Mathf.Sin(Mathf.PI * arrival) : 0f;
+                float handoff = contactStretch * (1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0f, .32f, t)));
+                MoveAlongSwap(a, b, fraction, t >= 1f ? 0f : stretch - settle, handoff);
                 if (t >= 1f) yield break;
                 yield return null;
             }
@@ -326,10 +400,10 @@ namespace Hexrota.UnityClient.Presentation
         {
             float gather = Mathf.InverseLerp(.09f, 1f, phase);
             float travel = Mathf.SmoothStep(0f, 1f, gather);
-            float pulse = Mathf.Sin(Mathf.PI * Mathf.InverseLerp(0f, .35f, phase));
-            float size = Mathf.Lerp(1f, .16f, travel) + .075f * pulse;
-            float opacity = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(.77f, 1f, phase));
-            float flash = Mathf.Sin(Mathf.PI * Mathf.InverseLerp(0f, .85f, phase)) * .8f;
+            float compress = Mathf.SmoothStep(0f, 1f, phase) * stoneMotion.squashAmount * .68f;
+            float size = Mathf.Lerp(1f, .86f, travel);
+            float opacity = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(.52f, 1f, phase));
+            float flash = Mathf.Sin(Mathf.PI * Mathf.InverseLerp(0f, .85f, phase)) * .58f;
             for (int i = 0; i < wave.matched.Length; i++)
             {
                 int cell = wave.matched[i];
@@ -340,9 +414,13 @@ namespace Hexrota.UnityClient.Presentation
                     Vector3.Lerp(control, center, travel), travel);
                 point.z = StoneDepth - (.30f + .003f * i) * travel;
                 stone.transform.position = point;
-                stone.transform.localScale = Vector3.one * size;
+                DeformStone(stone, center - source, -compress, size);
                 SetMotionInk(stone, opacity, flash);
-                if (phase >= 1f) stone.SetActive(false);
+                if (phase >= 1f)
+                {
+                    stone.SetActive(false);
+                    DeformStone(stone, Vector2.right);
+                }
             }
         }
 
@@ -386,15 +464,17 @@ namespace Hexrota.UnityClient.Presentation
             float flight = Mathf.Clamp01(t / contact);
             float descent = flight * flight * (1.45f - .45f * flight);
             Vector3 point = Vector3.Lerp(drop.from, drop.to, descent);
-            float stretch = .060f * descent * (1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(.82f, 1f, flight)));
+            float stretch = stoneMotion.stretchAmount * descent *
+                (1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(.82f, 1f, flight)));
             float landing = Mathf.InverseLerp(contact, 1f, t);
-            float impact = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0f, .14f, landing))
-                * (1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(.14f, .40f, landing)));
-            float rebound = Mathf.InverseLerp(.23f, 1f, landing);
-            float arc = 4f * rebound * (1f - rebound);
-            point.y += RowSpacing * .105f * arc * arc;
+            float release = Mathf.InverseLerp(.14f, 1f, landing);
+            float compression = landing < .14f ? Mathf.SmoothStep(0f, 1f, landing / .14f) :
+                Mathf.Cos(release * Mathf.PI * 3f) * Mathf.Exp(-stoneMotion.bounceDamping * release) *
+                (1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(.76f, 1f, release)));
+            float rebound = Mathf.Sin(Mathf.PI * Mathf.InverseLerp(.20f, .93f, landing));
+            point.y += RowSpacing * Mathf.Lerp(.064f, .138f, stoneMotion.softness) * rebound * rebound;
             stone.transform.position = point;
-            stone.transform.localScale = new Vector3(1f + .085f * impact - stretch * .5f, 1f - .10f * impact + stretch, 1f);
+            DeformStone(stone, Vector2.up, stretch - stoneMotion.squashAmount * compression);
             float opacity = drop.spawn ? Mathf.SmoothStep(0, 1, (drop.ceiling - point.y) / (.5f * RowSpacing)) : 1f;
             SetMotionInk(stone, opacity, 0f, drop.spawn && flight < 1f ? drop.ceiling : NoCeiling);
         }

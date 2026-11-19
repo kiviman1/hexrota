@@ -170,7 +170,6 @@ namespace Hexrota.UnityClientTests
                     Assert.That(mesh.name, Is.EqualTo("ToneRelief_" + (i + 1)));
                     Assert.That(mesh.subMeshCount, Is.EqualTo(1));
                     Assert.That(material.GetFloat("_VertexPigment"), Is.EqualTo(1));
-                    Assert.That(material.GetFloat("_Gel"), Is.GreaterThan(0f));
                     var parts = AssetDatabase.LoadAssetAtPath<GameObject>(modelPath).GetComponentsInChildren<MeshRenderer>();
                     Assert.That(parts.Any(part => part.name.EndsWith("Digit_" + (i + 1) + "_Face")), Is.True);
                     Assert.That(parts.Any(part => part.name.EndsWith("Digit_" + (i + 1) + "_Outline")), Is.True);

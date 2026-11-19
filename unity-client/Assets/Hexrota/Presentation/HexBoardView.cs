@@ -43,6 +43,7 @@ namespace Hexrota.UnityClient.Presentation
         private bool dragged;
         private GameObject selection;
         private Coroutine animation;
+        private GameSnapshot settledSnapshot;
         private MaterialPropertyBlock tint;
         private Material digitsMaterial;
         private Font digitsFont;
@@ -226,12 +227,13 @@ namespace Hexrota.UnityClient.Presentation
         {
             if (snapshot == null) return;
             if (!HasVisuals || stones.Count != snapshot.values.Length) return;
+            settledSnapshot = snapshot;
             StopIdleHint(); idleClock.Bind(idleAttempt,VisibleKey(snapshot));
             if (hasMutedTiles) MarkPair(null);
             for (int i = 0; i < stones.Count; i++)
             {
                 stones[i].transform.position = positions[i] + Vector3.back * .15f;
-                stones[i].transform.localScale = Vector3.one;
+                DeformStone(stones[i], Vector2.right);
                 SetMotionInk(stones[i], 1f, 0f);
                 PaintStone(i, snapshot.values[i]);
                 PaintFloor(i, snapshot.layers[i]);
@@ -254,7 +256,7 @@ namespace Hexrota.UnityClient.Presentation
                 if (cells[i].GetComponent<PlaceholderHexMesh>() != null)
                     cells[i].transform.localScale = new Vector3(focus ? .973f : .926f,focus ? .973f : .926f,1);
                 stones[i].transform.position = positions[i] + Vector3.back * .15f;
-                stones[i].transform.localScale = focus ? Vector3.one * 1.025f : Vector3.one;
+                DeformStone(stones[i], Vector2.right, uniform: focus ? 1.025f : 1f);
                 if (guide || hasMutedTiles)
                 {
                     float opacity = guide && !focus && !support ? .30f : 1f;
@@ -276,7 +278,7 @@ namespace Hexrota.UnityClient.Presentation
         internal bool CanShowTutorialGesture => InputEnabled && !IsAnimating && pointer == int.MinValue &&
             selected < 0 && targetCell == null && CanPresent;
 
-        private void MoveAlongSwap(int a, int b, float t)
+        private void MoveAlongSwap(int a, int b, float t, float strain, float handoff)
         {
             Vector3 delta = positions[b] - positions[a];
             float arc = 4f * t * (1f - t);
@@ -284,9 +286,8 @@ namespace Hexrota.UnityClient.Presentation
             Vector3 depth = Vector3.forward * StoneDepth;
             stones[a].transform.position = positions[a] + offset + depth + Vector3.back * (.40f * arc);
             stones[b].transform.position = positions[b] - offset + depth + Vector3.back * (.08f * arc);
-            Vector3 spring = new Vector3(1f + .035f * arc, 1f + .035f * arc, 1f);
-            stones[a].transform.localScale = spring;
-            stones[b].transform.localScale = spring;
+            DeformStone(stones[a], delta, strain + handoff);
+            DeformStone(stones[b], delta, strain);
         }
 
         private void SetGuideOpacity(GameObject tile, float opacity, float cutout = 0)
@@ -312,7 +313,8 @@ namespace Hexrota.UnityClient.Presentation
                 return;
             }
             IsAnimating = true;
-            animation = StartCoroutine(Animate(receipt));
+            settledSnapshot = receipt.After;
+            animation = StartCoroutine(Animate(receipt, swipeStretch));
         }
 
         private Action<int> targetCell;
@@ -348,7 +350,7 @@ namespace Hexrota.UnityClient.Presentation
             if (this != null && animation != null) StopCoroutine(animation);
             animation = null; IsAnimating = false;
             ClearSelection();
-            ClearEffects(); Render(authoritative);
+            ClearEffects(); Render(authoritative ?? settledSnapshot);
             if (wasAnimating && PresentationCancelled != null) PresentationCancelled();
         }
 
@@ -499,6 +501,7 @@ namespace Hexrota.UnityClient.Presentation
             foreach (var o in grounds) if (o != null) { o.SetActive(false); Destroy(o); }
             foreach (var o in stones) if (o != null) { o.SetActive(false); Destroy(o); }
             cells.Clear(); grounds.Clear(); stones.Clear(); numbers.Clear(); motionInk.Clear();
+            settledSnapshot = null;
         }
         private void OnDisable() { InputEnabled = false; Cancel(null); }
         private void OnDestroy()
