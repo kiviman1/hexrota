@@ -133,17 +133,20 @@ namespace Hexrota.UnityClientTests
 
             var flight = game.GetComponentInChildren<RewardFlight>();
             var gold = Counter("GoldValue");
-            var star = Counter("EggValue");
+            // Golden Eggs land on the coop bar, which counts "have/cost".
+            var coop = game.GetComponentInChildren<CoopHomeView>();
+            var status = session.ReadCoop();
+            string Eggs(int have) => status.Usable ? have + "/" + status.NextCost : Turkish(have);
             Assert.That(flight.IsPlaying, Is.True);
             Assert.That(flight.ActiveIconCount, Is.Zero, "The sequence starts after the return delay.");
             Assert.That(gold.text, Is.EqualTo(Turkish(wallet.Gold - earned.Gold)));
-            Assert.That(star.text, Is.EqualTo(Turkish(wallet.GoldenEggs - earned.GoldenEggs)));
+            Assert.That(coop.ProgressText, Is.EqualTo(Eggs(wallet.GoldenEggs - earned.GoldenEggs)));
             float deadline = Time.unscaledTime + 2;
             while (flight.ActiveIconCount == 0 && flight.IsPlaying && Time.unscaledTime < deadline) yield return null;
             Assert.That(flight.ActiveIconCount, Is.EqualTo(1));
-            string finalStars = Turkish(wallet.GoldenEggs);
-            while (star.text != finalStars && flight.IsPlaying && Time.unscaledTime < deadline) yield return null;
-            Assert.That(star.text, Is.EqualTo(finalStars));
+            string finalEggs = Eggs(wallet.GoldenEggs);
+            while (coop.ProgressText != finalEggs && flight.IsPlaying && Time.unscaledTime < deadline) yield return null;
+            Assert.That(coop.ProgressText, Is.EqualTo(finalEggs));
             Assert.That(flight.IsPlaying, Is.True, "Gold is still in the sequence when the egg is credited.");
             Assert.That(gold.text, Is.EqualTo(Turkish(wallet.Gold - earned.Gold)));
             yield return WaitForFlight(flight);

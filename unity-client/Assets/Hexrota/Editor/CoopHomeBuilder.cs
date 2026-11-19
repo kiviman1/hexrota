@@ -21,6 +21,15 @@ namespace Hexrota.UnityClient.Editor
         private static readonly string[] Owned = { "CoopTapArea", "CoopProgress", "CoopButton" };
         public const string PlotCoop = "PlotCoop";
         public const string CoopDrawing = "CoopDrawing";
+        public const string EmptyPlot = "EmptyPlot";
+        public const string TapArea = "CoopTapArea";
+        private const string StakeSprite = "Assets/Hexrota/Art/CastleHome/FenceStake.png";
+        private const string DisplayFont = "Assets/Hexrota/Art/CastleHomeType/LilitaOne-Regular.ttf";
+        // Fence stakes on the empty plot: anchor in the plot (x, y = base) and height in points.
+        private static readonly Vector3[] Stakes =
+        {
+            new Vector3(.3f, .62f, 40), new Vector3(.7f, .62f, 40), new Vector3(.24f, .22f, 52), new Vector3(.76f, .22f, 52),
+        };
         private const string CoopSprite = "Assets/Hexrota/Art/CastleHome/Coop.png";
 
         [MenuItem("Hexrota/Home/Rebuild Coop Controls")]
@@ -32,6 +41,8 @@ namespace Hexrota.UnityClient.Editor
             var hex = Load<Sprite>(Theme + "HomeHex.png");
             var egg = Load<Sprite>(EggSprite);
             var coopSprite = Load<Sprite>(CoopSprite);
+            var stakeSprite = Load<Sprite>(StakeSprite);
+            var display = Load<Font>(DisplayFont);
             var root = PrefabUtility.LoadPrefabContents(Prefab);
             try
             {
@@ -50,21 +61,40 @@ namespace Hexrota.UnityClient.Editor
                     var existing = layout.Find(name);
                     if (existing != null) UnityEngine.Object.DestroyImmediate(existing.gameObject);
                 }
-                var oldCoop = plot.Find(PlotCoop);
-                if (oldCoop != null) UnityEngine.Object.DestroyImmediate(oldCoop.gameObject);
+                foreach (var name in new[] { PlotCoop, EmptyPlot, TapArea })
+                {
+                    var old = plot.Find(name);
+                    if (old != null) UnityEngine.Object.DestroyImmediate(old.gameObject);
+                }
 
                 // Placeholder coop standing on the plot (until the 3D coop). It is part of the background,
                 // so every UI control keeps tap priority. The level scale grows it from its base.
                 var coop = NewRect(plot, PlotCoop, new Vector2(.295f, .237f), new Vector2(.705f, 1.126f), Vector2.zero, Vector2.zero);
                 coop.pivot = new Vector2(.5f, 0);
                 coop.SetAsLastSibling();
-                var visual = NewRect(coop, CoopDrawing, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+                var visual = NewRect(coop, "CoopVisual", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
                 visual.pivot = new Vector2(.5f, 0);
-                var drawing = Simple(visual, coopSprite, Color.white);
-                drawing.raycastTarget = true;
-                var tapButton = visual.gameObject.AddComponent<Button>();
+                var drawing = NewRect(visual, CoopDrawing, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+                Simple(drawing, coopSprite, Color.white);
+                drawing.gameObject.SetActive(false); // level 0: the plot is empty until the first upgrade
+
+                // Level 0: a few fence stakes mark where the coop will be built.
+                var empty = NewRect(plot, EmptyPlot, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+                empty.SetSiblingIndex(coop.GetSiblingIndex());
+                foreach (var stake in Stakes)
+                {
+                    var post = NewRect(empty, "Stake", new Vector2(stake.x, stake.y), new Vector2(stake.x, stake.y), Vector2.zero, new Vector2(stake.z * .3f, stake.z));
+                    post.pivot = new Vector2(.5f, 0);
+                    Simple(post, stakeSprite, Color.white);
+                }
+
+                // Tapping the plot (empty or built) opens the panel. Transparent, above the coop and residents.
+                var tap = NewRect(plot, TapArea, Vector2.zero, new Vector2(1, 1.13f), Vector2.zero, Vector2.zero);
+                var tapImage = tap.gameObject.AddComponent<Image>();
+                tapImage.color = Color.clear;
+                var tapButton = tap.gameObject.AddComponent<Button>();
                 tapButton.transition = Selectable.Transition.None;
-                tapButton.targetGraphic = drawing;
+                tapButton.targetGraphic = tapImage;
                 var badge = NewRect(visual, "ReadyBadge", new Vector2(.84f, .74f), new Vector2(.84f, .74f), Vector2.zero, new Vector2(30, 32));
                 var badgeRim = Simple(NewRect(badge, "Rim", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero), hex, ui.heartDeep);
                 var badgeFace = Simple(NewRect(badge, "Face", Vector2.zero, Vector2.one, Vector2.zero, new Vector2(-6, -6)), hex, ui.heart);
@@ -80,15 +110,19 @@ namespace Hexrota.UnityClient.Editor
                 var fill = NewRect(bar, "Fill", Vector2.zero, new Vector2(0, 1), Vector2.zero, Vector2.zero);
                 fill.pivot = new Vector2(0, .5f);
                 var fillImage = Sliced(fill, rounded, ui.cta);
-                var barLabel = Label(bar, "Label", font, 15, "0 / 0", ui, out var barOutline);
                 var eggIcon = NewRect(bar, "Egg", new Vector2(0, .5f), new Vector2(0, .5f), new Vector2(-2, 2), new Vector2(34, 34));
-                Simple(eggIcon, egg, Color.white);
+                var eggImage = Simple(eggIcon, egg, Color.white);
+                // "have/cost" in Lilita One, white with the fill's deep outline (set from UiTheme at runtime).
+                var barLabel = Label(bar, "Label", display, 17, "0/1", ui, out var barOutline);
+                barOutline.effectColor = ui.ctaDeep;
+                barOutline.effectDistance = new Vector2(2, -2);
 
                 var view = root.GetComponent<CoopHomeView>();
                 if (view == null) view = root.AddComponent<CoopHomeView>();
                 var data = new SerializedObject(view);
                 Set(data, "ui", ui); Set(data, "motion", motion); Set(data, "attention", attention); Set(data, "rewardFlight", flight);
                 Set(data, "coop", coop); Set(data, "coopVisual", visual); Set(data, "coopTapArea", tapButton);
+                Set(data, "coopDrawing", drawing.gameObject); Set(data, "emptyPlot", empty); Set(data, "barEgg", eggImage);
                 Set(data, "readyBadge", badge.gameObject); Set(data, "readyBadgeRim", badgeRim); Set(data, "readyBadgeFace", badgeFace);
                 Set(data, "bar", bar); Set(data, "barFill", fill); Set(data, "barTrack", track); Set(data, "barFillImage", fillImage);
                 Set(data, "barLabel", barLabel); Set(data, "barLabelOutline", barOutline);

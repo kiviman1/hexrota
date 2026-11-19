@@ -27,14 +27,19 @@ namespace Hexrota.UnityClient.Presentation
         {
             private readonly Image icon;
             private readonly Text count;
+            private readonly Func<int, string> format;
             private readonly Vector3 restScale;
 
-            internal Target(Image icon, Text count)
+            /// <param name="format">How the counter writes an amount; the plain number when null.</param>
+            internal Target(Image icon, Text count, Func<int, string> format = null)
             {
                 this.icon = icon;
                 this.count = count;
+                this.format = format;
                 if (icon != null) restScale = icon.rectTransform.localScale;
             }
+
+            internal string Text(int amount) => format != null ? format(amount) : Format(amount);
 
             internal Sprite Sprite => icon != null ? icon.sprite : null;
             internal Color Tint => icon != null ? icon.color : default;
@@ -225,8 +230,8 @@ namespace Hexrota.UnityClient.Presentation
             flight.Target = egg;
             bool hasSource = egg.Sprite != null && egg.TryGetCenter(uiCamera, out _);
             flight.Count = hasSource ? (reduced ? 1 : IconCount(amount)) : 0;
-            flight.StartText = Format(balanceAfter + amount);
-            flight.FinalText = Format(balanceAfter);
+            flight.StartText = egg.Text(balanceAfter + amount);
+            flight.FinalText = egg.Text(balanceAfter);
             FillShares(amount, flight.Shares, flight.Count);
             PlanPaths(flight);
             int displayed = balanceAfter + amount, pitch = 0;
@@ -234,7 +239,7 @@ namespace Hexrota.UnityClient.Presentation
             for (int i = 0; i < flight.Count; i++)
             {
                 displayed -= flight.Shares[flight.ArrivalOrder[i]];
-                flight.ArrivalText[i] = Format(Mathf.Max(balanceAfter, displayed));
+                flight.ArrivalText[i] = egg.Text(Mathf.Max(balanceAfter, displayed));
                 if (sound) { cue.pitchStep = pitch++; cue.tier = 0; cue.completion = false; }
                 flight.Notes[i] = sound ? audioPlayer.PrepareHomeReward(cue, volume) : null;
             }
@@ -274,10 +279,10 @@ namespace Hexrota.UnityClient.Presentation
             flight.Target = target;
             bool hasTarget = target.Sprite != null && target.TryGetCenter(uiCamera, out _);
             flight.Count = hasTarget ? (reduced ? 1 : IconCount(amount)) : 0;
-            flight.FinalText = Format(balance);
+            flight.FinalText = target.Text(balance);
             int displayed = Mathf.Max(0, balance - amount);
             int destination = preview && amount > balance ? amount : balance;
-            flight.StartText = Format(displayed);
+            flight.StartText = target.Text(displayed);
             FillShares(amount, flight.Shares, flight.Count);
             var cue = sound ? new RewardCue { reason = "home_reward" } : null;
             PlanPaths(flight);
@@ -285,7 +290,7 @@ namespace Hexrota.UnityClient.Presentation
             {
                 int index = flight.ArrivalOrder[i];
                 displayed += Mathf.Min(flight.Shares[index], destination - displayed);
-                flight.ArrivalText[i] = Format(displayed);
+                flight.ArrivalText[i] = target.Text(displayed);
                 bool last = i == flight.Count - 1;
                 if (sound)
                 {
@@ -460,8 +465,8 @@ namespace Hexrota.UnityClient.Presentation
 
         private void ShowWallet(UnityGameSession.PhoneWallet wallet)
         {
-            gold.Show(Format(wallet.Gold));
-            egg.Show(Format(wallet.GoldenEggs));
+            gold.Show(gold.Text(wallet.Gold));
+            egg.Show(egg.Text(wallet.GoldenEggs));
         }
 
         private void ResetVisuals()

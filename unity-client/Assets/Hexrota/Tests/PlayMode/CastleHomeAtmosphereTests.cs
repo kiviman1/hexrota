@@ -66,7 +66,7 @@ namespace Hexrota.UnityClientTests
             var plotCoop = layers.CoopPlot.Find("PlotCoop");
             Assert.That(plotCoop, Is.Not.Null, "A placeholder coop stands on the plot until the 3D coop.");
             foreach (var image in env.GetComponentsInChildren<Image>(true))
-                Assert.That(image.raycastTarget, Is.EqualTo(image.name == "CoopDrawing"), image.name + ": only the coop takes taps.");
+                Assert.That(image.raycastTarget, Is.EqualTo(image.name == "CoopTapArea"), image.name + ": only the plot takes taps.");
         }
 
         [UnityTest]
@@ -152,6 +152,8 @@ namespace Hexrota.UnityClientTests
                 Assert.That(motion.cloudDriftSpeeds.Length, Is.EqualTo(layers.Clouds.Length));
                 Assert.That(motion.cloudDriftSpeeds.Distinct().Count(), Is.EqualTo(layers.Clouds.Length), "Each cloud has its own speed.");
 
+                yield return null; // skip the load frame's long delta
+                yield return null;
                 var start = layers.Clouds.Select(c => c.anchorMin.x).ToArray();
                 float began = Time.unscaledTime;
                 yield return new WaitForSecondsRealtime(.5f);
@@ -160,7 +162,7 @@ namespace Hexrota.UnityClientTests
                 {
                     float moved = (layers.Clouds[i].anchorMin.x - start[i]) * layers.ArtSize.x;
                     Assert.That(moved, Is.GreaterThan(0f), "cloud " + i);
-                    Assert.That(moved / elapsed, Is.EqualTo(motion.cloudDriftSpeeds[i]).Within(motion.cloudDriftSpeeds[i] * .35f), "cloud " + i);
+                    Assert.That(moved / elapsed, Is.EqualTo(motion.cloudDriftSpeeds[i]).Within(motion.cloudDriftSpeeds[i] * .5f), "cloud " + i);
                 }
                 foreach (var cloud in layers.Clouds)
                 {

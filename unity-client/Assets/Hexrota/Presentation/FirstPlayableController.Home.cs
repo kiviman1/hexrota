@@ -146,6 +146,7 @@ namespace Hexrota.UnityClient.Presentation
             if (castleHome == null) return;
             castleHome.gameObject.SetActive(true);
             castleHome.ShowStage(Session.NextStage, Session.TutorialCount);
+            castleHome.ShowNavigation(CompletedCampaignChapters());
             var wallet = Session.ReadPhoneWallet();
             castleHome.ShowWallet(wallet);
             nextLifeDisplay = Time.unscaledTime + 1;
@@ -156,6 +157,25 @@ namespace Hexrota.UnityClient.Presentation
             if (earned == null) return;
             Canvas.ForceUpdateCanvases();
             castleHome.Rewards.PlayWin(HomeRewardSource, earned.GoldenEggs, earned.Gold, wallet);
+        }
+
+        private int CompletedCampaignChapters()
+        {
+            int completed = 0;
+            for (int stage = Session.TutorialCount; stage < Session.StageCount; stage++)
+                if (Session.IsStageComplete(stage)) completed++;
+            return completed;
+        }
+
+        private const string AreasTitle = "Alanlar";
+        private const string AreasComingSoon = "Yakında: kümesi tamamladığın alanları buradan ziyaret edeceksin.";
+
+        /// <summary>Areas tab of the home menu: a "coming soon" placeholder for now.</summary>
+        internal void OpenAreas()
+        {
+            if (!ready || !HasInterface || CurrentScreen != "menu") return;
+            CurrentScreen = "areas";
+            ShowModal(AreasTitle, AreasComingSoon, () => { modal.SetActive(false); CurrentScreen = "menu"; });
         }
 
         private void RememberHomeRewards()
