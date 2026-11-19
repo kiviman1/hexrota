@@ -74,7 +74,7 @@ MonoBehaviour:
   lifeStatus: {fileID: 101803}
   stageLabel: {fileID: 106203}
   chapterFormat: "B\xF6l\xFCm {n}"
-  completedLabel: "Bah\xE7e"
+  completedLabel: "K\xFCmesine d\xF6n"
   fullLifeLabel: Dolu
 --- !u!114 &100004
 MonoBehaviour:

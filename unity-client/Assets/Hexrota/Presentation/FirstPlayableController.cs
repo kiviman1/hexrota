@@ -123,7 +123,7 @@ namespace Hexrota.UnityClient.Presentation
         {
             if (!ready || !HasInterface || IsEnteringStage) return;
             int next = Session.NextStage;
-            if (next < 0) { OpenGarden(); return; }
+            if (next < 0) { ShowMenu(); return; }
             var stage = Session.GetChapterPreview(next);
             if (next == Session.TutorialCount || stage.Resume || stage.Rescue) BeginStage(next);
             else OpenMobilePreview(next);
@@ -147,7 +147,7 @@ namespace Hexrota.UnityClient.Presentation
                 return;
             }
             int next = Session.NextCampaignStage;
-            if (next < 0) OpenGarden(); else OpenMobilePreview(next);
+            if (next < 0) ReturnToMenu(); else OpenMobilePreview(next);
         }
 
         public void OpenJourney()
