@@ -33,16 +33,34 @@ namespace Hexrota.UnityClient.Presentation
             base.OnDisable();
         }
 
-        private void RefreshEdges()
+        internal Vector2 FocalPoint => focalPoint;
+        internal bool Cover => cover;
+
+        /// <summary>The area the illustration covers, in this Image's local space (its rect plus the
+        /// notch and home-indicator margins).</summary>
+        internal Rect DisplayRect()
         {
-            if (safeArea == null || screenArea == null || graphic == null) return;
+            Rect rect = graphic.rectTransform.rect;
+            Vector4 offsets = EdgeOffsets();
+            return Rect.MinMaxRect(rect.xMin + offsets.x, rect.yMin + offsets.y, rect.xMax + offsets.z, rect.yMax + offsets.w);
+        }
+
+        private Vector4 EdgeOffsets()
+        {
+            if (safeArea == null || screenArea == null || graphic == null) return Vector4.zero;
             var local = graphic.rectTransform;
             Vector2 lower = local.InverseTransformVector(screenArea.TransformPoint(screenArea.rect.min) -
                                                          safeArea.TransformPoint(safeArea.rect.min));
             Vector2 upper = local.InverseTransformVector(screenArea.TransformPoint(screenArea.rect.max) -
                                                          safeArea.TransformPoint(safeArea.rect.max));
-            var offsets = new Vector4(Mathf.Min(0, lower.x), Mathf.Min(0, lower.y),
-                                      Mathf.Max(0, upper.x), Mathf.Max(0, upper.y));
+            return new Vector4(Mathf.Min(0, lower.x), Mathf.Min(0, lower.y),
+                               Mathf.Max(0, upper.x), Mathf.Max(0, upper.y));
+        }
+
+        private void RefreshEdges()
+        {
+            if (safeArea == null || screenArea == null || graphic == null) return;
+            var offsets = EdgeOffsets();
             if ((offsets - edgeOffsets).sqrMagnitude < .000001f) return;
             edgeOffsets = offsets;
             graphic.SetVerticesDirty();

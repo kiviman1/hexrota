@@ -21,6 +21,7 @@ namespace Hexrota.UnityClient.Presentation
         [SerializeField] private RewardFlight rewardFlight;
         [SerializeField] private CoopHomeView coopView;
         [SerializeField] private CoopUpgradeSequence coopSequence;
+        [SerializeField] private HomeBackgroundLayers background;
 
         [Header("Player progress")]
         [SerializeField] private Text goldValue;
@@ -43,6 +44,8 @@ namespace Hexrota.UnityClient.Presentation
 
         internal RewardFlight Rewards => rewardFlight;
         internal CoopHomeView Coop => coopView;
+        /// <summary>Layered home background; its CoopPlot marks where the 3D coop will stand.</summary>
+        internal HomeBackgroundLayers Background => background;
         /// <summary>A reward flight or the coop upgrade is animating; periodic refreshes must wait.</summary>
         internal bool IsBusy => rewardFlight.IsPlaying || (coopSequence != null && coopSequence.IsPlaying);
         internal void FinishCoopUpgrade() { if (coopSequence != null) coopSequence.Finish(); }
@@ -115,6 +118,7 @@ namespace Hexrota.UnityClient.Presentation
             motionSession = session;
             motionRevision = session.Revision;
             playMotion.SetReducedMotion(session.ReducedMotion);
+            if (background != null) background.SetReducedMotion(session.ReducedMotion);
         }
     }
 }
