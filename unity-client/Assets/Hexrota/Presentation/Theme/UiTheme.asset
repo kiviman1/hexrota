@@ -31,6 +31,7 @@ MonoBehaviour:
   rewardIconSize: 28
   coopScaleEmpty: 0.85
   coopRingOpacity: 0.6
+  contactShadow: {r: 0.16470589, g: 0.078431375, b: 0.2509804, a: 0.4}
   panel: {r: 0.35686275, g: 0.17254902, b: 0.5137255, a: 1}
   panelInset: {r: 0.27450982, g: 0.1254902, b: 0.41568628, a: 1}
   cream: {r: 1, g: 0.9647059, b: 0.8980392, a: 1}

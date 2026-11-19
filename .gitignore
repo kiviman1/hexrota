@@ -27,3 +27,6 @@ unity-client/HostTests/obj/
 
 # Source art for the home background (imported copies live in unity-client/Assets/Hexrota/Art/HomeBackground)
 art/HomeBackground/
+
+# Source images for the 2D coop sprites (cut by art/coop-2d/cut_sprites.py)
+art/coop-2d/source/

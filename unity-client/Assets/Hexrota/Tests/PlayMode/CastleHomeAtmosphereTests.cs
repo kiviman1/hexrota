@@ -64,7 +64,16 @@ namespace Hexrota.UnityClientTests
             Assert.That(coop.GetComponent<Image>().enabled, Is.False);
             foreach (Transform part in coop) Assert.That(part.gameObject.activeSelf, Is.False, part.name);
             var plotCoop = layers.CoopPlot.Find("PlotCoop");
-            Assert.That(plotCoop, Is.Not.Null, "A placeholder coop stands on the plot until the 3D coop.");
+            Assert.That(plotCoop, Is.Not.Null, "The coop sprite stands on the plot.");
+            var view = plotCoop.GetComponentInChildren<CoopSpriteView>(true);
+            Assert.That(view, Is.Not.Null);
+            Assert.That(view.LevelCount, Is.EqualTo(5), "Coop_L0 foundation and four levels.");
+            // The old 2D coop drawing and the level-0 stakes are retired: kept in the prefab, hidden.
+            var retired = layers.CoopPlot.Find("RetiredPlaceholders");
+            Assert.That(retired, Is.Not.Null);
+            Assert.That(retired.gameObject.activeSelf, Is.False);
+            Assert.That(retired.Find("CoopDrawing"), Is.Not.Null);
+            Assert.That(retired.Find("EmptyPlot"), Is.Not.Null);
             foreach (var image in env.GetComponentsInChildren<Image>(true))
                 Assert.That(image.raycastTarget, Is.EqualTo(image.name == "CoopTapArea"), image.name + ": only the plot takes taps.");
         }
@@ -122,6 +131,29 @@ namespace Hexrota.UnityClientTests
                 Assert.That(barAll.xMin, Is.GreaterThanOrEqualTo(ArtRect(30, 1670, 420, 1990).xMax), "Bar stays right of the stone path.");
                 Assert.That(barAll.Overlaps(play), Is.False, "Bar does not cover Play.");
                 Assert.That(barAll.xMax, Is.LessThanOrEqualTo(display.xMax), "Bar stays on screen.");
+
+                // Every coop level grows but stays on the plot, clear of Play and the bar, on one ground point.
+                var view = home.GetComponentInChildren<CoopSpriteView>();
+                Vector2 ground = default;
+                float lastWidth = 0;
+                for (int level = 0; level < view.LevelCount; level++)
+                {
+                    view.Show(level);
+                    view.Refresh();
+                    Rect sprite = ScreenRect(screen, view.Image.rectTransform);
+                    string name = "Coop_L" + level + " at " + width + "x" + height;
+                    Assert.That(sprite.xMin, Is.GreaterThanOrEqualTo(plot.xMin), name + " fits the plot (left).");
+                    Assert.That(sprite.xMax, Is.LessThanOrEqualTo(plot.xMax), name + " fits the plot (right).");
+                    Assert.That(sprite.yMin, Is.GreaterThanOrEqualTo(plot.yMin), name + " stands on the plot.");
+                    Assert.That(sprite.Overlaps(play), Is.False, name + " clears Play.");
+                    Assert.That(sprite.Overlaps(barAll), Is.False, name + " clears the bar.");
+                    Assert.That(sprite.width, Is.GreaterThan(lastWidth), name + " is bigger than the level before.");
+                    lastWidth = sprite.width;
+                    var rt = view.Image.rectTransform;
+                    Vector2 foot = screen.InverseTransformPoint(rt.TransformPoint(Vector3.zero));
+                    if (level == 0) ground = foot;
+                    else Assert.That(Vector2.Distance(foot, ground), Is.LessThan(.5f), name + " stands on the same point.");
+                }
             }
             finally { Object.Destroy(canvas.gameObject); }
         }

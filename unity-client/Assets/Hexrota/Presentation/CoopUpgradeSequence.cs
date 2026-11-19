@@ -8,8 +8,11 @@ namespace Hexrota.UnityClient.Presentation
     // Coop upgrade presentation (attention priority 2). The upgrade itself is saved before anything
     // moves; this sequence is only visual, so cancelling it at any point (background, scene change)
     // just snaps the home to the saved state.
-    //   1 panel closes · 2 eggs fly from the counter to the coop · 3 coop squash + burst + haptic
-    //   4 level placeholder changes, "Seviye N!" · 5 new residents pop in · 6 bar refills
+    //   1 panel closes · 2 eggs fly from the counter to the coop
+    //   3 a dust cloud covers the building (MotionTheme.dustCover); at its densest the sprite changes
+    //   4 the dust clears (dustClear) while the new building squashes and stretches in (coopSquash)
+    //   5 sparkle burst + haptic, "Seviye N!" · 6 new residents pop in · 7 bar refills
+    // Reduced motion: a short cross-fade between the sprites (reducedCrossfade), no dust, no squash.
     [DisallowMultipleComponent]
     public sealed class CoopUpgradeSequence : MonoBehaviour
     {
@@ -22,6 +25,7 @@ namespace Hexrota.UnityClient.Presentation
         [Tooltip("Full-screen transparent blocker that locks input while the sequence plays.")]
         [SerializeField] private GameObject inputLock;
         [SerializeField] private Image burst;
+        [SerializeField] private CoopDustBurst dust;
         [SerializeField] private Text levelBanner;
         [SerializeField] private Outline levelBannerOutline;
         [Tooltip("Placeholder residents, shown in order; the coop status decides how many are visible.")]
@@ -29,7 +33,7 @@ namespace Hexrota.UnityClient.Presentation
         [Tooltip("{n} is replaced by the new level.")]
         [SerializeField] private string bannerFormat = "Seviye {n}!";
 
-        private enum Step { Idle, ClosingPanel, Flying, Squash, Banner, Residents, Done }
+        private enum Step { Idle, ClosingPanel, Flying, Dust, Squash, Crossfade, Banner, Residents, Done }
         private readonly PhoneRewardHaptics haptics = new PhoneRewardHaptics();
         private FirstPlayableController controller;
         private UnityGameSession.CoopStatus before, after;
@@ -42,6 +46,9 @@ namespace Hexrota.UnityClient.Presentation
         public bool IsPlaying => step != Step.Idle;
         public int VisibleResidents => shownResidents;
         public string Banner => levelBanner.gameObject.activeSelf ? levelBanner.text : null;
+        /// <summary>The dust cloud is covering the building (the sprite changes at the end of this phase).</summary>
+        public bool DustCovering => dust != null && dust.Covering;
+        public bool DustPlaying => dust != null && dust.IsPlaying;
         internal event Action Finished;
 
         internal void Bind(FirstPlayableController owner)
@@ -97,25 +104,45 @@ namespace Hexrota.UnityClient.Presentation
             Begin(Step.Flying);
             Vector2 target = RectTransformUtility.WorldToScreenPoint(UiCamera(),
                 coopView.CoopTarget.TransformPoint(coopView.CoopTarget.rect.center));
-            if (!rewardFlight.PlaySpend(target, before.NextCost, after.Eggs, () => { if (step == Step.Flying) Squash(); }))
-                Squash();
+            if (!rewardFlight.PlaySpend(target, before.NextCost, after.Eggs, () => { if (step == Step.Flying) Arrive(); }))
+                Arrive();
         }
 
+        // The eggs have landed on the coop.
+        private void Arrive()
+        {
+            var view = coopView.Sprite;
+            if (reduced || dust == null || view == null)
+            {
+                // Reduced motion: a short cross-fade to the new building, no dust.
+                Begin(Step.Crossfade);
+                if (view != null) view.CrossFade(after.Usable ? after.Level : 0, motion.reducedCrossfade.seconds);
+                else coopView.ShowLevel(after);
+                return;
+            }
+            Begin(Step.Dust);
+            dust.Play(view.Bounds, () => { if (step == Step.Dust) Squash(); });
+        }
+
+        // Densest dust: the sprite changes, then the new building squashes and stretches in while the dust clears.
         private void Squash()
         {
             Begin(Step.Squash);
+            coopView.ShowLevel(after);
+            coopScale = coopView.CoopTarget.localScale;
+        }
+
+        private void Sparkle()
+        {
             if (motion.arrivalHapticMs > 0 && controller.Session.HapticsEnabled)
             {
                 haptics.Prepare(motion.arrivalHapticMs);
                 haptics.Play();
             }
-            coopView.ShowLevel(after);
-            if (!reduced)
-            {
-                burst.gameObject.SetActive(true);
-                burst.rectTransform.position = coopView.CoopTarget.TransformPoint(coopView.CoopTarget.rect.center);
-            }
-            coopScale = coopView.CoopTarget.localScale;
+            burst.gameObject.SetActive(true);
+            burst.rectTransform.position = coopView.CoopTarget.TransformPoint(coopView.CoopTarget.rect.center);
+            burst.rectTransform.localScale = Vector3.one;
+            burst.canvasRenderer.SetAlpha(1);
         }
 
         private void Begin(Step next)
@@ -132,26 +159,37 @@ namespace Hexrota.UnityClient.Presentation
             time += delta;
             switch (step)
             {
+                case Step.Crossfade:
+                {
+                    if (time >= motion.reducedCrossfade.seconds)
+                    {
+                        if (coopView.Sprite != null) coopView.Sprite.FinishFade();
+                        SetResidents(after.Chickens);
+                        Finish();
+                    }
+                    break;
+                }
                 case Step.Squash:
                 {
-                    var timing = reduced ? motion.reducedUpgradePunch : motion.coopSquash;
+                    // Squash & stretch from the ground while the dust clears; sparkles and the haptic as it settles.
+                    var timing = motion.coopSquash;
                     float t = Mathf.Clamp01(time / timing.seconds);
-                    float wave = Mathf.Sin(t * Mathf.PI) * (1 - timing.Evaluate(time));
-                    var target = coopView.CoopTarget;
-                    target.localScale = reduced
-                        ? coopScale * (1 + (motion.punchScale - 1) * wave)
-                        : Vector3.Scale(coopScale, new Vector3(1 + motion.coopSquashAmount * wave, 1 - motion.coopSquashAmount * wave, 1));
-                    if (!reduced)
+                    float wave = Mathf.Sin(t * Mathf.PI * 2) * (1 - timing.Evaluate(time));
+                    coopView.CoopTarget.localScale = Vector3.Scale(coopScale,
+                        new Vector3(1 + motion.coopSquashAmount * wave, 1 - motion.coopSquashAmount * wave, 1));
+                    if (!burst.gameObject.activeSelf && t >= .5f && time < timing.seconds) Sparkle();
+                    if (burst.gameObject.activeSelf)
                     {
-                        burst.rectTransform.localScale = Vector3.one * (1 + 2 * t);
-                        burst.canvasRenderer.SetAlpha(1 - t);
+                        float s = Mathf.Clamp01((time - timing.seconds * .5f) / timing.seconds);
+                        burst.rectTransform.localScale = Vector3.one * (1 + 2 * s);
+                        burst.canvasRenderer.SetAlpha(1 - s);
                     }
-                    if (time >= timing.seconds)
+                    bool dustDone = dust == null || !dust.IsPlaying;
+                    if (time >= timing.seconds && dustDone)
                     {
-                        target.localScale = coopScale;
+                        coopView.CoopTarget.localScale = coopScale;
                         burst.gameObject.SetActive(false);
-                        if (reduced) { SetResidents(after.Chickens); Finish(); }
-                        else ShowBanner();
+                        ShowBanner();
                     }
                     break;
                 }
@@ -221,6 +259,9 @@ namespace Hexrota.UnityClient.Presentation
 
         private void HideTransients()
         {
+            if (dust != null) dust.Stop();
+            if (coopView != null && coopView.Sprite != null) coopView.Sprite.FinishFade();
+            if (coopView != null && coopView.CoopTarget != null) coopView.CoopTarget.localScale = Vector3.one;
             burst.gameObject.SetActive(false);
             levelBanner.gameObject.SetActive(false);
             inputLock.SetActive(false);

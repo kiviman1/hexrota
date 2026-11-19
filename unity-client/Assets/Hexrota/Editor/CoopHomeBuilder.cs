@@ -20,17 +20,14 @@ namespace Hexrota.UnityClient.Editor
         private const string EggSprite = "Assets/Hexrota/Art/CastleHome/GoldenEgg.png";
         private static readonly string[] Owned = { "CoopTapArea", "CoopProgress", "CoopButton" };
         public const string PlotCoop = "PlotCoop";
-        public const string CoopDrawing = "CoopDrawing";
-        public const string EmptyPlot = "EmptyPlot";
+        public const string CoopSprite = "CoopSprite";
         public const string TapArea = "CoopTapArea";
-        private const string StakeSprite = "Assets/Hexrota/Art/CastleHome/FenceStake.png";
+        // Retired placeholders (the old 2D coop drawing and the level-0 fence stakes): kept, hidden.
+        public const string RetiredDrawing = "CoopDrawing", RetiredStakes = "EmptyPlot";
         private const string DisplayFont = "Assets/Hexrota/Art/CastleHomeType/LilitaOne-Regular.ttf";
-        // Fence stakes on the empty plot: anchor in the plot (x, y = base) and height in points.
-        private static readonly Vector3[] Stakes =
-        {
-            new Vector3(.3f, .62f, 40), new Vector3(.7f, .62f, 40), new Vector3(.24f, .22f, 52), new Vector3(.76f, .22f, 52),
-        };
-        private const string CoopSprite = "Assets/Hexrota/Art/CastleHome/Coop.png";
+        // Where the coop's ground point (bottom-centre of its base disk) sits on the plot.
+        private static readonly Vector2 Ground = new Vector2(.5f, .12f);
+        private const int DustPuffs = 20;
 
         [MenuItem("Hexrota/Home/Rebuild Coop Controls")]
         public static void Rebuild()
@@ -40,9 +37,8 @@ namespace Hexrota.UnityClient.Editor
             var rounded = Load<Sprite>(Theme + "HomeRounded.png");
             var hex = Load<Sprite>(Theme + "HomeHex.png");
             var egg = Load<Sprite>(EggSprite);
-            var coopSprite = Load<Sprite>(CoopSprite);
-            var stakeSprite = Load<Sprite>(StakeSprite);
             var display = Load<Font>(DisplayFont);
+            var sprites = CoopSpriteAssets.Prepare();
             var root = PrefabUtility.LoadPrefabContents(Prefab);
             try
             {
@@ -61,46 +57,81 @@ namespace Hexrota.UnityClient.Editor
                     var existing = layout.Find(name);
                     if (existing != null) UnityEngine.Object.DestroyImmediate(existing.gameObject);
                 }
-                foreach (var name in new[] { PlotCoop, EmptyPlot, TapArea })
+                // The old placeholders leave the scene but stay in the prefab, hidden.
+                RetirePlaceholders(plot);
+                foreach (var name in new[] { PlotCoop, TapArea })
                 {
                     var old = plot.Find(name);
                     if (old != null) UnityEngine.Object.DestroyImmediate(old.gameObject);
                 }
 
-                // Placeholder coop standing on the plot (until the 3D coop). It is part of the background,
-                // so every UI control keeps tap priority. The level scale grows it from its base.
-                var coop = NewRect(plot, PlotCoop, new Vector2(.295f, .237f), new Vector2(.705f, 1.126f), Vector2.zero, Vector2.zero);
+                // The coop sprite (Coop_L0 foundation .. Coop_L4) stands on the plot: this rect's pivot is
+                // the ground point. It is part of the background, so every UI control keeps tap priority.
+                // Eggs fly to it and the upgrade squash scales it from the ground.
+                var coop = NewRect(plot, PlotCoop, new Vector2(.1f, Ground.y), new Vector2(.9f, 1.5f), Vector2.zero, Vector2.zero);
                 coop.pivot = new Vector2(.5f, 0);
                 coop.SetAsLastSibling();
                 var visual = NewRect(coop, "CoopVisual", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
                 visual.pivot = new Vector2(.5f, 0);
-                var drawing = NewRect(visual, CoopDrawing, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-                Simple(drawing, coopSprite, Color.white);
-                drawing.gameObject.SetActive(false); // level 0: the plot is empty until the first upgrade
-
-                // Level 0: a few fence stakes mark where the coop will be built.
-                var empty = NewRect(plot, EmptyPlot, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-                empty.SetSiblingIndex(coop.GetSiblingIndex());
-                foreach (var stake in Stakes)
+                var shadowImage = Simple(NewRect(visual, "Shadow", Vector2.zero, Vector2.zero, Vector2.zero, Vector2.zero), sprites.Shadow, ui.contactShadow);
+                shadowImage.preserveAspect = false;
+                var previous = Simple(NewRect(visual, "PreviousSprite", Vector2.zero, Vector2.zero, Vector2.zero, Vector2.zero), sprites.Levels[0], Color.white);
+                previous.preserveAspect = false;
+                previous.gameObject.SetActive(false);
+                var current = Simple(NewRect(visual, CoopSprite, Vector2.zero, Vector2.zero, Vector2.zero, Vector2.zero), sprites.Levels[0], Color.white);
+                current.preserveAspect = false;
+                var spriteView = visual.gameObject.AddComponent<CoopSpriteView>();
+                var spriteData = new SerializedObject(spriteView);
+                Set(spriteData, "ui", ui);
+                var levels = spriteData.FindProperty("levels");
+                var disks = spriteData.FindProperty("diskPixels");
+                levels.arraySize = disks.arraySize = sprites.Levels.Length;
+                for (int i = 0; i < sprites.Levels.Length; i++)
                 {
-                    var post = NewRect(empty, "Stake", new Vector2(stake.x, stake.y), new Vector2(stake.x, stake.y), Vector2.zero, new Vector2(stake.z * .3f, stake.z));
-                    post.pivot = new Vector2(.5f, 0);
-                    Simple(post, stakeSprite, Color.white);
+                    levels.GetArrayElementAtIndex(i).objectReferenceValue = sprites.Levels[i];
+                    disks.GetArrayElementAtIndex(i).floatValue = sprites.DiskPixels[i];
                 }
+                Set(spriteData, "plot", plot);
+                Set(spriteData, "image", current);
+                Set(spriteData, "previous", previous);
+                Set(spriteData, "shadow", shadowImage);
+                spriteData.ApplyModifiedPropertiesWithoutUndo();
 
-                // Tapping the plot (empty or built) opens the panel. Transparent, above the coop and residents.
-                var tap = NewRect(plot, TapArea, Vector2.zero, new Vector2(1, 1.13f), Vector2.zero, Vector2.zero);
+                // Dust for the upgrade transition: a pool of soft puffs over the building.
+                var dustRect = NewRect(visual, "Dust", new Vector2(.5f, 0), new Vector2(.5f, 0), Vector2.zero, new Vector2(200, 200));
+                var dust = dustRect.gameObject.AddComponent<CoopDustBurst>();
+                var dustData = new SerializedObject(dust);
+                Set(dustData, "ui", ui); Set(dustData, "motion", motion);
+                var pool = dustData.FindProperty("puffs");
+                pool.arraySize = DustPuffs;
+                for (int i = 0; i < DustPuffs; i++)
+                {
+                    var puff = Simple(NewRect(dustRect, "Puff" + (i + 1), new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(80, 80)),
+                        sprites.Dust[i % sprites.Dust.Length], ui.cream);
+                    puff.gameObject.SetActive(false);
+                    pool.GetArrayElementAtIndex(i).objectReferenceValue = puff;
+                }
+                var shapes = dustData.FindProperty("shapes");
+                shapes.arraySize = sprites.Dust.Length;
+                for (int i = 0; i < sprites.Dust.Length; i++) shapes.GetArrayElementAtIndex(i).objectReferenceValue = sprites.Dust[i];
+                dustData.ApplyModifiedPropertiesWithoutUndo();
+
+                // Tapping the plot or the coop (the foundation at level 0) opens the panel.
+                var tap = NewRect(plot, TapArea, Vector2.zero, new Vector2(1, 1.5f), Vector2.zero, Vector2.zero);
                 var tapImage = tap.gameObject.AddComponent<Image>();
                 tapImage.color = Color.clear;
                 var tapButton = tap.gameObject.AddComponent<Button>();
                 tapButton.transition = Selectable.Transition.None;
                 tapButton.targetGraphic = tapImage;
-                var badge = NewRect(visual, "ReadyBadge", new Vector2(.84f, .74f), new Vector2(.84f, .74f), Vector2.zero, new Vector2(30, 32));
+                var badge = NewRect(visual, "ReadyBadge", new Vector2(.5f, 0), new Vector2(.5f, 0), Vector2.zero, new Vector2(30, 32));
                 var badgeRim = Simple(NewRect(badge, "Rim", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero), hex, ui.heartDeep);
                 var badgeFace = Simple(NewRect(badge, "Face", Vector2.zero, Vector2.one, Vector2.zero, new Vector2(-6, -6)), hex, ui.heart);
                 Label(badge, "Mark", font, 18, "!", ui, out var badgeOutline);
                 badgeOutline.effectColor = ui.heartDeep;
                 badge.gameObject.SetActive(false);
+                var badgeData = new SerializedObject(spriteView);
+                Set(badgeData, "badge", badge);
+                badgeData.ApplyModifiedPropertiesWithoutUndo();
 
                 // Progress bar: in the empty meadow right of the stone path, between the plot and Play.
                 float playY = playArea.anchorMin.y;
@@ -122,7 +153,7 @@ namespace Hexrota.UnityClient.Editor
                 var data = new SerializedObject(view);
                 Set(data, "ui", ui); Set(data, "motion", motion); Set(data, "attention", attention); Set(data, "rewardFlight", flight);
                 Set(data, "coop", coop); Set(data, "coopVisual", visual); Set(data, "coopTapArea", tapButton);
-                Set(data, "coopDrawing", drawing.gameObject); Set(data, "emptyPlot", empty); Set(data, "barEgg", eggImage);
+                Set(data, "sprite", spriteView); Set(data, "barEgg", eggImage);
                 Set(data, "readyBadge", badge.gameObject); Set(data, "readyBadgeRim", badgeRim); Set(data, "readyBadgeFace", badgeFace);
                 Set(data, "bar", bar); Set(data, "barFill", fill); Set(data, "barTrack", track); Set(data, "barFillImage", fillImage);
                 Set(data, "barLabel", barLabel); Set(data, "barLabelOutline", barOutline);
@@ -134,6 +165,24 @@ namespace Hexrota.UnityClient.Editor
                 PrefabUtility.SaveAsPrefabAsset(root, Prefab);
             }
             finally { PrefabUtility.UnloadPrefabContents(root); }
+        }
+
+        // The old 2D coop drawing (inside the previous PlotCoop) and the level-0 stakes are no longer used.
+        // They are moved under one hidden holder instead of being deleted.
+        private static void RetirePlaceholders(Transform plot)
+        {
+            var holder = plot.Find("RetiredPlaceholders");
+            if (holder == null)
+            {
+                holder = NewRect(plot, "RetiredPlaceholders", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+                holder.SetAsFirstSibling();
+            }
+            holder.gameObject.SetActive(false);
+            var oldCoop = plot.Find(PlotCoop);
+            var drawing = oldCoop != null ? oldCoop.Find("CoopVisual/" + RetiredDrawing) : null;
+            if (drawing != null) drawing.SetParent(holder, true);
+            var stakes = plot.Find(RetiredStakes);
+            if (stakes != null) stakes.SetParent(holder, true);
         }
 
         private static T Load<T>(string path) where T : UnityEngine.Object

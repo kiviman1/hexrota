@@ -93,6 +93,7 @@ namespace Hexrota.UnityClient.Editor
                 Set(data, "ui", ui); Set(data, "motion", motion); Set(data, "attention", attention);
                 Set(data, "rewardFlight", flight); Set(data, "coopView", view); Set(data, "panel", panel);
                 Set(data, "inputLock", lockRect.gameObject); Set(data, "burst", burst);
+                Set(data, "dust", coop.GetComponentInChildren<CoopDustBurst>(true));
                 Set(data, "levelBanner", banner); Set(data, "levelBannerOutline", outline);
                 var list = data.FindProperty("residents");
                 list.arraySize = spots.Length;

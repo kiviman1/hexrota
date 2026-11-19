@@ -10,8 +10,8 @@ namespace Hexrota.UnityClientTests
     public sealed class CoopLedgerTests
     {
         // Plain C# rules: the ledger is tested without UnityEngine, exactly as the .NET host compiles it.
-        private static readonly int[] Costs = { 1, 2, 2, 2, 3 };
-        private static readonly int[] Arrivals = { 1, 1, 1, 1, 2 };
+        private static readonly int[] Costs = { 1, 2, 3, 4 };
+        private static readonly int[] Arrivals = { 1, 1, 2, 2 };
         private CoopRules config;
         private int[] costs;
 
@@ -33,10 +33,12 @@ namespace Hexrota.UnityClientTests
             var shipped = asset.ToRules();
             Assert.That(shipped.Areas, Has.Count.EqualTo(1));
             Assert.That(shipped.First.Id, Is.EqualTo("farm-1"));
-            // Sized for the current 10-chapter campaign (10 eggs); see docs/design/HANDOFF.md.
-            Assert.That(shipped.First.Upgrades.Select(u => u.Cost), Is.EqualTo(new[] { 1, 2, 2, 2, 3 }));
+            // Four upgrades, one per coop sprite level (Coop_L1..Coop_L4), sized for the current
+            // 10-chapter campaign (10 eggs, 6 chickens); see docs/design/HANDOFF.md.
+            Assert.That(shipped.First.Upgrades.Select(u => u.Cost), Is.EqualTo(new[] { 1, 2, 3, 4 }));
             Assert.That(shipped.First.Upgrades.Select(u => u.Cost).Sum(), Is.EqualTo(10));
-            Assert.That(shipped.First.Upgrades.Select(u => u.Chickens), Is.EqualTo(new[] { 1, 1, 1, 1, 2 }));
+            Assert.That(shipped.First.Upgrades.Select(u => u.Chickens), Is.EqualTo(new[] { 1, 1, 2, 2 }));
+            Assert.That(shipped.First.Upgrades.Select(u => u.Chickens).Sum(), Is.EqualTo(6));
         }
 
         [Test]

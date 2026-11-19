@@ -29,5 +29,7 @@ namespace Hexrota.UnityClient.Presentation
         [Tooltip("Coop placeholder scale on the empty plot; it grows to 1 when the area is complete.")]
         [Range(0.1f, 1f)] public float coopScaleEmpty;
         [Range(0f, 1f)] public float coopRingOpacity;
+        [Tooltip("Soft blob shadow under the coop (shadow-drop token: purple; alpha = opacity).")]
+        public Color contactShadow;
     }
 }

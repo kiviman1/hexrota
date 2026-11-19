@@ -79,18 +79,32 @@ namespace Hexrota.UnityClientTests
             Assert.That(new UnityGameSession(data, storage, new SystemUtcClock(), coop: config).ReadPhoneWallet().GoldenEggs, Is.Zero);
             Assert.That(EggCounter, Is.EqualTo("Hazır!"), "The bar keeps its count until the eggs leave it.");
 
-            bool sawFlight = false, sawBanner = false;
+            bool sawFlight = false, sawBanner = false, sawDust = false, swappedUnderDust = false;
+            float squash = 0;
+            Assert.That(Coop.Sprite.ShownName, Is.EqualTo("Coop_L0"));
             float deadline = Time.unscaledTime + 6;
             while (Sequence.IsPlaying && Time.unscaledTime < deadline)
             {
                 sawFlight |= Flight.ActiveIconCount > 0;
                 sawBanner |= Sequence.Banner == "Seviye 1!";
+                if (Sequence.DustCovering)
+                {
+                    sawDust = true;
+                    Assert.That(Coop.Sprite.ShownName, Is.EqualTo("Coop_L0"), "The old coop stays until the dust is densest.");
+                }
+                else if (sawDust && Sequence.DustPlaying) swappedUnderDust |= Coop.Sprite.ShownName == "Coop_L1";
+                squash = Mathf.Max(squash, Mathf.Abs(Coop.Sprite.transform.parent.localScale.y - 1));
                 Assert.That(play.IsShining, Is.False, "No other attention animation during the upgrade.");
                 Assert.That(Coop.IsPulsing, Is.False);
                 yield return null;
             }
             Assert.That(Sequence.IsPlaying, Is.False);
             Assert.That(sawFlight && sawBanner, Is.True);
+            Assert.That(sawDust, Is.True, "A dust cloud covers the building.");
+            Assert.That(swappedUnderDust, Is.True, "The sprite changes while the dust is still up.");
+            Assert.That(squash, Is.GreaterThan(.01f), "The new building squashes and stretches in.");
+            Assert.That(Coop.Sprite.transform.parent.localScale, Is.EqualTo(Vector3.one), "It settles back.");
+            Assert.That(Coop.Sprite.ShownName, Is.EqualTo("Coop_L1"));
             Assert.That(Flight.ActiveIconCount, Is.Zero);
             Assert.That(EggCounter, Is.EqualTo("0/2"), "The bar restarts toward the next cost.");
             Assert.That(Sequence.VisibleResidents, Is.EqualTo(1));
@@ -109,11 +123,16 @@ namespace Hexrota.UnityClientTests
             float started = Time.unscaledTime;
             Coop.Panel.UpgradeButton.onClick.Invoke();
             int peak = 0;
+            bool faded = false;
             while (Sequence.IsPlaying && Time.unscaledTime - started < 2)
             {
                 peak = Mathf.Max(peak, Flight.ActiveIconCount);
+                Assert.That(Sequence.DustPlaying, Is.False, "No dust with reduced motion.");
+                faded |= Coop.Sprite.Fading;
                 yield return null;
             }
+            Assert.That(faded, Is.True, "Reduced motion cross-fades the sprites.");
+            Assert.That(Coop.Sprite.ShownName, Is.EqualTo("Coop_L1"));
             Assert.That(Time.unscaledTime - started, Is.LessThanOrEqualTo(.55f), "≤ 0.5 s plus one frame.");
             Assert.That(peak, Is.LessThanOrEqualTo(1));
             Assert.That(Sequence.VisibleResidents, Is.EqualTo(1));

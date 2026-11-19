@@ -1,0 +1,95 @@
+{
+  "levels": [
+    {
+      "level": 0,
+      "file": "Coop_L0.png",
+      "width": 1203,
+      "height": 956,
+      "pivot": [
+        0.4863,
+        0.0094
+      ],
+      "diskWidth": 1088,
+      "diskRow": 776,
+      "background": [
+        166,
+        219,
+        253
+      ]
+    },
+    {
+      "level": 1,
+      "file": "Coop_L1.png",
+      "width": 1172,
+      "height": 1225,
+      "pivot": [
+        0.494,
+        0.0041
+      ],
+      "diskWidth": 1138,
+      "diskRow": 1056,
+      "background": [
+        134,
+        209,
+        244
+      ]
+    },
+    {
+      "level": 2,
+      "file": "Coop_L2.png",
+      "width": 1038,
+      "height": 1150,
+      "pivot": [
+        0.4952,
+        0.0052
+      ],
+      "diskWidth": 1018,
+      "diskRow": 948,
+      "background": [
+        164,
+        220,
+        253
+      ]
+    },
+    {
+      "level": 3,
+      "file": "Coop_L3.png",
+      "width": 1164,
+      "height": 1176,
+      "pivot": [
+        0.4953,
+        0.0068
+      ],
+      "diskWidth": 1143,
+      "diskRow": 964,
+      "background": [
+        165,
+        221,
+        252
+      ]
+    },
+    {
+      "level": 4,
+      "file": "Coop_L4.png",
+      "width": 1234,
+      "height": 1172,
+      "pivot": [
+        0.4951,
+        0.0077
+      ],
+      "diskWidth": 1212,
+      "diskRow": 957,
+      "background": [
+        164,
+        219,
+        251
+      ]
+    }
+  ],
+  "dust": [
+    "Dust_0.png",
+    "Dust_1.png",
+    "Dust_2.png"
+  ],
+  "shadow": "Shadow.png"
+}

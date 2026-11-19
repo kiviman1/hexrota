@@ -189,8 +189,10 @@ namespace Hexrota.UnityClientTests
             Assert.That(Coop.Button.transform.IsChildOf(plot), Is.True, "The tap target is the plot with its coop.");
             Assert.That(game.GetComponentsInChildren<Button>(true).Any(b => b.name == "CoopButton"), Is.False,
                 "There is no separate coop button.");
-            Assert.That(Coop.CoopBuilt, Is.False, "Level 0: the plot is empty.");
-            Assert.That(Coop.EmptyPlotShown, Is.True, "Level 0 shows fence stakes.");
+            Assert.That(Coop.CoopBuilt, Is.False, "Level 0: only the foundation.");
+            Assert.That(Coop.EmptyPlotShown, Is.True);
+            Assert.That(Coop.Sprite.ShownName, Is.EqualTo("Coop_L0"), "Level 0 shows the Coop_L0 foundation.");
+            Assert.That(Coop.Sprite.Shadow.isActiveAndEnabled, Is.True, "A soft blob shadow grounds the coop.");
             Coop.Button.onClick.Invoke();
             var panel = Coop.Panel;
             yield return null;
@@ -206,6 +208,7 @@ namespace Hexrota.UnityClientTests
             Assert.That(panel.IsOpen, Is.False);
             Assert.That(Coop.ProgressText, Is.EqualTo("0/2"));
             Assert.That(Coop.CoopBuilt, Is.True, "The coop appears from level 1.");
+            Assert.That(Coop.Sprite.ShownName, Is.EqualTo("Coop_L1"));
             Assert.That(Coop.EmptyPlotShown, Is.False);
             Assert.That(new UnityGameSession(data, storage, new SystemUtcClock(), coop: config).ReadCoop().Level, Is.EqualTo(1));
         }

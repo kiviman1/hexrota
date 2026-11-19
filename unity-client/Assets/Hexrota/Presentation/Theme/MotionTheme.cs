@@ -26,6 +26,13 @@ namespace Hexrota.UnityClient.Presentation
         [Tooltip("Coop upgrade: squash & stretch of the coop, and the single punch used with reduced motion.")]
         public Timing coopSquash, reducedUpgradePunch;
         [Range(0f, 0.5f)] public float coopSquashAmount;
+        [Tooltip("Coop upgrade dust: the cloud covers the building, the sprite changes at its densest, then it clears.")]
+        public Timing dustCover, dustClear;
+        [Tooltip("Reduced motion: a short cross-fade between the old and new coop instead of the dust.")]
+        public Timing reducedCrossfade;
+        [Tooltip("Dust puffs per burst, and how far they spread (fraction of the coop width).")]
+        [Range(1, 24)] public int dustPuffs;
+        [Min(0f)] public float dustSpread;
         [Tooltip("How long \"Seviye N!\" stays, and the delay between arriving residents.")]
         [Min(0f)] public float levelBannerHold, residentStagger;
         public AnimationCurve fly, breathe, shine;
