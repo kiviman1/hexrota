@@ -30,7 +30,7 @@ namespace Hexrota.UnityClientTests
             FirstPlayableController.SessionFactory = () => new UnityGameSession(
                 ClientGameData.FromResources(), new MemoryProfileStorage(), new Clock());
             yield return SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
-            view = UnityEngine.Object.FindFirstObjectByType<FirstPlayableController>();
+            view = UnityEngine.Object.FindAnyObjectByType<FirstPlayableController>();
             Assert.That(view, Is.Not.Null);
             Assert.That(view.Session, Is.Not.Null);
             yield return null;
@@ -233,10 +233,10 @@ namespace Hexrota.UnityClientTests
             Assert.That(oldWorld == null, Is.True, "The detached visual root belongs to the unloaded scene.");
             Assert.That(session.IsPresenting, Is.False);
             Assert.That(completions, Is.Zero);
-            Assert.That(UnityEngine.Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+            Assert.That(UnityEngine.Object.FindObjectsByType<Transform>(FindObjectsInactive.Include)
                 .Any(item => item.name == "BoardVisuals_PLACEHOLDER"), Is.False);
             yield return SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
-            view = UnityEngine.Object.FindFirstObjectByType<FirstPlayableController>();
+            view = UnityEngine.Object.FindAnyObjectByType<FirstPlayableController>();
             Assert.That(view, Is.Not.Null);
             yield return BeginLevel();
             StartLegalSwap();

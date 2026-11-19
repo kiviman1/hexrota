@@ -1,0 +1,7 @@
+{
+  "baseline": "9ad3e319543522120a72572cf4edb784e84a9a8e",
+  "scope": "Remove Unity field-serialization eligibility from JSON-only runtime records. Public fields, their types and the persisted JSON contract are unchanged.",
+  "sha256": {
+    "unity/Gameplay/GameplayTypes.cs": "a074171091a550f901908c5ff584ebce44ede114890793d86052c5125978d618"
+  }
+}

@@ -28,7 +28,7 @@ namespace Hexrota.UnityClientTests
             FirstPlayableController.SessionFactory = () => new UnityGameSession(
                 ClientGameData.FromResources(), new MemoryProfileStorage(), new Clock());
             yield return SceneManager.LoadSceneAsync("FirstPlayable", LoadSceneMode.Single);
-            view = UnityEngine.Object.FindFirstObjectByType<FirstPlayableController>();
+            view = UnityEngine.Object.FindAnyObjectByType<FirstPlayableController>();
             Assert.That(view, Is.Not.Null, "Build settings must contain the checked-in gameplay scene.");
             Assert.That(view.Session, Is.Not.Null);
             yield return null;

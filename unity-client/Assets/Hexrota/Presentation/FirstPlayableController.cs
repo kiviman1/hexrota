@@ -87,7 +87,7 @@ namespace Hexrota.UnityClient.Presentation
             boardCamera.orthographic = true; boardCamera.clearFlags = CameraClearFlags.SolidColor;
             boardCamera.backgroundColor = new Color(.055f, .10f, .12f);
             boardCamera.nearClipPlane = .1f; boardCamera.farClipPlane = 100;
-            if (FindFirstObjectByType<EventSystem>() == null)
+            if (FindAnyObjectByType<EventSystem>() == null)
             {
                 var events = new GameObject("EventSystem");
                 events.transform.SetParent(transform, false);

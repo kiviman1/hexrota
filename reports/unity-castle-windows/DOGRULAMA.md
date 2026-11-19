@@ -20,6 +20,16 @@ Ayarlar, canlar, yardım, mola, yeniden başlatma onayı, çanta ve satın alma,
 
 ## Unity Editor doğrulaması
 
+### Yükleme prefabının yeniden içe aktarılması
+
+`9ad3e31` sürümünde testler geçtiği halde Editor günlüğü yükleme göstergesinin iki çocuk bağlantısı için hata kaydetmişti. Yeni EditMode testi prefabı yeniden içe aktarır ve Unity'nin o dosyaya ait içe aktarma günlüğünü kontrol eder. Unity 6000.6.9f1'de eski dosyayla aynı test iki `Transform child can't be loaded` hatasını yakaladı. Çocuk listelerindeki iki boş satır kaldırılınca aynı test geçti. [Prefab regresyon testi](../../unity-client/Assets/Hexrota/Tests/EditMode/CastleGameplayAssetTests.cs)
+
+Sıfırdan oluşturulan bir Library ile yerel projenin ayarlarında 51 EditMode testi geçti. İçe aktarma ve derleme günlüğünde bildirilen `UAC1001`, `UAC1009` ve `CS0618` uyarıları görülmedi. Kayıt testi, boş hücreler ve iki hamle içeren eski bir kaydın JSON olarak okunup aynı içerikle tekrar yazıldığını doğruladı. [Kayıt regresyon testi](../../unity-client/Assets/Hexrota/Tests/EditMode/MainResourceImportTests.cs)
+
+PR'daki ayarlarla 51 EditMode ve 63 PlayMode testi geçti. Ek bir 540×960 GameView koşusunda Oyna düğmesinden Bölüm 1 açıldı, gösterilen takas üç taşı eşleştirdi, bölüm kazanıldı ve Bölüm 2'ye geçildi. Build alınmadı.
+
+### Pencere ve tahta teslimindeki kontroller
+
 Unity 6000.6.9f1 üzerinde 49 EditMode ve 63 PlayMode testinin tamamı geçti. Düğme okunun son yerleşim ayarından sonra dört pencere testi ve iki çözünürlükteki görüntülü oyun akışı ayrıca geçti. [Editor test sonuçları](editor-tests.json)
 
 540×960 ve 360×640 GameView koşularında menüden ayarlar ve can pencereleri açılıp kapatıldı. Oyna düğmesiyle Bölüm 1 açıldı. Rehber kartının hiçbir taşın merkezini kapatmadığı kontrol edildi. İlk takas ve kazanan hamleler sürükleme girdisiyle oynandı. Bölüm 2 önizlemesinden oyuna geçildi ve hamleler tükendiğinde kurtarma penceresinin açıldığı doğrulandı. Görüntüler bu koşularda alındı.

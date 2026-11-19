@@ -29,7 +29,7 @@ namespace Hexrota.UnityClientTests
             FirstPlayableController.SessionFactory = () => new UnityGameSession(ClientGameData.FromResources(),
                 new MemoryProfileStorage(), new SystemUtcClock());
             yield return SceneManager.LoadSceneAsync("FirstPlayable");
-            game = UnityEngine.Object.FindFirstObjectByType<FirstPlayableController>();
+            game = UnityEngine.Object.FindAnyObjectByType<FirstPlayableController>();
         }
 
         private IEnumerator OpenLesson(bool reduced = false)

@@ -2,6 +2,7 @@ using System.Linq;
 using Hexrota.UnityClient.Presentation;
 using NUnit.Framework;
 using UnityEditor;
+using UnityEditor.AssetImporters;
 using UnityEngine;
 
 namespace Hexrota.UnityClientTests
@@ -39,6 +40,21 @@ namespace Hexrota.UnityClientTests
             var gear = settings.transform.Find("SettingsIcon").GetComponent<UnityEngine.UI.RawImage>();
             Assert.That(gear.texture, Is.Not.Null);
             Assert.That(gear.raycastTarget, Is.False);
+        }
+
+        [Test]
+        public void ChapterLoadingPrefabReimportsWithoutErrors()
+        {
+            const string path = "Assets/Hexrota/Resources/CastleGame/ChapterLoading.prefab";
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate | ImportAssetOptions.ForceSynchronousImport);
+            var log = AssetImporter.GetImportLog(path);
+            if (log != null)
+            {
+                var errors = log.logEntries.Where(entry => (entry.flags & ImportLogFlags.Error) != 0);
+                Assert.That(errors.Select(entry => entry.message), Is.Empty, path);
+            }
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            Assert.That(PrefabUtility.GetPrefabAssetType(prefab), Is.EqualTo(PrefabAssetType.Regular));
         }
 
         [Test]

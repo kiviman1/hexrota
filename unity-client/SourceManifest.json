@@ -101,7 +101,7 @@
     {
       "source": "unity/Gameplay/GameplayTypes.cs",
       "destination": "unity-client/Assets/Hexrota/Core/Gameplay/GameplayTypes.cs",
-      "sha256": "216c4b59d12851af1d7f34ca647c8f050d85a80cf6e7688ad8e67a75fe57e298"
+      "sha256": "a074171091a550f901908c5ff584ebce44ede114890793d86052c5125978d618"
     },
     {
       "source": "unity/Gameplay/HexMatch.ColumnFlow.cs",
