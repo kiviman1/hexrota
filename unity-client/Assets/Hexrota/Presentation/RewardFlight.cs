@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace Hexrota.UnityClient.Presentation
 {
-    public enum RewardKind { Gold, Star }
+    public enum RewardKind { Gold, GoldenEgg }
 
     [DisallowMultipleComponent]
     public sealed class RewardFlight : MonoBehaviour
@@ -77,26 +77,26 @@ namespace Hexrota.UnityClient.Presentation
         private Flight current;
         private Image burst;
         private Camera uiCamera;
-        private Target gold, star;
+        private Target gold, egg;
         private FirstPlayableController controller;
         private UnityGameSession session;
         private PhoneAudio audioPlayer;
         private Action completed;
-        private bool reduced, vibrate;
+        private bool reduced, vibrate, spending;
         private long revision;
         private float delay, elapsed, lastImpact, volume;
         private int arrivals, requestedFrame;
-        private Vector2 origin;
+        private Vector2 origin, destination;
 
         public bool IsPlaying => current != null;
         public int ActiveIconCount { get; private set; }
 
-        internal void Bind(FirstPlayableController owner, PhoneAudio audio, Target goldTarget, Target starTarget)
+        internal void Bind(FirstPlayableController owner, PhoneAudio audio, Target goldTarget, Target eggTarget)
         {
             controller = owner;
             audioPlayer = audio;
             gold = goldTarget;
-            star = starTarget;
+            egg = eggTarget;
             Canvas canvas = GetComponentInParent<Canvas>().rootCanvas;
             uiCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
             for (int i = 0; i < pool.Length; i++) pool[i] = CreateImage("RewardIcon", ui.rewardIconSize);
@@ -148,15 +148,15 @@ namespace Hexrota.UnityClient.Presentation
             if (activeSession != null)
             {
                 var wallet = activeSession.ReadPhoneWallet();
-                if (Start(kind == RewardKind.Star ? amount : 0, kind == RewardKind.Gold ? amount : 0,
+                if (Start(kind == RewardKind.GoldenEgg ? amount : 0, kind == RewardKind.Gold ? amount : 0,
                     fromScreenPoint, wallet, 0, onComplete)) return;
             }
             onComplete?.Invoke();
         }
 
-        internal void PlayWin(Vector2 source, int stars, int coins, UnityGameSession.PhoneWallet wallet)
+        internal void PlayWin(Vector2 source, int eggs, int coins, UnityGameSession.PhoneWallet wallet)
         {
-            Start(stars, coins, source, wallet, motion.rewardStartDelay, null);
+            Start(eggs, coins, source, wallet, motion.rewardStartDelay, null);
         }
 
 #if UNITY_EDITOR
@@ -168,10 +168,10 @@ namespace Hexrota.UnityClient.Presentation
         }
 #endif
 
-        private bool Start(int stars, int coins, Vector2 source, UnityGameSession.PhoneWallet wallet,
+        private bool Start(int eggs, int coins, Vector2 source, UnityGameSession.PhoneWallet wallet,
             float startDelay, Action callback, bool preview = false)
         {
-            if (stars <= 0 && coins <= 0) return false;
+            if (eggs <= 0 && coins <= 0) return false;
             Cancel(wallet);
             if (!isActiveAndEnabled || !attention.TryAcquire(AttentionKind.RewardFlight, this))
             {
@@ -182,6 +182,7 @@ namespace Hexrota.UnityClient.Presentation
             session = controller.Session;
             revision = session.Revision;
             reduced = session.ReducedMotion;
+            spending = false;
             bool sound = session.SoundEnabled;
             volume = sound ? session.Volume : 0;
             vibrate = motion.arrivalHapticMs > 0 && session.HapticsEnabled;
@@ -189,10 +190,10 @@ namespace Hexrota.UnityClient.Presentation
 
             RectTransformUtility.ScreenPointToLocalPointInRectangle(flightLayer, source, uiCamera, out origin);
             int pitch = 0;
-            Prepare(first, stars > 0 ? star : gold, stars > 0 ? wallet.Stars : wallet.Gold,
-                stars > 0 ? stars : coins, sound, preview, ref pitch);
+            Prepare(first, eggs > 0 ? egg : gold, eggs > 0 ? wallet.GoldenEggs : wallet.Gold,
+                eggs > 0 ? eggs : coins, sound, preview, ref pitch);
             second.Count = 0;
-            if (stars > 0 && coins > 0) Prepare(second, gold, wallet.Gold, coins, sound, preview, ref pitch);
+            if (eggs > 0 && coins > 0) Prepare(second, gold, wallet.Gold, coins, sound, preview, ref pitch);
             completed = callback;
             delay = startDelay;
             requestedFrame = Time.frameCount;
@@ -202,17 +203,54 @@ namespace Hexrota.UnityClient.Presentation
             return true;
         }
 
-        private void Prepare(Flight flight, Target target, int balance, int amount, bool sound, bool preview, ref int pitch)
+        /// <summary>
+        /// Reverse flight: Golden Eggs leave the counter for a point on screen (the coop). The counter
+        /// starts at <paramref name="balanceAfter"/> + <paramref name="amount"/> and drops on every arrival.
+        /// </summary>
+        internal bool PlaySpend(Vector2 toScreenPoint, int amount, int balanceAfter, Action onComplete)
         {
-            flight.Target = target;
-            bool hasTarget = target.Sprite != null && target.TryGetCenter(uiCamera, out _);
-            flight.Count = hasTarget ? (reduced ? 1 : IconCount(amount)) : 0;
-            flight.FinalText = Format(balance);
-            int displayed = Mathf.Max(0, balance - amount);
-            int destination = preview && amount > balance ? amount : balance;
-            flight.StartText = Format(displayed);
+            if (amount <= 0 || controller == null || controller.Session == null) return false;
+            Cancel();
+            if (!isActiveAndEnabled || !attention.TryAcquire(AttentionKind.RewardFlight, this)) return false;
+            session = controller.Session;
+            revision = session.Revision;
+            reduced = session.ReducedMotion;
+            spending = true;
+            vibrate = false;
+            bool sound = session.SoundEnabled;
+            volume = sound ? session.Volume : 0;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(flightLayer, toScreenPoint, uiCamera, out destination);
+
+            var flight = first;
+            flight.Target = egg;
+            bool hasSource = egg.Sprite != null && egg.TryGetCenter(uiCamera, out _);
+            flight.Count = hasSource ? (reduced ? 1 : IconCount(amount)) : 0;
+            flight.StartText = Format(balanceAfter + amount);
+            flight.FinalText = Format(balanceAfter);
             FillShares(amount, flight.Shares, flight.Count);
+            PlanPaths(flight);
+            int displayed = balanceAfter + amount, pitch = 0;
             var cue = sound ? new RewardCue { reason = "home_reward" } : null;
+            for (int i = 0; i < flight.Count; i++)
+            {
+                displayed -= flight.Shares[flight.ArrivalOrder[i]];
+                flight.ArrivalText[i] = Format(Mathf.Max(balanceAfter, displayed));
+                if (sound) { cue.pitchStep = pitch++; cue.tier = 0; cue.completion = false; }
+                flight.Notes[i] = sound ? audioPlayer.PrepareHomeReward(cue, volume) : null;
+            }
+            egg.Show(flight.Count > 0 ? flight.StartText : flight.FinalText);
+            second.Count = 0;
+            completed = onComplete;
+            delay = 0;
+            requestedFrame = Time.frameCount;
+            Begin(first);
+            AdvancePastMissingTargets();
+            if (current != null) Animate(0);
+            return true;
+        }
+
+        private void PlanPaths(Flight flight)
+        {
             for (int i = 0; i < flight.Count; i++)
             {
                 flight.Paths[i] = new IconPath
@@ -229,6 +267,20 @@ namespace Hexrota.UnityClient.Presentation
                 }
                 flight.ArrivalOrder[previous + 1] = i;
             }
+        }
+
+        private void Prepare(Flight flight, Target target, int balance, int amount, bool sound, bool preview, ref int pitch)
+        {
+            flight.Target = target;
+            bool hasTarget = target.Sprite != null && target.TryGetCenter(uiCamera, out _);
+            flight.Count = hasTarget ? (reduced ? 1 : IconCount(amount)) : 0;
+            flight.FinalText = Format(balance);
+            int displayed = Mathf.Max(0, balance - amount);
+            int destination = preview && amount > balance ? amount : balance;
+            flight.StartText = Format(displayed);
+            FillShares(amount, flight.Shares, flight.Count);
+            var cue = sound ? new RewardCue { reason = "home_reward" } : null;
+            PlanPaths(flight);
             for (int i = 0; i < flight.Count; i++)
             {
                 int index = flight.ArrivalOrder[i];
@@ -283,13 +335,15 @@ namespace Hexrota.UnityClient.Presentation
             using (Animation.Auto())
             {
                 if (!current.Target.TryGetCenter(uiCamera, out Vector2 screenTarget) ||
-                    !RectTransformUtility.ScreenPointToLocalPointInRectangle(flightLayer, screenTarget, uiCamera, out Vector2 end))
+                    !RectTransformUtility.ScreenPointToLocalPointInRectangle(flightLayer, screenTarget, uiCamera, out Vector2 end) ||
+                    spending && !RectTransformUtility.ScreenPointToLocalPointInRectangle(flightLayer, screenTarget, uiCamera, out origin))
                 {
                     FinishCurrent();
                     AdvancePastMissingTargets();
                     return;
                 }
 
+                if (spending) end = destination;
                 elapsed += delta;
                 MoveIcons(end);
                 ApplyArrivals();
@@ -407,7 +461,7 @@ namespace Hexrota.UnityClient.Presentation
         private void ShowWallet(UnityGameSession.PhoneWallet wallet)
         {
             gold.Show(Format(wallet.Gold));
-            star.Show(Format(wallet.Stars));
+            egg.Show(Format(wallet.GoldenEggs));
         }
 
         private void ResetVisuals()

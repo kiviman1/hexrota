@@ -24,7 +24,7 @@ namespace Hexrota.UnityClient
         }
         public sealed class EarnedResult
         {
-            public int Gold,Stars,WelcomeGold;
+            public int Gold,GoldenEggs,WelcomeGold;
             public bool Welcome,Assisted;
             public string Gift,Headline;
         }
@@ -42,7 +42,7 @@ namespace Hexrota.UnityClient
                         earned.Gold+=earned.WelcomeGold;break;
                     case "clear":
                         earned.Gold+=W.Int32(W.Required(data.EconomyConfig["reward"],"gold"));
-                        earned.Stars=W.Int32(W.Required(data.EconomyConfig["reward"],"stars"));
+                        earned.GoldenEggs=W.Int32(W.Required(data.EconomyConfig["reward"],"stars"));
                         earned.Assisted=W.Equal(W.Get(row,"assisted"),true);break;
                     case "gift":
                         string item=(string)W.Required(row,"itemId");
@@ -58,13 +58,13 @@ namespace Hexrota.UnityClient
         public sealed class BotanicalMilestone
         {
             public string Id;
-            public int Stars;
+            public int Eggs;
             public bool Unlocked;
         }
         public BotanicalMilestone[] GardenMilestones()
         {
             return W.List(controller.EconomyView["botanical"]).Select(e=>new BotanicalMilestone{
-                Id=(string)W.Required(e,"id"),Stars=W.Int32(W.Required(e,"stars")),Unlocked=W.Equal(W.Required(e,"unlocked"),true)
+                Id=(string)W.Required(e,"id"),Eggs=W.Int32(W.Required(e,"stars")),Unlocked=W.Equal(W.Required(e,"unlocked"),true)
             }).ToArray();
         }
 

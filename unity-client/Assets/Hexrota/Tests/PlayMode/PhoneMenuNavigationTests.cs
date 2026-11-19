@@ -84,10 +84,8 @@ namespace Hexrota.UnityClientTests
             Assert.That(controller.CurrentScreen, Is.EqualTo("settings"));
             ButtonNamed("Kapat").onClick.Invoke();
             yield return null;
-            TapHomeButton("GardenButton");
-            Assert.That(controller.CurrentScreen, Is.EqualTo("garden"));
-            ButtonNamed("Ana menü").onClick.Invoke();
-            yield return null;
+            Assert.That(home.GetComponentsInChildren<Button>(true).Single(button => button.name == "GardenButton")
+                .gameObject.activeInHierarchy, Is.False, "The garden is not a home entry in the single coop loop.");
             TapHomeButton("RecordsButton");
             Assert.That(controller.CurrentScreen, Is.EqualTo("records"));
             ButtonNamed("Ana menü").onClick.Invoke();

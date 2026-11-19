@@ -181,7 +181,7 @@ namespace Hexrota.UnityClient.Presentation
         private void ConfirmOpenReset()
         {
             int charge=Session.ResetCharge;
-            string copy="Açık denemelerin silinecek. Tamamlanan bölümler, Altın, yıldızlar ve envanter korunur.";
+            string copy="Açık denemelerin silinecek. Tamamlanan bölümler, Altın, Altın Yumurtalar ve envanter korunur.";
             if(charge>0)copy+=" Oynanmış açık denemeleri silmek "+charge+" can harcar.";
             OptionsPanel("reset","Baştan başlayalım mı?","",copy,365,365);
             OptionButton("Evet, ilerlemeyi sıfırla",18,205,316,46,()=>{
@@ -195,7 +195,7 @@ namespace Hexrota.UnityClient.Presentation
         private void ConfirmFullReset()
         {
             OptionsPanel("test-reset","Her şey sıfırlansın mı?","GELİŞTİRME TESTİ",
-                "Bu cihazdaki bölümler, öğreticiler, Altın, yıldızlar, çanta, canlar ve TEST işlemleri silinir. Bu işlem geri alınamaz.",365,365);
+                "Bu cihazdaki bölümler, öğreticiler, Altın, Altın Yumurtalar, kümes, çanta, canlar ve TEST işlemleri silinir. Bu işlem geri alınamaz.",365,365);
             OptionButton("Evet, her şeyi sıfırla",18,205,316,46,()=>{
                 if(Session.ResetForDevelopmentTest())CloseOptionsToHome();
                 else OptionText("Failure","Sıfırlama kaydedilemedi. Tekrar deneyebilirsin.",18,312,316,28,12);

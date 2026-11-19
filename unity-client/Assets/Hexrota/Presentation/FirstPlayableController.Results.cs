@@ -62,7 +62,7 @@ namespace Hexrota.UnityClient.Presentation
                 final?"10 bölümün hepsini bitirdin!":board.movesLeft+" hamlen kaldı. Bölümü bitirdin!";
             int assisted=result.Assisted?32:0,gift=result.Gift!=null?24:0;
             int welcome=result.WelcomeGold>0?24:0;
-            int rewardHeight=result.Stars>0?82+gift+welcome:0;
+            int rewardHeight=result.GoldenEggs>0?82+gift+welcome:0;
             int rewardsY=262+assisted;
             int nextY=rewardsY+rewardHeight+13;
             ShowPhoneSheet(title,description,final?"YOLCULUK TAMAMLANDI":Session.StageLabel(Session.ActiveStage)+" TAMAMLANDI",
@@ -74,10 +74,10 @@ namespace Hexrota.UnityClient.Presentation
             if(tutorial){SheetButton(next,38,191,284,48,ContinueAfterWin,SheetStyle.Primary,"arrow");return;}
             if(result.Assisted) SheetText("AssistedClear","Güçlendirici kullanarak tamamladın.",22,173,316,24,12,SheetInk,TextAnchor.MiddleCenter);
             ResultStats(new[]{"TOPLAM PUAN","KALAN HAMLE","YEŞİL ALAN"},new[]{board.score.ToString(),board.movesLeft.ToString(),"%100"},176+assisted);
-            if(result.Stars>0)
+            if(result.GoldenEggs>0)
             {
                 SheetPlate("EarnedRewards",22,rewardsY,316,rewardHeight,0x7650a6,0x51347b,0xdfb579,18);
-                SheetText("Earned","+"+result.Gold+" Altın     +"+result.Stars+" yıldız",28,rewardsY+9,304,30,19,sheetChrome.Gold,TextAnchor.MiddleCenter,true);
+                SheetText("Earned","+"+result.Gold+" Altın     +"+result.GoldenEggs+" Altın Yumurta",28,rewardsY+9,304,30,19,sheetChrome.Gold,TextAnchor.MiddleCenter,true);
                 if(result.Gift!=null) SheetText("Gift",result.Gift,28,rewardsY+40,304,24,13,sheetChrome.Paper,TextAnchor.MiddleCenter,true);
                 if(welcome>0) SheetText("WelcomeIncluded","Bu ödüle "+result.WelcomeGold+" Altın başlangıç hediyen dahil.",28,rewardsY+40+gift,304,24,13,sheetChrome.Paper,TextAnchor.MiddleCenter);
                 SheetText("ResultSaved","Bu bölüm tamamlandı. Ödülün ve ilerlemen kaydedildi.",28,rewardsY+43+gift+welcome,304,25,11,sheetChrome.Paper,TextAnchor.MiddleCenter);

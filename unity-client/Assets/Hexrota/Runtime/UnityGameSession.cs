@@ -150,7 +150,7 @@ namespace Hexrota.UnityClient
             {
                 var economy = controller.EconomyView;
                 var life = W.Map(controller.View()["life"]);
-                return "Can " + life["lives"] + "/" + life["maxLives"] + "     Altın " + economy["gold"] + "     Yıldız " + economy["stars"];
+                return "Can " + life["lives"] + "/" + life["maxLives"] + "     Altın " + economy["gold"] + "     Altın Yumurta " + economy["stars"];
             }
         }
         public int ClearedCount { get { return W.List(controller.EconomyView["cleared"]).Count; } }
@@ -207,7 +207,7 @@ namespace Hexrota.UnityClient
             {
                 var names = new[] { "Çiçekler", "Bitkiler", "Ağaçlar", "Tam bahçe" };
                 return string.Join("\n", W.List(controller.EconomyView["botanical"]).Select((entry, i) =>
-                    names[i] + "   " + W.Get(entry, "stars") + " yıldız   " +
+                    names[i] + "   " + W.Get(entry, "stars") + " Altın Yumurta   " +
                     (W.Equal(W.Get(entry, "unlocked"), true) ? "Açık" : "Kilitli")).ToArray());
             }
         }
@@ -247,19 +247,21 @@ namespace Hexrota.UnityClient
             }
         }
         public UnityGameSession(ClientGameData data, IProfileStorage storage, IUtcClock clock, uint selectionSeed = 4303818,
-            Func<long> playtestMilliseconds = null)
+            Func<long> playtestMilliseconds = null, CoopRules coop = null)
         {
             if (data == null) throw new ArgumentNullException("data");
             this.data = data;
+            profileStorage = storage;
+            coopRules = coop; // the Unity layer supplies these from the CoopConfig asset
             controller = new GameSessionController(data.Catalog, data.Levels, data.TutorialCount,
                 new ProfileRepository(storage), data.LifeConfig, clock, selectionSeed,
                 "hexrota-unity-test", data.RewardRules, economyConfig: data.EconomyConfig,
                 rescueReceiptVerifier: new Hexrota.Rescue.DevelopmentRescueReceiptVerifier(), onboardingInFirstChapter: true);
             StartPlaytestObservation(storage, clock, playtestMilliseconds);
         }
-        public static UnityGameSession CreateDefault()
+        public static UnityGameSession CreateDefault(CoopRules coop = null)
         {
-            return new UnityGameSession(ClientGameData.FromResources(), PlatformProfileStorage.Create(), new SystemUtcClock());
+            return new UnityGameSession(ClientGameData.FromResources(), PlatformProfileStorage.Create(), new SystemUtcClock(), coop: coop);
         }
         private SessionCommand Command()
         {

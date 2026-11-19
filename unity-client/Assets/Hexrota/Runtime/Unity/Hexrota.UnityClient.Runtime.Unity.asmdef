@@ -1,0 +1,6 @@
+{
+  "name": "Hexrota.UnityClient.Runtime.Unity",
+  "rootNamespace": "Hexrota.UnityClient",
+  "references": ["Hexrota.UnityClient.Runtime"],
+  "autoReferenced": true
+}

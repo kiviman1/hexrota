@@ -46,7 +46,7 @@ namespace Hexrota.UnityClientTests
             Assert.That(restored.NextStage, Is.EqualTo(restored.TutorialCount));
             Assert.That(restored.IsStageComplete(0) && restored.IsStageComplete(1), Is.True);
             Assert.That(restored.ReadPhoneWallet().Gold, Is.EqualTo(wallet.Gold));
-            Assert.That(restored.ReadPhoneWallet().Stars, Is.EqualTo(wallet.Stars));
+            Assert.That(restored.ReadPhoneWallet().GoldenEggs, Is.EqualTo(wallet.GoldenEggs));
         }
     }
 }

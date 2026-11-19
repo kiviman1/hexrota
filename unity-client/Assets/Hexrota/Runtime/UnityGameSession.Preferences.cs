@@ -33,6 +33,7 @@ namespace Hexrota.UnityClient
         public bool ResetForDevelopmentTest()
         {
             if (!Apply(() => controller.ResetForDevelopmentTest(true, Command()))) return false;
+            ResetCoop();
             ClearPlaytestData(true);
             CancelPresentation();
             inGame = false;

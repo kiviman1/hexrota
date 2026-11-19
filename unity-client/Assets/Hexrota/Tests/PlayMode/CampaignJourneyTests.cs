@@ -95,7 +95,7 @@ namespace Hexrota.UnityClientTests
             Assert.That(controller.Session.Status, Is.EqualTo("won"));
             Assert.That(controller.Session.IsStageComplete(first), Is.True);
             var wallet = controller.Session.ReadPhoneWallet();
-            Assert.That(wallet.Stars, Is.Positive);
+            Assert.That(wallet.GoldenEggs, Is.Positive);
             Assert.That(wallet.Gold, Is.Positive);
 
             Click("Bölüm 02 ile devam et");
