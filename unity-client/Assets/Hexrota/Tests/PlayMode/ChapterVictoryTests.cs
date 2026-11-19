@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Globalization;
 using System.Linq;
 using Hexrota.Application;
 using Hexrota.UnityClient;
@@ -116,5 +117,150 @@ namespace Hexrota.UnityClientTests
             yield return new WaitForSecondsRealtime(1.1f);
             Assert.That(game.CurrentScreen, Is.EqualTo("menu"));
         }
+
+        [UnityTest]
+        public IEnumerator VerifiedWinReturnsWithStarBeforeGoldAndGlidesToTheSavedWallet()
+        {
+            yield return Win("reduce");
+            var earned = session.ReadEarnedResult();
+            var wallet = session.ReadPhoneWallet();
+            Assert.That(earned.Gold, Is.Positive);
+            Assert.That(earned.Stars, Is.Positive);
+            float resultBy = Time.unscaledTime + 2;
+            while (game.CurrentScreen == "celebration" && Time.unscaledTime < resultBy) yield return null;
+            Assert.That(game.CurrentScreen, Is.EqualTo("result"));
+            game.GetComponentsInChildren<Button>().Single(button => button.name == "Ana menü").onClick.Invoke();
+
+            var flight = game.GetComponentInChildren<RewardFlight>();
+            var gold = Counter("GoldValue");
+            var star = Counter("StarValue");
+            Assert.That(flight.IsPlaying, Is.True);
+            Assert.That(flight.ActiveIconCount, Is.Zero, "The sequence starts after the return delay.");
+            Assert.That(gold.text, Is.EqualTo(Turkish(wallet.Gold - earned.Gold)));
+            Assert.That(star.text, Is.EqualTo(Turkish(wallet.Stars - earned.Stars)));
+            float deadline = Time.unscaledTime + 2;
+            while (flight.ActiveIconCount == 0 && flight.IsPlaying && Time.unscaledTime < deadline) yield return null;
+            Assert.That(flight.ActiveIconCount, Is.EqualTo(1));
+            string finalStars = Turkish(wallet.Stars);
+            while (star.text != finalStars && flight.IsPlaying && Time.unscaledTime < deadline) yield return null;
+            Assert.That(star.text, Is.EqualTo(finalStars));
+            Assert.That(flight.IsPlaying, Is.True, "Gold is still in the sequence when the star is credited.");
+            Assert.That(gold.text, Is.EqualTo(Turkish(wallet.Gold - earned.Gold)));
+            yield return WaitForFlight(flight);
+            Assert.That(gold.text, Is.EqualTo(Turkish(wallet.Gold)));
+
+            game.ReturnToMenu();
+            Assert.That(flight.IsPlaying, Is.False, "The same verified win must only be presented once.");
+            Assert.That(session.ReadPhoneWallet().Gold, Is.EqualTo(wallet.Gold));
+        }
+
+        [UnityTest]
+        public IEnumerator GoldTwentyCountsUpWithNoPoolLeakAndReconcilesIfInterrupted()
+        {
+            yield return Win("reduce");
+            game.ReturnToMenu();
+            game.OnWebVisibilityChanged("hidden");
+            Assert.That(session.SetPreferences(motion: "full"), Is.True);
+            var flight = game.GetComponentInChildren<RewardFlight>();
+            var gold = Counter("GoldValue");
+            var wallet = session.ReadPhoneWallet();
+            Assert.That(wallet.Gold, Is.GreaterThanOrEqualTo(20));
+            bool completed = false;
+            flight.Play(RewardKind.Gold, PlayCenter(), 20, () => completed = true);
+            string old = Turkish(wallet.Gold - 20);
+            string final = Turkish(wallet.Gold);
+            Assert.That(gold.text, Is.EqualTo(old));
+            bool sawPartialCredit = false;
+            int peak = 0;
+            float deadline = Time.unscaledTime + 3;
+            while (flight.IsPlaying && Time.unscaledTime < deadline)
+            {
+                sawPartialCredit |= gold.text != old && gold.text != final;
+                peak = Mathf.Max(peak, flight.ActiveIconCount);
+                yield return null;
+            }
+            Assert.That(completed && sawPartialCredit, Is.True);
+            Assert.That(peak, Is.EqualTo(8));
+            Assert.That(flight.ActiveIconCount, Is.Zero);
+            Assert.That(flight.GetComponentsInChildren<Image>(true).Count(icon => icon.name == "RewardIcon"), Is.EqualTo(8));
+            Assert.That(flight.GetComponentsInChildren<Image>().Any(icon => icon.name == "RewardIcon"), Is.False);
+            Assert.That(gold.text, Is.EqualTo(final));
+
+            flight.Play(RewardKind.Gold, PlayCenter(), 20);
+            Assert.That(gold.text, Is.EqualTo(old));
+            game.OnWebVisibilityChanged("hidden");
+            Assert.That(flight.IsPlaying, Is.False);
+            Assert.That(flight.ActiveIconCount, Is.Zero);
+            Assert.That(gold.text, Is.EqualTo(final));
+
+            gold.transform.parent.Find("Coin").gameObject.SetActive(false);
+            completed = false;
+            flight.Play(RewardKind.Gold, PlayCenter(), 20, () => completed = true);
+            Assert.That(completed, Is.True);
+            Assert.That(flight.IsPlaying, Is.False);
+            Assert.That(gold.text, Is.EqualTo(final));
+        }
+
+        [UnityTest]
+        public IEnumerator ReducedFlightUsesOneIconAndCompletesWithinPointThreeFiveSeconds()
+        {
+            yield return Win("reduce");
+            game.ReturnToMenu();
+            game.OnWebVisibilityChanged("hidden");
+            var flight = game.GetComponentInChildren<RewardFlight>();
+            float started = Time.unscaledTime;
+            float finished = -1;
+            flight.Play(RewardKind.Gold, PlayCenter(), 20, () => finished = Time.unscaledTime);
+            Assert.That(flight.ActiveIconCount, Is.EqualTo(1));
+            while (flight.IsPlaying && Time.unscaledTime - started < 1)
+            {
+                Assert.That(flight.ActiveIconCount, Is.EqualTo(1));
+                yield return null;
+            }
+            Assert.That(finished - started, Is.InRange(.27f, .35f));
+            Assert.That(flight.ActiveIconCount, Is.Zero);
+            Assert.That(Counter("GoldValue").text, Is.EqualTo(Turkish(session.ReadPhoneWallet().Gold)));
+        }
+
+        [UnityTest]
+        public IEnumerator FlightPreemptsAndThenResumesTheHomePlayShine()
+        {
+            Assert.That(session.SetPreferences(motion: "full"), Is.True);
+            var flight = game.GetComponentInChildren<RewardFlight>();
+            var play = game.GetComponentInChildren<HomePlayButton>();
+            float deadline = Time.unscaledTime + 6;
+            while (!play.IsShining && Time.unscaledTime < deadline) yield return null;
+            Assert.That(play.IsShining, Is.True);
+
+            flight.Play(RewardKind.Gold, PlayCenter(), 20);
+            Assert.That(flight.IsPlaying, Is.True);
+            deadline = Time.unscaledTime + 3;
+            while (flight.IsPlaying && Time.unscaledTime < deadline)
+            {
+                Assert.That(play.IsShining, Is.False);
+                yield return null;
+            }
+            Assert.That(flight.IsPlaying, Is.False);
+            Assert.That(play.IsShining, Is.True);
+        }
+
+        private Text Counter(string name) => game.GetComponentInChildren<CastleHomeView>()
+            .GetComponentsInChildren<Text>().Single(label => label.name == name);
+
+        private Vector2 PlayCenter()
+        {
+            var rect = (RectTransform)game.GetComponentInChildren<HomePlayButton>().transform;
+            return RectTransformUtility.WorldToScreenPoint(null, rect.TransformPoint(rect.rect.center));
+        }
+
+        private static IEnumerator WaitForFlight(RewardFlight flight)
+        {
+            float deadline = Time.unscaledTime + 3;
+            while (flight.IsPlaying && Time.unscaledTime < deadline) yield return null;
+            Assert.That(flight.IsPlaying, Is.False);
+            Assert.That(flight.ActiveIconCount, Is.Zero);
+        }
+
+        private static string Turkish(int number) => number.ToString("N0", CultureInfo.GetCultureInfo("tr-TR"));
     }
 }

@@ -1,0 +1,29 @@
+fileFormatVersion: 2
+guid: 64db2eea11dd537a809a27a3d60ff37b
+PluginImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  iconMap: {}
+  executionOrder: {}
+  defineConstraints: []
+  isPreloaded: 0
+  isOverridable: 0
+  isExplicitlyReferenced: 0
+  validateReferences: 1
+  platformData:
+  - first:
+      Any:
+    second:
+      enabled: 0
+      settings: {}
+  - first:
+      iPhone: iOS
+    second:
+      enabled: 1
+      settings:
+        AddToEmbeddedBinaries: false
+        CompileFlags: -fobjc-arc
+        FrameworkDependencies: CoreHaptics;
+  userData:
+  assetBundleName:
+  assetBundleVariant:
