@@ -113,7 +113,7 @@ namespace Hexrota.UnityClientTests
         }
 
         [UnityTest]
-        public IEnumerator LevelOneShowsTintedStonesAndLabelsAndCompletesASwap()
+        public IEnumerator LevelOneShowsTintedNumberedStonesAndCompletesASwap()
         {
             yield return BeginLevel();
             yield return null;
@@ -124,11 +124,9 @@ namespace Hexrota.UnityClientTests
                 var stone = world.Find("Stone_" + i);
                 Assert.That(stone, Is.Not.Null, "Every logical cell needs its stone container.");
                 Assert.That(stone.gameObject.activeSelf, Is.EqualTo(snapshot.values[i].HasValue));
-                var label = stone.GetComponentInChildren<TextMesh>(true);
-                Assert.That(label, Is.Not.Null);
-                Assert.That(label.text, Is.EqualTo(snapshot.values[i].HasValue ? snapshot.values[i].Value.ToString() : ""));
                 if (snapshot.values[i].HasValue)
                 {
+                    StoneArtAssertions.ShowsNumber(stone, snapshot.values[i].Value);
                     AssertTinted(stone.gameObject);
                     Vector3 viewport = view.Board.BoardCamera.WorldToViewportPoint(stone.position);
                     Assert.That(viewport.x, Is.InRange(0f, 1f));

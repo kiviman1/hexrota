@@ -55,18 +55,11 @@ namespace Hexrota.UnityClientTests
             Assert.That(labels.Single(label => label.name == "Counters").text, Is.EqualTo(snapshot.score + " / " + game.Session.Level.target));
             Assert.That(labels.Single(label => label.name == "GroundCount").text, Is.EqualTo(snapshot.layers.Count(layer => layer == 0) + " / " + snapshot.layers.Length));
             Assert.That(labels.Any(label => label.name == "StageTag" || label.name == "LevelTitle"), Is.False);
-            string[] stones = { "Purple", "Yellow", "LightRed", "Turquoise", "Orange" };
             for (int i = 0; i < snapshot.values.Length; i++)
             {
                 var stone = GameObject.Find("Stone_" + i);
-                var digit = stone.GetComponentInChildren<TextMesh>();
                 Assert.That(snapshot.values[i].HasValue, Is.True, stone.name);
-                Assert.That(digit.text, Is.EqualTo(snapshot.values[i].ToString()), stone.name);
-                var stoneModel = stone.transform.Find("Model");
-                Assert.That(stoneModel, Is.Not.Null, stone.name);
-                Assert.That(stoneModel.GetComponent<MeshFilter>().sharedMesh, Is.Not.Null, stone.name);
-                Assert.That(stoneModel.GetComponent<MeshRenderer>().sharedMaterial.mainTexture.name,
-                    Does.Contain(stones[snapshot.values[i].Value - 1]), stone.name);
+                StoneArtAssertions.ShowsNumber(stone.transform, snapshot.values[i].Value);
                 var ground = GameObject.Find("Ground_" + i);
                 var floor = ground.transform.Find("Model").GetComponent<MeshRenderer>();
                 string state = snapshot.layers[i] == 0 ? "Green" :

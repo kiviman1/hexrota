@@ -156,8 +156,8 @@ namespace Hexrota.UnityClientTests
                 var block = new MaterialPropertyBlock();
                 board.WaveProgress += (frame, ordinal, progress) => {
                     if (!top.gameObject.activeSelf) return;
-                    var digit = top.GetComponentInChildren<TextMesh>().GetComponent<Renderer>();
-                    digit.GetPropertyBlock(block);
+                    var surface = top.Find("Model").GetComponent<MeshRenderer>();
+                    surface.GetPropertyBlock(block);
                     if (Mathf.Abs(block.GetFloat("_SpawnCeiling") - ceiling) > .001f) return;
                     seenInFlight = true;
                     stacked |= Mathf.Abs(top.position.y - bottom.position.y - row) > .001f;

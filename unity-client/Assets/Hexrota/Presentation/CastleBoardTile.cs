@@ -3,8 +3,7 @@ using UnityEngine;
 
 namespace Hexrota.UnityClient.Presentation
 {
-    // Swap the artwork on an existing renderer so falls, hints and selection
-    // continue to address the same animated stone and its independent number.
+    // Keep the renderer stable when a refill changes the cell's artwork.
     [DisallowMultipleComponent]
     public sealed class CastleBoardTile : MonoBehaviour
     {
@@ -17,6 +16,8 @@ namespace Hexrota.UnityClient.Presentation
 
         [SerializeField] private MeshFilter model;
         [SerializeField] private MeshRenderer surface;
+        [SerializeField] private bool numberInMesh;
+        internal bool NumberInMesh => numberInMesh;
         [Tooltip("Stones use values 1–5 in order. Floors use soil, partly cleared, then green.")]
         [SerializeField] private Variant[] variants;
 

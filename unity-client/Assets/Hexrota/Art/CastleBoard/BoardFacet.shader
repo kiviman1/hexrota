@@ -4,6 +4,7 @@ Shader "Hexrota/Castle Board Facet"
     {
         _MainTex ("Base color", 2D) = "white" {}
         _Pigment ("Surface tint", Color) = (1,1,1,1)
+        [Toggle] _VertexPigment ("Use FBX material colors", Float) = 0
         _Color ("Highlight tint", Color) = (1,1,1,1)
         _Lustre ("Bevel glint", Range(0,1)) = 0.32
         _GuideOpacity ("Lesson focus opacity", Range(0,1)) = 1
@@ -29,9 +30,9 @@ Shader "Hexrota/Castle Board Facet"
             fixed4 _Pigment, _Color;
             half _MotionOpacity, _MotionFlash;
             float _SpawnCeiling;
-            half _Lustre, _GuideOpacity, _GuideCutout, _FloorMark, _IdleOutline, _IdleSheen;
-            struct VertexData { float4 vertex : POSITION; float3 normal : NORMAL; float2 uv : TEXCOORD0; };
-            struct FragmentData { float4 pos : SV_POSITION; half3 normal : TEXCOORD0; float2 uv : TEXCOORD1; float2 plane : TEXCOORD2; float worldY : TEXCOORD3; };
+            half _Lustre, _GuideOpacity, _GuideCutout, _FloorMark, _IdleOutline, _IdleSheen, _VertexPigment;
+            struct VertexData { float4 vertex : POSITION; float3 normal : NORMAL; float2 uv : TEXCOORD0; fixed4 color : COLOR; };
+            struct FragmentData { float4 pos : SV_POSITION; half3 normal : TEXCOORD0; float2 uv : TEXCOORD1; float2 plane : TEXCOORD2; float worldY : TEXCOORD3; half3 pigment : TEXCOORD4; };
             FragmentData vert(VertexData v)
             {
                 FragmentData o;
@@ -40,6 +41,11 @@ Shader "Hexrota/Castle Board Facet"
                 o.uv = v.uv;
                 o.plane = v.vertex.xz;
                 o.worldY = mul(unity_ObjectToWorld, v.vertex).y;
+                half3 pigment = v.color.rgb;
+                #ifdef UNITY_COLORSPACE_GAMMA
+                pigment = LinearToGammaSpace(pigment);
+                #endif
+                o.pigment = lerp(half3(1,1,1), pigment, _VertexPigment);
                 return o;
             }
             half segmentDistance(float2 p, float2 a, float2 b)
@@ -57,7 +63,7 @@ Shader "Hexrota/Castle Board Facet"
                 half3 n = normalize(i.normal);
                 half3 light = normalize(half3(-.43,.58,-.70));
                 half3 halfway = normalize(light + half3(0,0,-1));
-                half3 base = tex2D(_MainTex,i.uv).rgb * _Pigment.rgb * _Color.rgb;
+                half3 base = tex2D(_MainTex,i.uv).rgb * i.pigment * _Pigment.rgb * _Color.rgb;
                 half3 lit = base * (.76 + .28*saturate(dot(n,light)));
                 lit += _Lustre * pow(saturate(dot(n,halfway)),30) * half3(1,.92,.74);
                 lit = lerp(lit,half3(1,.93,.60),

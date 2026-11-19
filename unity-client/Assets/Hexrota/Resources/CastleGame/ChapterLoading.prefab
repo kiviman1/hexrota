@@ -824,7 +824,6 @@ GameObject:
   - component: {fileID: 101101}
   - component: {fileID: 101102}
   - component: {fileID: 101103}
-  - component: {fileID: 101105}
   m_Layer: 5
   m_Name: YellowStone1
   m_TagString: Untagged
@@ -880,9 +879,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 7bc1eeba20fc4af286e8e7533eeecd9a, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -890,27 +889,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &101105
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 101100}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8110d22ba2dcf5ccf7c0f215e39595d2, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  shape: 4
-  radius: 0
-  rim: 7
-  depth: 5
-  upperFace: {r: 1, g: 0.9451, b: 0.56078, a: 1}
-  lowerFace: {r: 0.98039, g: 0.74118, b: 0.31765, a: 1}
-  upperRim: {r: 1, g: 0.96471, b: 0.69804, a: 1}
-  lowerRim: {r: 0.85098, g: 0.60784, b: 0.24314, a: 1}
-  lowerEdge: {r: 0.45098, g: 0.34118, b: 0.19216, a: 1}
 --- !u!1 &101200
 GameObject:
   m_ObjectHideFlags: 0
@@ -922,6 +900,7 @@ GameObject:
   - component: {fileID: 101201}
   - component: {fileID: 101202}
   - component: {fileID: 101203}
+  - component: {fileID: 101205}
   m_Layer: 5
   m_Name: Digit
   m_TagString: Untagged
@@ -969,7 +948,7 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier:
   m_Material: {fileID: 0}
-  m_Color: {r: 0.21961, g: 0.14118, b: 0.24314, a: 1}
+  m_Color: {r: 1, g: 0.9647, b: 0.8667, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -978,11 +957,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: 83c59291fa53468f73c3bcaeaf30dd0f, type: 3}
-    m_FontSize: 65
+    m_FontSize: 41
     m_FontStyle: 0
     m_BestFit: 1
-    m_MinSize: 40
-    m_MaxSize: 65
+    m_MinSize: 29
+    m_MaxSize: 41
     m_Alignment: 4
     m_AlignByGeometry: 1
     m_RichText: 0
@@ -990,6 +969,21 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: "2"
+--- !u!114 &101205
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 101200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_EffectColor: {r: 0.4314, g: 0.2039, b: 0.1098, a: 1}
+  m_EffectDistance: {x: 1.65, y: -2}
+  m_UseGraphicAlpha: 1
 --- !u!1 &101300
 GameObject:
   m_ObjectHideFlags: 0
@@ -1098,7 +1092,6 @@ GameObject:
   - component: {fileID: 101401}
   - component: {fileID: 101402}
   - component: {fileID: 101403}
-  - component: {fileID: 101405}
   m_Layer: 5
   m_Name: YellowStone2
   m_TagString: Untagged
@@ -1154,9 +1147,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 7bc1eeba20fc4af286e8e7533eeecd9a, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -1164,27 +1157,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &101405
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 101400}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8110d22ba2dcf5ccf7c0f215e39595d2, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  shape: 4
-  radius: 0
-  rim: 7
-  depth: 5
-  upperFace: {r: 1, g: 0.9451, b: 0.56078, a: 1}
-  lowerFace: {r: 0.98039, g: 0.74118, b: 0.31765, a: 1}
-  upperRim: {r: 1, g: 0.96471, b: 0.69804, a: 1}
-  lowerRim: {r: 0.85098, g: 0.60784, b: 0.24314, a: 1}
-  lowerEdge: {r: 0.45098, g: 0.34118, b: 0.19216, a: 1}
 --- !u!1 &101500
 GameObject:
   m_ObjectHideFlags: 0
@@ -1196,6 +1168,7 @@ GameObject:
   - component: {fileID: 101501}
   - component: {fileID: 101502}
   - component: {fileID: 101503}
+  - component: {fileID: 101505}
   m_Layer: 5
   m_Name: Digit
   m_TagString: Untagged
@@ -1243,7 +1216,7 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier:
   m_Material: {fileID: 0}
-  m_Color: {r: 0.21961, g: 0.14118, b: 0.24314, a: 1}
+  m_Color: {r: 1, g: 0.9647, b: 0.8667, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1252,11 +1225,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: 83c59291fa53468f73c3bcaeaf30dd0f, type: 3}
-    m_FontSize: 65
+    m_FontSize: 41
     m_FontStyle: 0
     m_BestFit: 1
-    m_MinSize: 40
-    m_MaxSize: 65
+    m_MinSize: 29
+    m_MaxSize: 41
     m_Alignment: 4
     m_AlignByGeometry: 1
     m_RichText: 0
@@ -1264,6 +1237,21 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: "2"
+--- !u!114 &101505
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 101500}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_EffectColor: {r: 0.4314, g: 0.2039, b: 0.1098, a: 1}
+  m_EffectDistance: {x: 1.65, y: -2}
+  m_UseGraphicAlpha: 1
 --- !u!1 &101600
 GameObject:
   m_ObjectHideFlags: 0
@@ -1372,7 +1360,6 @@ GameObject:
   - component: {fileID: 101701}
   - component: {fileID: 101702}
   - component: {fileID: 101703}
-  - component: {fileID: 101705}
   m_Layer: 5
   m_Name: YellowStone3
   m_TagString: Untagged
@@ -1428,9 +1415,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 7bc1eeba20fc4af286e8e7533eeecd9a, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -1438,27 +1425,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &101705
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 101700}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8110d22ba2dcf5ccf7c0f215e39595d2, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  shape: 4
-  radius: 0
-  rim: 7
-  depth: 5
-  upperFace: {r: 1, g: 0.9451, b: 0.56078, a: 1}
-  lowerFace: {r: 0.98039, g: 0.74118, b: 0.31765, a: 1}
-  upperRim: {r: 1, g: 0.96471, b: 0.69804, a: 1}
-  lowerRim: {r: 0.85098, g: 0.60784, b: 0.24314, a: 1}
-  lowerEdge: {r: 0.45098, g: 0.34118, b: 0.19216, a: 1}
 --- !u!1 &101800
 GameObject:
   m_ObjectHideFlags: 0
@@ -1470,6 +1436,7 @@ GameObject:
   - component: {fileID: 101801}
   - component: {fileID: 101802}
   - component: {fileID: 101803}
+  - component: {fileID: 101805}
   m_Layer: 5
   m_Name: Digit
   m_TagString: Untagged
@@ -1517,7 +1484,7 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier:
   m_Material: {fileID: 0}
-  m_Color: {r: 0.21961, g: 0.14118, b: 0.24314, a: 1}
+  m_Color: {r: 1, g: 0.9647, b: 0.8667, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1526,11 +1493,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: 83c59291fa53468f73c3bcaeaf30dd0f, type: 3}
-    m_FontSize: 65
+    m_FontSize: 41
     m_FontStyle: 0
     m_BestFit: 1
-    m_MinSize: 40
-    m_MaxSize: 65
+    m_MinSize: 29
+    m_MaxSize: 41
     m_Alignment: 4
     m_AlignByGeometry: 1
     m_RichText: 0
@@ -1538,6 +1505,21 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: "2"
+--- !u!114 &101805
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 101800}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_EffectColor: {r: 0.4314, g: 0.2039, b: 0.1098, a: 1}
+  m_EffectDistance: {x: 1.65, y: -2}
+  m_UseGraphicAlpha: 1
 --- !u!1 &101900
 GameObject:
   m_ObjectHideFlags: 0
@@ -2583,7 +2565,6 @@ GameObject:
   - component: {fileID: 103101}
   - component: {fileID: 103102}
   - component: {fileID: 103103}
-  - component: {fileID: 103105}
   m_Layer: 5
   m_Name: TealStone1
   m_TagString: Untagged
@@ -2639,9 +2620,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: fe5e4000a54f4fc2b18bbf4c6655fba2, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -2649,27 +2630,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &103105
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 103100}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8110d22ba2dcf5ccf7c0f215e39595d2, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  shape: 4
-  radius: 0
-  rim: 7
-  depth: 5
-  upperFace: {r: 0.49804, g: 0.96471, b: 0.81961, a: 1}
-  lowerFace: {r: 0.24706, g: 0.79216, b: 0.7451, a: 1}
-  upperRim: {r: 0.72157, g: 1, b: 0.90196, a: 1}
-  lowerRim: {r: 0.22353, g: 0.58431, b: 0.60784, a: 1}
-  lowerEdge: {r: 0.16078, g: 0.29804, b: 0.37647, a: 1}
 --- !u!1 &103200
 GameObject:
   m_ObjectHideFlags: 0
@@ -2681,6 +2641,7 @@ GameObject:
   - component: {fileID: 103201}
   - component: {fileID: 103202}
   - component: {fileID: 103203}
+  - component: {fileID: 103205}
   m_Layer: 5
   m_Name: Digit
   m_TagString: Untagged
@@ -2728,7 +2689,7 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier:
   m_Material: {fileID: 0}
-  m_Color: {r: 0.21961, g: 0.14118, b: 0.24314, a: 1}
+  m_Color: {r: 1, g: 0.9647, b: 0.8667, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2737,11 +2698,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: 83c59291fa53468f73c3bcaeaf30dd0f, type: 3}
-    m_FontSize: 65
+    m_FontSize: 41
     m_FontStyle: 0
     m_BestFit: 1
-    m_MinSize: 40
-    m_MaxSize: 65
+    m_MinSize: 29
+    m_MaxSize: 41
     m_Alignment: 4
     m_AlignByGeometry: 1
     m_RichText: 0
@@ -2749,6 +2710,21 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: "4"
+--- !u!114 &103205
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 103200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_EffectColor: {r: 0.4314, g: 0.2039, b: 0.1098, a: 1}
+  m_EffectDistance: {x: 1.65, y: -2}
+  m_UseGraphicAlpha: 1
 --- !u!1 &103300
 GameObject:
   m_ObjectHideFlags: 0
@@ -2857,7 +2833,6 @@ GameObject:
   - component: {fileID: 103401}
   - component: {fileID: 103402}
   - component: {fileID: 103403}
-  - component: {fileID: 103405}
   m_Layer: 5
   m_Name: TealStone2
   m_TagString: Untagged
@@ -2913,9 +2888,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: fe5e4000a54f4fc2b18bbf4c6655fba2, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -2923,27 +2898,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &103405
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 103400}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8110d22ba2dcf5ccf7c0f215e39595d2, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  shape: 4
-  radius: 0
-  rim: 7
-  depth: 5
-  upperFace: {r: 0.49804, g: 0.96471, b: 0.81961, a: 1}
-  lowerFace: {r: 0.24706, g: 0.79216, b: 0.7451, a: 1}
-  upperRim: {r: 0.72157, g: 1, b: 0.90196, a: 1}
-  lowerRim: {r: 0.22353, g: 0.58431, b: 0.60784, a: 1}
-  lowerEdge: {r: 0.16078, g: 0.29804, b: 0.37647, a: 1}
 --- !u!1 &103500
 GameObject:
   m_ObjectHideFlags: 0
@@ -2955,6 +2909,7 @@ GameObject:
   - component: {fileID: 103501}
   - component: {fileID: 103502}
   - component: {fileID: 103503}
+  - component: {fileID: 103505}
   m_Layer: 5
   m_Name: Digit
   m_TagString: Untagged
@@ -3002,7 +2957,7 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier:
   m_Material: {fileID: 0}
-  m_Color: {r: 0.21961, g: 0.14118, b: 0.24314, a: 1}
+  m_Color: {r: 1, g: 0.9647, b: 0.8667, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3011,11 +2966,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: 83c59291fa53468f73c3bcaeaf30dd0f, type: 3}
-    m_FontSize: 65
+    m_FontSize: 41
     m_FontStyle: 0
     m_BestFit: 1
-    m_MinSize: 40
-    m_MaxSize: 65
+    m_MinSize: 29
+    m_MaxSize: 41
     m_Alignment: 4
     m_AlignByGeometry: 1
     m_RichText: 0
@@ -3023,6 +2978,21 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: "4"
+--- !u!114 &103505
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 103500}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_EffectColor: {r: 0.4314, g: 0.2039, b: 0.1098, a: 1}
+  m_EffectDistance: {x: 1.65, y: -2}
+  m_UseGraphicAlpha: 1
 --- !u!1 &103600
 GameObject:
   m_ObjectHideFlags: 0
@@ -3131,7 +3101,6 @@ GameObject:
   - component: {fileID: 103701}
   - component: {fileID: 103702}
   - component: {fileID: 103703}
-  - component: {fileID: 103705}
   m_Layer: 5
   m_Name: IncomingStone
   m_TagString: Untagged
@@ -3187,9 +3156,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: fe5e4000a54f4fc2b18bbf4c6655fba2, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -3197,27 +3166,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &103705
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 103700}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8110d22ba2dcf5ccf7c0f215e39595d2, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  shape: 4
-  radius: 0
-  rim: 7
-  depth: 5
-  upperFace: {r: 0.49804, g: 0.96471, b: 0.81961, a: 1}
-  lowerFace: {r: 0.24706, g: 0.79216, b: 0.7451, a: 1}
-  upperRim: {r: 0.72157, g: 1, b: 0.90196, a: 1}
-  lowerRim: {r: 0.22353, g: 0.58431, b: 0.60784, a: 1}
-  lowerEdge: {r: 0.16078, g: 0.29804, b: 0.37647, a: 1}
 --- !u!1 &103800
 GameObject:
   m_ObjectHideFlags: 0
@@ -3229,6 +3177,7 @@ GameObject:
   - component: {fileID: 103801}
   - component: {fileID: 103802}
   - component: {fileID: 103803}
+  - component: {fileID: 103805}
   m_Layer: 5
   m_Name: Digit
   m_TagString: Untagged
@@ -3276,7 +3225,7 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier:
   m_Material: {fileID: 0}
-  m_Color: {r: 0.21961, g: 0.14118, b: 0.24314, a: 1}
+  m_Color: {r: 1, g: 0.9647, b: 0.8667, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3285,11 +3234,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: 83c59291fa53468f73c3bcaeaf30dd0f, type: 3}
-    m_FontSize: 65
+    m_FontSize: 41
     m_FontStyle: 0
     m_BestFit: 1
-    m_MinSize: 40
-    m_MaxSize: 65
+    m_MinSize: 29
+    m_MaxSize: 41
     m_Alignment: 4
     m_AlignByGeometry: 1
     m_RichText: 0
@@ -3297,6 +3246,21 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: "4"
+--- !u!114 &103805
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 103800}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_EffectColor: {r: 0.4314, g: 0.2039, b: 0.1098, a: 1}
+  m_EffectDistance: {x: 1.65, y: -2}
+  m_UseGraphicAlpha: 1
 --- !u!1 &103900
 GameObject:
   m_ObjectHideFlags: 0

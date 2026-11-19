@@ -76,10 +76,12 @@ namespace Hexrota.UnityClientTests
                     // Build disposes the previous stage's visual root at end of frame.
                     yield return null;
                     var focus = pair.Concat(controller.Session.TutorialMatchIndices).ToArray();
+                    var properties = new MaterialPropertyBlock();
                     for (int i = 0; i < controller.Session.Level.cells.Length; i++)
                     {
-                        var label = GameObject.Find("Value_" + i).GetComponent<TextMesh>();
-                        Assert.That(label.color.a, Is.EqualTo(focus.Contains(i) ? 1f : .30f).Within(.01f),
+                        var model = GameObject.Find("Stone_" + i).transform.Find("Model");
+                        model.GetComponent<MeshRenderer>().GetPropertyBlock(properties);
+                        Assert.That(properties.GetFloat("_GuideOpacity"), Is.EqualTo(focus.Contains(i) ? 1f : .30f).Within(.01f),
                             "Tutorial focus for cell " + i);
                     }
                     yield return Move(pair);

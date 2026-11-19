@@ -59,8 +59,8 @@ namespace Hexrota.UnityClientTests
                     Vector2 projected = game.Board.ViewportCell(value);
                     Assert.That(projected.x, Is.InRange(0f,1f));
                     Assert.That(projected.y, Is.InRange(0f,1f));
-                    Assert.That(GameObject.Find("Value_"+value).GetComponent<TextMesh>().text,
-                        Is.EqualTo(game.Session.Snapshot.values[value].ToString()));
+                    StoneArtAssertions.ShowsNumber(GameObject.Find("Stone_" + value).transform,
+                        game.Session.Snapshot.values[value].Value);
                 }
                 long revision = game.Session.Revision;
                 float deadline = Time.realtimeSinceStartup + 12;

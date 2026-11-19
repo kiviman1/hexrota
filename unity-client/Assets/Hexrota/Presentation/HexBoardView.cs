@@ -46,7 +46,7 @@ namespace Hexrota.UnityClient.Presentation
         private MaterialPropertyBlock tint;
         private Material digitsMaterial;
         private Font digitsFont;
-        private bool authoredStone, authoredFloor;
+        private bool authoredStone, authoredFloor, numberInMesh;
         private static readonly Color[] Colors = {
             new Color32(235,227,245,255), new Color32(179,101,242,255),
             new Color32(255,207,40,255), new Color32(255,104,81,255),
@@ -84,7 +84,7 @@ namespace Hexrota.UnityClient.Presentation
                     stones.Count != positions.Length || grounds.Count != stones.Count ||
                     cells.Count != stones.Count || numbers.Count != stones.Count) return false;
                 for (int i = 0; i < stones.Count; i++)
-                    if (stones[i] == null || grounds[i] == null || cells[i] == null || numbers[i] == null) return false;
+                    if (stones[i] == null || grounds[i] == null || cells[i] == null || (!numberInMesh && numbers[i] == null)) return false;
                 return true;
             }
         }
@@ -95,7 +95,9 @@ namespace Hexrota.UnityClient.Presentation
             var numberTemplate = assets != null && assets.stone != null ? assets.stone.GetComponentInChildren<TextMesh>(true) : null;
             digitsFont = numberTemplate != null && numberTemplate.font != null
                 ? numberTemplate.font : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            authoredStone = assets != null && assets.stone != null && assets.stone.GetComponent<CastleBoardTile>() != null;
+            var wrapper = assets != null && assets.stone != null ? assets.stone.GetComponent<CastleBoardTile>() : null;
+            authoredStone = wrapper != null;
+            numberInMesh = authoredStone && wrapper.NumberInMesh;
             authoredFloor = assets != null && assets.ground != null && assets.ground.GetComponent<CastleBoardTile>() != null;
             world = new GameObject("BoardVisuals_PLACEHOLDER").transform;
             world.SetParent(transform, false);
@@ -132,6 +134,11 @@ namespace Hexrota.UnityClient.Presentation
                     Make(assets == null ? null : assets.stone, "Artwork", stone.transform);
                 }
                 stone.transform.position = positions[i] + Vector3.back * .15f; stones.Add(stone);
+                if (numberInMesh)
+                {
+                    numbers.Add(null);
+                    continue;
+                }
                 var text = stone.GetComponentInChildren<TextMesh>(true);
                 if (text == null)
                 {
@@ -255,9 +262,12 @@ namespace Hexrota.UnityClient.Presentation
                     float coveredFloor = authoredFloor ? .433f*.78f : .485f*.727f/.875f;
                     SetGuideOpacity(grounds[i], opacity, stones[i].activeSelf ? coveredFloor : 0);
                     SetGuideOpacity(stones[i], opacity);
-                    Color label = numbers[i].color;
-                    label.a = opacity;
-                    numbers[i].color = label;
+                    if (numbers[i] != null)
+                    {
+                        Color label = numbers[i].color;
+                        label.a = opacity;
+                        numbers[i].color = label;
+                    }
                 }
             }
             hasMutedTiles = guide;
@@ -423,7 +433,7 @@ namespace Hexrota.UnityClient.Presentation
         private void PaintStone(int i, int? value)
         {
             stones[i].SetActive(value.HasValue);
-            numbers[i].text = value.HasValue ? value.Value.ToString() : "";
+            if (numbers[i] != null) numbers[i].text = value.HasValue ? value.Value.ToString() : "";
             if (!value.HasValue) return;
             var tile = stones[i].GetComponent<CastleBoardTile>();
             if (tile != null && tile.Show(value.Value - 1))
@@ -432,7 +442,7 @@ namespace Hexrota.UnityClient.Presentation
                 return;
             }
             int palette = (value.Value % Colors.Length + Colors.Length) % Colors.Length;
-            numbers[i].color = Inks[palette];
+            if (numbers[i] != null) numbers[i].color = Inks[palette];
             Tint(stones[i], Colors[palette], Edges[palette], .037f);
         }
         private void PaintFloor(int index, int layers)

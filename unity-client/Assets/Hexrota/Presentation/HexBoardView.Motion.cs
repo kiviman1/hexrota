@@ -218,7 +218,7 @@ namespace Hexrota.UnityClient.Presentation
             stones[cell] = stone;
             numbers[cell] = number;
             stone.name = "Stone_" + cell;
-            number.gameObject.name = "Value_" + cell;
+            if (number != null) number.gameObject.name = "Value_" + cell;
         }
 
         // Snapshot the old permutation first. A destination can itself be another

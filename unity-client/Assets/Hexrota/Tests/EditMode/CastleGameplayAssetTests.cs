@@ -61,6 +61,14 @@ namespace Hexrota.UnityClientTests
             Assert.That(prefab.GetComponent<CanvasGroup>().blocksRaycasts, Is.True);
             var curtain = prefab.transform.Find("NightSky").GetComponent<UnityEngine.UI.Image>();
             Assert.That(curtain.raycastTarget, Is.True);
+
+            var digits = prefab.GetComponentsInChildren<UnityEngine.UI.Text>(true).Where(label => label.name == "Digit").ToArray();
+            Assert.That(digits.Select(label => label.text), Is.EquivalentTo(new[] { "2", "2", "2", "4", "4", "4" }));
+            foreach (var digit in digits)
+            {
+                AssertSprite(digit.transform.parent, digit.text == "2" ? "TipStone_02_Yellow" : "TipStone_04_Turquoise");
+                Assert.That(digit.GetComponent<UnityEngine.UI.Outline>(), Is.Not.Null);
+            }
         }
 
         [Test]
@@ -96,13 +104,28 @@ namespace Hexrota.UnityClientTests
         }
 
         [Test]
+        public void FiveBlankStoneModelsKeepTheirReliefAndHaveNoDigitMesh()
+        {
+            const string folder = "Assets/Hexrota/Art/CastleBoard/Models/Blank/";
+            foreach (string variant in new[] { "01_Purple", "02_Yellow", "03_LightRed", "04_Turquoise", "05_Orange" })
+            {
+                var model = AssetDatabase.LoadAssetAtPath<GameObject>(folder + "HX_Stone_" + variant + "_ToneRelief_Blank.fbx");
+                Assert.That(model, Is.Not.Null, variant);
+                var meshes = model.GetComponentsInChildren<MeshFilter>(true).Select(part => part.sharedMesh.name).ToArray();
+                Assert.That(meshes.Any(name => name.Contains("ToneRelief")), Is.True, variant);
+                Assert.That(meshes.Any(name => name.EndsWith("_Body")), Is.True, variant);
+                Assert.That(meshes.Any(name => name.Contains("_Digit_")), Is.False, variant);
+            }
+        }
+
+        [Test]
         public void ActiveCatalogResolvesEditableBoardWrappersAndTheirImportedModels()
         {
             const string path = "Assets/Hexrota/Art/HexrotaAssets.asset";
             var catalog = AssetDatabase.LoadAssetAtPath<HexrotaAssetCatalog>(path);
             Assert.That(catalog, Is.Not.Null);
-            Assert.That(catalog.stone.GetComponentInChildren<TextMesh>(true), Is.Not.Null,
-                "Artists can edit the number separately from the stone mesh.");
+            Assert.That(catalog.stone.GetComponentInChildren<TextMesh>(true), Is.Null,
+                "The sculpted numeral must not receive a second text label.");
             foreach (var wrapper in new[] { catalog.cell, catalog.stone, catalog.ground })
             {
                 Assert.That(PrefabUtility.GetPrefabAssetType(wrapper), Is.EqualTo(PrefabAssetType.Regular));
@@ -110,15 +133,17 @@ namespace Hexrota.UnityClientTests
                     Assert.That(GameObjectUtility.GetMonoBehavioursWithMissingScriptCount(node.gameObject), Is.Zero, node.name);
             }
             AssertVariants(catalog.stone, new[] { "HexStone_01_Purple", "HexStone_02_Yellow", "HexStone_03_LightRed",
-                "HexStone_04_Turquoise", "HexStone_05_Orange" });
-            AssertVariants(catalog.ground, new[] { "HexFloor_Soil", "HexFloor_Partial", "HexFloor_Green" });
+                "HexStone_04_Turquoise", "HexStone_05_Orange" }, true);
+            AssertVariants(catalog.ground, new[] { "HexFloor_Soil", "HexFloor_Partial", "HexFloor_Green" }, false);
         }
 
-        private static void AssertVariants(GameObject wrapper, string[] expected)
+        private static void AssertVariants(GameObject wrapper, string[] expected, bool sculptedNumbers)
         {
             var tile = wrapper.GetComponentInChildren<CastleBoardTile>(true);
             Assert.That(tile, Is.Not.Null, wrapper.name);
-            var variants = new SerializedObject(tile).FindProperty("variants");
+            var serialized = new SerializedObject(tile);
+            Assert.That(serialized.FindProperty("numberInMesh").boolValue, Is.EqualTo(sculptedNumbers));
+            var variants = serialized.FindProperty("variants");
             Assert.That(variants.arraySize, Is.EqualTo(expected.Length));
             for (int i = 0; i < expected.Length; i++)
             {
@@ -127,9 +152,23 @@ namespace Hexrota.UnityClientTests
                 var material = slot.FindPropertyRelative("material").objectReferenceValue as Material;
                 Assert.That(mesh, Is.Not.Null, expected[i]);
                 Assert.That(mesh.vertexCount, Is.Positive, expected[i]);
-                Assert.That(AssetDatabase.GetAssetPath(mesh), Does.EndWith("/" + expected[i] + ".fbx"));
+                string modelPath = AssetDatabase.GetAssetPath(mesh);
+                Assert.That(modelPath, Does.EndWith("/" + expected[i] + ".fbx"));
                 Assert.That(material, Is.Not.Null, expected[i]);
-                Assert.That(AssetDatabase.GetAssetPath(material.mainTexture), Does.EndWith("/" + expected[i] + "_BaseColor.png"));
+                if (sculptedNumbers)
+                {
+                    Assert.That(mesh.name, Is.EqualTo("ToneRelief_" + (i + 1)));
+                    Assert.That(mesh.subMeshCount, Is.EqualTo(1));
+                    Assert.That(material.GetFloat("_VertexPigment"), Is.EqualTo(1));
+                    var parts = AssetDatabase.LoadAssetAtPath<GameObject>(modelPath).GetComponentsInChildren<MeshRenderer>();
+                    Assert.That(parts.Any(part => part.name.EndsWith("Digit_" + (i + 1) + "_Face")), Is.True);
+                    Assert.That(parts.Any(part => part.name.EndsWith("Digit_" + (i + 1) + "_Outline")), Is.True);
+                    var bakedColors = mesh.colors32.Distinct().ToArray();
+                    foreach (var pigment in parts.SelectMany(part => part.sharedMaterials))
+                        CollectionAssert.Contains(bakedColors, (Color32)pigment.color, pigment.name);
+                }
+                else
+                    Assert.That(AssetDatabase.GetAssetPath(material.mainTexture), Does.EndWith("/" + expected[i] + "_BaseColor.png"));
             }
         }
     }

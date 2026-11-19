@@ -2,11 +2,17 @@
 
 Unity 6000.6.9f1 Editor’da `FirstPlayable` sahnesi ve gerçek oyun oturumu kullanıldı. Dikey oyun görünümü 540×960 ve 360×780 boyutlarında kontrol edildi. Testler geçici bir oyuncu profiliyle çalıştı.
 
+## v06 taşları
+
+Bölüm 8’in Editor görüntüsünden alınan bu beş hücre, oyunda kullanılan v06 modellerini gösterir. Kabartma rakamlar numaralı FBX modellerine aittir. Yükleme kartlarında numarasız modellerin görselleri ve ayrı Unity metinleri kullanılır.
+
+![Bölüm 8’deki beş v06 taşı](taslar-v06.png)
+
 ## Giriş ve ekran düzeni
 
 Bilgi kartı açılır, 2,25 saniye okunabilir hâlde kalır ve kapanır. Ardından üst panel yukarıdan iner, tahta sağdan yerleşir ve taşlar sütunlarının açık kısımlarına yukarıdan düşer. Taşlar yerleşince ilk takas yapılabilir. Azaltılmış hareket seçiminde bilgi kartı sabit görünür ve tahta dolu açılır. Arka plana geçiş ve geri dönüş aynı denemeyi sürdürür.
 
-![Unity Editor’da bölüm girişinin ardışık kareleri](giris.png)
+![v06 taşları eklenmeden önce Unity Editor’da kaydedilen bölüm girişinin ardışık kareleri](giris.png)
 
 540×960 kaydında öğreticiden Bölüm 1’e geçiş ve ilk takas birlikte görülebilir. [10 saniyelik Editor kaydını izle](bolum-girisi.mp4)
 
@@ -26,7 +32,7 @@ Bölüm 6’da 5 numaralı hücreden 13 numaralı hücreye sürükleme 4 kasayı
 
 | Kontrol | Sonuç |
 | --- | --- |
-| Unity Editor EditMode | 41 test geçti |
+| Unity Editor EditMode | v06 aktarımıyla 42 test geçti |
 | Unity Editor PlayMode | 56 test geçti |
 | Gerçek Editor görüntüsü ve sürükleme | Her iki portre boyutunda Bölüm 1’de 19 taş yerleşti. İlk takasta puan 0’dan 13’e çıktı, hamle 10’dan 9’a indi. |
 | Tahta verisi ve kayıt | Beş geniş bölümün 10 doğrulanmış çözümü, eski bölüm kimlikleri ve kapalı hücrelerin kayıt sonrası durumu doğrulandı. |
