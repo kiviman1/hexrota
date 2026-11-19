@@ -20,6 +20,13 @@ namespace Hexrota.UnityClient.Presentation
         };
         private Vector2 from, to;
         private float sweep = -1f;
+        private Vector2[][] matchLoops;
+
+        internal void SetMatchLoops(Vector2[][] loops)
+        {
+            matchLoops = loops;
+            SetVerticesDirty();
+        }
 
         public void SetPair(Vector2 source, Vector2 target)
         {
@@ -49,8 +56,17 @@ namespace Hexrota.UnityClient.Presentation
 
             Ring(mesh, start, span, false, stroke + .038f, ink);
             Ring(mesh, start, span, false, stroke, sourceOutline);
-            Ring(mesh, end, span, true, stroke + .038f, ink);
-            Ring(mesh, end, span, true, stroke, destinationCorners);
+            if (matchLoops == null)
+            {
+                Ring(mesh, end, span, true, stroke + .038f, ink);
+                Ring(mesh, end, span, true, stroke, destinationCorners);
+            }
+            else
+            {
+                float reveal = sweep < 0f ? 1f : Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(.06f, .76f, sweep));
+                TraceMatches(mesh, rect, reveal, span * (stroke + .038f), ink);
+                TraceMatches(mesh, rect, reveal, span * stroke, destinationCorners);
+            }
 
             // Only bridge the gap between the numerals. The filled arrow and the
             // open destination corners retain their meaning even with movement off.
@@ -61,6 +77,25 @@ namespace Hexrota.UnityClient.Presentation
                 Vector2 glint = start + direction * Mathf.Lerp(.29f, .66f, sweep);
                 Quad(mesh, glint - direction * .036f, glint + normal * .024f,
                     glint + direction * .036f, glint - normal * .024f, Color.white);
+            }
+        }
+
+        private void TraceMatches(VertexHelper mesh, Rect rect, float reveal, float width, Color tint)
+        {
+            foreach (var loop in matchLoops)
+            {
+                float drawn = reveal * loop.Length;
+                for (int edge = 0; edge < loop.Length && edge < drawn; edge++)
+                {
+                    Vector2 start = Rect.NormalizedToPoint(rect, loop[edge]);
+                    Vector2 end = Rect.NormalizedToPoint(rect, loop[(edge + 1) % loop.Length]);
+                    end = Vector2.Lerp(start, end, drawn - edge);
+                    Vector2 axis = (end - start).normalized * (width * .5f);
+                    Vector2 normal = new Vector2(-axis.y, axis.x);
+                    // Overlap adjacent ends by half the stroke to keep the corners joined.
+                    Quad(mesh, start - axis - normal, start - axis + normal,
+                        end + axis + normal, end + axis - normal, tint);
+                }
             }
         }
 

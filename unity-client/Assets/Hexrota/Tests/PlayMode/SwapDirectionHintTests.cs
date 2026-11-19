@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Hexrota.Application;
+using Hexrota.Gameplay;
 using Hexrota.UnityClient;
 using Hexrota.UnityClient.Presentation;
 using NUnit.Framework;
@@ -56,6 +57,61 @@ namespace Hexrota.UnityClientTests
                 Assert.That(back.Any(v => Mathf.Abs(Vector2.Dot(v, normal)) > 1f), Is.True, "Tail starts at source.");
             }
             finally { Object.DestroyImmediate(canvasObject); }
+        }
+
+        [UnityTest]
+        public IEnumerator IdleHintTracesOnlyTheOuterEdgesOfTheActualMatch()
+        {
+            var original = FirstPlayableController.SessionFactory;
+            FirstPlayableController game = null;
+            try
+            {
+                FirstPlayableController.SessionFactory = () => new UnityGameSession(
+                    ClientGameData.FromResources(), new MemoryProfileStorage(), new SystemUtcClock());
+                yield return SceneManager.LoadSceneAsync("FirstPlayable");
+                game = Object.FindAnyObjectByType<FirstPlayableController>();
+                Assert.That(game.Session.SetPreferences(motion: "full"), Is.True);
+                game.BeginLevelOne();
+                yield return ChapterEntryWait.Ready(game);
+                yield return ChapterEntryWait.PlayOpeningMove(game);
+                var board = game.Board;
+                var hint = game.Session.ChooseIdleHint(null);
+                Assert.That(hint, Is.Not.Null);
+                var model = new HexMatch(game.Session.Level, game.Session.Snapshot);
+                var swapped = (int?[])model.values.Clone();
+                swapped[hint.MovingSource] = model.values[hint.MovingTarget];
+                swapped[hint.MovingTarget] = model.values[hint.MovingSource];
+                var matched = model.FindMatches(swapped);
+                CollectionAssert.AreEquivalent(matched, hint.MatchDestinations);
+                int edges = matched.Sum(cell => 6 - matched.Count(other => model.Adjacent(cell, other)));
+                var mint = new Color32(126, 250, 211, 255);
+                var overlay = board.GetComponentsInChildren<TutorialGestureArrow>(true).Single();
+                float deadline = Time.realtimeSinceStartup + 14f;
+                bool revealedPart = false, drawnInFull = false;
+                while (!drawnInFull && Time.realtimeSinceStartup < deadline)
+                {
+                    yield return null;
+                    if (!overlay.isActiveAndEnabled) continue;
+                    Canvas.ForceUpdateCanvases();
+                    int trace = overlay.canvasRenderer.GetMesh().colors32.Count(color => color.Equals(mint));
+                    revealedPart |= trace > 0 && trace < edges * 4;
+                    drawnInFull = trace == edges * 4;
+                }
+                Assert.That(revealedPart && drawnInFull, Is.True);
+                var modelRenderer = GameObject.Find("Stone_" + hint.MovingSource).GetComponentInChildren<MeshRenderer>();
+                var properties = new MaterialPropertyBlock();
+                modelRenderer.GetPropertyBlock(properties);
+                Assert.That(properties.GetFloat("_IdleOutline"), Is.GreaterThan(0f));
+                game.Pause();
+                Assert.That(overlay.isActiveAndEnabled, Is.False);
+                modelRenderer.GetPropertyBlock(properties);
+                Assert.That(properties.GetFloat("_IdleOutline"), Is.Zero);
+            }
+            finally
+            {
+                FirstPlayableController.SessionFactory = original;
+                if (game != null) game.ReturnToMenu();
+            }
         }
 
         [UnityTest]

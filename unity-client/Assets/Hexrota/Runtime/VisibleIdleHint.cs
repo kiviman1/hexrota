@@ -11,6 +11,7 @@ namespace Hexrota.UnityClient
     {
         public int[] Pair { get; private set; }
         public int[] FocusSources { get; private set; }
+        public int[] MatchDestinations { get; private set; }
         public int MovingSource { get; private set; }
         public int MovingTarget { get; private set; }
         private double rank;
@@ -41,7 +42,8 @@ namespace Hexrota.UnityClient
                     score += Math.Min(matched.Sum(i => (long)swapped[i].Value), Math.Max(0,board.level.target-board.score)) * .1;
                 if (board.HasObstacles) score += VisibleObjectives(board,matched);
                 choices.Add(new VisibleIdleHint { Pair = new[]{a,b}, MovingSource = focused.Source,
-                    MovingTarget = focused.Target, FocusSources = focused.Cells.Select(i => i == a ? b : i == b ? a : i).OrderBy(i => i).ToArray(), rank = score });
+                    MovingTarget = focused.Target, MatchDestinations = matched.ToArray(),
+                    FocusSources = focused.Cells.Select(i => i == a ? b : i == b ? a : i).OrderBy(i => i).ToArray(), rank = score });
             }
             return choices.OrderBy(c => previousPair != null && c.Pair.SequenceEqual(previousPair))
                 .ThenByDescending(c => c.rank).ThenBy(c => c.Pair[0]).ThenBy(c => c.Pair[1]).FirstOrDefault();

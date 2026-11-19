@@ -10,8 +10,11 @@ namespace Hexrota.UnityClient.Presentation
     {
         private readonly IdleHintClock idleClock = new IdleHintClock();
         private readonly List<Renderer> sourceModels = new List<Renderer>();
-        private readonly List<Renderer> matchModels = new List<Renderer>();
         private readonly List<Renderer> rendererBuffer = new List<Renderer>();
+        private static readonly Vector2Int[] HintCorners = {
+            new Vector2Int(2, 0), new Vector2Int(1, 1), new Vector2Int(-1, 1),
+            new Vector2Int(-2, 0), new Vector2Int(-1, -1), new Vector2Int(1, -1)
+        };
         private string idleAttempt;
         private Func<int[], VisibleIdleHint> chooseIdleHint;
         private VisibleIdleHint cachedHint, paintedHint;
@@ -92,22 +95,63 @@ namespace Hexrota.UnityClient.Presentation
                 idleArrow.SetSweep(ReducedMotion ? -1f : Mathf.SmoothStep(0f, 1f, progress));
             if (Mathf.Approximately(lastPulse, pulse)) return;
             lastPulse = pulse;
-            SetIdleGlow(sourceModels, .75f, .13f * pulse);
-            SetIdleGlow(matchModels, .32f, .045f * pulse);
+            SetIdleGlow(sourceModels, .48f, .12f * pulse);
         }
 
         private void CacheHintModels(VisibleIdleHint hint)
         {
             ClearHintAppearance();
             cachedHint = hint;
-            foreach (int index in hint.FocusSources)
-            {
-                stones[index].GetComponentsInChildren(false, rendererBuffer);
-                var list = index == hint.MovingSource ? sourceModels : matchModels;
-                foreach (var renderer in rendererBuffer)
-                    if (!renderer.TryGetComponent<TextMesh>(out _)) list.Add(renderer);
-            }
+            stones[hint.MovingSource].GetComponentsInChildren(false, rendererBuffer);
+            foreach (var renderer in rendererBuffer)
+                if (!renderer.TryGetComponent<TextMesh>(out _)) sourceModels.Add(renderer);
             rendererBuffer.Clear();
+            if (idleArrow != null) idleArrow.SetMatchLoops(MatchPerimeter(hint));
+        }
+
+        private Vector2[][] MatchPerimeter(VisibleIdleHint hint)
+        {
+            // Shared edges have opposite directions on the integer hex lattice.
+            var edges = new HashSet<(Vector2Int from, Vector2Int to)>();
+            foreach (int index in hint.MatchDestinations)
+            {
+                var cell = motionCells[index];
+                var center = new Vector2Int(3 * cell.q, -2 * cell.r - cell.q);
+                for (int i = 0; i < HintCorners.Length; i++)
+                {
+                    Vector2Int from = center + HintCorners[i], to = center + HintCorners[(i + 1) % HintCorners.Length];
+                    if (!edges.Remove((to, from))) edges.Add((from, to));
+                }
+            }
+            var next = new Dictionary<Vector2Int, Vector2Int>();
+            foreach (var edge in edges) next.Add(edge.from, edge.to);
+            var loops = new List<Vector2[]>();
+            var target = motionCells[hint.MovingTarget];
+            var origin = new Vector2Int(3 * target.q, -2 * target.r - target.q);
+            while (next.Count > 0)
+            {
+                Vector2Int first = default;
+                float nearest = float.PositiveInfinity;
+                foreach (var vertex in next.Keys)
+                {
+                    float distance = (vertex - origin).sqrMagnitude;
+                    if (distance >= nearest) continue;
+                    nearest = distance;
+                    first = vertex;
+                }
+                var loop = new List<Vector2>();
+                Vector2Int point = first;
+                do
+                {
+                    // Same scale as MobileLayout.Axial, in units of a hex corner.
+                    loop.Add(BoardCamera.WorldToViewportPoint(new Vector3(point.x * .28f, point.y * RowSpacing * .5f, 0f)));
+                    Vector2Int end = next[point];
+                    next.Remove(point);
+                    point = end;
+                } while (point != first);
+                loops.Add(loop.ToArray());
+            }
+            return loops.ToArray();
         }
 
         private void SetIdleGlow(List<Renderer> models, float outline, float sheen)
@@ -136,7 +180,6 @@ namespace Hexrota.UnityClient.Presentation
             lastPulse = -1f;
             if (idleArrow != null) idleArrow.gameObject.SetActive(false);
             SetIdleGlow(sourceModels, 0, 0);
-            SetIdleGlow(matchModels, 0, 0);
         }
 
         private void ClearHintAppearance()
@@ -144,7 +187,6 @@ namespace Hexrota.UnityClient.Presentation
             HidePaintedHint();
             cachedHint = null;
             sourceModels.Clear();
-            matchModels.Clear();
         }
     }
 }
