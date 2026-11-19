@@ -16,9 +16,6 @@ namespace Hexrota.UnityClient.Presentation
         [SerializeField] private Outline labelOutline;
         [SerializeField] private Shadow labelShadow;
 
-        private const float PressDepth = 4f;
-        private const float BevelAtRest = 8f;
-        private const float BevelPressed = 2f;
         private enum Accent { None, Shine, Hop }
         private Accent accent;
         private Button button;
@@ -175,8 +172,8 @@ namespace Hexrota.UnityClient.Presentation
         private void ApplyPose(float hop)
         {
             visual.anchoredPosition = restPosition + Vector2.up * hop;
-            rim.rectTransform.anchoredPosition = Vector2.up * (BevelAtRest / 2 - pressPose * PressDepth);
-            float inset = pressPose * (BevelAtRest - PressDepth - BevelPressed);
+            rim.rectTransform.anchoredPosition = Vector2.up * (ui.bevelAtRest / 2 - pressPose * motion.pressDepth);
+            float inset = pressPose * (ui.bevelAtRest - motion.pressDepth - ui.bevelPressed);
             bevel.rectTransform.offsetMin = Vector2.up * inset;
         }
     }

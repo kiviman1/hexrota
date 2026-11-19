@@ -371,6 +371,7 @@ MonoBehaviour:
   punchScale: 1.15
   breatheAmplitude: 0.03
   idleHopHeight: 6
+  pressDepth: 4
   flyLaunchScale: 0.6
   flyPeakScale: 1.1
   flyArcMin: 60

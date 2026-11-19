@@ -73,6 +73,10 @@ namespace Hexrota.UnityClientTests
                 motion.idleHopDelay, motion.rewardStartDelay, motion.reducedFlyDuration, motion.flyLaunchDuration},
                 Is.EqualTo(new[] {.08f,.18f,.30f,.15f,.55f,.75f,.06f,.20f,1.15f,2.4f,.03f,4f,.6f,8f,.3f,.3f,.1f}));
             Assert.That(motion.arrivalHapticMs, Is.InRange(1, 20));
+            Assert.That(motion.pressDepth, Is.EqualTo(4f));
+            Assert.That(new[] { ui.bevelAtRest, ui.bevelPressed, ui.rewardIconSize }, Is.EqualTo(new[] { 8f, 2f, 28f }));
+            Assert.That(ui.bevelAtRest - motion.pressDepth, Is.GreaterThanOrEqualTo(ui.bevelPressed),
+                "A pressed button must keep at least the pressed bevel.");
             Assert.That(motion.tap.curve.Evaluate(.5f), Is.GreaterThan(.5f));
             Assert.That(motion.release.curve.Evaluate(.6f), Is.EqualTo(1.0896f).Within(.001f));
             Assert.That(motion.popIn.curve.Evaluate(.6f), Is.EqualTo(1.0992f).Within(.001f));

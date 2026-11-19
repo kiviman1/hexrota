@@ -20,6 +20,8 @@ namespace Hexrota.UnityClient.Presentation
         [Min(0f)] public float flyLaunchDuration, reducedFlyDuration, rewardStartDelay;
         [Min(0f)] public float breathePeriod, shineInterval, shineDuration, idleHopDelay;
         public float punchScale, breatheAmplitude, idleHopHeight;
+        [Tooltip("Basınca düğmenin aşağı indiği mesafe (px).")]
+        [Min(0f)] public float pressDepth;
         public float flyLaunchScale, flyPeakScale, flyArcMin, flyArcMax;
         [Range(0, 20)] public int arrivalHapticMs;
     }

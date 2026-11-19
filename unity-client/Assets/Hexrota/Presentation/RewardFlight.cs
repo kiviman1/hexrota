@@ -14,7 +14,6 @@ namespace Hexrota.UnityClient.Presentation
     {
         private const int MaxIcons = 8;
         private const int IndividualLimit = 5;
-        private const float IconSize = 28f;
         private static readonly CultureInfo Turkish = CultureInfo.GetCultureInfo("tr-TR");
         private static readonly ProfilerMarker Animation = new ProfilerMarker("Hexrota.RewardFlight.Animate");
 
@@ -100,8 +99,8 @@ namespace Hexrota.UnityClient.Presentation
             star = starTarget;
             Canvas canvas = GetComponentInParent<Canvas>().rootCanvas;
             uiCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
-            for (int i = 0; i < pool.Length; i++) pool[i] = CreateImage("RewardIcon", IconSize);
-            burst = CreateImage("RewardBurst", IconSize);
+            for (int i = 0; i < pool.Length; i++) pool[i] = CreateImage("RewardIcon", ui.rewardIconSize);
+            burst = CreateImage("RewardBurst", ui.rewardIconSize);
             burst.sprite = burstSprite;
             burst.color = ui.goldLight;
         }
@@ -397,9 +396,12 @@ namespace Hexrota.UnityClient.Presentation
         {
             if (current == null) return;
             ResetVisuals();
+            var callback = completed;
             completed = null;
             ShowWallet(wallet ?? session.ReadPhoneWallet());
             attention.Release(this);
+            // Callers (e.g. a coop upgrade) wait for this; an interrupted flight still ends.
+            callback?.Invoke();
         }
 
         private void ShowWallet(UnityGameSession.PhoneWallet wallet)

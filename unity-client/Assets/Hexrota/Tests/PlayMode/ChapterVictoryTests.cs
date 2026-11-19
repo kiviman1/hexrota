@@ -202,6 +202,40 @@ namespace Hexrota.UnityClientTests
         }
 
         [UnityTest]
+        public IEnumerator InterruptedFlightStillReportsCompletionOnce()
+        {
+            yield return Win("reduce");
+            game.ReturnToMenu();
+            game.OnWebVisibilityChanged("hidden");
+            Assert.That(session.SetPreferences(motion: "full"), Is.True);
+            var flight = game.GetComponentInChildren<RewardFlight>();
+            var gold = Counter("GoldValue");
+            string final = Turkish(session.ReadPhoneWallet().Gold);
+            int calls = 0;
+            flight.Play(RewardKind.Gold, PlayCenter(), 20, () => calls++);
+            float deadline = Time.unscaledTime + 2;
+            while (flight.ActiveIconCount == 0 && flight.IsPlaying && Time.unscaledTime < deadline) yield return null;
+            Assert.That(flight.IsPlaying, Is.True, "The flight must still be in the air when it is cut.");
+            Assert.That(calls, Is.Zero);
+
+            game.OnWebVisibilityChanged("hidden");
+            Assert.That(flight.IsPlaying, Is.False);
+            Assert.That(calls, Is.EqualTo(1), "Cancel must still call the completion callback.");
+            Assert.That(flight.ActiveIconCount, Is.Zero);
+            Assert.That(gold.text, Is.EqualTo(final));
+
+            // A newer flight replacing an unfinished one also completes the first caller.
+            int replaced = 0, next = 0;
+            flight.Play(RewardKind.Gold, PlayCenter(), 20, () => replaced++);
+            flight.Play(RewardKind.Gold, PlayCenter(), 20, () => next++);
+            Assert.That(replaced, Is.EqualTo(1));
+            Assert.That(next, Is.Zero);
+            yield return WaitForFlight(flight);
+            Assert.That(new[] { calls, replaced, next }, Is.EqualTo(new[] { 1, 1, 1 }));
+            Assert.That(gold.text, Is.EqualTo(final));
+        }
+
+        [UnityTest]
         public IEnumerator ReducedFlightUsesOneIconAndCompletesWithinPointThreeFiveSeconds()
         {
             yield return Win("reduce");
