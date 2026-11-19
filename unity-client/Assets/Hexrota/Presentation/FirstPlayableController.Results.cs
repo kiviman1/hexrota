@@ -44,7 +44,7 @@ namespace Hexrota.UnityClient.Presentation
             var result=Session.ReadEarnedResult();
             var board=Session.Snapshot;
             bool tutorial=Session.IsTutorial,first=Session.ActiveStage==0,final=!tutorial && Session.NextCampaignStage<0;
-            string next=final?"Bahçeni gör":first?"Birlikte devam edelim":tutorial?"İlk bölüme başla":
+            string next=final?"Kümesine dön":first?"Birlikte devam edelim":tutorial?"İlk bölüme başla":
                 "Bölüm "+(Session.NextCampaignStage-Session.TutorialCount+1).ToString("00")+" ile devam et";
             if(tutorial && result.Welcome)
             {

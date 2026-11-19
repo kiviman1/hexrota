@@ -33,7 +33,7 @@ namespace Hexrota.UnityClient.Presentation
         [SerializeField] private Text stageLabel;
         [Tooltip("{n} is replaced by the chapter number.")]
         [SerializeField] private string chapterFormat = "Bölüm {n}";
-        [SerializeField] private string completedLabel = "Bahçe";
+        [SerializeField] private string completedLabel = "Kümesine dön";
         [SerializeField] private string fullLifeLabel = "Dolu";
 
         private FirstPlayableController controller;

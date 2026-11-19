@@ -103,13 +103,9 @@ namespace Hexrota.UnityClientTests
             Assert.That(scene.Session.Snapshot.turn,Is.EqualTo(board.turn));
         }
 
-        [UnityTest] public IEnumerator GardenShowsCanonicalMilestonesAndLinksToAllTenRecords()
+        [UnityTest] public IEnumerator HomeLinksToAllTenRecords()
         {
-            scene.OpenGarden();
-            Assert.That(Text("ProgressTitle"),Is.EqualTo("Bahçen seni bekliyor"));
-            Assert.That(Text("NextMilestone"),Is.EqualTo("Çiçekler için 2 Altın Yumurta daha."));
-            Assert.That(scene.GetComponentsInChildren<RawImage>().Single(i=>i.name=="GardenIllustration").texture.name,Is.EqualTo("soil"));
-            Button("Kayıtlar").onClick.Invoke();
+            Button("RecordsButton").onClick.Invoke();
             Assert.That(scene.CurrentScreen,Is.EqualTo("records"));
             Assert.That(Text("Chapter0"),Does.Contain(scene.Session.StageName(scene.Session.TutorialCount)));
             Assert.That(Text("Chapter9"),Does.Contain(scene.Session.StageName(scene.Session.StageCount-1)));

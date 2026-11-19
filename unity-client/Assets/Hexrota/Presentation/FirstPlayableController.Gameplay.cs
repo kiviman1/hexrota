@@ -48,6 +48,9 @@ namespace Hexrota.UnityClient.Presentation
                 Resources.Load<GameObject>("CastleGame/CastleHud").GetComponent<CastleHudView>();
             castleHud = Instantiate(hudPrefab, gameplay.transform, false);
             castleHud.Bind(this);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            CreateDevelopmentWinButton();
+#endif
 
             var toolsPrefab = gameToolsPrefab != null ? gameToolsPrefab :
                 Resources.Load<GameObject>("CastleGame/CastleGameTools").GetComponent<CastleGameToolsView>();
@@ -66,6 +69,9 @@ namespace Hexrota.UnityClient.Presentation
             float aspect = safeRect.width * Screen.width / Mathf.Max(1,safeRect.height * Screen.height);
             var layout = new MobileLayout.GameRegions(aspect,lesson);
             Place((RectTransform)castleHud.transform,0,1-layout.Header,1,1);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            PlaceDevelopmentWinButton(1-layout.Header);
+#endif
             gameTools.FitRegions(layout);
             var area = layout.Board;
             Place(boardInput,area.xMin,area.yMin,area.xMax,area.yMax);
