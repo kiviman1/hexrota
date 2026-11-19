@@ -1,10 +1,13 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Hexrota.Application;
 using Hexrota.UnityClient;
 using Hexrota.UnityClient.Presentation;
 using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
@@ -35,6 +38,47 @@ namespace Hexrota.UnityClientTests
 
         private Button Button(string name) { return scene.GetComponentsInChildren<Button>().Single(b=>b.name==name); }
         private string Text(string name) { return scene.GetComponentsInChildren<Text>().Single(t=>t.name==name).text; }
+
+        [UnityTest] public IEnumerator CastlePopupHeaderRemainsTappableWhileSettingsScrollAndPreviewUsesTheSameFrame()
+        {
+            scene.OpenMobileSettings();
+            yield return null;
+            Canvas.ForceUpdateCanvases();
+            var shell=scene.GetComponentInChildren<CastlePopupChrome>();
+            var title=shell.GetComponentsInChildren<Text>().Single(t=>t.name=="DialogTitle");
+            var illustration=shell.GetComponentsInChildren<Image>().Single(i=>i.name=="Illustration");
+            Assert.That(illustration.sprite,Is.Not.Null);
+            Assert.That(illustration.raycastTarget,Is.False);
+            var pattern=shell.GetComponentInChildren<CastlePopupPattern>();
+            Assert.That(pattern.canvasRenderer.GetMesh().vertexCount,Is.Positive);
+            var scroll=shell.GetComponentInChildren<ScrollRect>();
+            Vector3 titlePosition=title.transform.position;
+            scroll.verticalNormalizedPosition=0;
+            yield return null;
+            Assert.That(title.transform.position,Is.EqualTo(titlePosition));
+            var close=shell.GetComponentsInChildren<Button>().Single(b=>b.name=="Kapat");
+            var rect=(RectTransform)close.transform;
+            var pointer=new PointerEventData(EventSystem.current) {
+                position=RectTransformUtility.WorldToScreenPoint(null,rect.TransformPoint(rect.rect.center))
+            };
+            var hits=new List<RaycastResult>();
+            EventSystem.current.RaycastAll(pointer,hits);
+            Assert.That(hits,Is.Not.Empty);
+            var hit=ExecuteEvents.GetEventHandler<IPointerClickHandler>(hits[0].gameObject);
+            Assert.That(hit,Is.EqualTo(close.gameObject));
+            ExecuteEvents.Execute(hit,pointer,ExecuteEvents.pointerClickHandler);
+            Assert.That(scene.CurrentScreen,Is.EqualTo("menu"));
+            long revision=scene.Session.Revision;
+            scene.OpenMobilePreview(scene.Session.NextStage);
+            yield return null;
+            Assert.That(scene.GetComponentInChildren<CastlePopupChrome>().name,Is.EqualTo("GoalCard"));
+            Assert.That(Text("ChapterTitle"),Is.EqualTo(scene.Session.StageName(scene.Session.NextStage)));
+            Assert.That(Button("Başla").GetComponent<CastleBevel>(),Is.Not.Null);
+            Button("Kapat").onClick.Invoke();
+            Assert.That(scene.CurrentScreen,Is.EqualTo("menu"));
+            Assert.That(scene.Session.Revision,Is.EqualTo(revision));
+            LogAssert.NoUnexpectedReceived();
+        }
 
         [UnityTest] public IEnumerator PauseResumeAndLockedInventoryUseTheCampaignBoard()
         {

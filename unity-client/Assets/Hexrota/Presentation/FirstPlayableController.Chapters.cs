@@ -69,48 +69,51 @@ namespace Hexrota.UnityClient.Presentation
             previewLayer=Panel("ChapterPreview",safe,Vector2.zero,Vector2.one,new Color32(16,10,41,186));
             PhoneBackdrop.Show(previewLayer);
             previewLayer.transform.SetAsLastSibling();
-            var frame=MenuFrame(previewLayer.transform,"PreviewFrame");
-            float height=p.Resume||p.Rescue?553:515;
-            var page=ScrollingPage(frame,Mathf.Max(frame.rect.height,height+24),false);
-            float top=(page.rect.height-height)/2;
-            var card=MenuPlate(page,"GoalCard",15,top,360,height,new Color32(255,248,228,255),new Color32(249,230,189,255),new Color32(194,139,72,255),25,4);
             Action cancel=()=>{
                 ClosePreviewLayer(); CurrentScreen=origin;
                 if(origin=="result") EvaluateOutcome();
             };
-            var close=MenuPlate(card,"Kapat",304,16,40,44,new Color32(255,148,157,255),new Color32(221,75,104,255),MenuCream,22,2);
-            MenuClick(close,cancel);MenuIcon(close,"close",10,12,19,Color.white);
-            var badge=MenuBox(card,"GoalBadge",156,30,48,54);
-            badge.gameObject.AddComponent<PhoneChapterBadge>().color=new Color32(235,216,240,255);
-            MenuIcon(badge,"hex",12,15,24,new Color32(121,72,147,255));
-            MenuText(card,"StageTag",Session.StageLabel(stage),22,96,316,30,9,Ink,TextAnchor.MiddleCenter,true);
-            var ribbon=MenuPlate(card,"TitleRibbon",21,143,318,52,new Color32(251,123,151,255),new Color32(183,51,91,255),new Color32(255,187,184,255),10,2);
-            Rect("RibbonTails",ribbon,Vector2.zero,Vector2.one).gameObject.AddComponent<PhoneRibbonTails>().raycastTarget=false;
-            MenuText(ribbon,"ChapterTitle",Session.StageName(stage),4,0,310,48,24,MenuCream,TextAnchor.MiddleCenter,true).fontStyle=FontStyle.BoldAndItalic;
+            var shell=CastlePopupChrome.Create(previewLayer.transform,"GoalCard","ChapterTitle",Session.StageName(stage),cancel);
+            float height=p.Resume||p.Rescue?494:441;
+            var frame=(RectTransform)shell.transform;
+            var viewport=Rect("Viewport",frame,Vector2.zero,Vector2.one);
+            viewport.offsetMin=new Vector2(0,10);viewport.offsetMax=new Vector2(0,-62);
+            shell.PlaceContent(viewport);
+            viewport.gameObject.AddComponent<RectMask2D>();
+            viewport.gameObject.AddComponent<Image>().color=Color.clear;
+            var card=Rect("Content",viewport,Vector2.zero,Vector2.one);
+            var scroll=shell.gameObject.AddComponent<ScrollRect>();
+            scroll.horizontal=false; scroll.viewport=viewport; scroll.content=card;
+            scroll.movementType=ScrollRect.MovementType.Clamped;
+            shell.gameObject.AddComponent<MobileSheetViewport>().Configure((RectTransform)previewLayer.transform,frame,card,scroll,height);
+            var art=MenuBox(card,"IllustrationWell",17,3,326,105);
+            shell.Illustrate(art,CastlePopupChrome.Art.Map);
+            MenuText(card,"StageTag",Session.StageLabel(stage),22,113,316,23,12,shell.Gold,TextAnchor.MiddleCenter,true);
             string description=p.Rescue?"Taşların, yeşil alanların ve puanın korunuyor.":p.Resume?"Kaldığın yerden devam et.":p.ScoreTarget+" puana ulaş ve her yeri yeşile boya. "+p.Moves+" hamlen var.";
-            MenuText(card,"ChapterDescription",description,22,200,316,36,12,Ink);
+            MenuText(card,"ChapterDescription",description,22,138,316,35,14,shell.Paper);
             var icons=new[]{"hex","leaf","moves"};var labels=new[]{"HEDEF PUAN","BOYANACAK ALAN","HAMLE"};
             string[] values={p.ScoreTarget.ToString(),p.Resume?p.Green+" / "+p.Cells:p.Cells.ToString(),p.Moves.ToString()};
             for(int i=0;i<3;i++)
             {
-                var tile=MenuPlate(card,labels[i],22+107.5f*i,254,101,109,new Color32(242,242,229,255),new Color32(242,242,229,255),new Color32(221,217,193,255),10,1);
-                MenuIcon(tile,icons[i],41,15,20,new Color32(131,169,99,255));
-                var green=new Color32(108,139,82,255);
-                MenuText(tile,"GoalValue",values[i],2,41,97,36,24,green,TextAnchor.MiddleCenter,true);
-                MenuText(tile,"GoalName",labels[i],1,77,99,24,9,green,TextAnchor.MiddleCenter,true);
+                var tile=MenuBox(card,labels[i],22+107.5f*i,183,101,97);
+                tile.gameObject.AddComponent<Image>().raycastTarget=false;
+                shell.Paint(tile.gameObject,CastlePopupChrome.Finish.Inset);
+                MenuIcon(tile,icons[i],40,8,22,shell.Gold);
+                MenuText(tile,"GoalValue",values[i],2,32,97,34,24,shell.Paper,TextAnchor.MiddleCenter,true);
+                MenuText(tile,"GoalName",labels[i],2,65,97,27,9,shell.Gold,TextAnchor.MiddleCenter,true);
             }
-            MenuText(card,"GoalNote","Bölümü bitirmek için puanın yeterli olmalı ve her yer yeşil olmalı.",25,371,310,52,12,new Color32(108,139,82,255));
             string start=p.Rescue?"İkinci şans seçenekleri":p.Resume?"Devam et":"Başla";
-            var button=MenuPlate(card,start,22,438,316,50,new Color32(155,218,66,255),new Color32(46,118,26,255),new Color32(204,239,126,255),16,2);
+            var button=MenuBox(card,start,41,304,278,51);
             MenuClick(button,()=>{ClosePreviewLayer(); BeginStage(stage);});
-            MenuText(button,"Label",start,3,0,310,49,16,MenuCream,TextAnchor.MiddleCenter,true);
+            shell.Paint(button.gameObject,CastlePopupChrome.Finish.Primary);
+            CastlePopupChrome.EmbossAction(MenuText(button,"Label",start,3,0,272,49,18,shell.Paper,TextAnchor.MiddleCenter,true));
             if(p.Resume || p.Rescue)
             {
-                var restart=MenuBox(card,"Yeni tahtayla baştan başla",22,495,316,43);
-                MenuText(restart,"Label","Yeni tahtayla baştan başla",0,0,316,43,14,Ink);
+                var restart=MenuBox(card,"Yeni tahtayla baştan başla",22,367,316,43);
+                MenuText(restart,"Label","Yeni tahtayla baştan başla",0,0,316,43,14,shell.Paper);
                 MenuClick(restart,()=>{
                     ClosePreviewLayer(); CurrentScreen=origin;
-                    ShowModal("Baştan başlamak ister misin?","Bu bölümdeki ilerlemen sıfırlanacak. Hamle yaptıysan 1 can gider. Yeni bir tahta için canın olmalı.");
+                    ShowModal("Baştan başlamak ister misin?","Bu bölümdeki ilerlemen sıfırlanacak. Hamle yaptıysan 1 can gider. Yeni bir tahta için canın olmalı.",()=>OpenMobilePreview(stage));
                     AddAction("Yeni tahtayla başla",0,()=>{if(Session.StartChapterFresh(stage)) OpenCurrentBoard();else ShowCommandFailure(Session.LastError);});
                     AddAction("Vazgeç",1,()=>OpenMobilePreview(stage));
                 });

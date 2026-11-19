@@ -27,13 +27,14 @@ namespace Hexrota.UnityClient
             if (!HasAttempt || ActiveStage != TutorialCount || Status != "playing" || Snapshot.turn != 0 ||
                 IsStageComplete(TutorialCount - 1) || PlayedEarlierFirstChapterAttempt()) return;
             var level = ActiveLevelWire;
-            var route = W.List(level["solution"]);
+            var archive = W.Get(data.ArchivedOpeningSolutions, (string)W.Get(level, "levelDataVersion", LevelCatalog.LegacyDataVersion));
+            var route = W.List(W.Get(archive, (string)W.Get(level, "variantId", LevelCatalog.LegacyVariantId), level["solution"]));
             if (route.Count == 0) return;
             var pair = W.List(route[0]);
             int from = W.Int32(pair[0]), to = W.Int32(pair[1]);
             var board = new Hexrota.Gameplay.HexMatch(LevelCatalog.GameplayConfig(level), Snapshot);
             var swap = board.Swap(from, to);
-            if (!swap.ok || swap.frames.Length == 0) return;
+            if (!swap.ok || swap.frames.Length != 1 || swap.frames[0].matched.Length != 3) return;
             openingMatches = swap.frames[0].matched;
             openingPair = !openingMatches.Contains(to) && openingMatches.Contains(from)
                 ? new[] { to, from } : new[] { from, to };

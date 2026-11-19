@@ -1793,15 +1793,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8110d22ba2dcf5ccf7c0f215e39595d2, type: 3}
   m_Name:
   m_EditorClassIdentifier:
-  shape: 5
-  radius: 16
-  rim: 3.2
-  depth: 2.4
-  upperFace: {r: 0.1451, g: 0.28235, b: 0.29804, a: 1.0}
-  lowerFace: {r: 0.07843, g: 0.17647, b: 0.21569, a: 1.0}
-  upperRim: {r: 0.58039, g: 0.87059, b: 0.76863, a: 1.0}
-  lowerRim: {r: 0.23922, g: 0.56863, b: 0.52549, a: 1.0}
-  lowerEdge: {r: 0.04314, g: 0.11765, b: 0.16078, a: 1.0}
+  shape: 0
+  radius: 32
+  rim: 7
+  depth: 5
+  upperFace: {r: 0.53725, g: 0.32549, b: 0.79216, a: 1}
+  lowerFace: {r: 0.28627, g: 0.18824, b: 0.44706, a: 1}
+  upperRim: {r: 1, g: 0.91373, b: 0.69020, a: 1}
+  lowerRim: {r: 0.85882, g: 0.57255, b: 0.24706, a: 1}
+  lowerEdge: {r: 0.33333, g: 0.17647, b: 0.25098, a: 1}
 --- !u!1 &110300
 GameObject:
   m_ObjectHideFlags: 0
@@ -1892,15 +1892,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8110d22ba2dcf5ccf7c0f215e39595d2, type: 3}
   m_Name:
   m_EditorClassIdentifier:
-  shape: 5
-  radius: 14
-  rim: 2.7
-  depth: 1.5
-  upperFace: {r: 0.54902, g: 0.38039, b: 0.68627, a: 1.0}
-  lowerFace: {r: 0.29412, g: 0.20392, b: 0.40392, a: 1.0}
-  upperRim: {r: 0.93333, g: 0.78824, b: 0.5451, a: 1.0}
-  lowerRim: {r: 0.65882, g: 0.50196, b: 0.31765, a: 1.0}
-  lowerEdge: {r: 0.34902, g: 0.2549, b: 0.37255, a: 1.0}
+  shape: 0
+  radius: 90
+  rim: 4
+  depth: 2
+  upperFace: {r: 0.77255, g: 0.55294, b: 0.92549, a: 1}
+  lowerFace: {r: 0.32549, g: 0.17647, b: 0.53333, a: 1}
+  upperRim: {r: 1, g: 0.93725, b: 0.73725, a: 1}
+  lowerRim: {r: 0.90196, g: 0.64314, b: 0.27843, a: 1}
+  lowerEdge: {r: 0.28235, g: 0.14510, b: 0.30196, a: 1}
 --- !u!114 &110306
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1997,6 +1997,7 @@ GameObject:
   - component: {fileID: 110501}
   - component: {fileID: 110502}
   - component: {fileID: 110503}
+  - component: {fileID: 110504}
   m_Layer: 5
   m_Name: OpeningHeading
   m_TagString: Untagged
@@ -2065,6 +2066,23 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: "Üç aynı sayıyı hizala"
+--- !u!114 &110504
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 110500}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8f41c1ef29e42225296e5e734af82a8, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  upper: {r: 1, g: 1, b: 1, a: 1}
+  lower: {r: 1, g: 0.96078, b: 0.87059, a: 1}
+  edge: {r: 0.24314, g: 0.11765, b: 0.33333, a: 1}
+  thickness: 0.9
+  castDepth: 1.6
 --- !u!1 &110600
 GameObject:
   m_ObjectHideFlags: 0
@@ -2123,7 +2141,7 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier:
   m_Material: {fileID: 0}
-  m_Color: {r: 0.88235, g: 0.96078, b: 0.91373, a: 1.0}
+  m_Color: {r: 1, g: 0.97255, b: 0.89804, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

@@ -25,15 +25,38 @@ namespace Hexrota.UnityClientTests
                 var game = W.Required(store.Read(ProfileRepository.ProfileKey), "game");
                 var metadata = W.Required(W.Required(game, "attempts"), chapter.ToString());
                 seen.Add((string)W.Required(metadata, "variantId"));
+                Assert.That(W.Required(metadata, "levelDataVersion"), Is.EqualTo("chapter-one-v1"));
 
                 string attempt = session.AttemptId;
                 var pair = session.OpeningLessonPair;
                 Assert.That(pair, Has.Length.EqualTo(2));
                 Assert.That(session.CompletedSceneTutorials, Is.Zero);
-                var projected = new HexMatch(session.Level, session.Snapshot).Swap(pair[0], pair[1]);
+                var model = new HexMatch(session.Level, session.Snapshot);
+                Assert.That(model.FindMatches(), Is.Empty);
+                var counts = model.values.GroupBy(value => value).Select(group => group.Count()).ToArray();
+                CollectionAssert.AreEquivalent(new[] {4,5,5,5}, counts);
+                Assert.That(model.topology.pairs.Count(edge => model.values[edge[0]] == model.values[edge[1]]),
+                    Is.LessThanOrEqualTo(5), "The teaching board should not open with clusters of identical neighbours.");
+                var projected = model.Clone().Swap(pair[0], pair[1]);
                 Assert.That(projected.ok, Is.True);
+                Assert.That(projected.frames, Has.Length.EqualTo(1));
+                Assert.That(projected.frames[0].matched, Has.Length.EqualTo(3));
                 CollectionAssert.AreEquivalent(projected.frames[0].matched, session.OpeningLessonMatchIndices);
                 Assert.That(session.OpeningLessonMatchIndices, Does.Contain(pair[1]));
+                var bright = new HashSet<int>(session.OpeningLessonMatchIndices.Concat(pair));
+                Assert.That(bright.Count, Is.EqualTo(4));
+                Assert.That(bright.SelectMany(index => model.neighbors[index])
+                    .Any(index => !bright.Contains(index) && model.values[index] == model.values[pair[0]]), Is.False,
+                    "No adjacent decoy of the teaching colour should touch the highlighted group.");
+
+                var level = data.Catalog.ResolveLevelWire(1, (string)W.Required(metadata, "variantId"), "chapter-one-v1");
+                foreach (var solution in W.List(level["solutions"]))
+                {
+                    var replay = model.Clone();
+                    foreach (var step in W.List(solution).Select(W.List))
+                        Assert.That(replay.Swap(W.Int32(step[0]), W.Int32(step[1])).ok, Is.True);
+                    Assert.That(replay.Status, Is.EqualTo("won"));
+                }
                 int moves = session.Snapshot.movesLeft;
 
                 session = new UnityGameSession(data, store, new SystemUtcClock(), seed);
@@ -55,6 +78,47 @@ namespace Hexrota.UnityClientTests
                 Assert.That(session.CompletedSceneTutorials, Is.EqualTo(1));
             }
             Assert.That(seen, Has.Count.EqualTo(4));
+        }
+
+        [Test]
+        public void ArchivedFirstBoardsKeepTheirIdentityAndTeachASingleWinnableLine()
+        {
+            var classic = ClientGameData.FromResources(false);
+            var current = ClientGameData.FromResources();
+            var pack = WireJsonCodec.Parse(UnityEngine.Resources.Load<UnityEngine.TextAsset>(
+                "HexrotaData/chapter-one-openings-v1").text);
+            var routes = W.Required(W.Required(pack, "archivedOpeningSolutions"), "variants-v1");
+            for (uint seed = 1; seed <= 4; seed++)
+            {
+                var store = new MemoryProfileStorage();
+                var old = new UnityGameSession(classic, store, new SystemUtcClock(), seed);
+                Assert.That(old.EnterLevelOne(), Is.True);
+                var start = old.Snapshot;
+                string id = old.AttemptId;
+                var game = W.Required(store.Read(ProfileRepository.ProfileKey), "game");
+                var identity = W.Required(W.Required(game, "attempts"), old.ActiveStage.ToString());
+                Assert.That(W.Required(identity, "levelDataVersion"), Is.EqualTo("variants-v1"));
+                string variant = (string)W.Required(identity, "variantId");
+                old.ReturnToMenu();
+                var restored = new UnityGameSession(current, store, new SystemUtcClock(), seed);
+                Assert.That(restored.EnterLevelOne(), Is.True);
+                Assert.That(restored.AttemptId, Is.EqualTo(id));
+                Assert.That(restored.Snapshot.values, Is.EqualTo(start.values));
+                Assert.That(restored.Snapshot.rngState, Is.EqualTo(start.rngState));
+                var steps = W.List(W.Required(routes, variant)).Select(step => W.List(step).Select(W.Int32).ToArray()).ToArray();
+                CollectionAssert.AreEquivalent(steps[0], restored.OpeningLessonPair);
+                Assert.That(restored.OpeningLessonMatchIndices, Has.Length.EqualTo(3));
+                foreach (var step in steps)
+                {
+                    Assert.That(restored.TrySwap(step[0], step[1]).Ok, Is.True);
+                    restored.CompletePresentation();
+                }
+                Assert.That(restored.Status, Is.EqualTo("won"));
+                Assert.That(restored.EnterStage(restored.NextStage), Is.True);
+                game = W.Required(store.Read(ProfileRepository.ProfileKey), "game");
+                identity = W.Required(W.Required(game, "attempts"), restored.ActiveStage.ToString());
+                Assert.That(W.Required(identity, "levelDataVersion"), Is.EqualTo("variants-v1"));
+            }
         }
 
         [TestCase(false)]

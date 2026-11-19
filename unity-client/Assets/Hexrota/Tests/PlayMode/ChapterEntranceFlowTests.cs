@@ -43,6 +43,9 @@ namespace Hexrota.UnityClientTests
             Assert.That(curtain, Is.Not.Null);
             string attempt = game.Session.AttemptId;
             var pair = game.Session.OpeningLessonPair;
+            var shownText = curtain.GetComponentsInChildren<UnityEngine.UI.Text>();
+            Assert.That(shownText.Single(label => label.name == "TipHeading").text, Is.EqualTo("Üçlü eşleşme"));
+            Assert.That(shownText.Count(label => label.name == "Digit" && label.text == "2"), Is.EqualTo(3));
             game.BeginStage(0);
             game.RequestSwap(pair[0], pair[1]);
             Assert.That(game.CurrentScreen, Is.EqualTo("loading"));
@@ -105,6 +108,8 @@ namespace Hexrota.UnityClientTests
             var curtain = UnityEngine.Object.FindAnyObjectByType<ChapterLoadingView>();
             yield return new WaitForSecondsRealtime(.25f);
             Assert.That(curtain.GetComponent<CanvasGroup>().alpha, Is.EqualTo(1f));
+            var fill = (RectTransform)curtain.GetComponentsInChildren<Transform>().Single(part => part.name == "GreenProgress");
+            Assert.That(fill.anchorMax.x, Is.EqualTo(1f));
             var hud = (RectTransform)UnityEngine.Object.FindAnyObjectByType<CastleHudView>().transform;
             Assert.That(hud.anchoredPosition.y, Is.EqualTo(0f).Within(.01f));
             Assert.That(GameObject.Find("Stone_0"), Is.Not.Null);

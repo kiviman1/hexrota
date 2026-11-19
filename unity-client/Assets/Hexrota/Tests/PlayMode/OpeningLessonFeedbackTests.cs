@@ -51,6 +51,7 @@ namespace Hexrota.UnityClientTests
             int[] pair = session.OpeningLessonPair;
             var model = new HexMatch(session.Level, before);
             var bright = session.OpeningLessonMatchIndices.Concat(pair).Distinct().ToArray();
+            Assert.That(bright, Has.Length.EqualTo(4), "Only the carried stone and its three-cell line should be bright.");
             var props = new MaterialPropertyBlock();
             for (int i = 0; i < before.values.Length; i++)
             {

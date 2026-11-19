@@ -22,7 +22,7 @@ namespace Hexrota.UnityClient.Presentation
         public string CurrentScreen { get; private set; }
         private GameObject menu, gameplay, modal;
         private RectTransform boardInput;
-        private Text message, modalTitle, modalCopy;
+        private Text message, modalCopy;
         private RectTransform actions;
         private Button resumeButton;
         private Sprite roundedCard;
@@ -45,7 +45,7 @@ namespace Hexrota.UnityClient.Presentation
                 return this != null && isActiveAndEnabled && Board != null && boardCamera != null &&
                     safe != null && menu != null && gameplay != null && modal != null &&
                     castleHud != null && castleHud.IsReady && gameTools != null && message != null &&
-                    modalTitle != null && modalCopy != null && actions != null;
+                    modalCopy != null && actions != null;
             }
         }
 
@@ -107,7 +107,6 @@ namespace Hexrota.UnityClient.Presentation
 
             BuildPhoneHome();
             modal = Panel("ModalOverlay",safe,Vector2.zero,Vector2.one,Card);
-            modalTitle = Label("ModalTitle",modal.transform,"",new Vector2(.08f,.71f),new Vector2(.92f,.83f),42,TextAnchor.MiddleCenter);
             modalCopy = Label("ModalCopy",modal.transform,"",new Vector2(.08f,.49f),new Vector2(.92f,.70f),27,TextAnchor.MiddleCenter);
             actions = Rect("Actions",modal.transform,new Vector2(.08f,.09f),new Vector2(.92f,.46f));
             modal.SetActive(false); gameplay.SetActive(false);
@@ -321,14 +320,14 @@ namespace Hexrota.UnityClient.Presentation
         private void ShowCommandFailure(string reason)
         {
             Board.InputEnabled = false;
-            ShowModal("İŞLEM TAMAMLANAMADI",RejectionText(reason));
+            ShowModal("İŞLEM TAMAMLANAMADI",RejectionText(reason),CurrentScreen=="paused"?(Action)ReopenPause:ReturnToMenu);
             if (CurrentScreen == "paused") AddAction("Geri",0,ReopenPause);
             AddAction("Ana Menü",1,ReturnToMenu);
         }
         private void ShowError(string details)
         {
             CurrentScreen = "error"; if (Board != null) Board.InputEnabled = false;
-            ShowModal("OYUN AÇILAMADI",details);
+            ShowModal("OYUN AÇILAMADI",details,ready?(Action)ReturnToMenu:null);
             if (ready) AddAction("Ana Menü",0,ReturnToMenu);
         }
         private void CancelPresentation(bool restoreVisuals = true)
@@ -431,9 +430,9 @@ namespace Hexrota.UnityClient.Presentation
             LayoutGameplay(normalized);
             if (IsEnteringStage && entrancePrepared) SetHudEntrance(hudProgress);
         }
-        private void ShowModal(string heading, string copy)
+        private void ShowModal(string heading, string copy, Action close = null)
         {
-            ShowPhoneSheet(heading, copy, "", 500);
+            ShowPhoneSheet(heading, copy, "", 526, close);
         }
 
         private Button AddAction(string text, int slot, Action action)

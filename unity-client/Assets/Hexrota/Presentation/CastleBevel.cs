@@ -18,6 +18,27 @@ namespace Hexrota.UnityClient.Presentation
         [SerializeField] private Color upperRim = new Color32(255, 248, 202, 255);
         [SerializeField] private Color lowerRim = new Color32(219, 153, 68, 255);
         [SerializeField] private Color lowerEdge = new Color32(133, 75, 34, 255);
+        [SerializeField, Range(0f,1f)] private float polish;
+
+        internal void CopyFinishFrom(CastleBevel sample)
+        {
+            shape = sample.shape;
+            radius = sample.radius;
+            rim = sample.rim;
+            depth = sample.depth;
+            upperFace = sample.upperFace;
+            lowerFace = sample.lowerFace;
+            upperRim = sample.upperRim;
+            lowerRim = sample.lowerRim;
+            lowerEdge = sample.lowerEdge;
+            polish = sample.polish;
+            var image = (Image)graphic;
+            var source = sample.GetComponent<Image>();
+            image.sprite = source.sprite;
+            image.type = source.type;
+            image.color = Color.white;
+            image.SetVerticesDirty();
+        }
 
         public override void ModifyMesh(VertexHelper mesh)
         {
@@ -36,9 +57,38 @@ namespace Hexrota.UnityClient.Presentation
                 Fill(mesh, shadow, radius, lowerEdge, lowerEdge);
             }
             if (line > 0f) Fill(mesh, rect, radius, lowerRim, upperRim);
+            if (polish > 0 && line >= 2f)
+            {
+                var lip = Rect.MinMaxRect(rect.xMin+line*.48f,rect.yMin+line*.48f,
+                    rect.xMax-line*.48f,rect.yMax-line*.48f);
+                Fill(mesh, lip, Mathf.Max(0,radius-line*.48f), Color.Lerp(lowerRim,upperRim,.48f),
+                    Color.Lerp(upperRim,lowerEdge,.38f));
+            }
             var face = Rect.MinMaxRect(rect.xMin + line, rect.yMin + line,
                                        rect.xMax - line, rect.yMax - line);
             Fill(mesh, face, Mathf.Max(0f, radius - line), lowerFace, upperFace);
+            if (polish > 0 && shape == Silhouette.Rounded)
+            {
+                // Two tapered strokes follow the upper edge of the convex enamel face.
+                float rounding=Mathf.Min(radius,face.height*.5f);
+                float y=face.yMax-Mathf.Max(2f,rounding*.17f);
+                float left=face.xMin+rounding;
+                Glint(mesh,left,Mathf.Lerp(left,face.xMax-rounding,.56f),y,polish);
+                Glint(mesh,Mathf.Lerp(left,face.xMax-rounding,.82f),face.xMax-rounding,y,polish*.65f);
+            }
+        }
+
+        private static void Glint(VertexHelper mesh,float start,float end,float y,float strength)
+        {
+            if (end-start < 3f) return;
+            int v=mesh.currentVertCount;
+            var light=new Color(1f,1f,.86f,strength*.66f);
+            float mid=Mathf.Lerp(start,end,.28f);
+            mesh.AddVert(new Vector2(start,y-.8f),Color.clear,Vector2.zero);
+            mesh.AddVert(new Vector2(mid,y+.6f),light,Vector2.zero);
+            mesh.AddVert(new Vector2(end,y),Color.clear,Vector2.zero);
+            mesh.AddVert(new Vector2(mid,y-1.6f),light,Vector2.zero);
+            mesh.AddTriangle(v,v+1,v+3); mesh.AddTriangle(v+1,v+2,v+3);
         }
 
         private void Fill(VertexHelper mesh, Rect rect, float corner, Color low, Color high)

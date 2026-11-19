@@ -33,7 +33,8 @@ namespace Hexrota.UnityClient.Presentation
             Board.InputEnabled = false;
             gameplayInput.interactable = gameplayInput.blocksRaycasts = false;
             bool reduced = Session.ReducedMotion;
-            chapterLoading.Show(Session.ActiveStage, reduced);
+            int chapterIndex = Session.IsTutorial ? Session.ActiveStage : Session.ActiveStage - Session.TutorialCount;
+            chapterLoading.Show(chapterIndex, Session.CompletedSceneTutorials, reduced);
             entrance = StartCoroutine(EnterChapter(reduced));
         }
 
@@ -45,11 +46,11 @@ namespace Hexrota.UnityClient.Presentation
             float elapsed = 0f;
             while (elapsed < fadeIn)
             {
-                chapterLoading.SetTransition(Mathf.SmoothStep(0, 1, elapsed / fadeIn), elapsed);
+                chapterLoading.SetTransition(Mathf.SmoothStep(0, 1, elapsed / fadeIn), 0f);
                 yield return null;
                 elapsed += Time.unscaledDeltaTime;
             }
-            chapterLoading.SetTransition(1f, elapsed);
+            chapterLoading.SetTransition(1f, 0f);
             // Present an opaque frame before instantiating the board beneath it.
             yield return null;
             PrepareCurrentBoard();
@@ -64,7 +65,7 @@ namespace Hexrota.UnityClient.Presentation
             for (float t = 0; t < hold + fadeOut; t += Time.unscaledDeltaTime)
             {
                 float visibility = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(hold, hold + fadeOut, t));
-                chapterLoading.SetTransition(visibility, fadeIn + t);
+                chapterLoading.SetTransition(visibility, Mathf.Clamp01(t / hold));
                 yield return null;
             }
             chapterLoading.Hide();

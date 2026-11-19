@@ -61,7 +61,7 @@
     {
       "source": "unity/Catalog/LevelCatalog.cs",
       "destination": "unity-client/Assets/Hexrota/Core/Catalog/LevelCatalog.cs",
-      "sha256": "1c733d464d9dd54351577de20ce75d2e7690885dfb030f82b1a01462384fe7e8"
+      "sha256": "17fe509a652a1268a9cc99963229e2033d09e557fbc59b05694084f2d2388220"
     },
     {
       "source": "unity/Catalog/MaterialAlphaCatalog.cs",
@@ -187,6 +187,11 @@
       "source": "dist/variants.json",
       "destination": "unity-client/Assets/Hexrota/Resources/HexrotaData/variants.json",
       "sha256": "087caa9349785ad3cd2cea6ae01e38968307205cba0dad530110b9e78a657f7d"
+    },
+    {
+      "source": "data/chapter-one-openings-v1.json",
+      "destination": "unity-client/Assets/Hexrota/Resources/HexrotaData/chapter-one-openings-v1.json",
+      "sha256": "ccf9f512e3db3d17f352ea2323663a7e87d044e36d76ec76f1c9c1adc3c41732"
     },
     {
       "source": "dist/lives-config.json",

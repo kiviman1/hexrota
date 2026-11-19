@@ -59,8 +59,21 @@ namespace Hexrota.UnityClientTests
                 Assert.That(diagram.transform.childCount, Is.Positive);
             }
             Assert.That(prefab.GetComponent<CanvasGroup>().blocksRaycasts, Is.True);
-            var curtain = prefab.transform.Find("NightSky").GetComponent<UnityEngine.UI.Image>();
-            Assert.That(curtain.raycastTarget, Is.True);
+            var landscape = prefab.transform.Find("CastleLandscape");
+            AssertSprite(landscape, "foundation_0");
+            Assert.That(landscape.GetComponent<UnityEngine.UI.Image>().raycastTarget, Is.True);
+            Assert.That(landscape.GetComponent<CastleHomeBackdrop>(), Is.Not.Null);
+            var backdrops = guide.FindProperty("coopStages");
+            Assert.That(Enumerable.Range(0, backdrops.arraySize).Select(i =>
+                backdrops.GetArrayElementAtIndex(i).objectReferenceValue.name),
+                Is.EqualTo(new[] { "foundation_0", "frame_0", "finished_0" }));
+            var card = prefab.transform.Find("SafeContent/TipCard");
+            AssertSprite(card.Find("GildedTitleCrest"), "CrestBanner");
+            var tavik = card.Find("IllustrationFrame/InlaidEnamel/TavikPoints").GetComponent<UnityEngine.UI.RawImage>();
+            Assert.That(tavik.texture.name, Is.EqualTo("point"));
+            Assert.That(tavik.uvRect, Is.EqualTo(new Rect(0, 0, 1, 1)));
+            Assert.That(guide.FindProperty("progressFill").objectReferenceValue, Is.EqualTo(
+                card.Find("LoadingStatus/LoadingTrack/TrackInterior/GreenProgress")));
 
             var digits = prefab.GetComponentsInChildren<UnityEngine.UI.Text>(true).Where(label => label.name == "Digit").ToArray();
             Assert.That(digits.Select(label => label.text), Is.EquivalentTo(new[] { "2", "2", "2", "4", "4", "4" }));

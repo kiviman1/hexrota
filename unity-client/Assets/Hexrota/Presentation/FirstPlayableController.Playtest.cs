@@ -8,7 +8,7 @@ namespace Hexrota.UnityClient.Presentation
     {
         private void DrawPlaytestSettings(float y)
         {
-            OptionBox("Yerel oyuncu testi",18,y,316,223,"fff6dd","fbefd7","e5b87a",15,1);
+            OptionBox("Yerel oyuncu testi",18,y,316,223,"724d9e","53367f","a884be",15,1);
             var status=OptionText("PlaytestStatus","İSTEĞE BAĞLI YEREL TEST",32,y+10,288,22,10,TextAnchor.MiddleLeft,true);
             OptionSwitch("Oyuncu testi kaydı","Oyuncu testi kaydı",
                 "Hamleler ve aktif oyun süresi yalnızca bu cihazda saklanır. Kişisel veri toplanmaz veya gönderilmez.",

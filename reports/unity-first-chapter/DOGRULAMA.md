@@ -1,5 +1,7 @@
 # Bölüm 1 öğreticisi ve Tavik kutlaması
 
+Bu kayıt ilk öğretici teslimini (`6bc45f9`) gösterir. Sonraki çalışmada Bölüm 1 açılışları, pencereler ve yükleme ekranı güncellendi. [Güncel oyun görüntüleri ve doğrulama](../unity-castle-windows/DOGRULAMA.md)
+
 Yeni profilde ana menüde **Oyna** seçilince Bölüm 1’in seçilen varyantı açılır. Tavik ilk gerçek takasın yönünü gösterir. İlgili taşlar aydınlık kalır ve el işareti kaynak taştan hedefe ilerler. Kaydırma ve iki taşa sırayla dokunma desteklenir. Başka bir çift seçmek hamle harcamaz.
 
 Doğru takas oyuna kaydedilir. Eşleşme oynatılır ve Tavik sayıların puana eklendiğini, altlarındaki toprağın yeşerdiğini açıklar. Oyuncu aynı tahtada sonraki hamlesini serbestçe yapar. Arka plandan ve kayıttan dönüşte tahtanın kimliği ve yapılmış hamleler korunur.

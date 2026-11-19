@@ -43,18 +43,28 @@ namespace Hexrota.UnityClient.Presentation
             gameObject.SetActive(true);
         }
 
-        // Prefer the space above the bright cells. If the group is near the HUD,
-        // move the prompt below it. All coordinates use the board camera's rect.
-        internal void Position(RectTransform boardRegion, float low, float high, float cellRadius)
+        internal void Position(RectTransform boardRegion, Vector2 boardLimits, float low, float high, float cellRadius)
         {
             RectTransform area = (RectTransform)transform;
             if (area.rect.height <= 0) return;
             float bottom = boardRegion.anchorMin.y, top = boardRegion.anchorMax.y;
             float unit = Mathf.Min(area.rect.width, area.rect.height * .8f) / area.rect.height;
             float height = unit * .185f, gap = unit * .025f;
-            float above = Mathf.LerpUnclamped(bottom, top, high + cellRadius) + gap;
-            float below = Mathf.LerpUnclamped(bottom, top, low - cellRadius) - gap - height;
-            float y = above + height <= top ? above : below >= bottom ? below : top - height;
+            float Above(float cell) => Mathf.LerpUnclamped(bottom, top, cell + cellRadius) + gap;
+            float Below(float cell) => Mathf.LerpUnclamped(bottom, top, cell - cellRadius) - gap - height;
+            // In portrait, keep even the dim stones visible. On short screens the
+            // instruction can sit near the move, leaving its entire line exposed.
+            float y = Above(boardLimits.y);
+            if (y + height > top)
+            {
+                y = Below(boardLimits.x);
+                if (y < bottom)
+                {
+                    y = Above(high);
+                    if (y + height > top)
+                        y = Below(low) >= bottom ? Below(low) : top - height;
+                }
+            }
             float width = Mathf.Min(.86f, area.rect.height * .75f / area.rect.width);
             FirstPlayableController.Place(prompt, .5f - width / 2f, y, .5f + width / 2f, y + height);
             FirstPlayableController.Place(hudWash, 0, top, 1, 1);

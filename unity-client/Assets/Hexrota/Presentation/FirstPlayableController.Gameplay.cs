@@ -150,7 +150,7 @@ namespace Hexrota.UnityClient.Presentation
                 foreach (int cell in openingMatch) Include(cell);
             }
             float radius = .56f / (2 * Board.BoardCamera.orthographicSize);
-            gameTools.Opening.Position(boardInput, low, high, radius);
+            gameTools.Opening.Position(boardInput, Board.FrameVerticalLimits(), low, high, radius);
 
             void Include(int cell)
             {

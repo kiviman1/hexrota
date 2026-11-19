@@ -165,10 +165,11 @@ namespace Hexrota.UnityClient.Presentation
         private void ShowHomeRules()
         {
             string back=CurrentScreen;
-            ShowModal("Nasıl oynanır?",PlayingInstructions);
+            Action close=()=>{modal.SetActive(false); CurrentScreen=back;};
+            ShowModal("Nasıl oynanır?",PlayingInstructions,close);
             if (Session.NextStage == Session.TutorialCount)
                 AddAction("Bölüm 1’i oyna",0,()=>BeginStage(Session.TutorialCount));
-            AddAction("Kapat",1,()=>{modal.SetActive(false);CurrentScreen=back;});
+
         }
 
         private void DrawPhoneNav(Transform parent,string active)
