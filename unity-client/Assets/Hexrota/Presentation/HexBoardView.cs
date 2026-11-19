@@ -279,10 +279,11 @@ namespace Hexrota.UnityClient.Presentation
         private void MoveAlongSwap(int a, int b, float t)
         {
             Vector3 delta = positions[b] - positions[a];
-            var normal = new Vector3(delta.y,-delta.x,0).normalized;
-            Vector3 offset = delta*t + normal*(Mathf.Min(.56f*38/44,delta.magnitude*.5f)*Mathf.Sin(Mathf.PI*t));
-            stones[a].transform.position = positions[a] + offset + Vector3.back*.15f;
-            stones[b].transform.position = positions[b] - offset + Vector3.back*.15f;
+            float arc = 4f * t * (1f - t);
+            Vector3 offset = delta * t + new Vector3(delta.y, -delta.x, 0f) * (.14f * arc);
+            Vector3 depth = Vector3.forward * StoneDepth;
+            stones[a].transform.position = positions[a] + offset + depth + Vector3.back * (.40f * arc);
+            stones[b].transform.position = positions[b] - offset + depth + Vector3.back * (.08f * arc);
         }
 
         private void SetGuideOpacity(GameObject tile, float opacity, float cutout = 0)
@@ -299,6 +300,7 @@ namespace Hexrota.UnityClient.Presentation
         public void Present(MovePresentation receipt)
         {
             float releasedAt = releasedFraction;
+            float releaseSpeed = releasedSpeed;
             Cancel(receipt.Before);
             if (!CanPresent) return;
             PresentationStarted?.Invoke(receipt);
@@ -310,7 +312,7 @@ namespace Hexrota.UnityClient.Presentation
             }
             IsAnimating = true;
             if (releasedAt > 0f) MoveAlongSwap(receipt.A, receipt.B, releasedAt);
-            animation = StartCoroutine(Animate(receipt, releasedAt));
+            animation = StartCoroutine(Animate(receipt, releasedAt, releaseSpeed));
         }
 
         private Action<int> targetCell;
@@ -383,6 +385,7 @@ namespace Hexrota.UnityClient.Presentation
             int from = pressed, locked = swipeTarget;
             bool wasDrag = dragged;
             float handoff = dragFraction;
+            float handoffSpeed = Time.unscaledTime - lastDragSample <= .07f ? dragSpeed : 0f;
             int to = wasDrag ? -1 : Hit(e.position);
             ResetGesture();
             if (targetCell != null)
@@ -399,8 +402,9 @@ namespace Hexrota.UnityClient.Presentation
                 if (locked >= 0)
                 {
                     releasedFraction = handoff;
+                    releasedSpeed = handoffSpeed;
                     try { Request(from, locked); }
-                    finally { releasedFraction = 0f; }
+                    finally { releasedFraction = releasedSpeed = 0f; }
                 }
                 else ClearSelection();
                 return;

@@ -40,13 +40,13 @@ namespace Hexrota.UnityClient.Presentation
 
         private IEnumerator EnterChapter(bool reduced)
         {
-            float fadeIn = reduced ? .09f : .24f;
+            float closeTime = reduced ? 0f : .43f;
             const float hold = 2.25f;
-            float fadeOut = reduced ? .1f : .26f;
+            float openTime = reduced ? 0f : .42f;
             float elapsed = 0f;
-            while (elapsed < fadeIn)
+            while (elapsed < closeTime)
             {
-                chapterLoading.SetTransition(Mathf.SmoothStep(0, 1, elapsed / fadeIn), 0f);
+                chapterLoading.SetTransition(elapsed / closeTime, 0f);
                 yield return null;
                 elapsed += Time.unscaledDeltaTime;
             }
@@ -62,10 +62,14 @@ namespace Hexrota.UnityClient.Presentation
             SetBoardSlide(reduced ? 1f : 0f);
             if (reduced) Board.SetEntranceFill(1f);
 
-            for (float t = 0; t < hold + fadeOut; t += Time.unscaledDeltaTime)
+            for (float t = 0; t < hold; t += Time.unscaledDeltaTime)
             {
-                float visibility = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(hold, hold + fadeOut, t));
-                chapterLoading.SetTransition(visibility, Mathf.Clamp01(t / hold));
+                chapterLoading.SetTransition(1f, t / hold);
+                yield return null;
+            }
+            for (float t = 0; t < openTime; t += Time.unscaledDeltaTime)
+            {
+                chapterLoading.SetTransition(1f - t / openTime, 1f);
                 yield return null;
             }
             chapterLoading.Hide();

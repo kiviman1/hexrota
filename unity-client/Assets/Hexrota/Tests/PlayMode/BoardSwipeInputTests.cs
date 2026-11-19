@@ -105,6 +105,36 @@ namespace Hexrota.UnityClientTests
         }
 
         [UnityTest]
+        public IEnumerator AReleasedDragContinuesFromItsPreviewWithoutReversing()
+        {
+            yield return OpenLesson();
+            var source = GameObject.Find("Stone_" + legalSwap.x).transform;
+            var target = GameObject.Find("Stone_" + legalSwap.y).transform;
+            Vector2 home = source.position;
+            Vector2 axis = (Vector2)target.position - home;
+            var finger = Down(start);
+            Drag(finger, Vector2.Lerp(start, end, .37f));
+            yield return null;
+            Vector2 releasePoint = Vector2.Lerp(start, end, .64f);
+            Drag(finger, releasePoint);
+            Vector3 preview = source.position;
+            Up(finger, releasePoint);
+            AssertOnlyLegalSwap();
+            Assert.That(source.position, Is.EqualTo(preview));
+
+            float last = Vector2.Dot((Vector2)preview - home, axis) / axis.sqrMagnitude;
+            float deadline = Time.realtimeSinceStartup + 1f;
+            do
+            {
+                yield return null;
+                float progress = Vector2.Dot((Vector2)source.position - home, axis) / axis.sqrMagnitude;
+                Assert.That(progress, Is.GreaterThanOrEqualTo(last - .001f));
+                last = progress;
+            } while (last < .92f && Time.realtimeSinceStartup < deadline);
+            Assert.That(last, Is.GreaterThanOrEqualTo(.92f));
+        }
+
+        [UnityTest]
         public IEnumerator PassingAcrossTheNeighbourToTheNextStoneStillCommitsOneAdjacentSwap()
         {
             yield return OpenLesson();

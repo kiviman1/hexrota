@@ -70,6 +70,39 @@ namespace Hexrota.UnityClientTests
         }
 
         [UnityTest]
+        public IEnumerator ShuttersMeetAtTheCenterAndSeparateBeforeBoardEntry()
+        {
+            Assert.That(game.Session.SetPreferences(motion: "full"), Is.True);
+            game.BeginLevelOne();
+            var curtain = UnityEngine.Object.FindAnyObjectByType<ChapterLoadingView>();
+            var upper = (RectTransform)curtain.transform.Find("UpperShutter");
+            var lower = (RectTransform)curtain.transform.Find("LowerShutter");
+            Assert.That(upper.anchorMin.y, Is.EqualTo(1f));
+            Assert.That(lower.anchorMax.y, Is.EqualTo(0f));
+            var card = curtain.transform.Find("SafeContent/TipCard").GetComponent<CanvasGroup>();
+            Assert.That(card.alpha, Is.Zero);
+
+            float deadline = Time.realtimeSinceStartup + 8f;
+            bool closing = false, joined = false, opening = false;
+            while (curtain.gameObject.activeSelf && Time.realtimeSinceStartup < deadline)
+            {
+                float gap = upper.anchorMin.y - lower.anchorMax.y;
+                Assert.That(upper.anchorMin.y + lower.anchorMax.y, Is.EqualTo(1f).Within(.001f));
+                Assert.That(game.Board.InputEnabled, Is.False);
+                if (gap <= .001f) joined = true;
+                if (gap > .05f && gap < .95f)
+                {
+                    if (joined) opening = true;
+                    else closing = true;
+                }
+                yield return null;
+            }
+            Assert.That(closing && joined && opening, Is.True);
+            Assert.That(curtain.gameObject.activeSelf, Is.False);
+            Assert.That(game.IsEnteringStage, Is.True);
+        }
+
+        [UnityTest]
         public IEnumerator BackgroundAndComponentDisableDuringEntryRestoreTheSameAttempt()
         {
             game.BeginLevelOne();

@@ -42,6 +42,7 @@ namespace Hexrota.UnityClient.Presentation
         private bool segmentedGravity;
         private int dragSource = -1, dragTarget = -1;
         private float dragFraction, releasedFraction;
+        private float lastDragSample, dragSpeed, releasedSpeed;
 
         private void PrepareMotion(LevelConfig level)
         {
@@ -129,9 +130,17 @@ namespace Hexrota.UnityClient.Presentation
             }
             if (!preview || swipeTarget < 0 || ReducedMotion) return;
             Vector2 path = (Vector2)BoardCamera.WorldToScreenPoint(positions[swipeTarget]) - origin;
+            float projected = Vector2.Dot(delta, path) / path.sqrMagnitude;
+            // Leave room to finish the swap even on a long drag, without hitting a hard stop.
+            float fraction = .49f * (1f - Mathf.Exp(-2.6f * Mathf.Max(0f, projected - .14f)));
+            float now = Time.unscaledTime;
+            float sampleTime = now - lastDragSample;
+            if (dragSource >= 0 && sampleTime > .001f)
+                dragSpeed = (fraction - dragFraction) / sampleTime;
             dragSource = pressed;
             dragTarget = swipeTarget;
-            dragFraction = Mathf.Clamp(Vector2.Dot(delta, path) / path.sqrMagnitude * .75f, 0f, .48f);
+            dragFraction = fraction;
+            lastDragSample = now;
             MoveAlongSwap(dragSource, dragTarget, dragFraction);
         }
 
@@ -150,15 +159,15 @@ namespace Hexrota.UnityClient.Presentation
             if (dragTarget >= 0 && dragTarget < stones.Count && stones[dragTarget] != null)
                 stones[dragTarget].transform.position = positions[dragTarget] + Vector3.forward * StoneDepth;
             dragSource = dragTarget = -1;
-            dragFraction = 0f;
+            dragFraction = dragSpeed = 0f;
         }
 
-        private IEnumerator Animate(MovePresentation receipt, float releasedAt)
+        private IEnumerator Animate(MovePresentation receipt, float releasedAt, float releaseSpeed)
         {
             bool pair = receipt.A >= 0 && receipt.B >= 0 && receipt.A < stones.Count && receipt.B < stones.Count;
             if (pair)
             {
-                yield return SwapMotion(receipt.A, receipt.B, receipt.Ok, releasedAt);
+                yield return SwapMotion(receipt.A, receipt.B, receipt.Ok, releasedAt, releaseSpeed);
                 if (!HasVisuals) { Cancel(null); yield break; }
                 if (receipt.Ok)
                 {
@@ -190,23 +199,29 @@ namespace Hexrota.UnityClient.Presentation
             PresentationCompleted?.Invoke();
         }
 
-        private IEnumerator SwapMotion(int a, int b, bool valid, float releasedAt)
+        private IEnumerator SwapMotion(int a, int b, bool valid, float releasedAt, float releaseSpeed)
         {
-            float duration = valid ? .30f * (1f - releasedAt) : .28f;
-            Vector3 towards = Vector3.ClampMagnitude(positions[b] - positions[a], RowSpacing) * .25f;
+            const float nudgeTime = .105f;
+            bool nudge = !valid && releasedAt <= 0f;
+            float duration = valid ? .285f * Mathf.Sqrt(1f - releasedAt) : .27f;
+            float tangent = valid ? Mathf.Clamp(releaseSpeed * duration / (1f - releasedAt), 0f, 2.4f) : 0f;
             for (float elapsed = 0; ; elapsed += Time.unscaledDeltaTime)
             {
                 if (!HasVisuals) yield break;
                 float t = Mathf.Clamp01(elapsed / duration);
-                if (valid) MoveAlongSwap(a, b, Mathf.SmoothStep(releasedAt, 1f, t));
-                else if (releasedAt > 0f) MoveAlongSwap(a, b, Mathf.SmoothStep(releasedAt, 0f, t));
-                else
+                float fraction;
+                if (valid)
                 {
-                    float reach = t < .4f ? t / .4f : (1f - t) / .6f;
-                    Vector3 nudge = towards * Mathf.SmoothStep(0, 1, reach);
-                    stones[a].transform.position = positions[a] + Vector3.forward * StoneDepth + nudge;
-                    stones[b].transform.position = positions[b] + Vector3.forward * StoneDepth - nudge;
+                    float remaining = 1f - t;
+                    float progress = t * t * (3f - 2f * t) + tangent * t * remaining * remaining;
+                    fraction = Mathf.Lerp(releasedAt, 1f, progress);
                 }
+                else if (nudge && elapsed < nudgeTime)
+                    fraction = Mathf.SmoothStep(0f, .24f, elapsed / nudgeTime);
+                else if (nudge)
+                    fraction = Mathf.SmoothStep(.24f, 0f, Mathf.InverseLerp(nudgeTime, duration, elapsed));
+                else fraction = Mathf.SmoothStep(releasedAt, 0f, t);
+                MoveAlongSwap(a, b, fraction);
                 if (t >= 1f) yield break;
                 yield return null;
             }
@@ -337,7 +352,7 @@ namespace Hexrota.UnityClient.Presentation
         {
             float gather = Mathf.InverseLerp(.13f, 1f, phase);
             float firstLeg = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(0, .65f, gather));
-            float secondLeg = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.65f, 1, gather));
+            float secondLeg = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.46f, 1, gather));
             float direct = Mathf.SmoothStep(0, 1, gather);
             float size = Mathf.Lerp(1f, .19f, direct) + .105f * Mathf.Sin(Mathf.PI * Mathf.InverseLerp(0, .32f, phase));
             float opacity = 1f - Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.8f, 1f, phase));
