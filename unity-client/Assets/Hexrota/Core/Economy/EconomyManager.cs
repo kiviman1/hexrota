@@ -172,13 +172,12 @@ namespace Hexrota.Economy
             if (Includes(Array(state["clearedLevelIds"]), level)) return Result(state, false, "already_cleared"); if (!Is(level, Next(Array(state["clearedLevelIds"])))) return Result(state, false, "level_locked"); if (!Is(Get(context, "status"), "won")) return Result(state, false, "not_won"); if (!Is(Get(context, "verified"), true)) return Result(state, false, "unverified_win");
             var reward = Grant(state, level, (string)context["attemptId"], "gameplay", Is(Get(context, "assisted"), true)); Validate(state); return Result(state, true, "level_claimed", reward);
         }
-        // The application supplies verified=true only after replay-valid T2 completion.
-        // This is a single welcome grant, separate from repeatable tutorial completion.
-        public Dictionary<string, object> ClaimWelcome(object raw, Dictionary<string, object> context)
+        // Both onboarding presentations share one ledger entry and require a verified win.
+        public Dictionary<string, object> ClaimWelcome(object raw, Dictionary<string, object> context, bool taughtInFirstChapter = false)
         {
             var state = Restore(raw);
             Need(Exact(context, "levelId", "attemptId", "status", "verified") && Token(Get(context, "attemptId")) && new[] { "won", "lost", "playing" }.Any(status => Is(Get(context, "status"), status)) && Get(context, "verified") is bool, "invalid_welcome_context");
-            if (!Is(Get(context, "levelId"), tutorials[1])) return Result(state, false, "welcome_unavailable");
+            if (!Is(Get(context, "levelId"), taughtInFirstChapter ? levels[0] : tutorials[1])) return Result(state, false, "welcome_unavailable");
             object prior = Get(state["transactions"], WelcomeId());
             if (prior != null) return Result(state, false, Is(Get(prior, "kind"), "welcome") ? "welcome_already_claimed" : "transaction_conflict");
             if (!Is(Get(context, "status"), "won")) return Result(state, false, "not_won");

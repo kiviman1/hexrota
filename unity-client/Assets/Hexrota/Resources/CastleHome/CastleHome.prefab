@@ -60,7 +60,6 @@ MonoBehaviour:
   lifeStatus: {fileID: 101803}
   stageLabel: {fileID: 106203}
   chapterFormat: "Bölüm {n}"
-  tutorialFormat: "Öğretici {n}"
   completedLabel: "Bahçe"
   fullLifeLabel: "Dolu"
 --- !u!1 &100100
@@ -5548,7 +5547,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "Öğretici 1"
+  m_Text: "Bölüm 1"
 --- !u!114 &106205
 MonoBehaviour:
   m_ObjectHideFlags: 0

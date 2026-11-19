@@ -5,6 +5,28 @@ namespace Hexrota.UnityClient.Presentation
 {
     public sealed partial class FirstPlayableController
     {
+        private ChapterVictoryView chapterVictory;
+
+        private void ShowChapterVictory()
+        {
+            if (chapterVictory == null)
+            {
+                var prefab = Resources.Load<GameObject>("CastleGame/ChapterVictory").GetComponent<ChapterVictoryView>();
+                chapterVictory = Instantiate(prefab, safe.GetComponentInParent<Canvas>().rootCanvas.transform, false);
+            }
+            CurrentScreen = "celebration";
+            modal.SetActive(false);
+            chapterVictory.Show(Session.ReducedMotion, FinishChapterVictory);
+        }
+
+        private void FinishChapterVictory()
+        {
+            if (chapterVictory != null) chapterVictory.Hide();
+            if (!ready || !HasInterface || CurrentScreen != "celebration") return;
+            CurrentScreen = "result";
+            DrawWin();
+        }
+
         private void ResultArt(string name,string texture,float x,float y,float width,float height)
         {
             var rect=Rect(name,sheetDecor,Vector2.zero,Vector2.one);
@@ -32,7 +54,7 @@ namespace Hexrota.UnityClient.Presentation
             bool tutorial=Session.IsTutorial,first=Session.ActiveStage==0,final=!tutorial && Session.NextCampaignStage<0;
             string next=final?"Bahçeni gör":first?"Birlikte devam edelim":tutorial?"İlk bölüme başla":
                 "Bölüm "+(Session.NextCampaignStage-Session.TutorialCount+1).ToString("00")+" ile devam et";
-            if(result.Welcome)
+            if(tutorial && result.Welcome)
             {
                 ShowPhoneSheet("İlk hediyen hazır!","İki görevi de tamamladın. Bu Altın senin!","BAŞLANGIÇ HEDİYEN",495);
                 PhoneSkin.Plate(sheetFrame.gameObject,Tone(0x472a62),Tone(0x51336a),Tone(0xffdb86),25,4);
@@ -51,10 +73,11 @@ namespace Hexrota.UnityClient.Presentation
             string description=tutorial?(first?"Aynı sayıları eşleştirdin, altlarındaki yerleri yeşerttin.":"Puanı topladın, her yeri yeşerttin. İlk bölüm seni bekliyor."):
                 final?"10 bölümün hepsini bitirdin!":board.movesLeft+" hamlen kaldı. Bölümü bitirdin!";
             int assisted=result.Assisted?32:0,gift=result.Gift!=null?24:0;
-            int rewardHeight=result.Stars>0?82+gift:0;
+            int welcome=result.WelcomeGold>0?24:0;
+            int rewardHeight=result.Stars>0?82+gift+welcome:0;
             int nextY=412+assisted+rewardHeight;
             ShowPhoneSheet(title,description,final?"YOLCULUK TAMAMLANDI":Session.StageLabel(Session.ActiveStage)+" TAMAMLANDI",tutorial?362:nextY+197);
-            CelebrateWin();
+            if (tutorial) CelebrateWin();
             ResultArt("VictoryMark","CoopArt/victory-mark",139,30,82,90);
             At(sheetEyebrow.rectTransform,22,145,316,20);sheetEyebrow.alignment=TextAnchor.MiddleCenter;
             CenterTitle(173);At(modalCopy.rectTransform,22,238,316,25);modalCopy.alignment=TextAnchor.MiddleCenter;
@@ -67,7 +90,8 @@ namespace Hexrota.UnityClient.Presentation
                 SheetPlate("EarnedRewards",22,rewardsY,316,rewardHeight,0x654084,0x38214e,0xe5b660,18);
                 SheetText("Earned","+"+result.Gold+" Altın     +"+result.Stars+" yıldız",28,rewardsY+12,304,30,18,Tone(0xffe492),TextAnchor.MiddleCenter,true);
                 if(result.Gift!=null) SheetText("Gift",result.Gift,28,rewardsY+42,304,24,13,Tone(0xd2f4a7),TextAnchor.MiddleCenter,true);
-                SheetText("ResultSaved","Bu bölüm tamamlandı. Ödülün ve ilerlemen kaydedildi.",28,rewardsY+44+gift,304,25,11,Tone(0xf5e7fa),TextAnchor.MiddleCenter);
+                if(welcome>0) SheetText("WelcomeIncluded","Bu ödüle "+result.WelcomeGold+" Altın başlangıç hediyen dahil.",28,rewardsY+42+gift,304,24,13,Paper,TextAnchor.MiddleCenter);
+                SheetText("ResultSaved","Bu bölüm tamamlandı. Ödülün ve ilerlemen kaydedildi.",28,rewardsY+44+gift+welcome,304,25,11,Tone(0xf5e7fa),TextAnchor.MiddleCenter);
             }
             SheetButton(next,22,nextY,316,50,ContinueAfterWin,SheetStyle.Primary,"arrow");
             SheetButton("Tahtayı incele",132,nextY+57,96,40,ShowBoardReview,SheetStyle.Plain);

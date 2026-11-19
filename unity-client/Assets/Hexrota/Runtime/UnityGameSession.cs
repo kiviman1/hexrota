@@ -79,10 +79,8 @@ namespace Hexrota.UnityClient
                 int next = NextCampaignStage;
                 if (next < 0) return -1;
                 int current = ActiveStage;
-                if (CanOpenStage(current) && (W.Equal(controller.Preview(current)["resume"], true) ||
+                if (current >= TutorialCount && CanOpenStage(current) && (W.Equal(controller.Preview(current)["resume"], true) ||
                     (Status == "lost" && W.Equal(W.Get(controller.RescueOffer(), "eligible"), true)))) return current;
-                var done = W.List(controller.GameSave["done"]);
-                for (int i = 0; i < TutorialCount; i++) if (!done.Contains((long)i)) return i;
                 return next;
             }
         }
@@ -256,7 +254,7 @@ namespace Hexrota.UnityClient
             controller = new GameSessionController(data.Catalog, data.Levels, data.TutorialCount,
                 new ProfileRepository(storage), data.LifeConfig, clock, selectionSeed,
                 "hexrota-unity-test", data.RewardRules, economyConfig: data.EconomyConfig,
-                rescueReceiptVerifier: new Hexrota.Rescue.DevelopmentRescueReceiptVerifier());
+                rescueReceiptVerifier: new Hexrota.Rescue.DevelopmentRescueReceiptVerifier(), onboardingInFirstChapter: true);
             StartPlaytestObservation(storage, clock, playtestMilliseconds);
         }
         public static UnityGameSession CreateDefault()

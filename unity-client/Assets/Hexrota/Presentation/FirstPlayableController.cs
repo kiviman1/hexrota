@@ -125,7 +125,7 @@ namespace Hexrota.UnityClient.Presentation
             int next = Session.NextStage;
             if (next < 0) { OpenGarden(); return; }
             var stage = Session.GetChapterPreview(next);
-            if (Session.FirstOpening || stage.Resume || stage.Rescue) BeginStage(next);
+            if (next == Session.TutorialCount || stage.Resume || stage.Rescue) BeginStage(next);
             else OpenMobilePreview(next);
         }
 
@@ -172,11 +172,14 @@ namespace Hexrota.UnityClient.Presentation
         public void RequestSwap(int a, int b)
         {
             if (!ready || !HasInterface || !Board.CanPresent || !Board.InputEnabled || requesting || CurrentScreen != "playing" || Board.IsAnimating || Session.Status != "playing") return;
+            if (!Board.AcceptsOpeningSwap(a, b)) return;
             requesting = true;
             try
             {
                 if (Session.IsTutorial) Board.MarkPair(null);
                 var receipt = Session.TrySwap(a, b);
+                if (receipt.Ok && openingPair != null) pendingGroundTip = Session.AttemptId;
+                HideOpeningLesson();
                 if (receipt.Ok) Board.PlayerMoved(receipt.After);
                 Board.InputEnabled = false;
                 message.text = receipt.Ok ? "" : RejectionText(receipt.Reason);
@@ -199,24 +202,35 @@ namespace Hexrota.UnityClient.Presentation
             FinishScoreFeedback();
             Session.CompletePresentation(); RefreshCounters();
             Board.InputEnabled = CurrentScreen == "playing" && Session.Status == "playing";
-            RefreshTutorial(false); RefreshScene(); EvaluateOutcome();
+            RefreshTutorial(false); RefreshScene(); EvaluateOutcome(liveMove: true);
         }
         private void CancelBoardPresentation()
         {
             ClearScoreFeedback();
             if (Session != null) Session.CancelPresentation();
         }
-        private void EvaluateOutcome()
+        private void EvaluateOutcome(bool liveMove = false)
         {
-            if (!ready || !Session.HasAttempt || Session.Status == "playing") return;
+            if (!ready || !Session.HasAttempt || Session.Status == "playing" || CurrentScreen == "celebration") return;
             ClearScoreFeedback();
-            CurrentScreen = "result";
             Board.InputEnabled = false;
+            if (liveMove && CurrentScreen == "playing" && Session.Status == "won" && !Session.IsTutorial)
+            {
+                ShowChapterVictory();
+                return;
+            }
+            CurrentScreen = "result";
             if (Session.Status == "won") DrawWin(); else DrawLoss();
         }
 
         public void Pause()
         {
+            if (ready && HasInterface && CurrentScreen == "celebration")
+            {
+                Session.Suspend();
+                FinishChapterVictory();
+                return;
+            }
             if (ready && HasInterface && IsEnteringStage) FinishInterruptedEntrance();
             if (!ready || !HasInterface || CurrentScreen != "playing") return;
             CancelPresentation(); Session.Suspend(); RefreshCounters();
@@ -297,6 +311,7 @@ namespace Hexrota.UnityClient.Presentation
         }
         private void ShowMenu()
         {
+            if (chapterVictory != null) chapterVictory.Hide();
             StopChapterEntrance();
             CurrentScreen = "menu"; menu.SetActive(true); gameplay.SetActive(false); modal.SetActive(false);
             Board.InputEnabled = false; boardCamera.enabled = false;
@@ -318,6 +333,8 @@ namespace Hexrota.UnityClient.Presentation
         }
         private void CancelPresentation(bool restoreVisuals = true)
         {
+            HideOpeningLesson();
+            if (chapterVictory != null) chapterVictory.Hide();
             StopChapterEntrance();
             ClearScoreFeedback();
             if (Session != null) Session.CancelPresentation();
@@ -348,7 +365,7 @@ namespace Hexrota.UnityClient.Presentation
             if (optionsShade != null) CloseMobileOptions();
             if (phoneAudio != null) phoneAudio.Configure(Session, false);
             if (CurrentScreen == "inventory") CloseInventory();
-            if (CurrentScreen == "playing" || IsEnteringStage) Pause();
+            if (CurrentScreen == "playing" || CurrentScreen == "celebration" || IsEnteringStage) Pause();
             else { CancelPresentation(); Session.Suspend(); }
         }
         private void OnDisable()
@@ -365,7 +382,7 @@ namespace Hexrota.UnityClient.Presentation
             // presentation without redrawing anything during teardown.
             if (Board != null) Board.InputEnabled = false;
             CancelPresentation(false); Session.Suspend();
-            if (CurrentScreen == "playing" || CurrentScreen == "inventory") CurrentScreen = "paused";
+            if (CurrentScreen == "playing" || CurrentScreen == "inventory" || CurrentScreen == "celebration") CurrentScreen = "paused";
         }
         private void OnEnable()
         {
@@ -378,6 +395,7 @@ namespace Hexrota.UnityClient.Presentation
         private void OnDestroy()
         {
             StopChapterEntrance();
+            if (chapterVictory != null) Destroy(chapterVictory.gameObject);
             if (chapterLoading != null) Destroy(chapterLoading.gameObject);
             if (roundedCard != null) Destroy(roundedCard);
             if (cardTexture != null) Destroy(cardTexture);

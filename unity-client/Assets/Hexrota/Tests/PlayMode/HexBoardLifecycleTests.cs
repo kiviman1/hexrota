@@ -69,7 +69,8 @@ namespace Hexrota.UnityClientTests
             int turn = view.Session.Snapshot.turn;
             var moves = new HexMatch(view.Session.Level, view.Session.Snapshot).LegalMoves();
             Assert.That(moves, Is.Not.Empty);
-            view.RequestSwap(moves[0][0], moves[0][1]);
+            var pair = view.Session.OpeningLessonPair ?? moves[0];
+            view.RequestSwap(pair[0], pair[1]);
             Assert.That(view.Session.Snapshot.turn, Is.EqualTo(turn + 1), view.Session.LastError);
             Assert.That(view.Board.IsAnimating, Is.True);
             Assert.That(view.Session.IsPresenting, Is.True);

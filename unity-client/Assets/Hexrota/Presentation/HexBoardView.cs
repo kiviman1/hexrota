@@ -314,6 +314,20 @@ namespace Hexrota.UnityClient.Presentation
         }
 
         private Action<int> targetCell;
+        private int[] lessonPair;
+
+        internal void SetOpeningPair(int[] pair)
+        {
+            lessonPair = pair;
+            if (pair != null) StopIdleHint();
+            else if (hasMutedTiles) MarkPair(null);
+        }
+
+        internal bool AcceptsOpeningSwap(int from, int to)
+        {
+            return lessonPair == null || (from == lessonPair[0] && to == lessonPair[1]) ||
+                   (from == lessonPair[1] && to == lessonPair[0]);
+        }
 
         public void SelectCellForItem(Action<int> onTap)
         {
@@ -349,6 +363,7 @@ namespace Hexrota.UnityClient.Presentation
             int start = Hit(e.position);
             if (start < 0 || (closedCells != null && closedCells[start]) ||
                 (targetCell == null && !stones[start].activeSelf)) return;
+            if (lessonPair != null && start != lessonPair[0] && start != lessonPair[1]) return;
             pointer = e.pointerId;
             down = e.position;
             pressed = start;

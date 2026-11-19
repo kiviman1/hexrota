@@ -115,7 +115,7 @@ namespace Hexrota.UnityClient.Presentation
             Vector2 heading = distance > 0f ? delta / distance : Vector2.zero;
             foreach (int neighbor in swipeNeighbors[pressed])
             {
-                if (!stones[neighbor].activeSelf) continue;
+                if (!stones[neighbor].activeSelf || !AcceptsOpeningSwap(pressed, neighbor)) continue;
                 Vector2 direction = (Vector2)BoardCamera.WorldToScreenPoint(positions[neighbor]) - origin;
                 float spacing = direction.magnitude;
                 if (spacing <= 0f) continue;

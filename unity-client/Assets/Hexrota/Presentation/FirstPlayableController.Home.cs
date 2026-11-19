@@ -146,11 +146,6 @@ namespace Hexrota.UnityClient.Presentation
             nextLifeDisplay = Time.unscaledTime + 1;
         }
 
-        private void ReplayFirstLesson()
-        {
-            if (Session.StartChapterFresh(0)) OpenCurrentBoard(); else ShowCommandFailure(Session.LastError);
-        }
-
         private void DrawPhoneHeaderBody(RectTransform body)
         {
             var logo=MenuArt(body,"HexrotaLogo","PhoneMenu/wordmark",12,14,158,40);
@@ -165,11 +160,14 @@ namespace Hexrota.UnityClient.Presentation
             MenuIcon(settings,"settings",8,12,21,MenuCream); MenuClick(settings,OpenMobileSettings);
         }
 
+        private const string PlayingInstructions = "Komşu iki taşı kaydırarak veya sırayla dokunarak yer değiştir. Aynı sayıdan en az üç taş düz bir hat oluşturunca eşleşir.\n\nÜç tane 3, 9 puan kazandırır. Eşleşmenin altındaki zemin bir kat açılır. Hamlelerin bitmeden puan hedefine ulaş ve bütün zemini yeşert.";
+
         private void ShowHomeRules()
         {
             string back=CurrentScreen;
-            ShowModal("Nasıl oynanır?","Yan yana iki taşa sırayla dokun ya da birini diğerine kaydır.\n\nÜç tane 3 eşleşirse 9 puan kazanırsın. Eşleşen taşların altı yeşil olur, yerlerine yeni taşlar gelir.\n\nHedef puana ulaş ve her yeri yeşile boya.");
-            AddAction("Birlikte deneyelim",0,ReplayFirstLesson);
+            ShowModal("Nasıl oynanır?",PlayingInstructions);
+            if (Session.NextStage == Session.TutorialCount)
+                AddAction("Bölüm 1’i oyna",0,()=>BeginStage(Session.TutorialCount));
             AddAction("Kapat",1,()=>{modal.SetActive(false);CurrentScreen=back;});
         }
 

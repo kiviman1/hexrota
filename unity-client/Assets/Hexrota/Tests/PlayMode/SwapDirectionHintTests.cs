@@ -73,6 +73,7 @@ namespace Hexrota.UnityClientTests
                 Assert.That(game.Session.SetPreferences(motion: "reduce"), Is.True);
                 game.BeginLevelOne();
                 yield return ChapterEntryWait.Ready(game);
+                yield return ChapterEntryWait.PlayOpeningMove(game);
                 var board = game.Board;
                 var arrow = board.GetComponentsInChildren<TutorialGestureArrow>(true).Single();
                 Assert.That(arrow.gameObject.activeSelf, Is.False);

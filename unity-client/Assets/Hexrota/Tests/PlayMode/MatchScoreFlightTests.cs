@@ -46,8 +46,6 @@ namespace Hexrota.UnityClientTests
             yield return null;
         }
 
-        private int[] LegalPair() => new HexMatch(game.Session.Level, game.Session.Snapshot).LegalMoves()[0];
-
         private Vector2 Cell(int index)
         {
             var cell = game.Session.Level.cells[index];
@@ -64,6 +62,7 @@ namespace Hexrota.UnityClientTests
         {
             game.BeginLevelOne();
             yield return ChapterEntryWait.Ready(game);
+            yield return ChapterEntryWait.PlayOpeningMove(game);
             var model = new HexMatch(game.Session.Level, game.Session.Snapshot);
             var pair = model.LegalMoves().First(move => model.Clone().Swap(move[0], move[1])
                 .frames[0].falls.Any(drop => drop.from.HasValue));
@@ -144,6 +143,7 @@ namespace Hexrota.UnityClientTests
         {
             game.BeginLevelOne();
             yield return ChapterEntryWait.Ready(game);
+            yield return ChapterEntryWait.PlayOpeningMove(game);
             var initial = new HexMatch(game.Session.Level, game.Session.Snapshot);
             int[][] route = null;
             for (int depth = 1; depth <= 3 && route == null; depth++)
@@ -212,7 +212,7 @@ namespace Hexrota.UnityClientTests
             Assert.That(game.Session.SetPreferences(motion: "reduce"), Is.True);
             game.BeginLevelOne();
             yield return ChapterEntryWait.Ready(game);
-            var pair = LegalPair();
+            var pair = game.Session.OpeningLessonPair;
             int score = game.Session.Snapshot.score;
             var plan = new HexMatch(game.Session.Level, game.Session.Snapshot).Swap(pair[0], pair[1]);
             int animatedFrames = 0;

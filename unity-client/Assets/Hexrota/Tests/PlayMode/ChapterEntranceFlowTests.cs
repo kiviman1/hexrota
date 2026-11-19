@@ -42,7 +42,7 @@ namespace Hexrota.UnityClientTests
             var curtain = UnityEngine.Object.FindAnyObjectByType<ChapterLoadingView>();
             Assert.That(curtain, Is.Not.Null);
             string attempt = game.Session.AttemptId;
-            var pair = game.Session.RequestHint();
+            var pair = game.Session.OpeningLessonPair;
             game.BeginStage(0);
             game.RequestSwap(pair[0], pair[1]);
             Assert.That(game.CurrentScreen, Is.EqualTo("loading"));

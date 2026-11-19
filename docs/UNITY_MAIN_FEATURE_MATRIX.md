@@ -1,5 +1,7 @@
 # Hexrota Web → Unity özellik ve parite matrisi
 
+**Güncel mobil öğretici.** Oyna, yeni oyuncuyu seçilen Bölüm 1 varyantına götürür. İlk takas, zemin ve puan hedefleri aynı tahtada öğretilir. Bölüm 3 çift katlı zemini, Bölüm 6 kasaları, Bölüm 8 ise 5 taşını tanıtır. Kazanılan her bölümde Tavik sonuç kartından önce oyuncuyu kutlar. Aşağıdaki T1/T2 satırları ilk Web aktarımının envanteridir. [Güncel Unity doğrulaması](../reports/unity-first-chapter/DOGRULAMA.md)
+
 **Mobil ekran aktarımı.** Aşağıdaki ilk entegrasyon envanterinden sonra bağlanan ekranlar, kaynakları, testleri ve kalan farklar [native mobil durum tablosunda](../reports/unity-phone-parity/README.md) yer alır. [Aynı durumdaki görüntü çiftleri](../reports/unity-phone-parity/GORSEL-KARSILASTIRMA.md) uygulamanın ilk açılışını ve kayıtlı bir Bölüm 1’i gösterir.
 
 Kaynak, GitHub main dalındaki [b078da4](https://github.com/kiviman1/hexrota/tree/b078da49a0a1c9632195f13aefefad812e7f92ab) commit’idir. Bu sürüm #38 ile 9.15’i içerir. Açık 9.16 geliştirmesi hedefi belirlemez. Unity başlangıç noktası [#35](https://github.com/kiviman1/hexrota/pull/35) ve onun üzerine uygulanmış [#40](https://github.com/kiviman1/hexrota/pull/40) birleşimidir. Sahne `Assets/Hexrota/Scenes/FirstPlayable.unity`, GUID `91100000000000000000000000000001`. Editör 6000.6.9f1, revizyon 8c45277fb9c5.

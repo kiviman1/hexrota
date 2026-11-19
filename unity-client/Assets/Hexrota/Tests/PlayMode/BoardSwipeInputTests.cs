@@ -35,7 +35,8 @@ namespace Hexrota.UnityClientTests
         private IEnumerator OpenLesson(bool reduced = false)
         {
             Assert.That(game.Session.SetPreferences(motion: reduced ? "reduce" : "full"), Is.True);
-            game.BeginJourney();
+            // This fixture has neighbours one and two hexes along the same swipe axis.
+            game.BeginStage(0);
             yield return ChapterEntryWait.Ready(game);
             board = game.Board;
             int[] pair = game.Session.TutorialPair;

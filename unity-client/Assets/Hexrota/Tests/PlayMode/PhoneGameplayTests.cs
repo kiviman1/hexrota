@@ -16,7 +16,7 @@ namespace Hexrota.UnityClientTests
     public sealed class PhoneGameplayTests
     {
         [UnityTest]
-        public IEnumerator TutorialAndNumberedBoardUseTopSettingsAndKeepTheBottomFree()
+        public IEnumerator SettingsAndIdleHintsWorkOnTheSameBoardAsTheOpeningLesson()
         {
             var initial = FirstPlayableController.SessionFactory;
             var storage = new MemoryProfileStorage();
@@ -43,10 +43,9 @@ namespace Hexrota.UnityClientTests
                 TapSettings(settings);
                 Assert.That(game.CurrentScreen, Is.EqualTo("settings"));
                 game.GetComponentsInChildren<Button>().Single(b => b.name == "Kapat").onClick.Invoke();
-                Assert.That(game.Session.IsTutorial && game.Board.InputEnabled, Is.True);
-                Assert.That(game.GetComponentsInChildren<RawImage>().Single(i => i.name == "Face").texture, Is.Not.Null);
-                game.GetComponentsInChildren<Button>().Single(b => b.name == "Geç").onClick.Invoke();
-                yield return ChapterEntryWait.Ready(game);
+                Assert.That(game.Session.ActiveStage, Is.EqualTo(game.Session.TutorialCount));
+                Assert.That(game.Board.InputEnabled, Is.True);
+                yield return ChapterEntryWait.PlayOpeningMove(game);
                 Assert.That(game.CurrentScreen, Is.EqualTo("playing"));
                 Assert.That(game.GetComponentsInChildren<Transform>().Any(t => t.name == "Coach"), Is.False);
                 var labels = game.GetComponentsInChildren<Text>();

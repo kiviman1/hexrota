@@ -31,7 +31,7 @@
     {
       "source": "unity/Application/GameSessionController.cs",
       "destination": "unity-client/Assets/Hexrota/Core/Application/GameSessionController.cs",
-      "sha256": "b52adad8cead61952ddae925b182858a21bb600adc3b04c8ce0b714a67ec9285"
+      "sha256": "bbd00bee1fb0ebca6481a4e4c495aee4205c33ae5c15f62db49e1a830bac5eb8"
     },
     {
       "source": "unity/Application/ProfileRepository.cs",
@@ -91,7 +91,7 @@
     {
       "source": "unity/Economy/EconomyManager.cs",
       "destination": "unity-client/Assets/Hexrota/Core/Economy/EconomyManager.cs",
-      "sha256": "71b7778fcbf56f77333568a02fc5c85a3b3e0bdef72a516df438ac863c55eefe"
+      "sha256": "4e81f2b98c7bd1b89bd2c146f07ebe80d0eab5b81c28bc6d4c4a2f39e79e1320"
     },
     {
       "source": "unity/Gameplay/BoardTopology.cs",

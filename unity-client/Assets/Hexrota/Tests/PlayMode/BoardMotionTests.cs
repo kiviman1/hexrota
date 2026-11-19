@@ -28,7 +28,8 @@ namespace Hexrota.UnityClientTests
             FirstPlayableController.SessionFactory = () => new UnityGameSession(ClientGameData.FromResources(), storage, new SystemUtcClock());
             yield return SceneManager.LoadSceneAsync("FirstPlayable");
             game = UnityEngine.Object.FindAnyObjectByType<FirstPlayableController>();
-            game.BeginJourney();
+            // The archived fixture has a known first-wave survivor for this motion test.
+            game.BeginStage(0);
             yield return ChapterEntryWait.Ready(game);
             world = game.gameObject.scene.GetRootGameObjects().Single(obj => obj.name == "BoardVisuals_PLACEHOLDER").transform;
         }

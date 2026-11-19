@@ -22,8 +22,6 @@ namespace Hexrota.UnityClient.Presentation
         [SerializeField] private Text stageLabel;
         [Tooltip("{n} is replaced by the chapter number.")]
         [SerializeField] private string chapterFormat = "Bölüm {n}";
-        [Tooltip("{n} is replaced by the tutorial number.")]
-        [SerializeField] private string tutorialFormat = "Öğretici {n}";
         [SerializeField] private string completedLabel = "Bahçe";
         [SerializeField] private string fullLifeLabel = "Dolu";
 
@@ -45,10 +43,8 @@ namespace Hexrota.UnityClient.Presentation
                 stageLabel.text = completedLabel;
                 return;
             }
-            bool tutorial = nextStage < tutorialCount;
-            int number = tutorial ? nextStage + 1 : nextStage - tutorialCount + 1;
-            string format = tutorial ? tutorialFormat : chapterFormat;
-            stageLabel.text = format.Replace("{n}", number.ToString(CultureInfo.InvariantCulture));
+            int number = nextStage - tutorialCount + 1;
+            stageLabel.text = chapterFormat.Replace("{n}", number.ToString(CultureInfo.InvariantCulture));
         }
 
         internal void ShowWallet(UnityGameSession.PhoneWallet wallet)

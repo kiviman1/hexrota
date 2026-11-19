@@ -58,7 +58,7 @@ namespace Hexrota.UnityClientTests
             yield return ChapterEntryWait.Ready(view);
             Assert.That(view.Session.HasAttempt, Is.True, view.Session.LastError);
             Assert.That(view.Board.InputEnabled, Is.True);
-            var pair = new HexMatch(view.Session.Level, view.Session.Snapshot).LegalMoves()[0];
+            var pair = view.Session.OpeningLessonPair;
             Pointer(pair[0], true); Pointer(pair[0], false);
             Assert.That(view.Board.SelectedIndex, Is.EqualTo(pair[0]));
             // Touch-sized drag through the board's EventSystem interfaces.
@@ -83,6 +83,7 @@ namespace Hexrota.UnityClientTests
         {
             view.BeginLevelOne();
             yield return ChapterEntryWait.Ready(view);
+            yield return ChapterEntryWait.PlayOpeningMove(view);
             var before = view.Session.Snapshot;
             var model = new HexMatch(view.Session.Level, before);
             int from = -1, to = -1;
@@ -122,7 +123,7 @@ namespace Hexrota.UnityClientTests
         {
             view.BeginLevelOne();
             yield return ChapterEntryWait.Ready(view);
-            var pair = new HexMatch(view.Session.Level, view.Session.Snapshot).LegalMoves()[0];
+            var pair = view.Session.OpeningLessonPair;
             view.RequestSwap(pair[0], pair[1]);
             Assert.That(view.Board.IsAnimating, Is.True);
             var committed = view.Session.Snapshot;
@@ -169,7 +170,7 @@ namespace Hexrota.UnityClientTests
                     var target=ExecuteEvents.GetEventHandler<IPointerDownHandler>(hits[0].gameObject);
                     Assert.That(target,Is.SameAs(view.Board.gameObject),"Cell "+i+" hit "+hits[0].gameObject.name);
                 }
-                var pair=new HexMatch(view.Session.Level,view.Session.Snapshot).LegalMoves()[0];
+                var pair=view.Session.OpeningLessonPair;
                 Vector2 first=ScreenPoint(pair[0]),second=ScreenPoint(pair[1]);
                 device.Sample(module,TouchPhase.Began,first);
                 device.Sample(module,TouchPhase.Ended,first);

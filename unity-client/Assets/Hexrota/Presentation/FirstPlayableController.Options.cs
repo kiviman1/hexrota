@@ -216,10 +216,14 @@ namespace Hexrota.UnityClient.Presentation
             OptionText("TimeLabel","Sonraki can",173,188,161,20,11,TextAnchor.MiddleCenter);
             refillTimer=OptionText("LifeTime","",173,211,161,28,17,TextAnchor.MiddleCenter,true); UpdateLifeTimer();
             OptionButton("Bekle",18,260,154,44,CloseMobileOptions);
-            var lesson=OptionButton("Ücretsiz öğretici",181,260,153,44,()=>{CloseMobileOptions();BeginStage(0);});
-            PhoneSkin.Plate(lesson.gameObject,OptColor("f9f7e8"),OptColor("e3e9d3"),OptColor("c2ccab"),12,1);
-            lesson.GetComponentInChildren<Text>().color=OptColor("47583b");
-            OptionText("Free","Devam eden oyun ve öğreticiler can istemez.",18,308,316,25,11,TextAnchor.MiddleCenter);
+            var rules=OptionButton("Nasıl oynanır?",181,260,153,44,()=>{
+                OptionsPanel("rules","Nasıl oynanır?","HEXROTA","",420,420);
+                OptionText("Rules",PlayingInstructions,22,151,308,183,14);
+                OptionButton("Geri",18,344,316,46,OpenMobileLives);
+            });
+            PhoneSkin.Plate(rules.gameObject,OptColor("f9f7e8"),OptColor("e3e9d3"),OptColor("c2ccab"),12,1);
+            rules.GetComponentInChildren<Text>().color=OptColor("47583b");
+            OptionText("Free","Kaldığın yerden devam etmek can harcamaz.",18,308,316,25,11,TextAnchor.MiddleCenter);
             OptionBox("LifeShop",18,344,316,306,"fff3d6","fff2d4","e8bf87",14,1);
             OptionText("TestGold","GELİŞTİRME TESTİ                         Test Altını: "+Session.TestGold,31,351,289,28,11,TextAnchor.MiddleCenter,true);
             OptionText("Note","Gerçek reklam gösterilmez, para alınmaz.",31,379,289,26,11);

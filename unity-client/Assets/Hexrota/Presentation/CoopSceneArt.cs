@@ -6,7 +6,7 @@ namespace Hexrota.UnityClient.Presentation
     // Pure projection of web scene-config-v1. Progress belongs to the session.
     public sealed class CoopSceneArt : MonoBehaviour
     {
-        private RawImage landscape, shade;
+        private RawImage landscape, shade, lessonShade;
         private RectTransform boardTray;
         private float entranceSlide = 1f;
         private Texture2D skyGradient;
@@ -45,7 +45,15 @@ namespace Hexrota.UnityClient.Presentation
             art.shade.texture = art.skyGradient;
             art.boardTray = Instantiate(trayPrefab, canvasObject.transform, false);
             art.boardTray.gameObject.SetActive(false);
+            art.lessonShade = Picture("LessonBackdrop", canvasObject.transform);
+            art.lessonShade.color = new Color32(20, 16, 36, 185);
+            art.lessonShade.gameObject.SetActive(false);
             return art;
+        }
+
+        internal void FocusLesson(bool focus)
+        {
+            if (lessonShade != null) lessonShade.gameObject.SetActive(focus);
         }
 
         private static RawImage Picture(string name, Transform parent)
