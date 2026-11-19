@@ -79,7 +79,7 @@ namespace Hexrota.UnityClientTests
             Assert.That(view.Session.IsPresenting, Is.False);
             Assert.That(view.Board.InputEnabled, Is.True);
         }
-        [UnityTest] public IEnumerator RejectedDragReturnsFromTheFingerWithoutConsumingAMove()
+        [UnityTest] public IEnumerator RejectedSwipeNudgesAndReturnsWithoutConsumingAMove()
         {
             view.BeginLevelOne();
             yield return ChapterEntryWait.Ready(view);
@@ -100,18 +100,17 @@ namespace Hexrota.UnityClientTests
             Pointer(from, true);
             var drag = new PointerEventData(EventSystem.current) { pointerId = 7, position = ScreenPoint(to) };
             ExecuteEvents.Execute(view.Board.gameObject, drag, ExecuteEvents.dragHandler);
-            Vector3 held = source.position;
-            float heldDistance = Vector3.Distance(sourceStart, held);
-            Assert.That(heldDistance, Is.GreaterThan(.05f));
-            Pointer(to, false);
             Assert.That(view.Board.IsAnimating, Is.True);
-            Assert.That(Vector3.Distance(source.position, held), Is.LessThan(.001f));
+            Pointer(to, false);
+            float furthest = 0f;
             float deadline = Time.realtimeSinceStartup + 4;
             while (view.Board.IsAnimating && Time.realtimeSinceStartup < deadline)
             {
-                Assert.That(Vector3.Distance(source.position, sourceStart), Is.LessThanOrEqualTo(heldDistance + .001f));
+                furthest = Mathf.Max(furthest, Vector3.Distance(source.position, sourceStart));
                 yield return null;
             }
+            Assert.That(furthest, Is.GreaterThan(.05f));
+            Assert.That(furthest, Is.LessThan(Vector3.Distance(sourceStart, targetStart) * .5f));
             Assert.That(view.Board.InputEnabled && !view.Board.IsAnimating, Is.True);
             Assert.That(source.position, Is.EqualTo(sourceStart));
             Assert.That(target.position, Is.EqualTo(targetStart));

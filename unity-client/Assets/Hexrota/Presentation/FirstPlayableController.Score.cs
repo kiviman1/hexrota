@@ -67,7 +67,8 @@ namespace Hexrota.UnityClient.Presentation
             var cue = scorePlan?.waves?.Where(c => c.wave == number).OrderByDescending(c => c.tier).ThenByDescending(c => c.rawTier).FirstOrDefault();
             if (headline != null && (cue == null || headline.tier > cue.tier)) cue = headline;
             if (phoneAudio != null) phoneAudio.Reward(Session,cue);
-            scorePacket.ShowWave(wave.scoreGain, headline != null ? CueText(headline) : number > 1 ? number + ". ZİNCİR" : "");
+            bool chain = scoreMove.Swap.frames.Length > 1;
+            scorePacket.ShowWave(wave.scoreGain, chain ? number + ". ZİNCİR" : headline != null ? CueText(headline) : "");
             scoreMilestone = scorePlan?.milestones?.Any(m => m.kind == "score" && m.wave == number) == true;
             groundMilestone = scorePlan?.milestones?.Any(m => m.kind == "ground" && m.wave == number) == true;
         }
@@ -82,7 +83,7 @@ namespace Hexrota.UnityClient.Presentation
                 castleHud.ShowGround(wave.layers);
             }
 
-            const float launch = .52f, contact = .81f;
+            const float launch = .46f, contact = .79f;
             bool showPacket = phase >= HexBoardView.MatchCollected && phase < contact;
             packet.gameObject.SetActive(showPacket);
             if (showPacket)
@@ -91,16 +92,16 @@ namespace Hexrota.UnityClient.Presentation
                     UnityEngine.Rect.NormalizedToPoint(boardInput.rect, Board.MatchCenterInViewport)));
                 var destination = castleHud.ScoreDestination;
                 Vector2 goal = feedbackLayer.InverseTransformPoint(destination.TransformPoint(destination.rect.center));
-                float fly = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(launch, contact - .01f, phase));
+                float fly = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(launch, contact, phase));
                 Vector2 offset = goal - origin;
                 Vector2 bend = new Vector2(offset.y, -offset.x).normalized * Mathf.Min(65f, offset.magnitude * .16f);
                 packet.localPosition = Vector2.Lerp(origin, goal, fly) + bend * (4f * fly * (1f - fly));
 
-                float bloom = Mathf.InverseLerp(HexBoardView.MatchCollected, .43f, phase);
+                float bloom = Mathf.InverseLerp(HexBoardView.MatchCollected, launch, phase);
                 float size = bloom < .44f ? Mathf.SmoothStep(.46f, 1.29f, bloom / .44f) :
                     Mathf.SmoothStep(1.29f, 1f, (bloom - .44f) / .56f);
                 packet.localScale = packetRestScale * Mathf.Lerp(size, .59f, fly);
-                scorePacket.ShowHeadline(phase < launch);
+                scorePacket.ShowHeadline(phase < .57f);
             }
             if (phase < contact) return;
             if (!landed)
@@ -111,7 +112,7 @@ namespace Hexrota.UnityClient.Presentation
             float progress = Mathf.InverseLerp(contact, 1f, phase);
             float beat = progress < .32f ? Mathf.SmoothStep(0, 1, progress / .32f) :
                 Mathf.SmoothStep(1, 0, (progress - .32f) / .68f);
-            castleHud.ScaleGoals(1f + beat * (scoreMilestone ? .28f : .22f), 1f + (groundMilestone ? .09f * beat : 0f));
+            castleHud.ScaleGoals(1f + beat * (scoreMilestone ? .20f : .15f), 1f + (groundMilestone ? .09f * beat : 0f));
         }
 
         private void FinishScoreFeedback()

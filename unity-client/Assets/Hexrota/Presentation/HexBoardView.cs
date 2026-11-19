@@ -299,8 +299,6 @@ namespace Hexrota.UnityClient.Presentation
 
         public void Present(MovePresentation receipt)
         {
-            float releasedAt = releasedFraction;
-            float releaseSpeed = releasedSpeed;
             Cancel(receipt.Before);
             if (!CanPresent) return;
             PresentationStarted?.Invoke(receipt);
@@ -311,8 +309,7 @@ namespace Hexrota.UnityClient.Presentation
                 return;
             }
             IsAnimating = true;
-            if (releasedAt > 0f) MoveAlongSwap(receipt.A, receipt.B, releasedAt);
-            animation = StartCoroutine(Animate(receipt, releasedAt, releaseSpeed));
+            animation = StartCoroutine(Animate(receipt));
         }
 
         private Action<int> targetCell;
@@ -375,17 +372,15 @@ namespace Hexrota.UnityClient.Presentation
         }
         public void OnDrag(PointerEventData e)
         {
-            if (e.pointerId == pointer) SampleSwipe(e.position, true);
+            if (e.pointerId == pointer) SampleSwipe(e.position);
         }
         public void OnPointerUp(PointerEventData e)
         {
             if (e.pointerId != pointer) return;
-            SampleSwipe(e.position, false);
+            SampleSwipe(e.position);
             if (e.pointerId != pointer) return;
-            int from = pressed, locked = swipeTarget;
+            int from = pressed;
             bool wasDrag = dragged;
-            float handoff = dragFraction;
-            float handoffSpeed = Time.unscaledTime - lastDragSample <= .07f ? dragSpeed : 0f;
             int to = wasDrag ? -1 : Hit(e.position);
             ResetGesture();
             if (targetCell != null)
@@ -399,14 +394,7 @@ namespace Hexrota.UnityClient.Presentation
             }
             if (wasDrag)
             {
-                if (locked >= 0)
-                {
-                    releasedFraction = handoff;
-                    releasedSpeed = handoffSpeed;
-                    try { Request(from, locked); }
-                    finally { releasedFraction = releasedSpeed = 0f; }
-                }
-                else ClearSelection();
+                ClearSelection();
                 return;
             }
             if (from != to) { ClearSelection(); return; }

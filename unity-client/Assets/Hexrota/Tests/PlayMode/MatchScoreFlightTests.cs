@@ -194,12 +194,15 @@ namespace Hexrota.UnityClientTests
             }
             var arrivals = new List<string>();
             var gains = new string[result.frames.Length];
+            var captions = new string[result.frames.Length];
+            var headline = packet.Find("PacketHeadline").GetComponent<Text>();
             string previousCounter = counter.text;
             bool creditedInFlight = false;
             game.Board.WaveProgress += (wave, number, phase) => {
                 if (packet.gameObject.activeInHierarchy)
                 {
                     gains[number - 1] = amount.text;
+                    if (headline.gameObject.activeSelf) captions[number - 1] = headline.text;
                     creditedInFlight |= counter.text == expectedCounters[number - 1];
                 }
                 if (counter.text == previousCounter) return;
@@ -213,6 +216,7 @@ namespace Hexrota.UnityClientTests
             Assert.That(game.Board.IsAnimating, Is.False);
             Assert.That(creditedInFlight, Is.False);
             CollectionAssert.AreEqual(result.frames.Select(wave => "+" + wave.scoreGain).ToArray(), gains);
+            CollectionAssert.AreEqual(Enumerable.Range(1, result.frames.Length).Select(number => number + ". ZİNCİR"), captions);
             CollectionAssert.AreEqual(expectedCounters, arrivals);
             Assert.That(game.Session.Snapshot.score, Is.EqualTo(start.score + result.scoreGain));
         }

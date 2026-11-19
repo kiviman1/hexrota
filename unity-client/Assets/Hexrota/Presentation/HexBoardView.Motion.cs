@@ -35,13 +35,9 @@ namespace Hexrota.UnityClient.Presentation
             ? (Vector2)BoardCamera.WorldToViewportPoint(waveCenter) : Vector2.zero;
         private bool[] unvisitedMatch;
         private int[] connectedMatch;
-        private int swipeTarget = -1;
         private Rect pressedViewport;
         private float swipePixelScale;
         private bool segmentedGravity;
-        private int dragSource = -1, dragTarget = -1;
-        private float dragFraction, releasedFraction;
-        private float lastDragSample, dragSpeed, releasedSpeed;
 
         private void PrepareMotion(LevelConfig level)
         {
@@ -96,7 +92,7 @@ namespace Hexrota.UnityClient.Presentation
             return touch.fingerId != pointer || touch.phase == TouchPhase.Canceled;
         }
 
-        private void SampleSwipe(Vector2 cursor, bool preview)
+        private void SampleSwipe(Vector2 cursor)
         {
             if (!InputEnabled || IsAnimating || !HasVisuals || BoardCamera == null ||
                 BoardCamera.pixelRect != pressedViewport || !pressedViewport.Contains(cursor) || TouchInterrupted())
@@ -121,50 +117,27 @@ namespace Hexrota.UnityClient.Presentation
                 // The web input uses a 22.5-degree cone and 12–20 logical pixels.
                 float threshold = Mathf.Clamp(spacing * .28f, 12f * swipePixelScale, 20f * swipePixelScale);
                 if (alignment < .9238795f || distance * alignment < threshold) continue;
-                if (swipeTarget >= 0 && neighbor != swipeTarget) { OnCancel(null); return; }
-                swipeTarget = neighbor;
-                break;
+                int from = pressed;
+                // Consume the gesture before dispatch. Subsequent drag and release events cannot swap again.
+                ResetGesture();
+                Request(from, neighbor);
+                return;
             }
-            if (!preview || swipeTarget < 0 || ReducedMotion) return;
-            Vector2 path = (Vector2)BoardCamera.WorldToScreenPoint(positions[swipeTarget]) - origin;
-            float projected = Vector2.Dot(delta, path) / path.sqrMagnitude;
-            // Leave room to finish the swap even on a long drag, without hitting a hard stop.
-            float fraction = .49f * (1f - Mathf.Exp(-2.6f * Mathf.Max(0f, projected - .14f)));
-            float now = Time.unscaledTime;
-            float sampleTime = now - lastDragSample;
-            if (dragSource >= 0 && sampleTime > .001f)
-                dragSpeed = (fraction - dragFraction) / sampleTime;
-            dragSource = pressed;
-            dragTarget = swipeTarget;
-            dragFraction = fraction;
-            lastDragSample = now;
-            MoveAlongSwap(dragSource, dragTarget, dragFraction);
         }
 
         private void ResetGesture()
         {
-            ClearDragPose();
             pointer = int.MinValue;
-            pressed = swipeTarget = -1;
+            pressed = -1;
             dragged = false;
         }
 
-        private void ClearDragPose()
-        {
-            if (dragSource >= 0 && dragSource < stones.Count && stones[dragSource] != null)
-                stones[dragSource].transform.position = positions[dragSource] + Vector3.forward * StoneDepth;
-            if (dragTarget >= 0 && dragTarget < stones.Count && stones[dragTarget] != null)
-                stones[dragTarget].transform.position = positions[dragTarget] + Vector3.forward * StoneDepth;
-            dragSource = dragTarget = -1;
-            dragFraction = dragSpeed = 0f;
-        }
-
-        private IEnumerator Animate(MovePresentation receipt, float releasedAt, float releaseSpeed)
+        private IEnumerator Animate(MovePresentation receipt)
         {
             bool pair = receipt.A >= 0 && receipt.B >= 0 && receipt.A < stones.Count && receipt.B < stones.Count;
             if (pair)
             {
-                yield return SwapMotion(receipt.A, receipt.B, receipt.Ok, releasedAt, releaseSpeed);
+                yield return SwapMotion(receipt.A, receipt.B, receipt.Ok);
                 if (!HasVisuals) { Cancel(null); yield break; }
                 if (receipt.Ok)
                 {
@@ -188,6 +161,7 @@ namespace Hexrota.UnityClient.Presentation
                 {
                     yield return AnimateWave(waves[i], i + 1, pace);
                     if (!HasVisuals) { Cancel(null); yield break; }
+                    if (i + 1 < waves.Length) yield return new WaitForSecondsRealtime(.075f);
                 }
             }
             Render(receipt.After);
@@ -196,28 +170,21 @@ namespace Hexrota.UnityClient.Presentation
             PresentationCompleted?.Invoke();
         }
 
-        private IEnumerator SwapMotion(int a, int b, bool valid, float releasedAt, float releaseSpeed)
+        private IEnumerator SwapMotion(int a, int b, bool valid)
         {
-            const float nudgeTime = .105f;
-            bool nudge = !valid && releasedAt <= 0f;
-            float duration = valid ? .285f * Mathf.Sqrt(1f - releasedAt) : .27f;
-            float tangent = valid ? Mathf.Clamp(releaseSpeed * duration / (1f - releasedAt), 0f, 2.4f) : 0f;
+            const float nudgeTime = .092f;
+            float duration = valid ? .22f : .24f;
             for (float elapsed = 0; ; elapsed += Time.unscaledDeltaTime)
             {
                 if (!HasVisuals) yield break;
                 float t = Mathf.Clamp01(elapsed / duration);
                 float fraction;
                 if (valid)
-                {
-                    float remaining = 1f - t;
-                    float progress = t * t * (3f - 2f * t) + tangent * t * remaining * remaining;
-                    fraction = Mathf.Lerp(releasedAt, 1f, progress);
-                }
-                else if (nudge && elapsed < nudgeTime)
+                    fraction = Mathf.SmoothStep(0f, 1f, t);
+                else if (elapsed < nudgeTime)
                     fraction = Mathf.SmoothStep(0f, .24f, elapsed / nudgeTime);
-                else if (nudge)
+                else
                     fraction = Mathf.SmoothStep(.24f, 0f, Mathf.InverseLerp(nudgeTime, duration, elapsed));
-                else fraction = Mathf.SmoothStep(releasedAt, 0f, t);
                 MoveAlongSwap(a, b, fraction);
                 if (t >= 1f) yield break;
                 yield return null;
@@ -357,24 +324,24 @@ namespace Hexrota.UnityClient.Presentation
 
         private void GatherStones(WaveFrame wave, Vector3 center, float phase)
         {
-            float gather = Mathf.InverseLerp(.13f, 1f, phase);
-            float firstLeg = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(0, .65f, gather));
-            float secondLeg = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.46f, 1, gather));
-            float direct = Mathf.SmoothStep(0, 1, gather);
-            float size = Mathf.Lerp(1f, .19f, direct) + .105f * Mathf.Sin(Mathf.PI * Mathf.InverseLerp(0, .32f, phase));
-            float opacity = 1f - Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.8f, 1f, phase));
+            float gather = Mathf.InverseLerp(.09f, 1f, phase);
+            float travel = Mathf.SmoothStep(0f, 1f, gather);
+            float pulse = Mathf.Sin(Mathf.PI * Mathf.InverseLerp(0f, .35f, phase));
+            float size = Mathf.Lerp(1f, .16f, travel) + .075f * pulse;
+            float opacity = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(.77f, 1f, phase));
+            float flash = Mathf.Sin(Mathf.PI * Mathf.InverseLerp(0f, .85f, phase)) * .8f;
             for (int i = 0; i < wave.matched.Length; i++)
             {
                 int cell = wave.matched[i];
                 var stone = stones[cell];
-                Vector3 localCenter = matchCenters[cell];
-                Vector3 point = (localCenter - center).sqrMagnitude < .0001f
-                    ? Vector3.Lerp(positions[cell], center, direct)
-                    : Vector3.Lerp(Vector3.Lerp(positions[cell], localCenter, firstLeg), center, secondLeg);
-                point.z = StoneDepth - (.30f + .003f * i) * direct;
+                Vector3 source = positions[cell];
+                Vector3 control = Vector3.Lerp(source, matchCenters[cell], .56f);
+                Vector3 point = Vector3.Lerp(Vector3.Lerp(source, control, travel),
+                    Vector3.Lerp(control, center, travel), travel);
+                point.z = StoneDepth - (.30f + .003f * i) * travel;
                 stone.transform.position = point;
                 stone.transform.localScale = Vector3.one * size;
-                SetMotionInk(stone, opacity, Mathf.Sin(Mathf.PI * phase));
+                SetMotionInk(stone, opacity, flash);
                 if (phase >= 1f) stone.SetActive(false);
             }
         }

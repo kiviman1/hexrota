@@ -105,33 +105,23 @@ namespace Hexrota.UnityClientTests
         }
 
         [UnityTest]
-        public IEnumerator AReleasedDragContinuesFromItsPreviewWithoutReversing()
+        public IEnumerator DirectionCommitsBeforeReleaseAndTheHeldFingerCannotSendAnotherMove()
         {
             yield return OpenLesson();
             var source = GameObject.Find("Stone_" + legalSwap.x).transform;
-            var target = GameObject.Find("Stone_" + legalSwap.y).transform;
-            Vector2 home = source.position;
-            Vector2 axis = (Vector2)target.position - home;
+            Vector3 home = source.position;
             var finger = Down(start);
-            Drag(finger, Vector2.Lerp(start, end, .37f));
-            yield return null;
-            Vector2 releasePoint = Vector2.Lerp(start, end, .64f);
-            Drag(finger, releasePoint);
-            Vector3 preview = source.position;
-            Up(finger, releasePoint);
+            Drag(finger, start + (end - start).normalized * 4f);
+            Assert.That(source.position, Is.EqualTo(home));
+            Assert.That(requests, Is.Empty);
+            Drag(finger, end);
             AssertOnlyLegalSwap();
-            Assert.That(source.position, Is.EqualTo(preview));
-
-            float last = Vector2.Dot((Vector2)preview - home, axis) / axis.sqrMagnitude;
-            float deadline = Time.realtimeSinceStartup + 1f;
-            do
-            {
-                yield return null;
-                float progress = Vector2.Dot((Vector2)source.position - home, axis) / axis.sqrMagnitude;
-                Assert.That(progress, Is.GreaterThanOrEqualTo(last - .001f));
-                last = progress;
-            } while (last < .92f && Time.realtimeSinceStartup < deadline);
-            Assert.That(last, Is.GreaterThanOrEqualTo(.92f));
+            float deadline = Time.realtimeSinceStartup + 8f;
+            while (board.IsAnimating && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.That(board.IsAnimating, Is.False);
+            Drag(finger, start);
+            Up(finger, end);
+            AssertOnlyLegalSwap();
         }
 
         [UnityTest]
@@ -149,7 +139,7 @@ namespace Hexrota.UnityClientTests
         }
 
         [UnityTest]
-        public IEnumerator BetweenAxesAndConflictingDirectionsRestoreTheBoardWithoutSendingACommand()
+        public IEnumerator BetweenAxesDoesNotSendACommand()
         {
             yield return OpenLesson();
             Vector2 axis = end - start;
@@ -162,25 +152,20 @@ namespace Hexrota.UnityClientTests
             Drag(finger, between);
             Assert.That(source.position, Is.EqualTo(home), "A bisector is outside both recognition cones.");
             Up(finger, between);
-            finger = Down(start);
-            Drag(finger, end);
-            Assert.That(source.position, Is.Not.EqualTo(home));
-            Drag(finger, start + otherAxis);
-            Up(finger, end);
-            Assert.That(requests, Is.Empty, "Returning to the first axis must not revive a conflicted swipe.");
+            Assert.That(requests, Is.Empty);
             Assert.That(source.position, Is.EqualTo(home));
             Assert.That(game.Session.Snapshot.turn, Is.Zero);
         }
 
         [UnityTest]
-        public IEnumerator SecondFingerClearsThePreviewAndBothContactsBeforeTheNextTapPair()
+        public IEnumerator SecondFingerCancelsAnUncommittedSwipeBeforeTheNextTapPair()
         {
             yield return OpenLesson();
             var source = GameObject.Find("Stone_" + legalSwap.x).transform;
             Vector3 home = source.position;
             var first = Down(start);
-            Drag(first, end);
-            Assert.That(source.position, Is.Not.EqualTo(home));
+            Drag(first, start + (end - start).normalized * 4f);
+            Assert.That(source.position, Is.EqualTo(home));
             var second = Down(end, 8);
             Assert.That(source.position, Is.EqualTo(home));
             Up(second, end);
@@ -205,6 +190,7 @@ namespace Hexrota.UnityClientTests
             Vector2 flick = Vector2.Lerp(start, end, .43f);
             var finger = Down(start);
             Drag(finger, flick);
+            AssertOnlyLegalSwap();
             Assert.That(board.ReducedMotion, Is.True);
             Assert.That(source.position, Is.EqualTo(sourceHome));
             Assert.That(target.position, Is.EqualTo(targetHome));
