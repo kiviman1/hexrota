@@ -86,6 +86,10 @@ namespace Hexrota.UnityClientTests
             string initialGround = green.text;
             string waveGround = frame.layers.Count(layer => layer == 0) + " / " + frame.layers.Length;
             bool groundOutOfSync = false;
+            var firstDropPose = new Dictionary<int, float>();
+            var columnStarts = new Dictionary<int, float>();
+            var contacted = new HashSet<int>();
+            bool bounced = false;
             game.Board.WaveProgress += (wave, ordinal, phase) => {
                 if (ordinal != 1) return;
                 groundOutOfSync |= green.text != (phase < .29f ? initialGround : waveGround);
@@ -95,6 +99,23 @@ namespace Hexrota.UnityClientTests
                     foreach (int cell in wave.matched)
                         spread += Vector2.Distance(world.Find("Stone_" + cell).position, center);
                     minSpread = Mathf.Min(minSpread, spread);
+                }
+                else
+                {
+                    foreach (var fall in wave.falls)
+                    {
+                        var stone = world.Find("Stone_" + fall.to);
+                        float y = stone.position.y;
+                        if (!firstDropPose.TryGetValue(fall.to, out float firstY)) firstDropPose.Add(fall.to, y);
+                        else if (y < firstY - .005f)
+                        {
+                            int column = game.Session.Level.cells[fall.to].q;
+                            if (!columnStarts.ContainsKey(column)) columnStarts.Add(column, phase);
+                        }
+                        float height = y - Cell(fall.to).y;
+                        bounced |= contacted.Contains(fall.to) && height > .035f;
+                        if (Mathf.Abs(height) < .004f) contacted.Add(fall.to);
+                    }
                 }
                 if (packet.gameObject.activeInHierarchy)
                 {
@@ -129,6 +150,10 @@ namespace Hexrota.UnityClientTests
             Assert.That(centerError, Is.LessThan(3f), "The visible digits must originate at the board-space centroid.");
             Assert.That(launchScale, Is.GreaterThan(1.12f));
             Assert.That(movedInFlight && falling, Is.True, "Gravity overlaps the score, with distinct intermediate positions.");
+            Assert.That(columnStarts.Count, Is.GreaterThan(1));
+            Assert.That(columnStarts.OrderBy(start => start.Key).Select(start => start.Value).Last(),
+                Is.GreaterThan(columnStarts.OrderBy(start => start.Key).Select(start => start.Value).First()));
+            Assert.That(bounced, Is.True);
             Assert.That(closest, Is.LessThan(travel * .08f), "The amount must reach the visible score counter.");
             Assert.That(earlyCredit || wrongAmount || groundOutOfSync, Is.False);
             Assert.That(impactScale, Is.GreaterThan(1.10f), "The scored counter must pop on impact.");

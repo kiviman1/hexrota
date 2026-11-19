@@ -72,7 +72,8 @@ namespace Hexrota.UnityClient.Presentation
             chapterLoading.Hide();
             if (!reduced)
             {
-                const float hudEnd = .32f, boardEnd = .76f, fillEnd = 1.52f;
+                const float hudEnd = .32f, boardEnd = .76f;
+                float fillEnd = boardEnd + Board.EntranceFillSeconds;
                 for (float t = 0; t < fillEnd; t += Time.unscaledDeltaTime)
                 {
                     SetHudEntrance(Mathf.SmoothStep(0, 1, Mathf.Clamp01(t / hudEnd)));

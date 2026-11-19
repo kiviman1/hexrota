@@ -170,6 +170,27 @@ namespace Hexrota.UnityClientTests
                 Assert.That(stones[i].position.x, Is.EqualTo(rest[i].x).Within(.0001f));
                 if (!snapshot.values[i].HasValue) Assert.That(stones[i].gameObject.activeSelf, Is.False);
             }
+            var occupiedColumns = BoardTopology.For(level).columns
+                .Where(column => column.Any(i => snapshot.values[i].HasValue)).ToArray();
+            int firstArrival = -1, lastArrival = -1;
+            var touchedDown = new bool[stones.Length];
+            bool bounced = false;
+            for (int frame = 0; frame <= 120; frame++)
+            {
+                board.SetEntranceFill(frame / 120f);
+                if (firstArrival < 0 && occupiedColumns.First().Any(i => stones[i].gameObject.activeSelf)) firstArrival = frame;
+                if (lastArrival < 0 && occupiedColumns.Last().Any(i => stones[i].gameObject.activeSelf)) lastArrival = frame;
+                for (int i = 0; i < stones.Length; i++)
+                {
+                    if (!stones[i].gameObject.activeSelf) continue;
+                    float height = stones[i].position.y - rest[i].y;
+                    bounced |= touchedDown[i] && height > .04f;
+                    touchedDown[i] |= Mathf.Abs(height) < .002f;
+                }
+            }
+            Assert.That(firstArrival, Is.GreaterThanOrEqualTo(0));
+            Assert.That(lastArrival, Is.GreaterThan(firstArrival));
+            Assert.That(bounced, Is.True);
             board.Cancel(snapshot);
             for (int i = 0; i < stones.Length; i++)
             {

@@ -38,7 +38,6 @@ namespace Hexrota.UnityClient.Presentation
         private int swipeTarget = -1;
         private Rect pressedViewport;
         private float swipePixelScale;
-        private int firstColumn;
         private bool segmentedGravity;
         private int dragSource = -1, dragTarget = -1;
         private float dragFraction, releasedFraction;
@@ -54,13 +53,11 @@ namespace Hexrota.UnityClient.Presentation
             unvisitedMatch = new bool[level.cells.Length];
             connectedMatch = new int[level.cells.Length];
             segmentedGravity = level.obstacles != null;
-            firstColumn = int.MaxValue;
             columnTop.Clear();
             motionInk.Clear();
             for (int i = 0; i < stones.Count; i++)
             {
                 int q = level.cells[i].q;
-                firstColumn = Mathf.Min(firstColumn, q);
                 if (!columnTop.TryGetValue(q, out float highest) || positions[i].y > highest)
                     columnTop[q] = positions[i].y;
                 motionInk.Add(stones[i], new StoneInk { renderers = stones[i].GetComponentsInChildren<Renderer>(true) });
@@ -277,6 +274,9 @@ namespace Hexrota.UnityClient.Presentation
             public Vector3 from, to;
         }
 
+        private static float DropDuration(float rows, float pace) =>
+            Mathf.Max(.32f, (.38f + .10f * Mathf.Sqrt(rows)) * pace);
+
         private Drop[] Routes(WaveFrame wave, float pace, out float lastLanding)
         {
             var drops = new Drop[wave.falls.Length];
@@ -287,8 +287,7 @@ namespace Hexrota.UnityClient.Presentation
                 var fall = wave.falls[i];
                 int q = motionCells[fall.to].q;
                 Vector3 to = positions[fall.to] + Vector3.forward * StoneDepth;
-                var drop = new Drop { cell = fall.to, spawn = fall.spawn, to = to,
-                    delay = Mathf.Min(.070f, (q - firstColumn) * .016f) * pace };
+                var drop = new Drop { cell = fall.to, spawn = fall.spawn, to = to };
                 if (fall.spawn)
                 {
                     int order = fall.spawnOrder.GetValueOrDefault();
@@ -304,11 +303,19 @@ namespace Hexrota.UnityClient.Presentation
                 longestInColumn.TryGetValue(q, out float farthest);
                 longestInColumn[q] = Mathf.Max(farthest, rowsToFall);
             }
-            // A column uses one clock so successive spawns cannot catch one another.
+            // Only columns with moving stones take a turn in the left-to-right cascade.
+            var columnDelays = new Dictionary<int, float>();
+            foreach (var column in columns)
+            {
+                int q = motionCells[column[0]].q;
+                if (longestInColumn.ContainsKey(q)) columnDelays.Add(q, columnDelays.Count * .052f * pace);
+            }
             for (int i = 0; i < drops.Length; i++)
             {
-                float rows = longestInColumn[motionCells[drops[i].cell].q];
-                drops[i].duration = Mathf.Max(.28f, (.29f + .065f * Mathf.Sqrt(rows)) * pace);
+                int q = motionCells[drops[i].cell].q;
+                // Share the clock across each column to preserve the order of its stones.
+                drops[i].delay = columnDelays[q];
+                drops[i].duration = DropDuration(longestInColumn[q], pace);
                 lastLanding = Mathf.Max(lastLanding, drops[i].duration + drops[i].delay);
             }
             return drops;
@@ -408,15 +415,19 @@ namespace Hexrota.UnityClient.Presentation
         private void DrawFall(Drop drop, float t)
         {
             var stone = stones[drop.cell];
-            float flight = Mathf.Clamp01(t / .76f);
-            float descent = flight * (.12f + .88f * flight);
+            const float contact = .72f;
+            float flight = Mathf.Clamp01(t / contact);
+            float descent = flight * flight * (1.45f - .45f * flight);
             Vector3 point = Vector3.Lerp(drop.from, drop.to, descent);
-            float stretch = .045f * Mathf.Sin(Mathf.PI * flight) * flight;
-            float impact = Mathf.Sin(Mathf.PI * Mathf.InverseLerp(.76f, .85f, t));
-            float rebound = Mathf.Sin(Mathf.PI * Mathf.InverseLerp(.85f, 1f, t));
-            point.y += RowSpacing * (.058f * rebound - .023f * impact);
+            float stretch = .035f * descent * (1f - Mathf.SmoothStep(.0f, 1f, Mathf.InverseLerp(.86f, 1f, flight)));
+            float landing = Mathf.InverseLerp(contact, 1f, t);
+            float impact = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0f, .14f, landing))
+                * (1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(.14f, .40f, landing)));
+            float rebound = Mathf.InverseLerp(.23f, 1f, landing);
+            float arc = 4f * rebound * (1f - rebound);
+            point.y += RowSpacing * .105f * arc * arc;
             stone.transform.position = point;
-            stone.transform.localScale = new Vector3(1f + .085f * impact - stretch * .5f, 1f - .10f * impact + stretch, 1f);
+            stone.transform.localScale = new Vector3(1f + .06f * impact - stretch * .5f, 1f - .08f * impact + stretch, 1f);
             float opacity = drop.spawn ? Mathf.SmoothStep(0, 1, (drop.ceiling - point.y) / (.5f * RowSpacing)) : 1f;
             SetMotionInk(stone, opacity, 0f, drop.spawn && flight < 1f ? drop.ceiling : NoCeiling);
         }
