@@ -6,7 +6,7 @@ namespace Hexrota.UnityClient.Editor
 {
     internal static class RewardFlightDebugMenu
     {
-        private const string Path = "Hexrota/Debug/Play Reward Flight (Gold 20 + Star 1)";
+        private const string Path = "Hexrota/Debug/Play Reward Flight (Gold 20 + Golden Egg 1)";
 
         [MenuItem(Path, true)]
         private static bool CanPlay() => EditorApplication.isPlaying &&

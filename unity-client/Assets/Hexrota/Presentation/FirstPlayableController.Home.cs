@@ -153,14 +153,14 @@ namespace Hexrota.UnityClient.Presentation
             pendingHomeRewards = null;
             if (earned == null) return;
             Canvas.ForceUpdateCanvases();
-            castleHome.Rewards.PlayWin(HomeRewardSource, earned.Stars, earned.Gold, wallet);
+            castleHome.Rewards.PlayWin(HomeRewardSource, earned.GoldenEggs, earned.Gold, wallet);
         }
 
         private void RememberHomeRewards()
         {
             if (!Session.HasAttempt || Session.IsTutorial || Session.Status != "won") return;
             var earned = Session.ReadEarnedResult();
-            if (earned.Stars > 0 || earned.Gold > 0) pendingHomeRewards = earned;
+            if (earned.GoldenEggs > 0 || earned.Gold > 0) pendingHomeRewards = earned;
         }
 
         private void CancelHomeRewards()
@@ -231,12 +231,12 @@ namespace Hexrota.UnityClient.Presentation
             MenuPlate(life,"AddBadge",299,16,26,26,new Color32(165,219,60,255),new Color32(60,128,26,255),MenuCream,13);
             MenuText(life,"Plus","+",299,15,26,27,20,MenuCream);
             var bar=MenuPlate(body,"Wallet",14,walletY,362,57,PlumTop,new Color32(54,33,74,255),new Color32(197,145,80,255),17);
-            string[] names={"Altın","Yıldız","Yeşil Fırça","Renk Anahtarı"};
-            int[] values={wallet.Gold,wallet.Stars,wallet.Brushes,wallet.Keys};
+            string[] names={"Altın","Altın Yumurta","Yeşil Fırça","Renk Anahtarı"};
+            int[] values={wallet.Gold,wallet.GoldenEggs,wallet.Brushes,wallet.Keys};
             for(int i=0;i<4;i++)
             {
                 float left=i*90;
-                if(i<2) MenuText(bar,"Symbol",i==0?"●":"★",left+31,10,18,23,14,MenuGold,TextAnchor.MiddleLeft,true);
+                if(i<2) MenuText(bar,"Symbol","●",left+31,10,18,23,14,MenuGold,TextAnchor.MiddleLeft,true);
                 else MenuIcon(bar,i==2?"leaf":"swap",left+26,17,14,MenuCream);
                 MenuText(bar,names[i]+"Value",values[i].ToString(),left+49,9,40,26,16,MenuCream,TextAnchor.MiddleLeft,true);
                 MenuText(bar,names[i],names[i],left,32,90,17,9,MenuCream,TextAnchor.MiddleCenter,true);

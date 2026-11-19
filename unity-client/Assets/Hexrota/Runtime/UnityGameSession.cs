@@ -150,7 +150,7 @@ namespace Hexrota.UnityClient
             {
                 var economy = controller.EconomyView;
                 var life = W.Map(controller.View()["life"]);
-                return "Can " + life["lives"] + "/" + life["maxLives"] + "     Altın " + economy["gold"] + "     Yıldız " + economy["stars"];
+                return "Can " + life["lives"] + "/" + life["maxLives"] + "     Altın " + economy["gold"] + "     Altın Yumurta " + economy["stars"];
             }
         }
         public int ClearedCount { get { return W.List(controller.EconomyView["cleared"]).Count; } }
@@ -207,7 +207,7 @@ namespace Hexrota.UnityClient
             {
                 var names = new[] { "Çiçekler", "Bitkiler", "Ağaçlar", "Tam bahçe" };
                 return string.Join("\n", W.List(controller.EconomyView["botanical"]).Select((entry, i) =>
-                    names[i] + "   " + W.Get(entry, "stars") + " yıldız   " +
+                    names[i] + "   " + W.Get(entry, "stars") + " Altın Yumurta   " +
                     (W.Equal(W.Get(entry, "unlocked"), true) ? "Açık" : "Kilitli")).ToArray());
             }
         }

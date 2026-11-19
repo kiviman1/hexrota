@@ -107,7 +107,7 @@ namespace Hexrota.UnityClientTests
         {
             scene.OpenGarden();
             Assert.That(Text("ProgressTitle"),Is.EqualTo("Bahçen seni bekliyor"));
-            Assert.That(Text("NextMilestone"),Is.EqualTo("Çiçekler için 2 yıldız daha."));
+            Assert.That(Text("NextMilestone"),Is.EqualTo("Çiçekler için 2 Altın Yumurta daha."));
             Assert.That(scene.GetComponentsInChildren<RawImage>().Single(i=>i.name=="GardenIllustration").texture.name,Is.EqualTo("soil"));
             Button("Kayıtlar").onClick.Invoke();
             Assert.That(scene.CurrentScreen,Is.EqualTo("records"));

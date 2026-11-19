@@ -90,16 +90,16 @@ namespace Hexrota.UnityClient.Presentation
         private void DrawGardenPage()
         {
             var page=ProgressPage("garden","KALICI YOLCULUĞUN","Senin <color=#FFD369>bahçen.</color>",
-                "Kazandığın yıldızlar burada kalır. Yıldızlarını harcamazsın.",1100);
+                "Kazandığın Altın Yumurtalarla açılan güzellikler burada kalır.",1100);
             if(page==null)return;
             var wallet=Session.ReadPhoneWallet();
             var currency=MenuPlate(page,"Wallet",14,206,362,57,PlumTop,PlumBottom,Tone(0xc59150),17);
-            string[] walletLabels={"Altın","Yıldız","Yeşil Fırça","Renk Anahtarı"};
-            int[] totals={wallet.Gold,wallet.Stars,wallet.Brushes,wallet.Keys};
+            string[] walletLabels={"Altın","Altın Yumurta","Yeşil Fırça","Renk Anahtarı"};
+            int[] totals={wallet.Gold,wallet.GoldenEggs,wallet.Brushes,wallet.Keys};
             for(int i=0;i<4;i++)
             {
                 int x=90*i;
-                if(i<2)MenuText(currency,"Symbol",i==0?"●":"★",x+27,10,21,23,14,MenuGold);
+                if(i<2)MenuText(currency,"Symbol","●",x+27,10,21,23,14,MenuGold);
                 else MenuIcon(currency,i==2?"leaf":"swap",x+27,15,17,MenuCream);
                 MenuText(currency,"Amount"+i,totals[i].ToString(),x+48,8,35,27,16,MenuCream,TextAnchor.MiddleLeft,true);
                 MenuText(currency,"Kind"+i,walletLabels[i],x,34,90,16,9,MenuCream,TextAnchor.MiddleCenter,true);
@@ -108,11 +108,11 @@ namespace Hexrota.UnityClient.Presentation
             var panel=Parchment(page,"GardenProgress",14,523,362,548);
             var entries=Session.GardenMilestones();
             var next=entries.FirstOrDefault(e=>!e.Unlocked);
-            MenuText(panel,"Stars","<color=#BE9641>★</color>  <size=26>"+wallet.Stars+"</size>  <size=12>kalıcı yıldız</size>",21,13,320,43,20,Tone(0x395f43),TextAnchor.MiddleLeft);
-            string title=next==null?"Bahçen tamamlandı":wallet.Stars==0?"Bahçen seni bekliyor":"Bahçen büyüyor";
+            MenuText(panel,"Eggs","<color=#BE9641>●</color>  <size=26>"+wallet.EarnedEggs+"</size>  <size=12>kazanılan Altın Yumurta</size>",21,13,320,43,20,Tone(0x395f43),TextAnchor.MiddleLeft);
+            string title=next==null?"Bahçen tamamlandı":wallet.EarnedEggs==0?"Bahçen seni bekliyor":"Bahçen büyüyor";
             MenuText(panel,"ProgressTitle",title,21,60,320,32,20,Tone(0x3f6046),TextAnchor.MiddleLeft,true);
-            string copy=next==null?"Bütün bahçe açıldı. Yeni bölümler yakında.":wallet.Stars==0?"İlk yıldızınla bahçe yolculuğun başlar.":
-                "Kazandığın yıldızlarla açılan güzellikler burada kalır.";
+            string copy=next==null?"Bütün bahçe açıldı. Yeni bölümler yakında.":wallet.EarnedEggs==0?"İlk Altın Yumurtanla bahçe yolculuğun başlar.":
+                "Kazandığın Altın Yumurtalarla açılan güzellikler burada kalır.";
             MenuText(panel,"ProgressDescription",copy,21,103,320,29,12,Tone(0x59704c),TextAnchor.UpperLeft);
             string[] names={"Çiçekler","Yeni bitkiler","Ağaçlar","Tamamlanmış bahçe"};
             string[] descriptions={"İlk çiçeklerin bahçeye renk katıyor.","Yapraklar ve filizler bahçeni dolduruyor.","Bahçenin ağaçları büyüdü.","Bütün bahçe açıldı. Kazandığın ilerleme burada kalır."};
@@ -122,10 +122,10 @@ namespace Hexrota.UnityClient.Presentation
                 var row=MenuPlate(panel,e.Id,21,y,320,80,Tone(e.Unlocked?0xe3edcc:0xf6f7ee),Tone(e.Unlocked?0xe1eac7:0xf3f6e9),Tone(0xd1dcbf),13);
                 MenuText(row,"Mark",e.Unlocked?"✓":"○",9,10,25,30,17,Tone(0x71914b));
                 MenuText(row,"Name",names[i],39,6,281,22,14,Ink,TextAnchor.MiddleLeft,true);
-                MenuText(row,"Status",e.Stars+" yıldız · "+(e.Unlocked?"Açıldı":"Sırada"),39,28,281,18,11,Tone(0x8b694e),TextAnchor.MiddleLeft,true);
+                MenuText(row,"Status",e.Eggs+" Altın Yumurta · "+(e.Unlocked?"Açıldı":"Sırada"),39,28,281,18,11,Tone(0x8b694e),TextAnchor.MiddleLeft,true);
                 MenuText(row,"Description",descriptions[i],39,48,281,27,11,Ink,TextAnchor.UpperLeft);
             }
-            string footer=next==null?"Yeni bölümler yakında.":names[System.Array.IndexOf(entries,next)]+" için "+(next.Stars-wallet.Stars)+" yıldız daha.";
+            string footer=next==null?"Yeni bölümler yakında.":names[System.Array.IndexOf(entries,next)]+" için "+(next.Eggs-wallet.EarnedEggs)+" Altın Yumurta daha.";
             MenuText(panel,"NextMilestone",footer,17,492,326,38,13,Ink,TextAnchor.MiddleLeft,true);
         }
     }

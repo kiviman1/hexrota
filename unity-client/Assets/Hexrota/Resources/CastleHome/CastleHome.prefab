@@ -60,11 +60,11 @@ MonoBehaviour:
   playMotion: {fileID: 105506}
   attention: {fileID: 100004}
   rewardFlight: {fileID: 100005}
-  starValue: {fileID: 171003}
-  starWallet: {fileID: 106483}
+  eggValue: {fileID: 171003}
+  eggWallet: {fileID: 106483}
   walletTheme: {fileID: 11400000, guid: c1e48484201f5258a838f49953dca332, type: 2}
   goldIcon: {fileID: 101003}
-  starIcon: {fileID: 106493}
+  eggIcon: {fileID: 106493}
   goldValue: {fileID: 101103}
   livesValue: {fileID: 101703}
   lifeStatus: {fileID: 101803}
@@ -5486,7 +5486,7 @@ GameObject:
   - component: {fileID: 106482}
   - component: {fileID: 106483}
   m_Layer: 5
-  m_Name: StarWallet
+  m_Name: EggWallet
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5563,7 +5563,7 @@ GameObject:
   - component: {fileID: 106492}
   - component: {fileID: 106493}
   m_Layer: 5
-  m_Name: Star
+  m_Name: Egg
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5616,7 +5616,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 24ff7c29506dc3d9367d7a38d0ddca9c, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 39a4f369dd5345beb4637daa78a90a94, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -5638,7 +5638,7 @@ GameObject:
   - component: {fileID: 171002}
   - component: {fileID: 171003}
   m_Layer: 5
-  m_Name: StarValue
+  m_Name: EggValue
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

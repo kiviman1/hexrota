@@ -95,7 +95,7 @@ namespace Hexrota.UnityClientTests
             game.GetComponentsInChildren<Button>().Single(b => b.name == "Sonucu göster").onClick.Invoke();
             Assert.That(game.CurrentScreen, Is.EqualTo("result"));
             Assert.That(victory.gameObject.activeSelf, Is.False);
-            Assert.That(session.ReadPhoneWallet().Stars, Is.EqualTo(wallet.Stars));
+            Assert.That(session.ReadPhoneWallet().GoldenEggs, Is.EqualTo(wallet.GoldenEggs));
         }
 
         [UnityTest]
@@ -119,13 +119,13 @@ namespace Hexrota.UnityClientTests
         }
 
         [UnityTest]
-        public IEnumerator VerifiedWinReturnsWithStarBeforeGoldAndGlidesToTheSavedWallet()
+        public IEnumerator VerifiedWinReturnsWithEggBeforeGoldAndGlidesToTheSavedWallet()
         {
             yield return Win("reduce");
             var earned = session.ReadEarnedResult();
             var wallet = session.ReadPhoneWallet();
             Assert.That(earned.Gold, Is.Positive);
-            Assert.That(earned.Stars, Is.Positive);
+            Assert.That(earned.GoldenEggs, Is.Positive);
             float resultBy = Time.unscaledTime + 2;
             while (game.CurrentScreen == "celebration" && Time.unscaledTime < resultBy) yield return null;
             Assert.That(game.CurrentScreen, Is.EqualTo("result"));
@@ -133,18 +133,18 @@ namespace Hexrota.UnityClientTests
 
             var flight = game.GetComponentInChildren<RewardFlight>();
             var gold = Counter("GoldValue");
-            var star = Counter("StarValue");
+            var star = Counter("EggValue");
             Assert.That(flight.IsPlaying, Is.True);
             Assert.That(flight.ActiveIconCount, Is.Zero, "The sequence starts after the return delay.");
             Assert.That(gold.text, Is.EqualTo(Turkish(wallet.Gold - earned.Gold)));
-            Assert.That(star.text, Is.EqualTo(Turkish(wallet.Stars - earned.Stars)));
+            Assert.That(star.text, Is.EqualTo(Turkish(wallet.GoldenEggs - earned.GoldenEggs)));
             float deadline = Time.unscaledTime + 2;
             while (flight.ActiveIconCount == 0 && flight.IsPlaying && Time.unscaledTime < deadline) yield return null;
             Assert.That(flight.ActiveIconCount, Is.EqualTo(1));
-            string finalStars = Turkish(wallet.Stars);
+            string finalStars = Turkish(wallet.GoldenEggs);
             while (star.text != finalStars && flight.IsPlaying && Time.unscaledTime < deadline) yield return null;
             Assert.That(star.text, Is.EqualTo(finalStars));
-            Assert.That(flight.IsPlaying, Is.True, "Gold is still in the sequence when the star is credited.");
+            Assert.That(flight.IsPlaying, Is.True, "Gold is still in the sequence when the egg is credited.");
             Assert.That(gold.text, Is.EqualTo(Turkish(wallet.Gold - earned.Gold)));
             yield return WaitForFlight(flight);
             Assert.That(gold.text, Is.EqualTo(Turkish(wallet.Gold)));

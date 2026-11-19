@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace Hexrota.UnityClient.Presentation
 {
-    public enum RewardKind { Gold, Star }
+    public enum RewardKind { Gold, GoldenEgg }
 
     [DisallowMultipleComponent]
     public sealed class RewardFlight : MonoBehaviour
@@ -77,7 +77,7 @@ namespace Hexrota.UnityClient.Presentation
         private Flight current;
         private Image burst;
         private Camera uiCamera;
-        private Target gold, star;
+        private Target gold, egg;
         private FirstPlayableController controller;
         private UnityGameSession session;
         private PhoneAudio audioPlayer;
@@ -91,12 +91,12 @@ namespace Hexrota.UnityClient.Presentation
         public bool IsPlaying => current != null;
         public int ActiveIconCount { get; private set; }
 
-        internal void Bind(FirstPlayableController owner, PhoneAudio audio, Target goldTarget, Target starTarget)
+        internal void Bind(FirstPlayableController owner, PhoneAudio audio, Target goldTarget, Target eggTarget)
         {
             controller = owner;
             audioPlayer = audio;
             gold = goldTarget;
-            star = starTarget;
+            egg = eggTarget;
             Canvas canvas = GetComponentInParent<Canvas>().rootCanvas;
             uiCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
             for (int i = 0; i < pool.Length; i++) pool[i] = CreateImage("RewardIcon", ui.rewardIconSize);
@@ -148,15 +148,15 @@ namespace Hexrota.UnityClient.Presentation
             if (activeSession != null)
             {
                 var wallet = activeSession.ReadPhoneWallet();
-                if (Start(kind == RewardKind.Star ? amount : 0, kind == RewardKind.Gold ? amount : 0,
+                if (Start(kind == RewardKind.GoldenEgg ? amount : 0, kind == RewardKind.Gold ? amount : 0,
                     fromScreenPoint, wallet, 0, onComplete)) return;
             }
             onComplete?.Invoke();
         }
 
-        internal void PlayWin(Vector2 source, int stars, int coins, UnityGameSession.PhoneWallet wallet)
+        internal void PlayWin(Vector2 source, int eggs, int coins, UnityGameSession.PhoneWallet wallet)
         {
-            Start(stars, coins, source, wallet, motion.rewardStartDelay, null);
+            Start(eggs, coins, source, wallet, motion.rewardStartDelay, null);
         }
 
 #if UNITY_EDITOR
@@ -168,10 +168,10 @@ namespace Hexrota.UnityClient.Presentation
         }
 #endif
 
-        private bool Start(int stars, int coins, Vector2 source, UnityGameSession.PhoneWallet wallet,
+        private bool Start(int eggs, int coins, Vector2 source, UnityGameSession.PhoneWallet wallet,
             float startDelay, Action callback, bool preview = false)
         {
-            if (stars <= 0 && coins <= 0) return false;
+            if (eggs <= 0 && coins <= 0) return false;
             Cancel(wallet);
             if (!isActiveAndEnabled || !attention.TryAcquire(AttentionKind.RewardFlight, this))
             {
@@ -189,10 +189,10 @@ namespace Hexrota.UnityClient.Presentation
 
             RectTransformUtility.ScreenPointToLocalPointInRectangle(flightLayer, source, uiCamera, out origin);
             int pitch = 0;
-            Prepare(first, stars > 0 ? star : gold, stars > 0 ? wallet.Stars : wallet.Gold,
-                stars > 0 ? stars : coins, sound, preview, ref pitch);
+            Prepare(first, eggs > 0 ? egg : gold, eggs > 0 ? wallet.GoldenEggs : wallet.Gold,
+                eggs > 0 ? eggs : coins, sound, preview, ref pitch);
             second.Count = 0;
-            if (stars > 0 && coins > 0) Prepare(second, gold, wallet.Gold, coins, sound, preview, ref pitch);
+            if (eggs > 0 && coins > 0) Prepare(second, gold, wallet.Gold, coins, sound, preview, ref pitch);
             completed = callback;
             delay = startDelay;
             requestedFrame = Time.frameCount;
@@ -407,7 +407,7 @@ namespace Hexrota.UnityClient.Presentation
         private void ShowWallet(UnityGameSession.PhoneWallet wallet)
         {
             gold.Show(Format(wallet.Gold));
-            star.Show(Format(wallet.Stars));
+            egg.Show(Format(wallet.GoldenEggs));
         }
 
         private void ResetVisuals()

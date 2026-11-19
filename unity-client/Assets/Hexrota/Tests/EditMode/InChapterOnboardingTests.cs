@@ -220,13 +220,13 @@ namespace Hexrota.UnityClientTests
             var earned = session.ReadEarnedResult();
             Assert.That(earned.WelcomeGold, Is.EqualTo(previouslySkipped ? 0 : 20));
             Assert.That(earned.Gold, Is.EqualTo(20 + earned.WelcomeGold));
-            Assert.That(earned.Stars, Is.EqualTo(1));
+            Assert.That(earned.GoldenEggs, Is.EqualTo(1));
             Assert.That(session.CompletedSceneTutorials, Is.EqualTo(2));
             session.ReturnToMenu();
             var restored = new UnityGameSession(data, store, new SystemUtcClock());
             Assert.That(restored.NextStage, Is.EqualTo(first + 1));
             Assert.That(restored.ReadPhoneWallet().Gold, Is.EqualTo(wallet.Gold + earned.Gold));
-            Assert.That(restored.ReadPhoneWallet().Stars, Is.EqualTo(wallet.Stars + 1));
+            Assert.That(restored.ReadPhoneWallet().GoldenEggs, Is.EqualTo(wallet.GoldenEggs + 1));
             Assert.That(restored.IsStageComplete(0), Is.EqualTo(previouslySkipped));
             Assert.That(restored.IsStageComplete(1), Is.EqualTo(previouslySkipped));
             var game = W.Required(store.Read(ProfileRepository.ProfileKey), "game");

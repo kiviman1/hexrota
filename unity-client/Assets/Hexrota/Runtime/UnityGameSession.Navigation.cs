@@ -95,7 +95,10 @@ namespace Hexrota.UnityClient
 
         public sealed class PhoneWallet
         {
-            public int Lives, Maximum, Gold, Stars, Brushes, Keys;
+            public int Lives, Maximum, Gold, Brushes, Keys;
+            // The economy ledger still stores the lifetime count under "stars";
+            // GoldenEggs is what the player can spend, EarnedEggs never decreases.
+            public int GoldenEggs, EarnedEggs;
             public string Timer, Countdown;
         }
 
@@ -108,7 +111,7 @@ namespace Hexrota.UnityClient
             string time = (seconds / 60) + ":" + (seconds % 60).ToString("00");
             return new PhoneWallet {
                 Lives = W.Int32(W.Required(life, "lives")), Maximum = W.Int32(W.Required(life, "maxLives")),
-                Gold = W.Int32(wallet["gold"]), Stars = W.Int32(wallet["stars"]),
+                Gold = W.Int32(wallet["gold"]), GoldenEggs = W.Int32(wallet["stars"]), EarnedEggs = W.Int32(wallet["stars"]),
                 Brushes = W.Int32(W.Required(wallet["inventory"], "greenBrush")), Keys = W.Int32(W.Required(wallet["inventory"], "colorKey")),
                 Timer = W.Get(life, "nextLifeAtUtc") != null ? "Sonraki can " + time : unlimited ? time : "Canlar dolu",
                 Countdown = unlimited || W.Get(life, "nextLifeAtUtc") != null ? time : null
