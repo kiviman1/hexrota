@@ -1,10 +1,7 @@
-name: Hexrota CI
+name: Legacy Web CI
 
+# The archived web client and cross-runtime parity suite only run on demand.
 on:
-  push:
-    branches:
-      - main
-  pull_request:
   workflow_dispatch:
 
 # Tests only need to read repository contents.
