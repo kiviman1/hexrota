@@ -20,11 +20,11 @@ namespace Hexrota.UnityClient.Presentation
         };
         private Vector2 from, to;
         private float sweep = -1f;
-        private Vector2[][] matchLoops;
+        private Vector2[] matchEdges;
 
-        internal void SetMatchLoops(Vector2[][] loops)
+        internal void SetMatchEdges(Vector2[] edges)
         {
-            matchLoops = loops;
+            matchEdges = edges;
             SetVerticesDirty();
         }
 
@@ -52,21 +52,18 @@ namespace Hexrota.UnityClient.Presentation
             Vector2 direction = end - start;
             float span = direction.magnitude;
             if (span < 1f) return;
+            if (matchEdges != null)
+            {
+                DrawMatchEdges(mesh, rect, span * (stroke + .038f), ink);
+                DrawMatchEdges(mesh, rect, span * stroke, destinationCorners);
+                return;
+            }
             Vector2 normal = new Vector2(-direction.y, direction.x);
 
             Ring(mesh, start, span, false, stroke + .038f, ink);
             Ring(mesh, start, span, false, stroke, sourceOutline);
-            if (matchLoops == null)
-            {
-                Ring(mesh, end, span, true, stroke + .038f, ink);
-                Ring(mesh, end, span, true, stroke, destinationCorners);
-            }
-            else
-            {
-                float reveal = sweep < 0f ? 1f : Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(.06f, .76f, sweep));
-                TraceMatches(mesh, rect, reveal, span * (stroke + .038f), ink);
-                TraceMatches(mesh, rect, reveal, span * stroke, destinationCorners);
-            }
+            Ring(mesh, end, span, true, stroke + .038f, ink);
+            Ring(mesh, end, span, true, stroke, destinationCorners);
 
             // Only bridge the gap between the numerals. The filled arrow and the
             // open destination corners retain their meaning even with movement off.
@@ -80,22 +77,17 @@ namespace Hexrota.UnityClient.Presentation
             }
         }
 
-        private void TraceMatches(VertexHelper mesh, Rect rect, float reveal, float width, Color tint)
+        private void DrawMatchEdges(VertexHelper mesh, Rect rect, float width, Color tint)
         {
-            foreach (var loop in matchLoops)
+            for (int i = 0; i < matchEdges.Length; i += 2)
             {
-                float drawn = reveal * loop.Length;
-                for (int edge = 0; edge < loop.Length && edge < drawn; edge++)
-                {
-                    Vector2 start = Rect.NormalizedToPoint(rect, loop[edge]);
-                    Vector2 end = Rect.NormalizedToPoint(rect, loop[(edge + 1) % loop.Length]);
-                    end = Vector2.Lerp(start, end, drawn - edge);
-                    Vector2 axis = (end - start).normalized * (width * .5f);
-                    Vector2 normal = new Vector2(-axis.y, axis.x);
-                    // Overlap adjacent ends by half the stroke to keep the corners joined.
-                    Quad(mesh, start - axis - normal, start - axis + normal,
-                        end + axis + normal, end + axis - normal, tint);
-                }
+                Vector2 start = Rect.NormalizedToPoint(rect, matchEdges[i]);
+                Vector2 end = Rect.NormalizedToPoint(rect, matchEdges[i + 1]);
+                Vector2 axis = (end - start).normalized * (width * .5f);
+                Vector2 normal = new Vector2(-axis.y, axis.x);
+                // Overlap adjacent ends by half the stroke to keep the corners joined.
+                Quad(mesh, start - axis - normal, start - axis + normal,
+                    end + axis + normal, end + axis - normal, tint);
             }
         }
 

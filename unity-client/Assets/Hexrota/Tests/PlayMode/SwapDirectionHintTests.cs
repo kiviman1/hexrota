@@ -60,7 +60,7 @@ namespace Hexrota.UnityClientTests
         }
 
         [UnityTest]
-        public IEnumerator IdleHintTracesOnlyTheOuterEdgesOfTheActualMatch()
+        public IEnumerator IdleHintPulsesTheWholeOutlineAndNudgesTheSourceTowardTheMatch()
         {
             var original = FirstPlayableController.SessionFactory;
             FirstPlayableController game = null;
@@ -83,27 +83,49 @@ namespace Hexrota.UnityClientTests
                 swapped[hint.MovingTarget] = model.values[hint.MovingSource];
                 var matched = model.FindMatches(swapped);
                 CollectionAssert.AreEquivalent(matched, hint.MatchDestinations);
-                int edges = matched.Sum(cell => 6 - matched.Count(other => model.Adjacent(cell, other)));
+                int[] outlined = matched.Append(hint.MovingSource).Distinct().ToArray();
+                int edges = outlined.Sum(cell => 6 - outlined.Count(other => model.Adjacent(cell, other)));
                 var mint = new Color32(126, 250, 211, 255);
                 var overlay = board.GetComponentsInChildren<TutorialGestureArrow>(true).Single();
+                var source = GameObject.Find("Stone_" + hint.MovingSource).transform;
+                var target = GameObject.Find("Stone_" + hint.MovingTarget).transform;
+                Vector3 rest = source.position;
+                Vector3 axis = target.position - rest;
+                int turn = game.Session.Snapshot.turn;
+                long revision = game.Session.Revision;
                 float deadline = Time.realtimeSinceStartup + 14f;
-                bool revealedPart = false, drawnInFull = false;
-                while (!drawnInFull && Time.realtimeSinceStartup < deadline)
+                while (!overlay.isActiveAndEnabled && Time.realtimeSinceStartup < deadline) yield return null;
+                Assert.That(overlay.isActiveAndEnabled, Is.True);
+                Canvas.ForceUpdateCanvases();
+                var mesh = overlay.canvasRenderer.GetMesh();
+                Assert.That(mesh.vertexCount, Is.EqualTo(edges * 8), "Only the full outline should be drawn.");
+                Assert.That(mesh.colors32.Count(color => color.Equals(mint)), Is.EqualTo(edges * 4));
+                float initialAlpha = overlay.canvasRenderer.GetAlpha();
+                float peakAlpha = initialAlpha;
+                int nudges = 0;
+                bool extended = false;
+                float until = Time.realtimeSinceStartup + 1.1f;
+                while (Time.realtimeSinceStartup < until)
                 {
                     yield return null;
-                    if (!overlay.isActiveAndEnabled) continue;
-                    Canvas.ForceUpdateCanvases();
-                    int trace = overlay.canvasRenderer.GetMesh().colors32.Count(color => color.Equals(mint));
-                    revealedPart |= trace > 0 && trace < edges * 4;
-                    drawnInFull = trace == edges * 4;
+                    float distance = Vector3.Dot(source.position - rest, axis) / axis.sqrMagnitude;
+                    Assert.That(distance, Is.InRange(-.001f, .15f));
+                    Assert.That(Vector3.Distance(source.position, rest + axis * distance), Is.LessThan(.001f));
+                    if (!extended && distance > .06f) { nudges++; extended = true; }
+                    if (distance < .02f) extended = false;
+                    peakAlpha = Mathf.Max(peakAlpha, overlay.canvasRenderer.GetAlpha());
                 }
-                Assert.That(revealedPart && drawnInFull, Is.True);
-                var modelRenderer = GameObject.Find("Stone_" + hint.MovingSource).GetComponentInChildren<MeshRenderer>();
+                Assert.That(nudges, Is.EqualTo(3));
+                Assert.That(peakAlpha - initialAlpha, Is.GreaterThan(.15f));
+                Assert.That(game.Session.Snapshot.turn, Is.EqualTo(turn));
+                Assert.That(game.Session.Revision, Is.EqualTo(revision));
+                var modelRenderer = source.GetComponentInChildren<MeshRenderer>();
                 var properties = new MaterialPropertyBlock();
                 modelRenderer.GetPropertyBlock(properties);
                 Assert.That(properties.GetFloat("_IdleOutline"), Is.GreaterThan(0f));
                 game.Pause();
                 Assert.That(overlay.isActiveAndEnabled, Is.False);
+                Assert.That(source.position, Is.EqualTo(rest));
                 modelRenderer.GetPropertyBlock(properties);
                 Assert.That(properties.GetFloat("_IdleOutline"), Is.Zero);
             }
@@ -115,7 +137,7 @@ namespace Hexrota.UnityClientTests
         }
 
         [UnityTest]
-        public IEnumerator ReducedMotionShowsOneStaticDirectionUntilThePointedSwapAndNeverMovesByItself()
+        public IEnumerator ReducedMotionShowsAStaticOutlineUntilThePlayerSwaps()
         {
             var original = FirstPlayableController.SessionFactory;
             FirstPlayableController game = null;

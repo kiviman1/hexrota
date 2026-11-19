@@ -18,18 +18,19 @@ namespace Hexrota.UnityClient.Presentation
         private string idleAttempt;
         private Func<int[], VisibleIdleHint> chooseIdleHint;
         private VisibleIdleHint cachedHint, paintedHint;
-        private TutorialGestureArrow idleArrow;
+        private TutorialGestureArrow idleOutline;
+        private Transform hintedStone;
+        private Vector3 hintHome, hintDirection;
         private float lastPulse = -1f;
         public bool ShowingIdleHint => paintedHint != null;
 
         internal void BindIdleHintOverlay(TutorialGestureArrow template)
         {
-            // Keep tutorial gestures and ordinary hints independently visible, but
-            // share the artist's colours and stroke settings from the tools prefab.
-            idleArrow = Instantiate(template, transform, false);
-            idleArrow.name = "IdleSwapDirection";
-            idleArrow.raycastTarget = false;
-            idleArrow.gameObject.SetActive(false);
+            // The coach still uses arrows. The idle hint shares its authored stroke style.
+            idleOutline = Instantiate(template, transform, false);
+            idleOutline.name = "IdleMatchOutline";
+            idleOutline.raycastTarget = false;
+            idleOutline.gameObject.SetActive(false);
         }
 
         public void BindIdleHints(string attemptId, Func<int[], VisibleIdleHint> choose)
@@ -67,8 +68,7 @@ namespace Hexrota.UnityClient.Presentation
             }
 
             idleClock.Tick(Time.unscaledTimeAsDouble, true, chooseIdleHint);
-            // Reduced motion keeps one static direction, without repeated flashes.
-            var next = ReducedMotion ? idleClock.ActiveCue : idleClock.Visible;
+            var next = idleClock.ActiveCue;
             if (next == null)
             {
                 HidePaintedHint();
@@ -82,17 +82,23 @@ namespace Hexrota.UnityClient.Presentation
             if (paintedHint == null)
             {
                 paintedHint = next;
-                if (idleArrow != null)
+                if (idleOutline != null)
                 {
-                    idleArrow.SetPair(ViewportCell(next.MovingSource), ViewportCell(next.MovingTarget));
-                    idleArrow.gameObject.SetActive(true);
+                    idleOutline.SetPair(ViewportCell(next.MovingSource), ViewportCell(next.MovingTarget));
+                    idleOutline.gameObject.SetActive(true);
                 }
             }
 
-            float progress = Mathf.Clamp01(idleClock.Phase);
-            float pulse = ReducedMotion ? 0f : Mathf.Sin(progress * Mathf.PI);
-            if (idleArrow != null)
-                idleArrow.SetSweep(ReducedMotion ? -1f : Mathf.SmoothStep(0f, 1f, progress));
+            float phase = idleClock.Phase;
+            float pulse = ReducedMotion ? 0f : .5f - .5f * Mathf.Cos(phase * Mathf.PI);
+            if (idleOutline != null)
+                idleOutline.canvasRenderer.SetAlpha(ReducedMotion ? 1f : Mathf.Lerp(.66f, 1f, pulse));
+            // Three quick nudges, then a rest. The outline stays aligned to the board.
+            float tick = Mathf.Repeat(phase * 3f, 1f);
+            float nudge = ReducedMotion || phase >= 1f ? 0f :
+                Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0f, .24f, tick)) *
+                (1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(.24f, .58f, tick)));
+            if (hintedStone != null) hintedStone.position = hintHome + hintDirection * nudge;
             if (Mathf.Approximately(lastPulse, pulse)) return;
             lastPulse = pulse;
             SetIdleGlow(sourceModels, .48f, .12f * pulse);
@@ -102,18 +108,23 @@ namespace Hexrota.UnityClient.Presentation
         {
             ClearHintAppearance();
             cachedHint = hint;
-            stones[hint.MovingSource].GetComponentsInChildren(false, rendererBuffer);
+            var source = stones[hint.MovingSource];
+            hintedStone = source.transform;
+            hintHome = hintedStone.position;
+            hintDirection = (positions[hint.MovingTarget] - positions[hint.MovingSource]) * .14f;
+            source.GetComponentsInChildren(false, rendererBuffer);
             foreach (var renderer in rendererBuffer)
                 if (!renderer.TryGetComponent<TextMesh>(out _)) sourceModels.Add(renderer);
             rendererBuffer.Clear();
-            if (idleArrow != null) idleArrow.SetMatchLoops(MatchPerimeter(hint));
+            if (idleOutline != null) idleOutline.SetMatchEdges(MatchPerimeter(hint));
         }
 
-        private Vector2[][] MatchPerimeter(VisibleIdleHint hint)
+        private Vector2[] MatchPerimeter(VisibleIdleHint hint)
         {
             // Shared edges have opposite directions on the integer hex lattice.
             var edges = new HashSet<(Vector2Int from, Vector2Int to)>();
-            foreach (int index in hint.MatchDestinations)
+            var cells = new HashSet<int>(hint.MatchDestinations) { hint.MovingSource };
+            foreach (int index in cells)
             {
                 var cell = motionCells[index];
                 var center = new Vector2Int(3 * cell.q, -2 * cell.r - cell.q);
@@ -123,36 +134,18 @@ namespace Hexrota.UnityClient.Presentation
                     if (!edges.Remove((to, from))) edges.Add((from, to));
                 }
             }
-            var next = new Dictionary<Vector2Int, Vector2Int>();
-            foreach (var edge in edges) next.Add(edge.from, edge.to);
-            var loops = new List<Vector2[]>();
-            var target = motionCells[hint.MovingTarget];
-            var origin = new Vector2Int(3 * target.q, -2 * target.r - target.q);
-            while (next.Count > 0)
+            var perimeter = new Vector2[edges.Count * 2];
+            int point = 0;
+            foreach (var edge in edges)
             {
-                Vector2Int first = default;
-                float nearest = float.PositiveInfinity;
-                foreach (var vertex in next.Keys)
-                {
-                    float distance = (vertex - origin).sqrMagnitude;
-                    if (distance >= nearest) continue;
-                    nearest = distance;
-                    first = vertex;
-                }
-                var loop = new List<Vector2>();
-                Vector2Int point = first;
-                do
-                {
-                    // Same scale as MobileLayout.Axial, in units of a hex corner.
-                    loop.Add(BoardCamera.WorldToViewportPoint(new Vector3(point.x * .28f, point.y * RowSpacing * .5f, 0f)));
-                    Vector2Int end = next[point];
-                    next.Remove(point);
-                    point = end;
-                } while (point != first);
-                loops.Add(loop.ToArray());
+                perimeter[point++] = ProjectCorner(edge.from);
+                perimeter[point++] = ProjectCorner(edge.to);
             }
-            return loops.ToArray();
+            return perimeter;
         }
+
+        private Vector2 ProjectCorner(Vector2Int corner) =>
+            BoardCamera.WorldToViewportPoint(new Vector3(corner.x * .28f, corner.y * RowSpacing * .5f, 0f));
 
         private void SetIdleGlow(List<Renderer> models, float outline, float sheen)
         {
@@ -178,7 +171,8 @@ namespace Hexrota.UnityClient.Presentation
             if (paintedHint == null) return;
             paintedHint = null;
             lastPulse = -1f;
-            if (idleArrow != null) idleArrow.gameObject.SetActive(false);
+            if (idleOutline != null) idleOutline.gameObject.SetActive(false);
+            if (hintedStone != null) hintedStone.position = hintHome;
             SetIdleGlow(sourceModels, 0, 0);
         }
 
@@ -186,6 +180,7 @@ namespace Hexrota.UnityClient.Presentation
         {
             HidePaintedHint();
             cachedHint = null;
+            hintedStone = null;
             sourceModels.Clear();
         }
     }
