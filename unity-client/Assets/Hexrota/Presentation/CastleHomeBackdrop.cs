@@ -4,12 +4,13 @@ using UnityEngine.UI;
 
 namespace Hexrota.UnityClient.Presentation
 {
-    // Cover the phone without stretching the illustration. The focal point is
+    // Fill the phone, optionally cropping to preserve aspect. The focal point is
     // normalized within the amount cropped off each edge.
     [RequireComponent(typeof(Image))]
     public sealed class CastleHomeBackdrop : BaseMeshEffect
     {
         [SerializeField] private Vector2 focalPoint = new Vector2(.5f, .5f);
+        [SerializeField] private bool cover = true;
         private RectTransform safeArea;
         private RectTransform screenArea;
         private Vector4 edgeOffsets;
@@ -59,7 +60,7 @@ namespace Hexrota.UnityClient.Presentation
             Rect display = Rect.MinMaxRect(rect.xMin + edgeOffsets.x, rect.yMin + edgeOffsets.y,
                                           rect.xMax + edgeOffsets.z, rect.yMax + edgeOffsets.w);
             float ratio = (display.width / display.height) / (sprite.rect.width / sprite.rect.height);
-            Vector2 visible = new Vector2(Mathf.Min(1f, ratio), Mathf.Min(1f, 1f / ratio));
+            Vector2 visible = cover ? new Vector2(Mathf.Min(1f, ratio), Mathf.Min(1f, 1f / ratio)) : Vector2.one;
             Vector4 bounds = DataUtility.GetOuterUV(sprite);
             var vertex = new UIVertex();
             for (int i = 0; i < mesh.currentVertCount; i++)
