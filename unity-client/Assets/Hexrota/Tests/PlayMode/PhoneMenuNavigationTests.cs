@@ -78,7 +78,7 @@ namespace Hexrota.UnityClientTests
             Assert.That(labels.Single(label => label.name == "LifeStatus").text, Is.EqualTo("Dolu"));
             Assert.That(labels.Single(label => label.name == "StageLabel").text, Does.Contain("1"));
             Assert.That(controller.Session.FirstOpening, Is.True);
-            TapHomeButton("CoopDrawing");
+            TapHomeButton("CoopTapArea");
             Assert.That(home.GetComponentInChildren<CoopHomeView>().PanelOpen, Is.True,
                 "Tapping the coop on the plot opens the upgrade panel.");
             home.GetComponentInChildren<CoopHomeView>().Panel.GetComponentsInChildren<Button>().Single(b => b.name == "CloseButton").onClick.Invoke();
@@ -93,11 +93,67 @@ namespace Hexrota.UnityClientTests
             yield return null;
             Assert.That(home.GetComponentsInChildren<Button>(true).Single(button => button.name == "GardenButton")
                 .gameObject.activeInHierarchy, Is.False, "The garden is not a home entry in the single coop loop.");
-            TapHomeButton("RecordsButton");
-            Assert.That(controller.CurrentScreen, Is.EqualTo("records"));
+            // A new profile sees a quiet home: no side rails, no egg pill, no bottom menu yet.
+            Assert.That(home.NavigationShown, Is.False, "The bottom menu opens after chapter 5.");
+            foreach (var hidden in new[] { "MenuLayout/SideActions", "MenuLayout/TopBar/EggWallet", "MenuLayout/BottomNav" })
+                Assert.That(home.transform.Find(hidden).gameObject.activeInHierarchy, Is.False, hidden);
+            var bar = (RectTransform)home.transform.Find("MenuLayout/CoopProgress");
+            var label = bar.GetComponentsInChildren<Text>().Single(t => t.name == "Label");
+            Assert.That(label.font.name, Is.EqualTo("LilitaOne-Regular"));
+            Assert.That(label.GetComponent<Outline>().effectColor, Is.EqualTo(Resources.FindObjectsOfTypeAll<UiTheme>().First().ctaDeep),
+                "White label with the green fill's deep outline.");
+            Assert.That(Gap(bar, (RectTransform)ButtonNamed("PlayButton").transform), Is.GreaterThanOrEqualTo(20f),
+                "Without the menu, Play and the bar sit lower with room between them.");
+            controller.OpenRecords();
+            Assert.That(controller.CurrentScreen, Is.EqualTo("records"), "The Records page itself stays.");
             ButtonNamed("Ana menü").onClick.Invoke();
             Assert.That(controller.CurrentScreen, Is.EqualTo("menu"));
             Assert.That(controller.Session.FirstOpening, Is.True);
+            yield return null;
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        // Vertical gap between the bottom of one rect and the top of the one below, in screen points.
+        private static float Gap(RectTransform upper, RectTransform lower)
+        {
+            var a = new Vector3[4]; var b = new Vector3[4];
+            upper.GetWorldCorners(a); lower.GetWorldCorners(b);
+            var canvas = upper.GetComponentInParent<Canvas>().rootCanvas.transform;
+            return canvas.InverseTransformPoint(a[0]).y - canvas.InverseTransformPoint(b[1]).y;
+        }
+
+        [UnityTest] public IEnumerator BottomMenuOpensAfterChapterFiveAsShopHomeAreas()
+        {
+            var storage = new MemoryProfileStorage();
+            var data = ClientGameData.FromResources();
+            var preparer = new UnityGameSession(data, storage, new SystemUtcClock());
+            int unlock = controller.GetComponentInChildren<CastleHomeView>().NavigationUnlockChapters;
+            for (int stage = preparer.TutorialCount; stage < preparer.TutorialCount + unlock; stage++)
+            {
+                Assert.That(preparer.EnterStage(stage), Is.True, preparer.LastError);
+                var last = preparer.PlayDevelopmentRouteToLastMove();
+                Assert.That(last, Is.Not.Null, preparer.LastError);
+                Assert.That(preparer.TrySwap(last[0], last[1]).Ok, Is.True);
+                preparer.CompletePresentation();
+                preparer.ReturnToMenu();
+            }
+            FirstPlayableController.SessionFactory = () => new UnityGameSession(data, storage, new SystemUtcClock());
+            yield return SceneManager.LoadSceneAsync("FirstPlayable");
+            controller = UnityEngine.Object.FindAnyObjectByType<FirstPlayableController>();
+            yield return null;
+            Canvas.ForceUpdateCanvases();
+            var home = controller.GetComponentInChildren<CastleHomeView>();
+            Assert.That(home.NavigationShown, Is.True);
+            var nav = home.transform.Find("MenuLayout/BottomNav");
+            var tabs = nav.GetComponentsInChildren<Button>().OrderBy(b => b.transform.position.x).Select(b => b.name).ToArray();
+            Assert.That(tabs, Is.EqualTo(new[] { "ShopButton", "HomeButton", "AreasButton" }), "Mağaza · Ana · Alanlar");
+            var dock = (RectTransform)nav.Find("Dock");
+            Assert.That(Gap((RectTransform)ButtonNamed("PlayButton").transform, dock), Is.GreaterThan(0f), "Play sits above the menu.");
+            Assert.That(Gap((RectTransform)home.transform.Find("MenuLayout/CoopProgress"), (RectTransform)ButtonNamed("PlayButton").transform),
+                Is.GreaterThan(0f), "The bar stays above Play.");
+            TapHomeButton("AreasButton");
+            Assert.That(controller.CurrentScreen, Is.EqualTo("areas"));
+            Assert.That(controller.GetComponentsInChildren<Text>().Any(t => t.text.Contains("Yakında")), Is.True, "Areas is a placeholder for now.");
             yield return null;
             LogAssert.NoUnexpectedReceived();
         }
@@ -170,7 +226,10 @@ namespace Hexrota.UnityClientTests
                 Assert.That(vertices.Max(point => point.y), Is.GreaterThanOrEqualTo(display.rect.yMax - 1f));
 
                 var stage = home.GetComponentsInChildren<Text>().Single(label => label.name == "StageLabel");
-                var controls = home.GetComponentsInChildren<Button>().Select(button => (RectTransform)button.transform)
+                // The coop tap area belongs to the full-screen background art, not to the safe-area UI.
+                var art = home.GetComponentInChildren<HomeBackgroundLayers>().transform;
+                var controls = home.GetComponentsInChildren<Button>().Where(button => !button.transform.IsChildOf(art))
+                    .Select(button => (RectTransform)button.transform)
                     .Append(stage.rectTransform);
                 var corners = new Vector3[4];
                 foreach (var control in controls)
@@ -199,7 +258,7 @@ namespace Hexrota.UnityClientTests
             Assert.That(controller.Session.OpeningLessonPair,Has.Length.EqualTo(2));
             controller.ReturnToMenu();
             yield return null;
-            TapHomeButton("JourneyButton");
+            controller.OpenJourney(); // the Journey page stays, though it is no longer a menu tab
             Assert.That(controller.CurrentScreen,Is.EqualTo("journey"));
             long revision=controller.Session.Revision;
             ButtonNamed("BÖLÜM 01").onClick.Invoke();

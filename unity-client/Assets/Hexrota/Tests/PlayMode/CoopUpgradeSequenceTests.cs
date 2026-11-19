@@ -49,7 +49,8 @@ namespace Hexrota.UnityClientTests
         private CoopHomeView Coop => game.GetComponentInChildren<CoopHomeView>();
         private CoopUpgradeSequence Sequence => game.GetComponentInChildren<CoopUpgradeSequence>();
         private RewardFlight Flight => game.GetComponentInChildren<RewardFlight>();
-        private Text EggCounter => game.GetComponentInChildren<CastleHomeView>().GetComponentsInChildren<Text>().Single(t => t.name == "EggValue");
+        // The Golden Egg count is the coop bar's "have/cost" text (no separate egg pill).
+        private string EggCounter => Coop.ProgressText;
 
         private void PressUpgrade()
         {
@@ -76,7 +77,7 @@ namespace Hexrota.UnityClientTests
             Assert.That(Sequence.IsPlaying, Is.True);
             Assert.That(game.Session.ReadCoop().Level, Is.EqualTo(1), "Data is saved before step 1.");
             Assert.That(new UnityGameSession(data, storage, new SystemUtcClock(), coop: config).ReadPhoneWallet().GoldenEggs, Is.Zero);
-            Assert.That(EggCounter.text, Is.EqualTo("1"), "The counter drops when the egg arrives, not before.");
+            Assert.That(EggCounter, Is.EqualTo("Hazır!"), "The bar keeps its count until the eggs leave it.");
 
             bool sawFlight = false, sawBanner = false;
             float deadline = Time.unscaledTime + 6;
@@ -91,10 +92,10 @@ namespace Hexrota.UnityClientTests
             Assert.That(Sequence.IsPlaying, Is.False);
             Assert.That(sawFlight && sawBanner, Is.True);
             Assert.That(Flight.ActiveIconCount, Is.Zero);
-            Assert.That(EggCounter.text, Is.EqualTo("0"));
+            Assert.That(EggCounter, Is.EqualTo("0/2"), "The bar restarts toward the next cost.");
             Assert.That(Sequence.VisibleResidents, Is.EqualTo(1));
             Assert.That(Coop.Status.Level, Is.EqualTo(1));
-            Assert.That(Coop.ProgressText, Is.EqualTo("0 / 2"));
+            Assert.That(Coop.ProgressText, Is.EqualTo("0/2"));
             Assert.That(Coop.Panel.IsOpen, Is.False);
             LogAssert.NoUnexpectedReceived();
         }
@@ -116,7 +117,7 @@ namespace Hexrota.UnityClientTests
             Assert.That(Time.unscaledTime - started, Is.LessThanOrEqualTo(.55f), "≤ 0.5 s plus one frame.");
             Assert.That(peak, Is.LessThanOrEqualTo(1));
             Assert.That(Sequence.VisibleResidents, Is.EqualTo(1));
-            Assert.That(EggCounter.text, Is.EqualTo("0"));
+            Assert.That(EggCounter, Is.EqualTo("0/2"), "The bar restarts toward the next cost.");
         }
 
         [UnityTest]
@@ -133,7 +134,7 @@ namespace Hexrota.UnityClientTests
             game.OnWebVisibilityChanged("hidden");
             Assert.That(Sequence.IsPlaying, Is.False);
             Assert.That(Flight.IsPlaying, Is.False);
-            Assert.That(EggCounter.text, Is.EqualTo("0"));
+            Assert.That(EggCounter, Is.EqualTo("0/2"), "The bar restarts toward the next cost.");
             Assert.That(Coop.Status.Level, Is.EqualTo(1));
 
             // A fresh scene and session read the same saved state.

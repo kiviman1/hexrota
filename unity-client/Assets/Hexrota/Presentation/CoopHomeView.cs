@@ -21,7 +21,11 @@ namespace Hexrota.UnityClient.Presentation
         [SerializeField] private RectTransform coop;
         [Tooltip("The coop drawing inside the placeholder; it beats while an upgrade is ready.")]
         [SerializeField] private RectTransform coopVisual;
-        [Tooltip("Tapping the coop opens the upgrade panel.")]
+        [Tooltip("The placeholder coop drawing; shown from level 1.")]
+        [SerializeField] private GameObject coopDrawing;
+        [Tooltip("What the plot shows before the coop is built (level 0): a few fence stakes.")]
+        [SerializeField] private RectTransform emptyPlot;
+        [Tooltip("Tapping the plot or the coop opens the upgrade panel.")]
         [SerializeField] private Button coopTapArea;
         [SerializeField] private GameObject readyBadge;
         [SerializeField] private Image readyBadgeRim, readyBadgeFace;
@@ -33,11 +37,13 @@ namespace Hexrota.UnityClient.Presentation
         [Tooltip("The whole bar; it beats with the coop while an upgrade is ready.")]
         [SerializeField] private RectTransform bar;
         [SerializeField] private RectTransform barFill;
+        [Tooltip("Egg icon at the bar's left end; earned eggs fly here and spent eggs leave from here.")]
+        [SerializeField] private Image barEgg;
         [SerializeField] private Image barTrack, barFillImage;
         [SerializeField] private Text barLabel;
         [SerializeField] private Outline barLabelOutline;
         [Tooltip("{have} and {cost} are replaced by the egg counts.")]
-        [SerializeField] private string progressFormat = "{have} / {cost}";
+        [SerializeField] private string progressFormat = "{have}/{cost}";
         [SerializeField] private string readyLabel = "Hazır!";
         [SerializeField] private string completeLabel = "Alan tamamlandı";
 
@@ -60,6 +66,11 @@ namespace Hexrota.UnityClient.Presentation
         public Button Button => coopTapArea;
         public RectTransform CoopVisual => coopVisual;
         public RectTransform ProgressBar => bar;
+        /// <summary>True once the coop is built (level 1+); level 0 shows the empty plot.</summary>
+        public bool CoopBuilt => coopDrawing != null && coopDrawing.activeSelf;
+        public bool EmptyPlotShown => emptyPlot != null && emptyPlot.gameObject.activeSelf;
+        internal Image BarEgg => barEgg;
+        internal Text BarLabel => barLabel;
         public bool PanelOpen => panel != null && panel.IsOpen;
         public CoopUpgradePanel Panel => panel;
         public bool ReadyBadgeShown => readyBadge != null && readyBadge.activeSelf;
@@ -72,11 +83,12 @@ namespace Hexrota.UnityClient.Presentation
             bound = true;
             if (coop != null) coopRestScale = coop.localScale;
             barLabel.color = ui.label;
+            // Kontur rule: the label sits on the green fill, so its outline is the fill's deep tone.
+            barLabelOutline.effectColor = ui.ctaDeep;
             readyBadgeRim.color = ui.heartDeep;
             readyBadgeFace.color = ui.heart;
             barTrack.color = ui.panelDeep;
             barFillImage.color = ui.cta;
-            barLabelOutline.effectColor = ui.panelDeep;
             coopTapArea.onClick.AddListener(Open);
         }
 
@@ -99,17 +111,31 @@ namespace Hexrota.UnityClient.Presentation
             else if (!Mathf.Approximately(target, fillTo)) { fillFrom = shownFill; fillTo = target; fillTime = 0; }
 
             bool ready = next.Ready && heldBackEggs == 0;
-            barLabel.text = !next.Usable ? "" : next.AreaComplete ? completeLabel : ready ? readyLabel :
-                progressFormat.Replace("{have}", eggs.ToString(CultureInfo.InvariantCulture))
-                    .Replace("{cost}", next.NextCost.ToString(CultureInfo.InvariantCulture));
+            barLabel.text = !next.Usable ? "" : next.AreaComplete ? completeLabel : ready ? readyLabel : Progress(next, eggs);
             readyBadge.SetActive(ready);
             ShowLevel(next);
         }
 
-        /// <summary>Updates only the placeholder coop for the given level.</summary>
+        private string Progress(UnityGameSession.CoopStatus s, int eggs) =>
+            progressFormat.Replace("{have}", eggs.ToString(CultureInfo.InvariantCulture))
+                .Replace("{cost}", s.NextCost.ToString(CultureInfo.InvariantCulture));
+
+        /// <summary>The bar's text for an egg balance while eggs fly to or from it ("1/2").</summary>
+        internal string ProgressFor(int eggs)
+        {
+            if (status == null || !status.Usable) return RewardFlight.Format(eggs);
+            return status.AreaComplete ? completeLabel : Progress(status, eggs);
+        }
+
+        /// <summary>Updates only the placeholder coop for the given level: an empty plot at level 0,
+        /// the coop from level 1, growing with each upgrade.</summary>
         internal void ShowLevel(UnityGameSession.CoopStatus next)
         {
-            if (coop != null && next != null && next.Usable && next.UpgradeCount > 0)
+            if (next == null) return;
+            bool built = next.Usable && next.Level > 0;
+            if (coopDrawing != null) coopDrawing.SetActive(built);
+            if (emptyPlot != null) emptyPlot.gameObject.SetActive(!built);
+            if (coop != null && next.Usable && next.UpgradeCount > 0)
                 coop.localScale = coopRestScale * Mathf.Lerp(ui.coopScaleEmpty, 1, (float)next.Level / next.UpgradeCount);
         }
 
@@ -168,6 +194,7 @@ namespace Hexrota.UnityClient.Presentation
         {
             var size = new Vector3(scale, scale, 1);
             if (coopVisual != null) coopVisual.localScale = size;
+            if (emptyPlot != null) emptyPlot.localScale = size;
             if (bar != null) bar.localScale = size;
         }
 

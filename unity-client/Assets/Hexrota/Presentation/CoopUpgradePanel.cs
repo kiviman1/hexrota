@@ -34,6 +34,10 @@ namespace Hexrota.UnityClient.Presentation
         [Tooltip("{n} is replaced by the missing eggs.")]
         [SerializeField] private string missingFormat = "{n} yumurta daha";
         [SerializeField] private string upgradeLabel = "Yükselt";
+        [Tooltip("Level 0: the plot is empty and the first upgrade builds the coop.")]
+        [SerializeField] private string buildLabel = "Kümesi inşa et";
+        [Tooltip("{n} is replaced by the number of arriving chickens (level 0 only).")]
+        [SerializeField] private string buildArrivalFormat = "Kümes kurulur ve {n} yeni tavuk gelir.";
 
         private enum Phase { Closed, Opening, Open, Closing }
         private Phase phase;
@@ -51,6 +55,7 @@ namespace Hexrota.UnityClient.Presentation
         public string Hint => hintText.gameObject.activeSelf ? hintText.text : null;
         public string Card => cardText.text;
         public string Cost => costText.text;
+        public string Action => buttonLabel.text;
         public Button UpgradeButton => upgradeButton;
 
         // The panel object starts inactive in the prefab, so set-up runs on first use rather than in Awake.
@@ -70,7 +75,6 @@ namespace Hexrota.UnityClient.Presentation
             closeFill.color = ui.heart;
             title.color = costText.color = buttonLabel.color = closeLabel.color = ui.label;
             hintText.color = ui.onPanelMuted;
-            buttonLabel.text = upgradeLabel;
             shadeButton.onClick.AddListener(() => Close());
             closeButton.onClick.AddListener(() => Close());
             upgradeButton.onClick.AddListener(Press);
@@ -94,8 +98,10 @@ namespace Hexrota.UnityClient.Presentation
             Initialize();
             bool complete = status == null || !status.Usable || status.AreaComplete;
             title.text = complete ? completeTitle : titleFormat.Replace("{n}", Number(status.TargetLevel));
+            bool build = !complete && status.Level == 0;
+            buttonLabel.text = build ? buildLabel : upgradeLabel;
             cardText.text = complete ? completeText : status.NextChickens > 0
-                ? arrivalFormat.Replace("{n}", Number(status.NextChickens)) : growOnlyText;
+                ? (build ? buildArrivalFormat : arrivalFormat).Replace("{n}", Number(status.NextChickens)) : growOnlyText;
             costFill.gameObject.SetActive(!complete);
             upgradeButton.gameObject.SetActive(!complete);
             affordable = !complete && status.Eggs >= status.NextCost;

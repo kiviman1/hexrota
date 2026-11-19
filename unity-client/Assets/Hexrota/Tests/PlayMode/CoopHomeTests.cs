@@ -77,7 +77,7 @@ namespace Hexrota.UnityClientTests
             yield return Open(false, "full");
             game.ReturnToMenu();
             yield return null;
-            Assert.That(Coop.ProgressText, Is.EqualTo("0 / 1"));
+            Assert.That(Coop.ProgressText, Is.EqualTo("0/1"));
             Assert.That(Coop.ShownFill, Is.Zero);
             Assert.That(Coop.ReadyBadgeShown, Is.False);
             float until = Time.unscaledTime + 1;
@@ -159,7 +159,8 @@ namespace Hexrota.UnityClientTests
             Assert.That(panel.IsOpen, Is.True);
             yield return new WaitForSecondsRealtime(.4f);
             Assert.That(panel.Title, Is.EqualTo("Kümes Seviye 1"));
-            Assert.That(panel.Card, Is.EqualTo("Kümes büyür ve 1 yeni tavuk gelir."));
+            Assert.That(panel.Card, Is.EqualTo("Kümes kurulur ve 1 yeni tavuk gelir."));
+            Assert.That(panel.Action, Is.EqualTo("Kümesi inşa et"), "Level 0: the first upgrade builds the coop.");
             Assert.That(panel.Cost, Is.EqualTo("1"));
             Assert.That(panel.Hint, Is.EqualTo("1 yumurta daha"));
             Assert.That(panel.CanUpgrade, Is.False);
@@ -185,9 +186,11 @@ namespace Hexrota.UnityClientTests
             yield return null;
             int eggs = game.Session.ReadPhoneWallet().GoldenEggs;
             var plot = game.GetComponentInChildren<HomeBackgroundLayers>().CoopPlot;
-            Assert.That(Coop.Button.transform.IsChildOf(plot), Is.True, "The tap target is the coop standing on the plot.");
-            Assert.That(game.GetComponentsInChildren<Button>(true).Any(b => b.name == "CoopButton" || b.name == "CoopTapArea"), Is.False,
+            Assert.That(Coop.Button.transform.IsChildOf(plot), Is.True, "The tap target is the plot with its coop.");
+            Assert.That(game.GetComponentsInChildren<Button>(true).Any(b => b.name == "CoopButton"), Is.False,
                 "There is no separate coop button.");
+            Assert.That(Coop.CoopBuilt, Is.False, "Level 0: the plot is empty.");
+            Assert.That(Coop.EmptyPlotShown, Is.True, "Level 0 shows fence stakes.");
             Coop.Button.onClick.Invoke();
             var panel = Coop.Panel;
             yield return null;
@@ -201,7 +204,9 @@ namespace Hexrota.UnityClientTests
             float deadline = Time.unscaledTime + 3;
             while ((panel.IsOpen || Coop.Status.Level != 1) && Time.unscaledTime < deadline) yield return null;
             Assert.That(panel.IsOpen, Is.False);
-            Assert.That(Coop.ProgressText, Is.EqualTo("0 / 2"));
+            Assert.That(Coop.ProgressText, Is.EqualTo("0/2"));
+            Assert.That(Coop.CoopBuilt, Is.True, "The coop appears from level 1.");
+            Assert.That(Coop.EmptyPlotShown, Is.False);
             Assert.That(new UnityGameSession(data, storage, new SystemUtcClock(), coop: config).ReadCoop().Level, Is.EqualTo(1));
         }
 
@@ -226,7 +231,7 @@ namespace Hexrota.UnityClientTests
 
             var flight = game.GetComponentInChildren<RewardFlight>();
             Assert.That(flight.IsPlaying, Is.True);
-            Assert.That(Coop.ProgressText, Is.EqualTo("0 / 1"), "The earned egg is still in the air.");
+            Assert.That(Coop.ProgressText, Is.EqualTo("0/1"), "The earned egg is still in the air.");
             deadline = Time.unscaledTime + 4;
             while (flight.IsPlaying && Time.unscaledTime < deadline)
             {

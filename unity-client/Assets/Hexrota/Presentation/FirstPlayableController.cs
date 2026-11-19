@@ -159,7 +159,7 @@ namespace Hexrota.UnityClient.Presentation
             RefreshScene(); DrawJourney();
         }
 
-        internal void OpenRecords() { DrawRecordsPage(); }
+        public void OpenRecords() { DrawRecordsPage(); }
 
         public void OpenGarden() { DrawGardenPage(); }
 

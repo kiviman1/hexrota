@@ -14,6 +14,17 @@ namespace Hexrota.UnityClient.Presentation
         [SerializeField] private Button journeyButton;
         [SerializeField] private Button gardenButton;
         [SerializeField] private Button recordsButton;
+        [SerializeField] private Button areasButton;
+
+        [Header("Bottom navigation")]
+        [Tooltip("Shop · Home · Areas. Hidden until this many campaign chapters are complete.")]
+        [SerializeField] private GameObject bottomNavigation;
+        [Min(0)] [SerializeField] private int navigationUnlockChapters = 5;
+        [Tooltip("Play row and coop bar: their vertical anchor and the bar's height above Play, with and without the menu.")]
+        [SerializeField] private RectTransform playArea;
+        [SerializeField] private RectTransform coopProgress;
+        [SerializeField] private float playAnchorWithMenu = .244f, playAnchorWithoutMenu = .14f;
+        [SerializeField] private float barAboveWithMenu = 64, barAboveWithoutMenu = 88;
 
         [Header("Home motion")]
         [SerializeField] private HomePlayButton playMotion;
@@ -25,10 +36,7 @@ namespace Hexrota.UnityClient.Presentation
 
         [Header("Player progress")]
         [SerializeField] private Text goldValue;
-        [SerializeField] private Text eggValue;
-        [SerializeField] private Image eggWallet;
-        [SerializeField] private UiTheme walletTheme;
-        [SerializeField] private Image goldIcon, eggIcon;
+        [SerializeField] private Image goldIcon;
         [SerializeField] private Text livesValue;
         [SerializeField] private Text lifeStatus;
         [SerializeField] private Text stageLabel;
@@ -44,6 +52,8 @@ namespace Hexrota.UnityClient.Presentation
 
         internal RewardFlight Rewards => rewardFlight;
         internal CoopHomeView Coop => coopView;
+        public bool NavigationShown => bottomNavigation != null && bottomNavigation.activeSelf;
+        public int NavigationUnlockChapters => navigationUnlockChapters;
         /// <summary>Layered home background; its CoopPlot marks where the 3D coop will stand.</summary>
         internal HomeBackgroundLayers Background => background;
         /// <summary>A reward flight or the coop upgrade is animating; periodic refreshes must wait.</summary>
@@ -63,10 +73,9 @@ namespace Hexrota.UnityClient.Presentation
             controller = owner;
             Canvas canvas = GetComponentInParent<Canvas>().rootCanvas;
             uiCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
-            eggWallet.color = walletTheme.panelDeep;
-            eggValue.color = walletTheme.label;
+            // Golden Eggs land on the coop bar, which counts "have/cost" while they arrive.
             rewardFlight.Bind(controller, audio, new RewardFlight.Target(goldIcon, goldValue),
-                new RewardFlight.Target(eggIcon, eggValue));
+                new RewardFlight.Target(coopView.BarEgg, coopView.BarLabel, coopView.ProgressFor));
             if (coopView != null) coopView.Bind(controller);
             if (coopSequence != null) coopSequence.Bind(controller);
             if (playButton != null) playButton.onClick.AddListener(controller.BeginJourney);
@@ -76,6 +85,10 @@ namespace Hexrota.UnityClient.Presentation
             // One progression loop (play → Golden Egg → coop): the garden is no longer a home entry.
             if (gardenButton != null) gardenButton.gameObject.SetActive(false);
             if (recordsButton != null) recordsButton.onClick.AddListener(controller.OpenRecords);
+            // The menu is Shop · Home · Areas; Journey and Records stay reachable from their pages only.
+            if (journeyButton != null) journeyButton.gameObject.SetActive(false);
+            if (recordsButton != null) recordsButton.gameObject.SetActive(false);
+            if (areasButton != null) areasButton.onClick.AddListener(controller.OpenAreas);
         }
 
         internal void ShowStage(int nextStage, int tutorialCount)
@@ -90,13 +103,26 @@ namespace Hexrota.UnityClient.Presentation
             stageLabel.text = chapterFormat.Replace("{n}", number.ToString(CultureInfo.InvariantCulture));
         }
 
+        /// <summary>The bottom menu opens once enough campaign chapters are complete; without it the
+        /// Play row and the coop bar sit lower, with more room between them.</summary>
+        internal void ShowNavigation(int completedChapters)
+        {
+            bool open = completedChapters >= navigationUnlockChapters;
+            if (bottomNavigation != null && bottomNavigation.activeSelf != open) bottomNavigation.SetActive(open);
+            float play = open ? playAnchorWithMenu : playAnchorWithoutMenu;
+            if (playArea != null) { playArea.anchorMin = new Vector2(playArea.anchorMin.x, play); playArea.anchorMax = new Vector2(playArea.anchorMax.x, play); }
+            if (coopProgress != null)
+            {
+                coopProgress.anchorMin = new Vector2(coopProgress.anchorMin.x, play);
+                coopProgress.anchorMax = new Vector2(coopProgress.anchorMax.x, play);
+                coopProgress.anchoredPosition = new Vector2(coopProgress.anchoredPosition.x, open ? barAboveWithMenu : barAboveWithoutMenu);
+            }
+        }
+
         internal void ShowWallet(UnityGameSession.PhoneWallet wallet)
         {
-            if (!rewardFlight.IsPlaying)
-            {
-                if (goldValue != null) goldValue.text = RewardFlight.Format(wallet.Gold);
-                if (eggValue != null) eggValue.text = RewardFlight.Format(wallet.GoldenEggs);
-            }
+            // The Golden Egg count lives in the coop bar ("have/cost"), which the coop view writes.
+            if (!rewardFlight.IsPlaying && goldValue != null) goldValue.text = RewardFlight.Format(wallet.Gold);
             if (livesValue != null) livesValue.text = wallet.Lives.ToString(CultureInfo.InvariantCulture);
             if (lifeStatus != null) lifeStatus.text = wallet.Countdown ?? fullLifeLabel;
         }
