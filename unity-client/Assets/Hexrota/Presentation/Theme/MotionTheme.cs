@@ -17,6 +17,12 @@ namespace Hexrota.UnityClient.Presentation
         public Timing tap, release, popIn, popOut, punch;
         [Tooltip("Progress bar growth.")]
         public Timing fill;
+        [Tooltip("Horizontal shake of a button that cannot be used.")]
+        public Timing shake;
+        [Min(0f)] public float shakeDistance, shakeCycles;
+        [Tooltip("Panel open/close: shade fade seconds and start/end scale.")]
+        [Min(0f)] public float shadeIn, shadeOut;
+        public float panelOpenScale, panelCloseScale;
         public AnimationCurve fly, breathe, shine;
         [Min(0f)] public float flyMin, flyMax, flyStagger;
         [Min(0f)] public float flyLaunchDuration, reducedFlyDuration, rewardStartDelay;

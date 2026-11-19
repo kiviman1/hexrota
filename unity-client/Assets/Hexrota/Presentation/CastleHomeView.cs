@@ -103,7 +103,7 @@ namespace Hexrota.UnityClient.Presentation
         private void Update()
         {
             if (controller == null || controller.Session == null) return;
-            attention.SetModalOpen(controller.HomePanelOpen);
+            attention.SetModalOpen(controller.HomePanelOpen || (coopView != null && coopView.PanelOpen));
             var session = controller.Session;
             if (motionSession == session && motionRevision == session.Revision) return;
             motionSession = session;

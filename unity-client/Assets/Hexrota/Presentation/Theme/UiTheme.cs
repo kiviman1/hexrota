@@ -7,7 +7,15 @@ namespace Hexrota.UnityClient.Presentation
     {
         public Color cta, ctaDeep, ctaLight;
         public Color gold, goldDeep, goldLight;
-        public Color panelDeep;
+        public Color panel, panelDeep, panelInset;
+        [Tooltip("Cream info card and the dark text on it.")]
+        public Color cream, ink;
+        public Color onPanelMuted;
+        [Tooltip("Locked / unaffordable button body and outline.")]
+        public Color disabled, disabledDeep;
+        [Tooltip("Dim behind panels; alpha comes from shadeOpacity.")]
+        public Color shade;
+        [Range(0f, 1f)] public float shadeOpacity;
         [Tooltip("Secondary action (coop button).")]
         public Color sky, skyDeep;
         [Tooltip("Warning badge only.")]

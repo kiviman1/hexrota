@@ -405,3 +405,35 @@ MonoBehaviour:
   flyArcMin: 60
   flyArcMax: 120
   arrivalHapticMs: 16
+  shake:
+    seconds: 0.3
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 1
+        outSlope: 1
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 1
+        outSlope: 1
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  shakeDistance: 8
+  shakeCycles: 3
+  shadeIn: 0.2
+  shadeOut: 0.15
+  panelOpenScale: 0.85
+  panelCloseScale: 0.9

@@ -142,6 +142,59 @@ namespace Hexrota.UnityClientTests
         }
 
         [UnityTest]
+        public IEnumerator UnaffordablePanelExplainsTheUpgradeAndOnlyShakes()
+        {
+            yield return Open(false, "full");
+            game.ReturnToMenu();
+            yield return null;
+            Coop.Button.onClick.Invoke();
+            var panel = Coop.Panel;
+            Assert.That(panel.IsOpen, Is.True);
+            yield return new WaitForSecondsRealtime(.4f);
+            Assert.That(panel.Title, Is.EqualTo("Kümes Seviye 1"));
+            Assert.That(panel.Card, Is.EqualTo("Kümes büyür ve 1 yeni tavuk gelir."));
+            Assert.That(panel.Cost, Is.EqualTo("1"));
+            Assert.That(panel.Hint, Is.EqualTo("1 yumurta daha"));
+            Assert.That(panel.CanUpgrade, Is.False);
+            Assert.That(Play.IsShining, Is.False);
+
+            panel.UpgradeButton.onClick.Invoke();
+            Assert.That(panel.IsShaking, Is.True);
+            Assert.That(panel.IsOpen, Is.True);
+            Assert.That(game.Session.ReadCoop().Level, Is.Zero);
+            Assert.That(storage.Contains(CoopLedger.StorageKey), Is.False);
+
+            panel.GetComponentsInChildren<Button>().Single(b => b.name == "CloseButton").onClick.Invoke();
+            float deadline = Time.unscaledTime + 1;
+            while (panel.IsOpen && Time.unscaledTime < deadline) yield return null;
+            Assert.That(panel.IsOpen, Is.False);
+        }
+
+        [UnityTest]
+        public IEnumerator TappingTheCoopOpensTheAffordablePanelAndUpgradeSpendsTheEggs()
+        {
+            yield return Open(true, "reduce");
+            game.ReturnToMenu();
+            yield return null;
+            int eggs = game.Session.ReadPhoneWallet().GoldenEggs;
+            game.GetComponentsInChildren<Button>().Single(b => b.name == "CoopTapArea").onClick.Invoke();
+            var panel = Coop.Panel;
+            yield return null;
+            Assert.That(panel.IsOpen, Is.True);
+            Assert.That(panel.CanUpgrade, Is.True);
+            Assert.That(panel.Hint, Is.Null);
+
+            panel.UpgradeButton.onClick.Invoke();
+            Assert.That(game.Session.ReadCoop().Level, Is.EqualTo(1), "The upgrade is saved before anything animates.");
+            Assert.That(game.Session.ReadPhoneWallet().GoldenEggs, Is.EqualTo(eggs - 1));
+            float deadline = Time.unscaledTime + 3;
+            while ((panel.IsOpen || Coop.Status.Level != 1) && Time.unscaledTime < deadline) yield return null;
+            Assert.That(panel.IsOpen, Is.False);
+            Assert.That(Coop.ProgressText, Is.EqualTo("0 / 2"));
+            Assert.That(new UnityGameSession(data, storage, new SystemUtcClock(), coop: config).ReadCoop().Level, Is.EqualTo(1));
+        }
+
+        [UnityTest]
         public IEnumerator EggsLandBeforeTheBarFillsAndThePulseStarts()
         {
             yield return Open(false, "full");

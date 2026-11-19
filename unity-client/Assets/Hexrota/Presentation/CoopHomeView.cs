@@ -26,6 +26,9 @@ namespace Hexrota.UnityClient.Presentation
         [SerializeField] private GameObject readyBadge;
         [SerializeField] private Image readyBadgeRim, readyBadgeFace;
 
+        [Header("Panel")]
+        [SerializeField] private CoopUpgradePanel panel;
+
         [Header("Progress")]
         [SerializeField] private RectTransform barFill;
         [SerializeField] private Image barTrack, barFillImage;
@@ -50,6 +53,8 @@ namespace Hexrota.UnityClient.Presentation
         public bool IsPulsing => attention != null && attention.IsOwner(this);
         public string ProgressText => barLabel != null ? barLabel.text : null;
         public Button Button => coopButton;
+        public bool PanelOpen => panel != null && panel.IsOpen;
+        public CoopUpgradePanel Panel => panel;
         public bool ReadyBadgeShown => readyBadge != null && readyBadge.activeSelf;
         internal RectTransform CoopTarget => coop;
 
@@ -73,9 +78,23 @@ namespace Hexrota.UnityClient.Presentation
             barLabelOutline.effectColor = ui.panelDeep;
             coopButton.onClick.AddListener(Open);
             if (coopTapArea != null) coopTapArea.onClick.AddListener(Open);
+            if (panel != null) panel.UpgradeRequested += Upgrade;
         }
 
-        private void Open() => Opened?.Invoke();
+        private void Open()
+        {
+            Opened?.Invoke();
+            if (panel != null && controller != null && controller.Session != null)
+                panel.Open(controller.Session.ReadCoop(), controller.Session.ReducedMotion);
+        }
+
+        private void Upgrade()
+        {
+            var session = controller != null ? controller.Session : null;
+            if (session == null) return;
+            if (!session.TryUpgradeCoop()) { panel.Show(session.ReadCoop()); return; }
+            panel.Close(() => Show(session.ReadCoop(), session.ReducedMotion));
+        }
 
         /// <param name="heldBackEggs">Eggs that are still flying to the counter; the bar fills once they land.</param>
         internal void Show(UnityGameSession.CoopStatus next, bool reduced, int heldBackEggs = 0)

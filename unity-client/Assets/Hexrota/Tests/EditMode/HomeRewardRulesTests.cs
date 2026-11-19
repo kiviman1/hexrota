@@ -82,6 +82,12 @@ namespace Hexrota.UnityClientTests
             Assert.That(new[] { motion.fill.seconds, motion.coopPulsePeriod, motion.coopPulseScale }, Is.EqualTo(new[] { .4f, .9f, 1.08f }));
             Assert.That(motion.fill.curve.Evaluate(.5f), Is.GreaterThan(.5f), "fill is ease-out");
             Assert.That(ui.coopScaleEmpty, Is.InRange(.5f, 1f));
+            Assert.That(new Color32[] { ui.panel, ui.panelInset, ui.cream, ui.ink, ui.onPanelMuted, ui.disabled, ui.disabledDeep },
+                Is.EqualTo(new[] { Hex("#5B2C83"), Hex("#46206A"), Hex("#FFF6E5"), Hex("#2A1440"), Hex("#D9C6EC"), Hex("#B8AEC4"), Hex("#7D7189") }));
+            Assert.That(ui.shadeOpacity, Is.EqualTo(.5f));
+            Assert.That(new[] { motion.shadeIn, motion.shadeOut, motion.panelOpenScale, motion.panelCloseScale, motion.shake.seconds },
+                Is.EqualTo(new[] { .2f, .15f, .85f, .9f, .3f }));
+            Assert.That(motion.shakeDistance, Is.Positive);
             Assert.That(motion.tap.curve.Evaluate(.5f), Is.GreaterThan(.5f));
             Assert.That(motion.release.curve.Evaluate(.6f), Is.EqualTo(1.0896f).Within(.001f));
             Assert.That(motion.popIn.curve.Evaluate(.6f), Is.EqualTo(1.0992f).Within(.001f));
@@ -97,7 +103,8 @@ namespace Hexrota.UnityClientTests
             var prefab = Resources.Load<GameObject>("CastleHome/CastleHome");
             Assert.That(prefab.GetComponentsInChildren<AttentionDirector>(), Has.Length.EqualTo(1));
             foreach (var component in new MonoBehaviour[] { prefab.GetComponent<RewardFlight>(),
-                prefab.GetComponentInChildren<HomePlayButton>(), prefab.GetComponent<CoopHomeView>() })
+                prefab.GetComponentInChildren<HomePlayButton>(), prefab.GetComponent<CoopHomeView>(),
+                prefab.GetComponentInChildren<CoopUpgradePanel>(true) })
             {
                 var serialized = new SerializedObject(component);
                 Assert.That(serialized.FindProperty("ui").objectReferenceValue, Is.SameAs(ui));
