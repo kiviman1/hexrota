@@ -17,6 +17,11 @@ namespace Hexrota.UnityClient.Presentation
         [SerializeField] private CastlePopupIllustration illustrationTemplate;
         [SerializeField] private Color textColor = new Color32(255, 244, 215, 255);
         [SerializeField] private Color accentColor = new Color32(255, 222, 156, 255);
+        /// <summary>The chest illustration from the popup prefab, reused as the HUD bag icon.</summary>
+        internal static Sprite ChestIcon
+        {
+            get { var prefab = Resources.Load<GameObject>("CastleGame/CastlePopup"); var chrome = prefab == null ? null : prefab.GetComponent<CastlePopupChrome>(); return chrome == null ? null : chrome.chest; }
+        }
         internal Color Paper => textColor;
         internal Color Gold => accentColor;
 
