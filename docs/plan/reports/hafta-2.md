@@ -34,7 +34,22 @@ PR'daki CI sonucu PR'a ve bu rapora eklenecek.
 
 ## Android test build'i
 
-ANDROID_BUILD_PLACEHOLDER
+Projenin `Hexrota > Build Android Development Player` metoduyla (`ClientBuild.BuildAndroid`, IL2CPP, Development) commit `9c575b4` üzerinden alındı: `unity-client/Builds/Android/Hexrota-hafta2.apk` (89,8 MB, git'e girmez). Paket adı `com.hexrota.client`, en düşük Android 8.0 (API 26). Önceki `Hexrota.apk` (18 Kasım) yerinde bırakıldı.
+
+Telefona kurulum (kablo ile, önerilen):
+
+1. Telefonda **Ayarlar → Telefon hakkında → Yapım numarası**'na 7 kez dokun; geliştirici seçenekleri açılır.
+2. **Ayarlar → Sistem → Geliştirici seçenekleri → USB hata ayıklama**'yı aç.
+3. Telefonu USB ile bilgisayara bağla; telefonda çıkan "USB hata ayıklamaya izin ver" sorusunu onayla.
+4. PowerShell'de:
+
+   ```powershell
+   & "C:\Program Files\Unity\Hub\Editor\6000.6.9f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK\platform-tools\adb.exe" install -r "C:\UnityProjects\hexrota\unity-client\Builds\Android\Hexrota-hafta2.apk"
+   ```
+
+   "Success" yazınca uygulama telefonda "Hexrota Unity" adıyla görünür. İmza farkı yüzünden reddedilirse önce eski kurulumu telefondan kaldır.
+
+Kablo olmadan: APK'yı telefona kopyala (Drive, e-posta vb.), dosyaya dokun, o uygulama için "bilinmeyen uygulamaları yükle" iznini ver ve kur.
 
 ## Ne kaldı / doğrulanmadı
 

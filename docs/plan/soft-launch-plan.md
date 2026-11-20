@@ -50,7 +50,7 @@ Her hafta bir çıktı ve bir "bitti" ölçütü. Ölçüt sağlanmadan sonraki 
 | Hafta | Odak | Çıktı | Bitti sayılır | Durum |
 | --- | --- | --- | --- | --- |
 | 1 | Temizlik | Belgeler tekleşti; geliştirici araçları yalnız dev build'de; CI testleri PR'da koşuyor; V5 akış haritası | Release build'de dev menüsü yok, tek tasarım kaynağı var | Tamamlandı ([rapor](reports/hafta-1.md)) |
-| 2 | Akışı onar | V5'te fırça, anahtar, +5 hamle; çanta oyun ekranından açılıyor; uçtan uca PlayMode testi; Android test build'i | Öğretici → bölüm → takviye → kayıp/kurtarma → ödül → kümes → sonraki bölüm, gerçek arayüzden kesintisiz | Devam ediyor |
+| 2 | Akışı onar | V5'te fırça, anahtar, +5 hamle; çanta oyun ekranından açılıyor; uçtan uca PlayMode testi; Android test build'i | Öğretici → bölüm → takviye → kayıp/kurtarma → ödül → kümes → sonraki bölüm, gerçek arayüzden kesintisiz | PR açık, CI bekleniyor ([rapor](reports/hafta-2.md)) |
 | 3 | Okunabilirlik ve ses | İlk yarı: okunabilirlik minimumu, geçici sesler. Hafta sonunda insan testi başlar | İki hedef, toprak katmanı ve kasa dayanımı ekranda okunuyor; temel olayların sesi var | Bekliyor |
 | 4 | İnsan testi | 8–12 yeni oyuncu gözlemi (hafta 3 sonunda başlar); ilk 10 bölüm düzeltmesi | Oyuncular iki hedefi kendi sözleriyle anlatıyor | Bekliyor |
 | 5 | Ölçüm | Analitik + çökme takibi; olay şeması | Bölüm, deneme, kayıp nedeni, tek hücre kaybı, D1/D7 görülüyor | Bekliyor |
