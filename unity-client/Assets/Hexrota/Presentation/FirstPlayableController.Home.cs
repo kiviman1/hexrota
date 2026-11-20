@@ -205,7 +205,7 @@ namespace Hexrota.UnityClient.Presentation
             MenuIcon(settings,"settings",8,12,21,MenuCream); MenuClick(settings,OpenMobileSettings);
         }
 
-        private const string PlayingInstructions = "Komşu iki taşı kaydırarak veya sırayla dokunarak yer değiştir. Aynı sayıdan en az üç taş düz bir hat oluşturunca eşleşir.\n\nÜç tane 3, 9 puan kazandırır. Eşleşmenin altındaki zemin bir kat açılır. Hamlelerin bitmeden puan hedefine ulaş ve bütün zemini yeşert.";
+        private const string PlayingInstructions = "Bir taşı komşusuna doğru kaydırarak yer değiştir. Aynı sayıdan en az üç taş düz bir hat oluşturunca eşleşir.\n\nÜç tane 3, 9 puan kazandırır. Eşleşmenin altındaki zemin bir kat açılır. Hamlelerin bitmeden puan hedefine ulaş ve bütün zemini yeşert.";
 
         private void ShowHomeRules()
         {

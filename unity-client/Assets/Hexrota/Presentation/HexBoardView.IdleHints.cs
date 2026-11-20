@@ -60,7 +60,7 @@ namespace Hexrota.UnityClient.Presentation
         {
             if (lessonPair != null || idleAttempt == null || chooseIdleHint == null) return;
             bool interactive = InputEnabled && !IsAnimating && BoardCamera != null && BoardCamera.enabled &&
-                pointer == int.MinValue && selected < 0 && targetCell == null && world != null;
+                pointer == int.MinValue && targetCell == null && world != null;
             if (!interactive || Input.anyKeyDown || Input.touchCount > 0 || Input.mouseScrollDelta.sqrMagnitude > 0)
             {
                 StopIdleHint();

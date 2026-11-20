@@ -29,6 +29,14 @@ Karar: 20 Kasım 2026. Takviyeler engelli (classic-v5) bölümlerde de kullanıl
 - **+5 hamle** aynı tahtayı, kasaların ve alanların durumunu koruyarak sürdürür.
 - Takviyeler hamle harcamaz. Malzemeli bölümler (classic-v6) kampanyada yok ve takviyeleri desteklemez.
 
+### Giriş: yalnız kaydırma
+
+Karar: 20 Kasım 2026. Normal oyunda taş **yalnız kaydırılarak** takas edilir; dokunarak seçme ve seçim çerçevesi yoktur.
+
+- Kaydırma altı komşu yönden birine, her yönün etrafındaki 60°'lik dilime göre eşlenir. Dilimde oynanabilir komşu yoksa (kenar, boş ya da kapalı hücre) hiçbir şey olmaz.
+- Eşiğin altındaki kısa kaydırmalar ve dokunmalar yok sayılır.
+- Yalnız Yeşil Fırça ya da Renk Anahtarı seçiliyken dokunarak hücre hedeflenir ve hedef vurgulanır.
+
 Asıl tasarım sorusu: oyuncu yüksek puan ile kalan toprağa erişim arasında seçim yapmaktan keyif alıyor mu? Ölçümler bu soruya bağlanır (plan, "Ölçülecekler").
 
 ## 2. Tek ilerleme döngüsü

@@ -56,6 +56,16 @@ namespace Hexrota.UnityClientTests
             board.OnPointerUp(input);
         }
 
+        // Normal play never selects on tap; item targeting is the only tap input, so it probes which cells take touches.
+        private int TapTarget(Vector2 world)
+        {
+            int hit = -1;
+            board.SelectCellForItem(cell => hit = cell);
+            Tap(world);
+            board.SelectCellForItem(null);
+            return hit;
+        }
+
         [UnityTest]
         public IEnumerator BreakingCratesRevealsAndRefillsTheNewlyConnectedCellsDuringTheWave()
         {
@@ -84,8 +94,7 @@ namespace Hexrota.UnityClientTests
             }
             Color shaded = FloorTint();
             board.InputEnabled = true;
-            Tap(xy);
-            Assert.That(board.SelectedIndex, Is.EqualTo(-1));
+            Assert.That(TapTarget(xy), Is.EqualTo(-1));
             Assert.That(intactCrate.sprite.name, Is.EqualTo("AreaCrate_HP02"));
             Assert.That(brokenCrate.gameObject.activeSelf, Is.True);
             bool changedDuringWave = false;
@@ -101,8 +110,7 @@ namespace Hexrota.UnityClientTests
             Assert.That(board.IsAnimating, Is.False);
             Assert.That(changedDuringWave, Is.True, "The crates and floor must update as stones start falling.");
             Assert.That(root.Find("Stone_" + opened).gameObject.activeSelf, Is.True);
-            Tap(xy);
-            Assert.That(board.SelectedIndex, Is.EqualTo(opened));
+            Assert.That(TapTarget(xy), Is.EqualTo(opened));
         }
 
         [UnityTest]
@@ -131,12 +139,10 @@ namespace Hexrota.UnityClientTests
                         Assert.That(vp.y, Is.InRange(0f, 1f));
                         int index = Array.FindIndex(level.cells, cell => cell.q == q && cell.r == r);
                         if (index >= 0 && snapshot.values[index].HasValue) continue;
-                        Tap(xy);
-                        Assert.That(board.SelectedIndex, Is.EqualTo(-1), "Void and closed cells must not accept touches.");
+                        Assert.That(TapTarget(xy), Is.EqualTo(-1), "Void and closed cells must not accept touches.");
                     }
                 int first = Array.FindIndex(snapshot.values, value => value.HasValue);
-                Tap(MobileLayout.Axial(level.cells[first].q, level.cells[first].r));
-                Assert.That(board.SelectedIndex, Is.EqualTo(first));
+                Assert.That(TapTarget(MobileLayout.Axial(level.cells[first].q, level.cells[first].r)), Is.EqualTo(first));
                 for (int b = 0; b < level.obstacles.blockers.Length; b++)
                 {
                     var crate = root.Find("Obstacles/Crate_" + level.obstacles.blockers[b].cell).GetComponent<SpriteRenderer>();

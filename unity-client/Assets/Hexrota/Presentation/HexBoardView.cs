@@ -23,7 +23,6 @@ namespace Hexrota.UnityClient.Presentation
         public bool InputEnabled { get; set; }
         public bool ReducedMotion { get; set; }
         public bool CanPresent { get { return this != null && isActiveAndEnabled && HasVisuals; } }
-        public int SelectedIndex { get { return selected; } }
         private HexrotaAssetCatalog assets;
         private Transform world;
         private Transform effectRoot;
@@ -38,10 +37,9 @@ namespace Hexrota.UnityClient.Presentation
         private Bounds frameBounds;
         private Vector3 restingCamera;
 
-        private int selected = -1, pressed = -1, pointer = int.MinValue;
+        private int pressed = -1, pointer = int.MinValue;
         private Vector2 down;
         private bool dragged;
-        private GameObject selection;
         private Coroutine animation;
         private GameSnapshot settledSnapshot;
         private MaterialPropertyBlock tint;
@@ -239,7 +237,7 @@ namespace Hexrota.UnityClient.Presentation
                 PaintFloor(i, snapshot.layers[i]);
             }
             PaintTerrain(snapshot.blockerHp, snapshot.cellOpen, snapshot.regionOpen);
-            ClearSelection(); ClearEffects();
+            ClearEffects();
         }
 
         // Authored tutorial and hint pairs are presentation only. Commands still
@@ -276,7 +274,7 @@ namespace Hexrota.UnityClient.Presentation
         }
 
         internal bool CanShowTutorialGesture => InputEnabled && !IsAnimating && pointer == int.MinValue &&
-            selected < 0 && targetCell == null && CanPresent;
+            targetCell == null && CanPresent;
 
         private void MoveAlongSwap(int a, int b, float t, float strain, float handoff)
         {
@@ -336,7 +334,6 @@ namespace Hexrota.UnityClient.Presentation
         public void SelectCellForItem(Action<int> onTap)
         {
             StopIdleHint();
-            ClearSelection();
             targetCell = onTap;
         }
 
@@ -349,7 +346,6 @@ namespace Hexrota.UnityClient.Presentation
             bool wasAnimating = IsAnimating;
             if (this != null && animation != null) StopCoroutine(animation);
             animation = null; IsAnimating = false;
-            ClearSelection();
             ClearEffects(); Render(authoritative ?? settledSnapshot);
             if (wasAnimating && PresentationCancelled != null) PresentationCancelled();
         }
@@ -397,22 +393,15 @@ namespace Hexrota.UnityClient.Presentation
                 }
                 return;
             }
-            if (wasDrag)
-            {
-                ClearSelection();
-                return;
-            }
-            if (from != to) { ClearSelection(); return; }
-            if (selected >= 0 && selected != to) { Request(selected, to); return; }
-            Select(selected == to ? -1 : to);
+            // Normal play is swipe only: a tap never selects a stone. Short swipes below the threshold end here too.
         }
         public void OnCancel(BaseEventData data)
         {
-            ResetGesture(); ClearSelection();
+            ResetGesture();
         }
         private void Request(int from, int to)
         {
-            ClearSelection(); if (SwapRequested != null) SwapRequested(from, to);
+            if (SwapRequested != null) SwapRequested(from, to);
         }
         private int Hit(Vector2 screen)
         {
@@ -427,20 +416,6 @@ namespace Hexrota.UnityClient.Presentation
                 if (d < nearest) { result = i; nearest = d; }
             }
             return result;
-        }
-        private void Select(int index)
-        {
-            ClearSelection(); selected = index;
-            if (index < 0) return;
-            selection = Make(assets == null ? null : assets.selectionEffect, "Selection", effectRoot);
-            selection.transform.position = positions[index] + Vector3.back * .135f;
-            Tint(selection, new Color(1, .91f, .47f));
-        }
-        private void ClearSelection()
-        {
-            selected = -1;
-            if (selection != null) { selection.SetActive(false); Destroy(selection); }
-            selection = null;
         }
         private void PaintStone(int i, int? value)
         {
@@ -493,7 +468,6 @@ namespace Hexrota.UnityClient.Presentation
         {
             if (effectRoot == null) return;
             foreach (Transform child in effectRoot) Destroy(child.gameObject);
-            selection = null;
         }
         private void ClearModels()
         {
