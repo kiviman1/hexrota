@@ -45,6 +45,8 @@ namespace Hexrota.UnityClient.Presentation
         private readonly Dictionary<int, float> columnTop = new Dictionary<int, float>();
         private Cell[] motionCells;
         private int[][] swipeNeighbors;
+        /// <summary>cos(30°): a swipe belongs to the neighbour whose direction is within half of a 60° slice.</summary>
+        internal const float SwipeSliceAlignment = .8660254f;
         private int[][] columns;
         private Vector3[] matchCenters;
         private Vector3 waveCenter;
@@ -170,26 +172,30 @@ namespace Hexrota.UnityClient.Presentation
             }
             if (!dragged) return;
 
+            // Six directions, each owning a 60-degree slice around a neighbour. The slice is chosen
+            // first; a slice with no playable neighbour (board edge, empty or closed cell) does nothing.
             Vector2 origin = BoardCamera.WorldToScreenPoint(positions[pressed]);
             Vector2 heading = distance > 0f ? delta / distance : Vector2.zero;
+            int best = -1; float bestAlignment = SwipeSliceAlignment, bestSpacing = 0f;
             foreach (int neighbor in swipeNeighbors[pressed])
             {
-                if (!stones[neighbor].activeSelf || !AcceptsOpeningSwap(pressed, neighbor)) continue;
                 Vector2 direction = (Vector2)BoardCamera.WorldToScreenPoint(positions[neighbor]) - origin;
                 float spacing = direction.magnitude;
                 if (spacing <= 0f) continue;
                 float alignment = Vector2.Dot(heading, direction / spacing);
-                // The web input uses a 22.5-degree cone and 12–20 logical pixels.
-                float threshold = Mathf.Clamp(spacing * .28f, 12f * swipePixelScale, 20f * swipePixelScale);
-                if (alignment < .9238795f || distance * alignment < threshold) continue;
-                int from = pressed;
-                // Consume the gesture before dispatch. Subsequent drag and release events cannot swap again.
-                ResetGesture();
-                swipeStretch = tension;
-                try { Request(from, neighbor); }
-                finally { swipeStretch = 0f; }
-                return;
+                if (alignment >= bestAlignment) { best = neighbor; bestAlignment = alignment; bestSpacing = spacing; }
             }
+            if (best < 0) return;
+            // Shorter swipes are ignored: the travel along the slice must pass 12–20 logical pixels.
+            float threshold = Mathf.Clamp(bestSpacing * .28f, 12f * swipePixelScale, 20f * swipePixelScale);
+            if (distance * bestAlignment < threshold) return;
+            if (!stones[best].activeSelf || (closedCells != null && closedCells[best]) || !AcceptsOpeningSwap(pressed, best)) return;
+            int from = pressed;
+            // Consume the gesture before dispatch. Subsequent drag and release events cannot swap again.
+            ResetGesture();
+            swipeStretch = tension;
+            try { Request(from, best); }
+            finally { swipeStretch = 0f; }
         }
 
         private void ResetGesture()

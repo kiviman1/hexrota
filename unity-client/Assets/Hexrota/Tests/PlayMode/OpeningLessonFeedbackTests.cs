@@ -14,7 +14,7 @@ using W = Hexrota.Contracts.Wire;
 
 namespace Hexrota.UnityClientTests
 {
-    public sealed class OpeningLessonFeedbackTests
+    public sealed class OpeningLessonFeedbackTests : PlayModeTest
     {
         private Func<UnityGameSession> factory;
         private FirstPlayableController game;
@@ -56,7 +56,7 @@ namespace Hexrota.UnityClientTests
             for (int i = 0; i < before.values.Length; i++)
             {
                 if (!before.values[i].HasValue) continue;
-                GameObject.Find("Stone_" + i).transform.Find("Model").GetComponent<MeshRenderer>().GetPropertyBlock(props);
+                GameObject.Find("Stone_" + i).transform.Find("Model").GetComponent<Renderer>().GetPropertyBlock(props);
                 Assert.That(props.GetFloat("_GuideOpacity"), Is.EqualTo(bright.Contains(i) ? 1f : .30f).Within(.01f), "Stone_" + i);
             }
             var guide = game.GetComponentInChildren<OpeningLessonView>();
@@ -100,7 +100,7 @@ namespace Hexrota.UnityClientTests
             yield return null;
             yield return null;
             var props = new MaterialPropertyBlock();
-            GameObject.Find("Stone_" + dimmed).transform.Find("Model").GetComponent<MeshRenderer>().GetPropertyBlock(props);
+            GameObject.Find("Stone_" + dimmed).transform.Find("Model").GetComponent<Renderer>().GetPropertyBlock(props);
             Assert.That(props.GetFloat("_GuideOpacity"), Is.EqualTo(1f));
             game.RequestSwap(other[0], other[1]);
             Assert.That(session.Snapshot.turn, Is.EqualTo(1));

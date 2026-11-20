@@ -258,13 +258,21 @@ namespace Hexrota.UnityClient
                 "hexrota-unity-test", data.RewardRules, economyConfig: data.EconomyConfig,
                 rescueReceiptVerifier: new Hexrota.Rescue.DevelopmentRescueReceiptVerifier(), onboardingInFirstChapter: true);
             StartPlaytestObservation(storage, clock, playtestMilliseconds);
-#if !(UNITY_EDITOR || DEVELOPMENT_BUILD)
+#if !(UNITY_EDITOR || HEXROTA_DEV_TOOLS)
             ClearDevelopmentOverrides();
 #endif
         }
         public static UnityGameSession CreateDefault(CoopRules coop = null)
         {
-            return new UnityGameSession(ClientGameData.FromResources(), PlatformProfileStorage.Create(), new SystemUtcClock(), coop: coop);
+            return OpenApp(ClientGameData.FromResources(), PlatformProfileStorage.Create(), new SystemUtcClock(), coop);
+        }
+        /// <summary>How the app opens a saved profile: a chapter left open when the app closed is lost,
+        /// as if the player had left it (an untouched board is kept and its life given back).</summary>
+        public static UnityGameSession OpenApp(ClientGameData data, IProfileStorage storage, IUtcClock clock, CoopRules coop = null)
+        {
+            var session = new UnityGameSession(data, storage, clock, coop: coop);
+            session.ForfeitInterruptedAttempt();
+            return session;
         }
         private SessionCommand Command()
         {
@@ -355,6 +363,13 @@ namespace Hexrota.UnityClient
             bool ok = Apply(() => controller.Retry(command: Command()), ActiveStage);
             if (ok) inGame = true;
             return ok;
+        }
+        /// <summary>True when leaving now spends the life reserved for the open chapter (a move has been made).</summary>
+        public bool LeavingSpendsLife { get { return controller.LeavingSpendsLife; } }
+        /// <summary>Run once when the app opens: a chapter left open by closing the app is lost, as if the player left it.</summary>
+        public void ForfeitInterruptedAttempt()
+        {
+            if (controller.ForfeitPending) Apply(() => controller.ForfeitInterruptedAttempt());
         }
         public void ReturnToMenu()
         {

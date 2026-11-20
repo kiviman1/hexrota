@@ -14,7 +14,7 @@ using UnityEngine.TestTools;
 
 namespace Hexrota.UnityClientTests
 {
-    public sealed class FirstPlayableFlowTests
+    public sealed class FirstPlayableFlowTests : PlayModeTest
     {
         private sealed class Clock : IUtcClock
         {
@@ -51,7 +51,7 @@ namespace Hexrota.UnityClientTests
             if (down) ExecuteEvents.Execute(view.Board.gameObject, e, ExecuteEvents.pointerDownHandler);
             else ExecuteEvents.Execute(view.Board.gameObject, e, ExecuteEvents.pointerUpHandler);
         }
-        [UnityTest] public IEnumerator SceneMenuEntryTapSelectionAndDragReachTheRealCore()
+        [UnityTest] public IEnumerator SceneMenuEntryIgnoresTapsAndADragReachesTheRealCore()
         {
             Assert.That(view.Session.HasAttempt, Is.False);
             view.BeginLevelOne();
@@ -60,7 +60,8 @@ namespace Hexrota.UnityClientTests
             Assert.That(view.Board.InputEnabled, Is.True);
             var pair = view.Session.OpeningLessonPair;
             Pointer(pair[0], true); Pointer(pair[0], false);
-            Assert.That(view.Board.SelectedIndex, Is.EqualTo(pair[0]));
+            Pointer(pair[1], true); Pointer(pair[1], false);
+            Assert.That(view.Session.Snapshot.turn, Is.EqualTo(0), "Normal play is swipe only; taps never select or swap.");
             // Touch-sized drag through the board's EventSystem interfaces.
             Pointer(pair[0], true);
             var drag = new PointerEventData(EventSystem.current) { pointerId = 7, position = ScreenPoint(pair[1]) };
@@ -173,8 +174,11 @@ namespace Hexrota.UnityClientTests
                 Vector2 first=ScreenPoint(pair[0]),second=ScreenPoint(pair[1]);
                 device.Sample(module,TouchPhase.Began,first);
                 device.Sample(module,TouchPhase.Ended,first);
-                Assert.That(view.Board.SelectedIndex,Is.EqualTo(pair[0]));
                 device.Sample(module,TouchPhase.Began,second);
+                device.Sample(module,TouchPhase.Ended,second);
+                Assert.That(view.Session.Snapshot.turn,Is.EqualTo(0),"Taps never select or swap.");
+                device.Sample(module,TouchPhase.Began,first);
+                device.Sample(module,TouchPhase.Moved,second);
                 device.Sample(module,TouchPhase.Ended,second);
                 Assert.That(view.Session.Snapshot.turn,Is.EqualTo(1));
                 float end=Time.realtimeSinceStartup+15;

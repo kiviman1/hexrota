@@ -15,6 +15,13 @@ namespace Hexrota.UnityClient.Presentation
         }
 
         public Timing tap, release, popIn, popOut, punch;
+
+        [Header("Tahta")]
+        [Tooltip("At chapter start the empty board shows this long before the stones drop in.")]
+        [Min(0f)] public float emptyBoardHold;
+        [Tooltip("Crumbs that burst from a cell when a soil layer breaks.")]
+        public Timing soilCrumbs;
+        [Range(1, 24)] public int soilCrumbCount;
         [Tooltip("Progress bar growth.")]
         public Timing fill;
         [Tooltip("Horizontal shake of a button that cannot be used.")]

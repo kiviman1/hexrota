@@ -40,3 +40,7 @@ MonoBehaviour:
   disabledDeep: {r: 0.49019608, g: 0.44313726, b: 0.5372549, a: 1}
   shade: {r: 0.16470589, g: 0.078431375, b: 0.2509804, a: 1}
   shadeOpacity: 0.5
+  soilDeep: {r: 0.36, g: 0.227, b: 0.133, a: 1}
+  soil: {r: 0.698, g: 0.51, b: 0.322, a: 1}
+  grass: {r: 0.416, g: 0.69, b: 0.259, a: 1}
+  soilCrack: {r: 0.157, g: 0.086, b: 0.047, a: 1}

@@ -74,10 +74,12 @@ namespace Hexrota.UnityClientTests
             var catalog = AssetDatabase.LoadAssetAtPath<HexrotaAssetCatalog>("Assets/Hexrota/Art/HexrotaAssets.asset");
             Assert.That(catalog, Is.Not.Null);
             Assert.That(catalog.usesPlaceholderArt, Is.True, "9.11 ships clearly marked temporary art.");
-            var prefabs = new[] { catalog.cell, catalog.ground, catalog.stone, catalog.selectionEffect,
+            var prefabs = new[] { catalog.cell, catalog.ground, catalog.selectionEffect,
                 catalog.matchEffect, catalog.fallEffect, catalog.clearEffect, catalog.tavik,
                 catalog.environment, catalog.gardenObject, catalog.menuVisual, catalog.uiVisual };
-            Assert.That(prefabs.Length, Is.EqualTo(12));
+            Assert.That(prefabs.Length, Is.EqualTo(11));
+            // Stones are 2D sprites (Hexrota/Art/Import Stones), not prefabs.
+            Assert.That(catalog.stoneSprites, Has.Length.EqualTo(5).And.All.Not.Null);
             foreach (var prefab in prefabs)
             {
                 Assert.That(prefab, Is.Not.Null, "All Blender replacement slots must be connected.");

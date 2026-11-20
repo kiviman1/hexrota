@@ -13,7 +13,7 @@ using UnityEngine.UI;
 
 namespace Hexrota.UnityClientTests
 {
-    public sealed class DevelopmentWinButtonTests
+    public sealed class DevelopmentWinButtonTests : PlayModeTest
     {
         private Func<UnityGameSession> original;
         private FirstPlayableController game;

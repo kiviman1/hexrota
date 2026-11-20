@@ -89,8 +89,8 @@ namespace Hexrota.UnityClient.Presentation
             if (journeyButton != null) journeyButton.gameObject.SetActive(false);
             if (recordsButton != null) recordsButton.gameObject.SetActive(false);
             if (areasButton != null) areasButton.onClick.AddListener(controller.OpenAreas);
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-            // Coop art preview: keys 0-4 / R and two TEST buttons (Editor and Development builds only).
+#if UNITY_EDITOR || HEXROTA_DEV_TOOLS
+            // Coop art preview: keys 0-4 / R and two TEST buttons (Editor and HEXROTA_DEV_TOOLS players only).
             if (coopSequence != null && coopView != null && GetComponent<CoopDevelopmentShortcut>() == null)
                 CoopDevelopmentShortcut.Attach((RectTransform)transform, coopSequence, coopView.Sprite, controller,
                     playButton.GetComponentInChildren<Text>(true).font, coopSequence.Theme.panelDeep, coopSequence.Theme.label);

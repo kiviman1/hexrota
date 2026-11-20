@@ -29,6 +29,14 @@ Karar: 20 Kasım 2026. Takviyeler engelli (classic-v5) bölümlerde de kullanıl
 - **+5 hamle** aynı tahtayı, kasaların ve alanların durumunu koruyarak sürdürür.
 - Takviyeler hamle harcamaz. Malzemeli bölümler (classic-v6) kampanyada yok ve takviyeleri desteklemez.
 
+### Giriş: yalnız kaydırma
+
+Karar: 20 Kasım 2026. Normal oyunda taş **yalnız kaydırılarak** takas edilir; dokunarak seçme ve seçim çerçevesi yoktur.
+
+- Kaydırma altı komşu yönden birine, her yönün etrafındaki 60°'lik dilime göre eşlenir. Dilimde oynanabilir komşu yoksa (kenar, boş ya da kapalı hücre) hiçbir şey olmaz.
+- Eşiğin altındaki kısa kaydırmalar ve dokunmalar yok sayılır.
+- Yalnız Yeşil Fırça ya da Renk Anahtarı seçiliyken dokunarak hücre hedeflenir ve hedef vurgulanır.
+
 Asıl tasarım sorusu: oyuncu yüksek puan ile kalan toprağa erişim arasında seçim yapmaktan keyif alıyor mu? Ölçümler bu soruya bağlanır (plan, "Ölçülecekler").
 
 ## 2. Tek ilerleme döngüsü
@@ -42,6 +50,16 @@ Asıl tasarım sorusu: oyuncu yüksek puan ile kalan toprağa erişim arasında 
 | **Can** | Zamanla dolar; ödüllü reklam | Ana bölüm denemesi (kayıp 1 can) |
 | **Altın** | Bölüm ilk kazanımı, günlük ödül ve etkinlikler, satın alma | Takviyeler ve +5 hamle |
 | **Altın Yumurta** | **Yalnız** bir bölümün ilk kazanımı (1 yumurta) | **Yalnız** kümes yükseltmesi |
+
+### Can kuralı
+
+Karar: 20 Kasım 2026.
+
+- Ana bölüm başlarken **bir can ayrılır** (can sayacı hemen düşer, yenilenme sayacı başlar).
+- **Kazanınca ayrılan can geri verilir**; can doluysa sayaç durur. +5 hamleyle kurtarılıp kazanılan bölüm de canı geri verir.
+- **Kaybedince, bir hamleden sonra bölümden çıkınca ya da uygulama bölüm ortasında kapanınca** ayrılan can harcanmış olur; o deneme biter, bölüme yeniden girilince yeni tahta açılır. Çıkış bir onayla sorulur.
+- Hiç hamle yapmadan çıkılırsa can geri verilir ve aynı tahta korunur; geri dönünce can yeniden ayrılır.
+- Öğretici bölümler can harcamaz.
 
 - Altın Yumurta parayla satılmaz; günlük ödül ve etkinlikler yumurta değil Altın ya da takviye verir. Böylece kümes ilerlemesi hep oynamaya bağlı kalır.
 - Eski "yıldız" kaldırıldı; yerini Altın Yumurta aldı.

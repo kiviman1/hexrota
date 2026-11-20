@@ -31,7 +31,7 @@
     {
       "source": "unity/Application/GameSessionController.cs",
       "destination": "unity-client/Assets/Hexrota/Core/Application/GameSessionController.cs",
-      "sha256": "bbd00bee1fb0ebca6481a4e4c495aee4205c33ae5c15f62db49e1a830bac5eb8"
+      "sha256": "bd3aee30373fad12155eb6e4bbb07b1f42c69ea789e10b81d04f3619fd5c8eb3"
     },
     {
       "source": "unity/Application/ProfileRepository.cs",
@@ -131,7 +131,7 @@
     {
       "source": "unity/Lives/LifeManager.cs",
       "destination": "unity-client/Assets/Hexrota/Core/Lives/LifeManager.cs",
-      "sha256": "633beb76bda0fd5d619edb57ef86c4d1447e74414779d541fea190b2aa74235e"
+      "sha256": "a3b66e3dbed6e0a17842a530b4f7bc06454750699482c597e671874cf51b428a"
     },
     {
       "source": "unity/Lives/LifeTypes.cs",

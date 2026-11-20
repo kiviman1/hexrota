@@ -13,7 +13,7 @@ using UnityEngine.UI;
 
 namespace Hexrota.UnityClientTests
 {
-    public sealed class PhoneGameplayTests
+    public sealed class PhoneGameplayTests : PlayModeTest
     {
         [UnityTest]
         public IEnumerator SettingsAndIdleHintsWorkOnTheSameBoardAsTheOpeningLesson()

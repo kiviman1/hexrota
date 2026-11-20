@@ -10,7 +10,18 @@ namespace Hexrota.UnityClient.Presentation
         public bool usesPlaceholderArt = true;
         public GameObject cell;
         public GameObject ground;
-        public GameObject stone;
+        [Header("Taşlar")]
+        [Tooltip("Stone art for values 1–5, imported from art/stones/source by Hexrota/Art/Import Stones.")]
+        public Sprite[] stoneSprites = new Sprite[5];
+        [Tooltip("Where each stone's numeral sits: its alpha-weighted centre relative to the sprite centre, in world units.")]
+        public Vector2[] stoneDigitCentres = new Vector2[5];
+        [Tooltip("Height of each stone's painted pixels in world units; numerals are half the average.")]
+        public float[] stonePaintedHeights = new float[5];
+        [Tooltip("The single font used for every stone numeral.")]
+        public Font stoneDigitFont;
+        [Header("Tema")]
+        public UiTheme ui;
+        public MotionTheme motion;
         [Header("Kapalı alanlar")]
         public Sprite crateOneHit;
         public Sprite crateTwoHits;

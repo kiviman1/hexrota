@@ -105,6 +105,7 @@ namespace Hexrota.UnityClient.Presentation
                 var receipt = Session.ConfirmInventoryItem(preview);
                 if (receipt == null) { DrawInventory("Tahta değişti. Sonucu yeniden kontrol et."); return; }
                 CurrentScreen = "playing"; modal.SetActive(false); message.text = "";
+                phoneAudio.Booster(Session);
                 if (receipt.Swap.frames.Length > 0) Board.Present(receipt);
                 else { Board.Render(receipt.After); FinishPresentation(); }
             });

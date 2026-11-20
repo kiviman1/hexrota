@@ -83,7 +83,7 @@ namespace Hexrota.Lives
             if(!legacy){
                 if(!I(G(state,"pendingAdLives")))Fail("Invalid pending life credit");
                 foreach(string field in new[]{"registeredAttempts","settledArchive","transactionArchive","transactionStreams"})if(Ledger(state,field)==null)Fail("Invalid compact life ledger");
-                foreach(var row in Ledger(state,"registeredAttempts")){var r=O(row.Value);if(!Token(row.Key)||r==null||!Id(G(r,"levelId"))||!(G(r,"tutorial")is bool)||!I(G(r,"startedAtUtc"))||N(r,"startedAtUtc")>N(state,"lastSeenUtc")||!(G(r,"unlimitedAtStart")is bool)||Ledger(state,"settledAttempts").ContainsKey(row.Key)||Ledger(state,"settledArchive").ContainsKey(row.Key))Fail("Invalid registered attempt");}
+                foreach(var row in Ledger(state,"registeredAttempts")){var r=O(row.Value);if(!Token(row.Key)||r==null||!Id(G(r,"levelId"))||!(G(r,"tutorial")is bool)||!I(G(r,"startedAtUtc"))||N(r,"startedAtUtc")>N(state,"lastSeenUtc")||!(G(r,"unlimitedAtStart")is bool)||r.ContainsKey("reserved")&&!(G(r,"reserved")is bool)||Ledger(state,"settledAttempts").ContainsKey(row.Key)||Ledger(state,"settledArchive").ContainsKey(row.Key))Fail("Invalid registered attempt");}
                 foreach(var row in Ledger(state,"settledArchive")){var entry=A(row.Value);if(entry==null||entry.Count!=8||Ledger(state,"settledAttempts").ContainsKey(row.Key))Fail("Invalid compact settlement");CheckSettlement(row.Key,ExpandSettlement(entry),N(state,"lastSeenUtc"));}
                 foreach(var row in Ledger(state,"transactionArchive")){var entry=A(row.Value);if(entry==null||entry.Count!=6||Ledger(state,"processedTransactions").ContainsKey(row.Key))Fail("Invalid compact transaction");CheckTransaction(row.Key,ExpandTransaction(entry),N(state,"lastSeenUtc"));}
                 foreach(var row in Ledger(state,"transactionStreams")){var stream=O(row.Value);if(!Token(row.Key)||stream==null||!Token(G(stream,"provider"))||!ValidRanges(G(stream,"ranges")))Fail("Invalid verified transaction stream");}
@@ -108,6 +108,17 @@ namespace Hexrota.Lives
             int remove=Math.Max(0,rows.Count-(int)Math.Min(N(config,"maxLedgerEntries"),TechnicalRichRetention));
             foreach(var row in rows.Take(remove)){if(row.Kind=="attempt"){Ledger(state,"settledArchive")[row.Key]=ArchiveSettlement(O(G(Ledger(state,"settledAttempts"),row.Key)));Ledger(state,"settledAttempts").Remove(row.Key);}else{var record=O(G(Ledger(state,"processedTransactions"),row.Key));if(!record.ContainsKey("streamId"))Ledger(state,"transactionArchive")[row.Key]=ArchiveTransaction(record);Ledger(state,"processedTransactions").Remove(row.Key);}}return state;
         }
+        private void Reserve(Dictionary<string,object> state)
+        {if(N(state,"lives")==N(config,"maxLives"))state["regenAnchorUtc"]=N(state,"lastSeenUtc");state["lives"]=N(state,"lives")-1;}
+        /// <summary>Gives back the life reserved for an attempt left before its first move; the attempt stays open.</summary>
+        public LifeOperationResult ReleaseReservation(LifeState raw,object attemptId)
+        {
+            var state=Reconcile(raw).ToWire();var row=Token(attemptId)?O(G(Ledger(state,"registeredAttempts"),(string)attemptId)):null;
+            if(row==null||!B(G(row,"reserved")))return new LifeOperationResult(state,false,"not_reserved");
+            row["reserved"]=false;Refund(state);return new LifeOperationResult(state,true,"released");
+        }
+        private void Refund(Dictionary<string,object> state)
+        {state["lives"]=Math.Min(N(config,"maxLives"),N(state,"lives")+1);if(N(state,"lives")==N(config,"maxLives"))state["regenAnchorUtc"]=null;}
         private void ApplyPending(Dictionary<string,object> state)
         {long gain=Math.Min(N(config,"maxLives")-N(state,"lives"),N(state,"pendingAdLives"));state["lives"]=N(state,"lives")+gain;state["pendingAdLives"]=N(state,"pendingAdLives")-gain;if(N(state,"lives")==N(config,"maxLives"))state["regenAnchorUtc"]=null;}
         private Dictionary<string,object> ReconcileAt(Dictionary<string,object> raw,long observedNow)
@@ -133,8 +144,14 @@ namespace Hexrota.Lives
         public LifeOperationResult RegisterAttempt(LifeState raw,Dictionary<string,object> context)
         {
             if(context==null||!Token(G(context,"attemptId"))||!Id(G(context,"levelId"))||!(G(context,"tutorial")is bool))Fail("Invalid life attempt registration");var state=Reconcile(raw).ToWire();string attemptId=(string)G(context,"attemptId");var registered=Ledger(state,"registeredAttempts");var old=registered.ContainsKey(attemptId)?O(G(registered,attemptId)):Settlement(state,attemptId);
-            if(old!=null){if(!E(G(old,"levelId"),G(context,"levelId"))||!E(G(old,"tutorial"),G(context,"tutorial")))return new LifeOperationResult(state,false,"attempt_identity_mismatch");return new LifeOperationResult(state,false,registered.ContainsKey(attemptId)?"already_registered":"already_settled");}
-            if(!CanStartReconciled(state,context))return new LifeOperationResult(state,false,"no_lives");registered[attemptId]=M("levelId",G(context,"levelId"),"tutorial",G(context,"tutorial"),"startedAtUtc",N(state,"lastSeenUtc"),"unlimitedAtStart",Unlimited(state));return new LifeOperationResult(state,true,"registered");
+            if(old!=null){if(!E(G(old,"levelId"),G(context,"levelId"))||!E(G(old,"tutorial"),G(context,"tutorial")))return new LifeOperationResult(state,false,"attempt_identity_mismatch");
+                // An untouched attempt whose life was released on leaving reserves one again when it is resumed.
+                if(registered.ContainsKey(attemptId)&&B(G(context,"resume"))&&G(old,"reserved")is bool&&!B(G(old,"reserved"))&&!B(G(old,"tutorial"))&&!Bypass(state)&&!Unlimited(state)&&N(state,"lives")>0){Reserve(state);old["reserved"]=true;return new LifeOperationResult(state,true,"reserved");}
+                return new LifeOperationResult(state,false,registered.ContainsKey(attemptId)?"already_registered":"already_settled");}
+            if(!CanStartReconciled(state,context))return new LifeOperationResult(state,false,"no_lives");
+            // A life is reserved when a chapter starts. A win gives it back; a loss, a restart or leaving keeps it spent.
+            bool reserve=!B(G(context,"tutorial"))&&!Bypass(state)&&!Unlimited(state)&&N(state,"lives")>0;if(reserve)Reserve(state);
+            registered[attemptId]=M("levelId",G(context,"levelId"),"tutorial",G(context,"tutorial"),"startedAtUtc",N(state,"lastSeenUtc"),"unlimitedAtStart",Unlimited(state),"reserved",reserve);return new LifeOperationResult(state,true,"registered");
         }
         private Dictionary<string,object> Availability(Dictionary<string,object> state,object productId,bool completed=false)
         {
@@ -161,11 +178,11 @@ namespace Hexrota.Lives
             if(old!=null){
                 if(!E(G(old,"levelId"),G(attempt,"levelId"))||!E(G(old,"tutorial"),G(attempt,"tutorial")))return new LifeOperationResult(state,false,"attempt_identity_mismatch",false);
                 if(B(G(old,"discarded"))||S(G(old,"outcome"),"won")||E(G(old,"outcome"),G(attempt,"outcome"))||historical)return new LifeOperationResult(state,false,"already_settled",false);
-                if(S(G(attempt,"outcome"),"won")||S(G(attempt,"outcome"),"restart")){old["outcome"]=G(attempt,"outcome");old["movesUsed"]=Math.Max(N(old,"movesUsed"),N(attempt,"movesUsed"));if(S(G(attempt,"outcome"),"restart")){old["discarded"]=true;old["discardedAtUtc"]=time;}WriteSettlement(state,attemptId,old);return new LifeOperationResult(state,true,"result_updated",false);}return new LifeOperationResult(state,false,"already_settled",false);
+                if(S(G(attempt,"outcome"),"won")||S(G(attempt,"outcome"),"restart")){if(S(G(attempt,"outcome"),"won")&&B(G(old,"charged"))){old["charged"]=false;old["waiver"]="won";Refund(state);}old["outcome"]=G(attempt,"outcome");old["movesUsed"]=Math.Max(N(old,"movesUsed"),N(attempt,"movesUsed"));if(S(G(attempt,"outcome"),"restart")){old["discarded"]=true;old["discardedAtUtc"]=time;}WriteSettlement(state,attemptId,old);return new LifeOperationResult(state,true,"result_updated",false);}return new LifeOperationResult(state,false,"already_settled",false);
             }
-            string key=LevelKey(G(attempt,"levelId"));bool firstFailure=S(G(attempt,"outcome"),"failed")&&!B(G(attempt,"tutorial"))&&!Ledger(state,"firstFailures").ContainsKey(key);if(firstFailure)Ledger(state,"firstFailures")[key]=attemptId;string waiver=null;
-            if(historical)waiver="historical";else if(B(G(attempt,"tutorial")))waiver="tutorial";else if(S(G(attempt,"outcome"),"won"))waiver="won";else if(S(G(attempt,"outcome"),"restart")&&N(attempt,"movesUsed")==0)waiver="no_moves";else if(Bypass(state))waiver="developer_bypass";else if(B(G(registration,"unlimitedAtStart"))||Unlimited(state))waiver="unlimited";else if(firstFailure&&B(G(O(G(config,"firstFailureProtection")),"enabled"))&&Includes(A(G(O(G(config,"firstFailureProtection")),"levelIds")),G(attempt,"levelId"))){waiver="first_failure";Ledger(state,"protectionUsed")[key]=true;}else if(N(state,"lives")==0)waiver="empty";
-            bool charged=waiver==null;if(charged){if(N(state,"lives")==N(config,"maxLives"))state["regenAnchorUtc"]=time;state["lives"]=N(state,"lives")-1;ApplyPending(state);}
+            bool reserved=B(G(registration,"reserved"));string key=LevelKey(G(attempt,"levelId"));bool firstFailure=S(G(attempt,"outcome"),"failed")&&!B(G(attempt,"tutorial"))&&!Ledger(state,"firstFailures").ContainsKey(key);if(firstFailure)Ledger(state,"firstFailures")[key]=attemptId;string waiver=null;
+            if(historical)waiver="historical";else if(B(G(attempt,"tutorial")))waiver="tutorial";else if(S(G(attempt,"outcome"),"won"))waiver="won";else if(S(G(attempt,"outcome"),"restart")&&N(attempt,"movesUsed")==0)waiver="no_moves";else if(Bypass(state))waiver="developer_bypass";else if(B(G(registration,"unlimitedAtStart"))||Unlimited(state))waiver="unlimited";else if(firstFailure&&B(G(O(G(config,"firstFailureProtection")),"enabled"))&&Includes(A(G(O(G(config,"firstFailureProtection")),"levelIds")),G(attempt,"levelId"))){waiver="first_failure";Ledger(state,"protectionUsed")[key]=true;}else if(!reserved&&N(state,"lives")==0)waiver="empty";
+            bool charged=waiver==null;if(reserved){if(!charged)Refund(state);}else if(charged){if(N(state,"lives")==N(config,"maxLives"))state["regenAnchorUtc"]=time;state["lives"]=N(state,"lives")-1;ApplyPending(state);}
             WriteSettlement(state,attemptId,M("levelId",G(attempt,"levelId"),"tutorial",G(attempt,"tutorial"),"outcome",G(attempt,"outcome"),"movesUsed",G(attempt,"movesUsed"),"settledAtUtc",time,"charged",charged,"waiver",waiver,"discarded",S(G(attempt,"outcome"),"restart"),"discardedAtUtc",S(G(attempt,"outcome"),"restart")?(object)time:null));return new LifeOperationResult(state,true,charged?"life_consumed":waiver,charged);
         }
         public LifeOperationResult SettleAttempt(LifeState raw,Dictionary<string,object> attempt) { return Settle(raw,attempt,false); }

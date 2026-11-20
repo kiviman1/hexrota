@@ -15,7 +15,7 @@ using W = Hexrota.Contracts.Wire;
 
 namespace Hexrota.UnityClientTests
 {
-    public sealed class BoardCapacityTests
+    public sealed class BoardCapacityTests : PlayModeTest
     {
         private Func<UnityGameSession> previous;
         private ClientGameData data;
@@ -35,7 +35,7 @@ namespace Hexrota.UnityClientTests
             camera = new GameObject("Capacity camera").AddComponent<Camera>();
             camera.transform.SetParent(holder.transform, false);
             camera.orthographic = true;
-            board.Initialize(camera, Resources.FindObjectsOfTypeAll<HexrotaAssetCatalog>().First(c => c.stone != null));
+            board.Initialize(camera, Resources.FindObjectsOfTypeAll<HexrotaAssetCatalog>().First(c => c.stoneSprites != null && c.stoneSprites.Length == 5 && c.stoneSprites[0] != null));
             board.SetCameraArea(new Rect(.02f, .05f, .96f, .72f));
         }
 
@@ -54,6 +54,16 @@ namespace Hexrota.UnityClientTests
             var input = new PointerEventData(EventSystem.current) { position = camera.WorldToScreenPoint(world), pointerId = -1 };
             board.OnPointerDown(input);
             board.OnPointerUp(input);
+        }
+
+        // Normal play never selects on tap; item targeting is the only tap input, so it probes which cells take touches.
+        private int TapTarget(Vector2 world)
+        {
+            int hit = -1;
+            board.SelectCellForItem(cell => hit = cell);
+            Tap(world);
+            board.SelectCellForItem(null);
+            return hit;
         }
 
         [UnityTest]
@@ -84,8 +94,7 @@ namespace Hexrota.UnityClientTests
             }
             Color shaded = FloorTint();
             board.InputEnabled = true;
-            Tap(xy);
-            Assert.That(board.SelectedIndex, Is.EqualTo(-1));
+            Assert.That(TapTarget(xy), Is.EqualTo(-1));
             Assert.That(intactCrate.sprite.name, Is.EqualTo("AreaCrate_HP02"));
             Assert.That(brokenCrate.gameObject.activeSelf, Is.True);
             bool changedDuringWave = false;
@@ -100,9 +109,9 @@ namespace Hexrota.UnityClientTests
             while (board.IsAnimating && Time.realtimeSinceStartup < deadline) yield return null;
             Assert.That(board.IsAnimating, Is.False);
             Assert.That(changedDuringWave, Is.True, "The crates and floor must update as stones start falling.");
+            Assert.That(intactCrate.transform.Find("Durability_" + damaged.cell).GetComponent<TextMesh>().text, Is.EqualTo("1"));
             Assert.That(root.Find("Stone_" + opened).gameObject.activeSelf, Is.True);
-            Tap(xy);
-            Assert.That(board.SelectedIndex, Is.EqualTo(opened));
+            Assert.That(TapTarget(xy), Is.EqualTo(opened));
         }
 
         [UnityTest]
@@ -131,16 +140,21 @@ namespace Hexrota.UnityClientTests
                         Assert.That(vp.y, Is.InRange(0f, 1f));
                         int index = Array.FindIndex(level.cells, cell => cell.q == q && cell.r == r);
                         if (index >= 0 && snapshot.values[index].HasValue) continue;
-                        Tap(xy);
-                        Assert.That(board.SelectedIndex, Is.EqualTo(-1), "Void and closed cells must not accept touches.");
+                        Assert.That(TapTarget(xy), Is.EqualTo(-1), "Void and closed cells must not accept touches.");
                     }
                 int first = Array.FindIndex(snapshot.values, value => value.HasValue);
-                Tap(MobileLayout.Axial(level.cells[first].q, level.cells[first].r));
-                Assert.That(board.SelectedIndex, Is.EqualTo(first));
+                Assert.That(TapTarget(MobileLayout.Axial(level.cells[first].q, level.cells[first].r)), Is.EqualTo(first));
                 for (int b = 0; b < level.obstacles.blockers.Length; b++)
                 {
                     var crate = root.Find("Obstacles/Crate_" + level.obstacles.blockers[b].cell).GetComponent<SpriteRenderer>();
                     Assert.That(crate.sprite.name, Is.EqualTo(snapshot.blockerHp[b] > 1 ? "AreaCrate_HP02" : "AreaCrate_HP01"));
+                    // A large durability numeral sits on every crate, bigger than a stone's numeral.
+                    var durability = crate.transform.Find("Durability_" + level.obstacles.blockers[b].cell).GetComponent<TextMesh>();
+                    Assert.That(durability.text, Is.EqualTo(snapshot.blockerHp[b].ToString()));
+                    Assert.That(durability.color, Is.EqualTo(Color.white));
+                    Assert.That(durability.GetComponentsInChildren<TextMesh>(), Has.Length.GreaterThan(1), "The numeral has an outline.");
+                    var stoneNumeral = root.GetComponentsInChildren<TextMesh>().First(t => t.name.StartsWith("Value_"));
+                    Assert.That(durability.characterSize, Is.GreaterThan(stoneNumeral.characterSize));
                 }
             }
         }
@@ -165,7 +179,12 @@ namespace Hexrota.UnityClientTests
             Assert.That(stones.All(s => !s.gameObject.activeSelf), Is.True);
             board.SetEntranceSlide(1f);
             Assert.That(camera.transform.position, Is.EqualTo(home));
-            board.SetEntranceFill(.48f);
+            // The empty board shows first (MotionTheme.emptyBoardHold), then the stones fall.
+            float hold = board.EmptyBoardHold / board.EntranceFillSeconds;
+            Assert.That(board.EmptyBoardHold, Is.GreaterThan(0f));
+            board.SetEntranceFill(hold * .95f);
+            Assert.That(stones.All(s => !s.gameObject.activeSelf), Is.True, "Nothing falls during the empty-board hold.");
+            board.SetEntranceFill(hold + (1f - hold) * .48f);
             Assert.That(stones.Where((s, i) => s.gameObject.activeSelf && s.position.y > rest[i].y + .05f), Is.Not.Empty);
             for (int i = 0; i < stones.Length; i++)
             {

@@ -11,11 +11,31 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6ad42b26e8ec7f68603282712622a9dd, type: 3}
   m_Name: HexrotaAssets
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   usesPlaceholderArt: 1
   cell: {fileID: 6000848187643607547, guid: cbbfe30d45a88e34c8395595dbbbeb13, type: 3}
   ground: {fileID: 254937581801548803, guid: a1a3d9b32b6affd4a8e386d63874173d, type: 3}
-  stone: {fileID: 6341103060521061023, guid: 3d2b8fbd9b0018f47b021546dccc4cfc, type: 3}
+  stoneSprites:
+  - {fileID: 21300000, guid: 8a54b0eff3f33c34a9bb749cadc50719, type: 3}
+  - {fileID: 21300000, guid: 79494484081e22943be3d2a3dc8dc81d, type: 3}
+  - {fileID: 21300000, guid: 2ed1abbef1d5a1643ba523000552946b, type: 3}
+  - {fileID: 21300000, guid: 57975fe981144be49a6804e9d29fddc5, type: 3}
+  - {fileID: 21300000, guid: 14d17afb207686c4986dc3b9286eccfc, type: 3}
+  stoneDigitCentres:
+  - {x: -0.0003653515, y: -0.014541527}
+  - {x: 0.00013547938, y: -0.00753026}
+  - {x: 0.0015819193, y: -0.06149937}
+  - {x: -0.0008048887, y: -0.0035689874}
+  - {x: -0.0019625172, y: -0.03707034}
+  stonePaintedHeights:
+  - 0.6759184
+  - 0.6318368
+  - 0.7420409
+  - 0.69795924
+  - 0.7861225
+  stoneDigitFont: {fileID: 12800000, guid: b0763e95d0a251668b2df80808cd0ff8, type: 3}
+  ui: {fileID: 11400000, guid: c1e48484201f5258a838f49953dca332, type: 2}
+  motion: {fileID: 11400000, guid: 4baaa2da55c65945ad71c69f982f6fee, type: 2}
   crateOneHit: {fileID: 21300000, guid: 9f33df43342c487098116adc78786c5d, type: 3}
   crateTwoHits: {fileID: 21300000, guid: 24a9a8e8d7a7409f9eaa6e34d48afff5, type: 3}
   selectionEffect: {fileID: 100000, guid: 4999dfeeca0070d06d49d00d194f3117, type: 3}

@@ -13,7 +13,7 @@ using UnityEngine.UI;
 
 namespace Hexrota.UnityClientTests
 {
-    public sealed class CoopUpgradeSequenceTests
+    public sealed class CoopUpgradeSequenceTests : PlayModeTest
     {
         private Func<UnityGameSession> original;
         private ClientGameData data;

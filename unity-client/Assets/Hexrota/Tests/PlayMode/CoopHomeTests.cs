@@ -15,7 +15,7 @@ using W = Hexrota.Contracts.Wire;
 namespace Hexrota.UnityClientTests
 {
     // A cheap test coop (costs 1 and 2) so one won chapter makes the first upgrade affordable.
-    public sealed class CoopHomeTests
+    public sealed class CoopHomeTests : PlayModeTest
     {
         private Func<UnityGameSession> original;
         private ClientGameData data;
@@ -42,7 +42,7 @@ namespace Hexrota.UnityClientTests
                 Assert.That(preparer.TrySwap(step[0], step[1]).Ok, Is.True, preparer.LastError);
                 preparer.CompletePresentation();
             }
-            preparer.ReturnToMenu();
+            preparer.Suspend(); // saved as the app leaves it
             return route.Last();
         }
 

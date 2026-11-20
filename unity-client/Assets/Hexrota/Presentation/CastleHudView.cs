@@ -38,9 +38,9 @@ namespace Hexrota.UnityClient.Presentation
 
         internal void Bind(FirstPlayableController game)
         {
-            if (settings != null) settings.onClick.AddListener(game.OpenMobileSettings);
+            if (settings != null) { settings.onClick.AddListener(game.PlayButtonSound); settings.onClick.AddListener(game.OpenMobileSettings); }
             if (bag == null && settings != null) bag = BuildBag(CastlePopupChrome.ChestIcon);
-            if (bag != null) bag.onClick.AddListener(game.OpenInventory);
+            if (bag != null) { bag.onClick.AddListener(game.PlayButtonSound); bag.onClick.AddListener(game.OpenInventory); }
         }
 
         // Same plate as the settings button, directly under it, with the bag (chest) icon.
@@ -66,6 +66,17 @@ namespace Hexrota.UnityClient.Presentation
             return button;
         }
 
+        /// <summary>How far the visible bag hangs below the HUD, as a share of the HUD height (0 when hidden).</summary>
+        internal float BagOverhang
+        {
+            get
+            {
+                if (bag == null || !bag.gameObject.activeSelf) return 0f;
+                var rect = (RectTransform)bag.transform;
+                return Mathf.Max(0f, -rect.anchorMin.y);
+            }
+        }
+
         /// <summary>The bag shows once a booster is unlocked and is usable whenever a booster can be used.</summary>
         internal void ShowBag(bool visible, bool usable)
         {
@@ -80,9 +91,10 @@ namespace Hexrota.UnityClient.Presentation
             groundRestScale = groundGoal.localScale;
         }
 
-        internal void ShowStage(int target, GameSnapshot snapshot)
+        internal void ShowStage(int target, GameSnapshot snapshot, int startingSoil)
         {
             ShowMoves(snapshot.movesLeft);
+            soilAtStart = startingSoil;
             ShowGround(snapshot.layers);
             scoreTarget = target;
             ShowScore(snapshot.score);
@@ -93,12 +105,23 @@ namespace Hexrota.UnityClient.Presentation
             remainingMoves.text = moves.ToString(CultureInfo.InvariantCulture);
         }
 
+        private int soilAtStart;
+
+        /// <summary>Remaining soil layers on the board; the counter reaches 0 when every cell is green.</summary>
+        internal static int RemainingSoil(int[] layers)
+        {
+            int remaining = 0;
+            foreach (int layer in layers) remaining += Mathf.Max(0, layer);
+            return remaining;
+        }
+
         internal void ShowGround(int[] layers)
         {
-            int green = 0;
-            foreach (int remaining in layers)
-                if (remaining == 0) green++;
-            ShowProgress(groundCount, groundProgress, green, layers.Length);
+            int remaining = RemainingSoil(layers);
+            groundCount.text = remaining.ToString(CultureInfo.InvariantCulture);
+            float cleared = soilAtStart > 0 ? Mathf.Clamp01(1f - (float)remaining / soilAtStart) : 1f;
+            groundProgress.anchorMax = new Vector2(cleared, groundProgress.anchorMax.y);
+            groundProgress.gameObject.SetActive(cleared > 0);
         }
 
         internal void ShowScore(int score)

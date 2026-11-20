@@ -17,8 +17,8 @@ jobs:
   source-and-scene-integrity:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4 # v4
-      - uses: actions/setup-node@v4 # v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
       - run: node scripts/sync-unity-client.cjs --check
@@ -30,18 +30,18 @@ jobs:
   runtime-host:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 8.0.x
       - name: Execute real C# runtime adapters, canonical routes and atomic file storage
         run: node scripts/check-unity-runtime.cjs --report
       - name: Preserve .NET runtime evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: unity-runtime-host-results
           path: |
@@ -55,11 +55,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           lfs: true
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
       - name: Check generated Unity files before launching the editor
@@ -96,7 +96,7 @@ jobs:
           artifactsPath: test-results/unity-client
       - name: Preserve actual Unity test results
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: unity-editor-pr-test-results
           path: test-results/unity-client/
@@ -112,15 +112,15 @@ jobs:
     env:
       UNITY_EDITOR_PATH: ${{ vars.UNITY_EDITOR_PATH || '/opt/unity/Editor/Unity' }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
       - name: Run real EditMode and PlayMode tests on the pre-activated host
         run: scripts/run-unity-client.sh tests
       - name: Preserve manual test XML and logs
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: unity-editor-manual-test-results
           path: test-results/unity-client/

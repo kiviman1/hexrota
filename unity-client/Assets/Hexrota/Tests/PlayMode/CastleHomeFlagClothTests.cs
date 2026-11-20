@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace Hexrota.UnityClientTests
 {
-    public sealed class CastleHomeFlagClothTests
+    public sealed class CastleHomeFlagClothTests : PlayModeTest
     {
         private static VertexHelper Quad()
         {

@@ -13,7 +13,7 @@ using UnityEngine.TestTools;
 
 namespace Hexrota.UnityClientTests
 {
-    public sealed class BoardSwipeInputTests
+    public sealed class BoardSwipeInputTests : PlayModeTest
     {
         private Func<UnityGameSession> originalFactory;
         private FirstPlayableController game;
@@ -153,26 +153,59 @@ namespace Hexrota.UnityClientTests
         }
 
         [UnityTest]
-        public IEnumerator BetweenAxesDoesNotSendACommand()
+        public IEnumerator ASwipeBelongsToTheNeighbourWhoseSixtyDegreeSliceItFallsIn()
         {
             yield return OpenLesson();
             Vector2 axis = end - start;
-            Vector2 otherAxis = Enumerable.Range(0, game.Session.Level.cells.Length).Select(i => ScreenPoint(i) - start)
-                .First(v => Mathf.Abs(v.magnitude - axis.magnitude) < 1f && Mathf.Abs(Vector2.Angle(axis, v) - 60f) < .5f);
-            Vector2 between = start + (axis + otherAxis).normalized * axis.magnitude;
-            var source = GameObject.Find("Stone_" + legalSwap.x).transform;
-            Vector3 home = source.position;
+            int other = Enumerable.Range(0, game.Session.Level.cells.Length).First(i =>
+                Mathf.Abs((ScreenPoint(i) - start).magnitude - axis.magnitude) < 1f &&
+                Mathf.Abs(Vector2.Angle(axis, ScreenPoint(i) - start) - 60f) < .5f);
+            // Headings are measured from the lesson axis toward the other neighbour, which sits 60 degrees away.
+            float lesson = Mathf.Atan2(axis.y, axis.x) * Mathf.Rad2Deg;
+            Vector2 toOther = ScreenPoint(other) - start;
+            float span = Mathf.DeltaAngle(lesson, Mathf.Atan2(toOther.y, toOther.x) * Mathf.Rad2Deg);
+            Assert.That(Mathf.Abs(span), Is.EqualTo(60f).Within(.5f));
+            Vector2 Rotated(float degrees)
+            {
+                float heading = (lesson + Mathf.Sign(span) * degrees) * Mathf.Deg2Rad;
+                return start + new Vector2(Mathf.Cos(heading), Mathf.Sin(heading)) * axis.magnitude * .8f;
+            }
+            // 35 degrees off the lesson axis is already the neighbouring slice: the lesson pair is not asked
+            // for (the board's lesson filter then turns the neighbour down too).
             var finger = Down(start);
-            Drag(finger, between);
-            Assert.That(source.position, Is.EqualTo(home), "A bisector is outside both recognition cones.");
-            Up(finger, between);
-            Assert.That(requests, Is.Empty);
-            Assert.That(source.position, Is.EqualTo(home));
+            Drag(finger, Rotated(35f));
+            Up(finger, Rotated(35f));
+            Assert.That(requests, Has.No.Member(legalSwap));
+            Assert.That(requests.All(r => r == new Vector2Int(legalSwap.x, other)), Is.True);
             Assert.That(game.Session.Snapshot.turn, Is.Zero);
+            requests.Clear();
+            float deadline = Time.realtimeSinceStartup + 8f; // a turned-down swap plays its short shake
+            while (board.IsAnimating && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.That(board.IsAnimating, Is.False);
+            // 25 degrees off is still inside the lesson pair's slice.
+            finger = Down(start);
+            Drag(finger, Rotated(25f));
+            AssertOnlyLegalSwap();
         }
 
         [UnityTest]
-        public IEnumerator SecondFingerCancelsAnUncommittedSwipeBeforeTheNextTapPair()
+        public IEnumerator ShortSwipesAndTapsNeverSelectOrSwap()
+        {
+            yield return OpenLesson();
+            var finger = Down(start);
+            Drag(finger, start + (end - start).normalized * 8f);
+            Up(finger, start + (end - start).normalized * 8f);
+            Up(Down(start), start);
+            Up(Down(end), end);
+            Assert.That(requests, Is.Empty, "Normal play is swipe only; taps are ignored.");
+            Assert.That(GameObject.Find("Selection"), Is.Null, "There is no selection ring outside item targeting.");
+            Assert.That(game.Session.Snapshot.turn, Is.Zero);
+            Up(Down(start), end);
+            AssertOnlyLegalSwap();
+        }
+
+        [UnityTest]
+        public IEnumerator SecondFingerCancelsAnUncommittedSwipe()
         {
             yield return OpenLesson();
             var source = GameObject.Find("Stone_" + legalSwap.x).transform;
@@ -186,11 +219,8 @@ namespace Hexrota.UnityClientTests
             Up(first, end);
             Assert.That(requests, Is.Empty);
             Assert.That(game.Session.Snapshot.turn, Is.Zero);
-            Assert.That(board.SelectedIndex, Is.EqualTo(-1));
 
-            Up(Down(start), start);
-            Assert.That(board.SelectedIndex, Is.EqualTo(legalSwap.x));
-            Up(Down(end), end);
+            Up(Down(start), end);
             AssertOnlyLegalSwap();
         }
 

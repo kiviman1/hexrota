@@ -67,7 +67,7 @@ namespace Hexrota.UnityClientTests
                 session.CompletePresentation();
                 var played = session.Snapshot;
                 Assert.That(played.movesLeft, Is.EqualTo(moves - 1));
-                session.ReturnToMenu();
+                session.Suspend(); // the save keeps a played attempt; leaving through the menu would end it
                 session = new UnityGameSession(data, store, new SystemUtcClock(), seed);
                 Assert.That(session.EnterStage(session.NextStage), Is.True);
                 Assert.That(session.AttemptId, Is.EqualTo(attempt));

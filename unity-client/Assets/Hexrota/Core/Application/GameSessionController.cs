@@ -295,7 +295,8 @@ namespace Hexrota.Application
                 Refresh(); var previous = RestoreEntry(index, true); if (previous != null && Discarded(previous)) fresh = true;
                 bool newAttempt = fresh || previous == null || previous.engine.Status != "playing";
                 if (index >= tutorialCount && newAttempt && previous != null && previous.engine.Status != "playing") Settle(previous, previous.engine.Status == "won" ? "won" : "failed");
-                if (index >= tutorialCount && newAttempt && !lives.CanStart(new LifeState(W.Map(energy["life"])), W.Obj("tutorial", false))) return Result(false, "lives_empty");
+                // A restart settles the open attempt first: its reserved life comes back when no move was made.
+                if (index >= tutorialCount && newAttempt && !(fresh && previous != null && previous.engine.Status == "playing") && !lives.CanStart(new LifeState(W.Map(energy["life"])), W.Obj("tutorial", false))) return Result(false, "lives_empty");
                 if (fresh && previous != null && previous.engine.Status == "playing" && index >= tutorialCount)
                 {
                     var priorLife = W.Copy(energy["life"]); var settlement = Settle(previous, "restart");
@@ -367,7 +368,21 @@ namespace Hexrota.Application
                 return Execute(() => { Refresh(); var entry = CurrentEntry(); var previous = W.Copy(energy["life"]); var settlement = Settle(entry, "restart"); if (maximumCharge == 0 && settlement.Charged == true) { energy["life"] = previous; return Result(false, "confirmation_changed"); } CancelPendingRescue((string)entry.metadata["attemptId"]); Abandon(entry, "restart"); return Result(false, "lives_empty"); }, command);
             return Enter(active, true, "restart", true, maximumCharge, command);
         }
-        public Dictionary<string, object> ReturnToMenu(SessionCommand command = null) { return Execute(() => { Refresh(); return Result(true, "menu"); }, command); }
+        public Dictionary<string, object> ReturnToMenu(SessionCommand command = null) { return Execute(() => { Refresh(); Forfeit("menu"); return Result(true, "menu"); }, command); }
+        /// <summary>Called once when the app opens: a chapter left open by closing the app is lost like leaving it.</summary>
+        public Dictionary<string, object> ForfeitInterruptedAttempt() { if (!ForfeitPending) return Result(false, "nothing_open"); return Execute(() => { Refresh(); Forfeit("closed"); return Result(true, "forfeited"); }); }
+        /// <summary>True while a non-tutorial chapter is open and unfinished.</summary>
+        public bool ForfeitPending { get { return engine != null && active >= tutorialCount && engine.Status == "playing" && !HasPendingRescueDelivery && CurrentEntry() != null && !Discarded(CurrentEntry()); } }
+        /// <summary>True when leaving now spends the open chapter's reserved life: a move or an item has been used.</summary>
+        public bool LeavingSpendsLife { get { return ForfeitPending && (engine.turn > 0 || assistance != null); } }
+        // Leaving a chapter after a move ends its attempt and the life reserved at its start stays spent.
+        // Leaving before any move keeps the same board for later and gives the reserved life back.
+        private void Forfeit(string reason)
+        {
+            if (!ForfeitPending) return; var entry = CurrentEntry();
+            if (!LeavingSpendsLife) { var released = lives.ReleaseReservation(new LifeState(W.Map(energy["life"])), entry.metadata["attemptId"]); energy["life"] = released.State.ToWire(); return; }
+            Settle(entry, "restart"); CancelPendingRescue((string)entry.metadata["attemptId"]); Abandon(entry, reason);
+        }
         public Dictionary<string, object> Close(SessionCommand command = null) { return Execute(() => { Refresh(); return Result(true, "closed"); }, command); }
         public Dictionary<string, object> RefreshLives(SessionCommand command = null) { return Execute(() => { Refresh(); game["rescue"] = rescue.Reconcile(game["rescue"]); return Result(true, "refreshed"); }, command); }
         public Dictionary<string, object> SetDeveloperBypass(bool enabled, SessionCommand command = null) { return Execute(() => { energy["life"] = lives.SetDeveloperBypass(new LifeState(W.Map(energy["life"])), enabled).State.ToWire(); return Result(true, "developer_setting"); }, command); }

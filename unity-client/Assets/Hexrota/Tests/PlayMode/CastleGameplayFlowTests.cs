@@ -12,7 +12,7 @@ using UnityEngine.UI;
 
 namespace Hexrota.UnityClientTests
 {
-    public sealed class CastleGameplayFlowTests
+    public sealed class CastleGameplayFlowTests : PlayModeTest
     {
         private Func<UnityGameSession> originalFactory;
         private FirstPlayableController game;
@@ -52,7 +52,8 @@ namespace Hexrota.UnityClientTests
             var snapshot = game.Session.Snapshot;
             Assert.That(labels.Single(label => label.name == "Moves").text, Is.EqualTo(snapshot.movesLeft.ToString()));
             Assert.That(labels.Single(label => label.name == "Counters").text, Is.EqualTo(snapshot.score + " / " + game.Session.Level.target));
-            Assert.That(labels.Single(label => label.name == "GroundCount").text, Is.EqualTo(snapshot.layers.Count(layer => layer == 0) + " / " + snapshot.layers.Length));
+            // The ground counter shows the soil layers still to clear and counts down to 0.
+            Assert.That(labels.Single(label => label.name == "GroundCount").text, Is.EqualTo(snapshot.layers.Sum().ToString()));
             Assert.That(labels.Any(label => label.name == "StageTag" || label.name == "LevelTitle"), Is.False);
             for (int i = 0; i < snapshot.values.Length; i++)
             {
@@ -60,10 +61,14 @@ namespace Hexrota.UnityClientTests
                 Assert.That(snapshot.values[i].HasValue, Is.True, stone.name);
                 StoneArtAssertions.ShowsNumber(stone.transform, snapshot.values[i].Value);
                 var ground = GameObject.Find("Ground_" + i);
+                // Soil is drawn in code: grass, light brown (1 layer) or dark brown with cracks (2+).
                 var floor = ground.transform.Find("Model").GetComponent<MeshRenderer>();
-                string state = snapshot.layers[i] == 0 ? "Green" :
-                    snapshot.layers[i] < game.Session.Level.cells[i].layers ? "Partial" : "Soil";
-                Assert.That(floor.sharedMaterial.mainTexture.name, Does.Contain("HexFloor_" + state), ground.name);
+                var ui = Resources.FindObjectsOfTypeAll<HexrotaAssetCatalog>().First(c => c.ui != null).ui;
+                var block = new MaterialPropertyBlock();
+                floor.GetPropertyBlock(block);
+                Color expected = snapshot.layers[i] == 0 ? ui.grass : snapshot.layers[i] == 1 ? ui.soil : ui.soilDeep;
+                Assert.That(block.GetColor("_Color"), Is.EqualTo(expected), ground.name);
+                Assert.That(block.GetFloat("_Cracks"), Is.EqualTo(snapshot.layers[i] >= 2 ? 1f : 0f), ground.name);
             }
         }
 
@@ -120,7 +125,7 @@ namespace Hexrota.UnityClientTests
         }
 
         [UnityTest]
-        public IEnumerator TopSettingsKeepsOneHudAndTheCommittedMoveOnReturnToTheLevel()
+        public IEnumerator TopSettingsKeepsOneHudAndLeavingAfterAMoveStartsANewBoard()
         {
             Click("PlayButton");
             yield return ChapterEntryWait.Ready(game);
@@ -137,6 +142,8 @@ namespace Hexrota.UnityClientTests
             CheckHudAndBoard();
             Click("Ayarlar");
             Click("Bölümden çık");
+            Assert.That(game.CurrentScreen, Is.Not.EqualTo("menu"), "Leaving after a move spends a life and is confirmed.");
+            Click("Çık, can harcansın");
             Assert.That(game.CurrentScreen, Is.EqualTo("menu"));
             Assert.That(game.GetComponentInChildren<CastleHudView>(), Is.Null);
             Assert.That(game.GetComponentInChildren<CoopSceneArt>().GetComponentsInChildren<Transform>()
@@ -144,7 +151,7 @@ namespace Hexrota.UnityClientTests
             Click("PlayButton");
             yield return ChapterEntryWait.Ready(game);
             Assert.That(game.CurrentScreen, Is.EqualTo("playing"));
-            Assert.That(game.Session.Snapshot.turn, Is.EqualTo(1));
+            Assert.That(game.Session.Snapshot.turn, Is.EqualTo(0), "The left attempt is over; a new board opens.");
             Assert.That(game.GetComponentsInChildren<CastleHudView>(true), Has.Length.EqualTo(1));
             CheckHudAndBoard();
         }

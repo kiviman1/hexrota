@@ -8,6 +8,9 @@ namespace Hexrota.UnityClient.Presentation
     {
         private ObstaclesConfig terrain;
         private SpriteRenderer[] crates;
+        private TextMesh[] crateNumbers;
+        /// <summary>The crate's durability numeral as a share of the stone numeral height.</summary>
+        public const float CrateDigitScale = 1.15f;
         private bool[] closedCells;
         private GameObject terrainRoot;
 
@@ -19,11 +22,12 @@ namespace Hexrota.UnityClient.Presentation
                 Destroy(terrainRoot);
             }
             terrain = config;
-            if (config == null) { closedCells = null; crates = null; return; }
+            if (config == null) { closedCells = null; crates = null; crateNumbers = null; return; }
             terrainRoot = new GameObject("Obstacles");
             terrainRoot.transform.SetParent(world, false);
             closedCells = new bool[positions.Length];
             crates = new SpriteRenderer[config.blockers.Length];
+            crateNumbers = new TextMesh[config.blockers.Length];
             for (int i = 0; i < crates.Length; i++)
             {
                 int cell = config.blockers[i].cell;
@@ -31,6 +35,8 @@ namespace Hexrota.UnityClient.Presentation
                 crate.transform.SetParent(terrainRoot.transform, false);
                 crate.transform.position = positions[cell] + Vector3.back * .6f;
                 crates[i] = crate.AddComponent<SpriteRenderer>();
+                // A large durability numeral over the crate, in the stones' numeral style.
+                crateNumbers[i] = BuildNumeral(crate.transform, "Durability_" + cell, CrateDigitScale);
             }
         }
 
@@ -55,6 +61,9 @@ namespace Hexrota.UnityClient.Presentation
                 {
                     if (assets != null) crates[i].sprite = hp[i] > 1 ? assets.crateTwoHits : assets.crateOneHit;
                     crates[i].gameObject.SetActive(hp[i] > 0);
+                    if (crateNumbers[i] != null)
+                        foreach (var label in crateNumbers[i].GetComponentsInChildren<TextMesh>(true))
+                            label.text = hp[i].ToString(System.Globalization.CultureInfo.InvariantCulture);
                 }
                 if (hp[i] > 0) closedCells[cell] = true;
             }

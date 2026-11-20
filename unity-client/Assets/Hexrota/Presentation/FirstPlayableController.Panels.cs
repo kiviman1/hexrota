@@ -124,7 +124,18 @@ namespace Hexrota.UnityClient.Presentation
             resumeButton=SheetButton("Devam et",50,154,260,51,Resume,SheetStyle.Primary,"play");
             SheetButton("Bölümü yeniden başlat",30,220,300,43,ConfirmRestart,SheetStyle.Secondary,"reset");
             SheetButton("Ayarlar",30,272,300,43,OpenMobileSettings,SheetStyle.Secondary,"settings");
-            SheetButton("Ana menüye dön",22,322,316,36,ReturnToMenu,SheetStyle.Plain,"home");
+            SheetButton("Ana menüye dön",22,322,316,36,LeaveFromPause,SheetStyle.Plain,"home");
+        }
+
+        // Leaving an open chapter after a move spends the life reserved for it, so the player confirms first.
+        private void LeaveFromPause()
+        {
+            if(!Session.LeavingSpendsLife){ReturnToMenu();return;}
+            ShowPhoneSheet("Bölümden çıkılsın mı?","Bu bölüm için ayrılan can harcanacak. Bölüme yeniden girersen yeni bir tahta açılır.","",331,DrawPause);
+            SheetHero(CastlePopupChrome.Art.Heart,4,78);
+            At(modalCopy.rectTransform,25,93,310,65);
+            SheetButton("Çık, can harcansın",30,172,300,48,ReturnToMenu,SheetStyle.Danger,"home");
+            SheetButton("Vazgeç",30,234,300,44,DrawPause,SheetStyle.Secondary);
         }
 
         private void DrawRestart()
@@ -135,12 +146,13 @@ namespace Hexrota.UnityClient.Presentation
             Action cancel=()=>{if(fromPause){DrawPause();return;}OpenCurrentBoard(false);};
             int cost=Session.PreviewRestartCharge();
             var life=Session.LifeStatus;
+            // The open chapter already holds a reserved life; a restart after a move spends it and reserves a new one.
             string text="Bu bölümdeki ilerlemen sıfırlanacak. Yeni bir tahta açılacak. Bu işlem can harcamaz.";
-            if (cost>0)
+            if (cost>0 && !Convert.ToBoolean(life["canStart"]))
+                text="Bu deneme kapanacak ve bu bölüm için ayrılan can harcanacak. Yeni deneme için can gerekir.";
+            else if (cost>0)
                 text="Bu bölümdeki ilerlemen sıfırlanacak ve "+cost+" can harcanacak. "+
                     (Convert.ToInt32(life["lives"])==1?"Son canını kullanıyorsun. Yeni tahta açmak için sonra beklemen veya can alman gerekecek.":"Yeni bir tahta açılacak.");
-            else if(Session.Snapshot.turn>0 && !Convert.ToBoolean(life["canStart"]))
-                text="Bu deneme kapanacak. Canın olmadığı için can harcanmaz. Yeni deneme için can gerekir.";
             ShowPhoneSheet("Baştan başlamak ister misin?",text,"",371,cancel);
             SheetHero(CastlePopupChrome.Art.Heart,4,78);
             At(modalCopy.rectTransform,25,93,310,65);

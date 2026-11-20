@@ -14,7 +14,9 @@ namespace Hexrota.UnityClient.Presentation
 
         private readonly List<OpeningStone> openingStones = new List<OpeningStone>();
         private float entranceSlide = 1f;
-        internal float EntranceFillSeconds { get; private set; }
+        public float EntranceFillSeconds { get; private set; }
+        /// <summary>How long the empty board shows before the opening stones start to fall (MotionTheme).</summary>
+        public float EmptyBoardHold => assets != null && assets.motion != null ? assets.motion.emptyBoardHold : 0f;
 
         public void BeginEntrance(GameSnapshot snapshot)
         {
@@ -52,7 +54,7 @@ namespace Hexrota.UnityClient.Presentation
                     top = end;
                 }
                 if (longestRun == 0) continue;
-                float delay = movingColumns++ * .068f;
+                float delay = EmptyBoardHold + movingColumns++ * .068f;
                 float duration = DropDuration(longestRun, 1f);
                 for (int i = firstStone; i < openingStones.Count; i++)
                 {

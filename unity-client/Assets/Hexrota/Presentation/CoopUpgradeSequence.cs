@@ -263,7 +263,7 @@ namespace Hexrota.UnityClient.Presentation
         }
 
         /// <summary>Development preview: shows a coop level at once; the save is not touched, and the next
-        /// home refresh shows the saved level again. Editor and Development builds only.</summary>
+        /// home refresh shows the saved level again. Editor and HEXROTA_DEV_TOOLS players only.</summary>
         internal void DevelopmentShowLevel(int level)
         {
             if (!FirstPlayableController.DevelopmentToolsEnabled || coopView == null || coopView.Sprite == null) return;
@@ -273,7 +273,7 @@ namespace Hexrota.UnityClient.Presentation
         }
 
         /// <summary>Development preview: plays the upgrade transition (dust, squash, sparkle, banner) into the
-        /// shown level from the one below it, without spending eggs or saving. Editor and Development builds only.</summary>
+        /// shown level from the one below it, without spending eggs or saving. Editor and HEXROTA_DEV_TOOLS players only.</summary>
         internal bool DevelopmentReplay()
         {
             if (!FirstPlayableController.DevelopmentToolsEnabled || IsPlaying || controller == null || controller.Session == null ||

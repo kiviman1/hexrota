@@ -114,36 +114,17 @@ namespace Hexrota.UnityClientTests
         }
 
         [Test]
-        public void FiveBlankStoneModelsKeepTheirReliefAndHaveNoDigitMesh()
-        {
-            const string folder = "Assets/Hexrota/Art/CastleBoard/Models/Blank/";
-            foreach (string variant in new[] { "01_Purple", "02_Yellow", "03_LightRed", "04_Turquoise", "05_Orange" })
-            {
-                var model = AssetDatabase.LoadAssetAtPath<GameObject>(folder + "HX_Stone_" + variant + "_ToneRelief_Blank.fbx");
-                Assert.That(model, Is.Not.Null, variant);
-                var meshes = model.GetComponentsInChildren<MeshFilter>(true).Select(part => part.sharedMesh.name).ToArray();
-                Assert.That(meshes.Any(name => name.Contains("ToneRelief")), Is.True, variant);
-                Assert.That(meshes.Any(name => name.EndsWith("_Body")), Is.True, variant);
-                Assert.That(meshes.Any(name => name.Contains("_Digit_")), Is.False, variant);
-            }
-        }
-
-        [Test]
-        public void ActiveCatalogResolvesEditableBoardWrappersAndTheirImportedModels()
+        public void ActiveCatalogResolvesEditableFloorWrappersAndTheirImportedModels()
         {
             const string path = "Assets/Hexrota/Art/HexrotaAssets.asset";
             var catalog = AssetDatabase.LoadAssetAtPath<HexrotaAssetCatalog>(path);
             Assert.That(catalog, Is.Not.Null);
-            Assert.That(catalog.stone.GetComponentInChildren<TextMesh>(true), Is.Null,
-                "The sculpted numeral must not receive a second text label.");
-            foreach (var wrapper in new[] { catalog.cell, catalog.stone, catalog.ground })
+            foreach (var wrapper in new[] { catalog.cell, catalog.ground })
             {
                 Assert.That(PrefabUtility.GetPrefabAssetType(wrapper), Is.EqualTo(PrefabAssetType.Regular));
                 foreach (var node in wrapper.GetComponentsInChildren<Transform>(true))
                     Assert.That(GameObjectUtility.GetMonoBehavioursWithMissingScriptCount(node.gameObject), Is.Zero, node.name);
             }
-            AssertVariants(catalog.stone, new[] { "HexStone_01_Purple", "HexStone_02_Yellow", "HexStone_03_LightRed",
-                "HexStone_04_Turquoise", "HexStone_05_Orange" }, true);
             AssertVariants(catalog.ground, new[] { "HexFloor_Soil", "HexFloor_Partial", "HexFloor_Green" }, false);
         }
 

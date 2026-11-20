@@ -23,7 +23,6 @@ namespace Hexrota.UnityClient.Presentation
         public bool InputEnabled { get; set; }
         public bool ReducedMotion { get; set; }
         public bool CanPresent { get { return this != null && isActiveAndEnabled && HasVisuals; } }
-        public int SelectedIndex { get { return selected; } }
         private HexrotaAssetCatalog assets;
         private Transform world;
         private Transform effectRoot;
@@ -38,30 +37,25 @@ namespace Hexrota.UnityClient.Presentation
         private Bounds frameBounds;
         private Vector3 restingCamera;
 
-        private int selected = -1, pressed = -1, pointer = int.MinValue;
+        private int pressed = -1, pointer = int.MinValue;
         private Vector2 down;
         private bool dragged;
-        private GameObject selection;
         private Coroutine animation;
         private GameSnapshot settledSnapshot;
         private MaterialPropertyBlock tint;
         private Material digitsMaterial;
         private Font digitsFont;
-        private bool authoredStone, authoredFloor, numberInMesh;
-        private static readonly Color[] Colors = {
-            new Color32(235,227,245,255), new Color32(179,101,242,255),
-            new Color32(255,207,40,255), new Color32(255,104,81,255),
-            new Color32(39,159,237,255), new Color32(241,92,189,255)
-        };
-        private static readonly Color32[] Edges = {
-            new Color32(255,255,255,255), new Color32(215,163,255,255), new Color32(255,233,149,255),
-            new Color32(255,179,154,255), new Color32(143,221,255,255), new Color32(255,176,223,255)
-        };
-        private static readonly Color32[] Inks = {
-            new Color32(43,34,53,255), new Color32(44,14,67,255), new Color32(88,51,0,255),
-            new Color32(85,27,16,255), new Color32(9,47,83,255), new Color32(74,19,61,255)
-        };
-
+        private bool authoredFloor;
+        private Material stoneMaterial;
+        private int[] shownLayers;
+        private Sprite[] stoneSprites;
+        private Vector2[] digitCentres;
+        /// <summary>Numeral height as a share of the stone's painted height.</summary>
+        public const float DigitHeightShare = .5f;
+        /// <summary>The dark outline around each white numeral, as a share of the numeral height.</summary>
+        public const float DigitOutlineShare = .085f;
+        public static readonly Color DigitFace = Color.white;
+        public static readonly Color DigitOutline = new Color32(43, 24, 18, 255);
         private void Awake()
         {
             tint = new MaterialPropertyBlock();
@@ -85,7 +79,7 @@ namespace Hexrota.UnityClient.Presentation
                     stones.Count != positions.Length || grounds.Count != stones.Count ||
                     cells.Count != stones.Count || numbers.Count != stones.Count) return false;
                 for (int i = 0; i < stones.Count; i++)
-                    if (stones[i] == null || grounds[i] == null || cells[i] == null || (!numberInMesh && numbers[i] == null)) return false;
+                    if (stones[i] == null || grounds[i] == null || cells[i] == null || numbers[i] == null) return false;
                 return true;
             }
         }
@@ -93,12 +87,11 @@ namespace Hexrota.UnityClient.Presentation
         public void Initialize(Camera camera, HexrotaAssetCatalog catalog)
         {
             BoardCamera = camera; assets = catalog;
-            var numberTemplate = assets != null && assets.stone != null ? assets.stone.GetComponentInChildren<TextMesh>(true) : null;
-            digitsFont = numberTemplate != null && numberTemplate.font != null
-                ? numberTemplate.font : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            var wrapper = assets != null && assets.stone != null ? assets.stone.GetComponent<CastleBoardTile>() : null;
-            authoredStone = wrapper != null;
-            numberInMesh = authoredStone && wrapper.NumberInMesh;
+            // One font for every numeral; the stones are 2D sprites imported from art/stones/source.
+            digitsFont = assets != null && assets.stoneDigitFont != null
+                ? assets.stoneDigitFont : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            stoneSprites = assets != null ? assets.stoneSprites : null;
+            digitCentres = assets != null ? assets.stoneDigitCentres : null;
             authoredFloor = assets != null && assets.ground != null && assets.ground.GetComponent<CastleBoardTile>() != null;
             world = new GameObject("BoardVisuals_PLACEHOLDER").transform;
             world.SetParent(transform, false);
@@ -114,6 +107,7 @@ namespace Hexrota.UnityClient.Presentation
             if (this == null || world == null || effectRoot == null) return;
             Cancel(null); ClearModels(); positions = new Vector3[level.cells.Length];
             initialLayers = new int[level.cells.Length]; floorEdges = new Color[level.cells.Length];
+            shownLayers = null; // the first paint of a board never crumbles
             tutorialLayout = level.id is string;
             this.frameNineByNine = frameNineByNine;
             for (int i = 0; i < level.cells.Length; i++)
@@ -126,45 +120,92 @@ namespace Hexrota.UnityClient.Presentation
                 cells.Add(cell);
                 var ground = Make(assets == null ? null : assets.ground, "Ground_" + i, world);
                 ground.transform.position = positions[i]; grounds.Add(ground);
-                GameObject stone;
-                if (authoredStone) stone = Make(assets.stone, "Stone_" + i, world);
-                else
-                {
-                    stone = new GameObject("Stone_" + i);
-                    stone.transform.SetParent(world, false);
-                    Make(assets == null ? null : assets.stone, "Artwork", stone.transform);
-                }
+                var stone = new GameObject("Stone_" + i);
+                stone.transform.SetParent(world, false);
                 stone.transform.position = positions[i] + Vector3.back * .15f; stones.Add(stone);
-                if (numberInMesh)
-                {
-                    numbers.Add(null);
-                    continue;
-                }
-                var text = stone.GetComponentInChildren<TextMesh>(true);
-                if (text == null)
-                {
-                    var fallback = new GameObject();
-                    fallback.transform.SetParent(stone.transform, false);
-                    fallback.transform.localPosition = new Vector3(0,0,-.38f);
-                    text = fallback.AddComponent<TextMesh>();
-                    text.anchor = TextAnchor.MiddleCenter; text.alignment = TextAlignment.Center;
-                    text.font = digitsFont; text.fontSize = 64; text.fontStyle = FontStyle.Bold; text.characterSize = .068f;
-                }
-                text.gameObject.name = "Value_" + i;
-                if (digitsMaterial == null)
-                {
-                    digitsFont.RequestCharactersInTexture("0123456789", text.fontSize, text.fontStyle);
-                    digitsMaterial = new Material(Resources.Load<Shader>("PhoneArt/BoardDigit")) {
-                        name = "Board number ink", mainTexture = digitsFont.material.mainTexture
-                    };
-                }
-                text.GetComponent<MeshRenderer>().sharedMaterial = digitsMaterial;
-                numbers.Add(text);
+                numbers.Add(BuildStone(stone.transform, i));
             }
             frameBounds = CellFrame();
+            shownLayers = new int[level.cells.Length];
+            for (int i = 0; i < shownLayers.Length; i++) shownLayers[i] = -1;
             PrepareMotion(level);
             PrepareTerrain(level.obstacles);
             Render(snapshot); FitCamera();
+        }
+
+        // A stone is its painted sprite ("Model") and a numeral ("Value_i"): white face text over
+        // dark copies offset around it, drawn after every stone sprite.
+        private TextMesh BuildStone(Transform stone, int index)
+        {
+            if (stoneMaterial == null)
+                stoneMaterial = new Material(Resources.Load<Shader>("PhoneArt/BoardStone")) { name = "Board stone" };
+            var model = new GameObject("Model");
+            model.transform.SetParent(stone, false);
+            var art = model.AddComponent<SpriteRenderer>();
+            art.sharedMaterial = stoneMaterial;
+            art.sortingOrder = 0;
+            return BuildNumeral(stone, "Value_" + index, 1f);
+        }
+
+        // White face text over twelve dark copies offset around it; scale 1 is half a stone's height.
+        private TextMesh BuildNumeral(Transform parent, string name, float scale)
+        {
+            if (digitsMaterial == null)
+            {
+                digitsFont.RequestCharactersInTexture("0123456789", DigitFontSize, FontStyle.Normal);
+                digitsMaterial = new Material(Resources.Load<Shader>("PhoneArt/BoardDigit")) {
+                    name = "Board number ink", mainTexture = digitsFont.material.mainTexture
+                };
+            }
+            var face = Digit(parent, name, DigitFace, 2);
+            float size = DigitCharacterSize() * scale;
+            face.characterSize = size;
+            float ring = DigitOutlineShare * DigitHeightShare * StoneHeight() * scale;
+            for (int k = 0; k < 12; k++)
+            {
+                float angle = k * Mathf.PI / 6f;
+                var outline = Digit(face.transform, "Outline", DigitOutline, 1);
+                outline.characterSize = size;
+                outline.transform.localPosition = new Vector3(Mathf.Cos(angle) * ring, Mathf.Sin(angle) * ring, .002f);
+            }
+            return face;
+        }
+
+        private const int DigitFontSize = 96;
+
+        private TextMesh Digit(Transform parent, string name, Color color, int order)
+        {
+            var node = new GameObject(name);
+            node.transform.SetParent(parent, false);
+            node.transform.localPosition = new Vector3(0, 0, -.02f);
+            var text = node.AddComponent<TextMesh>();
+            text.anchor = TextAnchor.MiddleCenter; text.alignment = TextAlignment.Center;
+            text.font = digitsFont; text.fontSize = DigitFontSize; text.fontStyle = FontStyle.Normal;
+            text.color = color; text.text = "0";
+            var renderer = node.GetComponent<MeshRenderer>();
+            renderer.sharedMaterial = digitsMaterial;
+            renderer.sortingOrder = order;
+            return text;
+        }
+
+        /// <summary>Average world height of the painted stones (they share one visual size).</summary>
+        private float StoneHeight()
+        {
+            float sum = 0; int count = 0;
+            if (assets != null && assets.stonePaintedHeights != null)
+                foreach (float height in assets.stonePaintedHeights)
+                    if (height > 0) { sum += height; count++; }
+            return count > 0 ? sum / count : .72f;
+        }
+
+        // Character size that makes a digit's ink about half the stone's painted height.
+        private float DigitCharacterSize()
+        {
+            CharacterInfo glyph;
+            float ink = digitsFont.GetCharacterInfo('5', out glyph, DigitFontSize, FontStyle.Normal) && glyph.glyphHeight > 0
+                ? glyph.glyphHeight : DigitFontSize * .72f;
+            // TextMesh draws font pixels at characterSize / 10 world units each.
+            return DigitHeightShare * StoneHeight() / (ink * .1f);
         }
 
         public void SetViewport(Rect safe)
@@ -239,7 +280,7 @@ namespace Hexrota.UnityClient.Presentation
                 PaintFloor(i, snapshot.layers[i]);
             }
             PaintTerrain(snapshot.blockerHp, snapshot.cellOpen, snapshot.regionOpen);
-            ClearSelection(); ClearEffects();
+            ClearEffects();
         }
 
         // Authored tutorial and hint pairs are presentation only. Commands still
@@ -265,18 +306,19 @@ namespace Hexrota.UnityClient.Presentation
                     SetGuideOpacity(grounds[i], opacity, stones[i].activeSelf ? coveredFloor : 0);
                     SetGuideOpacity(stones[i], opacity);
                     if (numbers[i] != null)
-                    {
-                        Color label = numbers[i].color;
-                        label.a = opacity;
-                        numbers[i].color = label;
-                    }
+                        foreach (var label in numbers[i].GetComponentsInChildren<TextMesh>(true))
+                        {
+                            Color ink = label.color;
+                            ink.a = opacity;
+                            label.color = ink;
+                        }
                 }
             }
             hasMutedTiles = guide;
         }
 
         internal bool CanShowTutorialGesture => InputEnabled && !IsAnimating && pointer == int.MinValue &&
-            selected < 0 && targetCell == null && CanPresent;
+            targetCell == null && CanPresent;
 
         private void MoveAlongSwap(int a, int b, float t, float strain, float handoff)
         {
@@ -336,7 +378,6 @@ namespace Hexrota.UnityClient.Presentation
         public void SelectCellForItem(Action<int> onTap)
         {
             StopIdleHint();
-            ClearSelection();
             targetCell = onTap;
         }
 
@@ -349,7 +390,6 @@ namespace Hexrota.UnityClient.Presentation
             bool wasAnimating = IsAnimating;
             if (this != null && animation != null) StopCoroutine(animation);
             animation = null; IsAnimating = false;
-            ClearSelection();
             ClearEffects(); Render(authoritative ?? settledSnapshot);
             if (wasAnimating && PresentationCancelled != null) PresentationCancelled();
         }
@@ -397,22 +437,15 @@ namespace Hexrota.UnityClient.Presentation
                 }
                 return;
             }
-            if (wasDrag)
-            {
-                ClearSelection();
-                return;
-            }
-            if (from != to) { ClearSelection(); return; }
-            if (selected >= 0 && selected != to) { Request(selected, to); return; }
-            Select(selected == to ? -1 : to);
+            // Normal play is swipe only: a tap never selects a stone. Short swipes below the threshold end here too.
         }
         public void OnCancel(BaseEventData data)
         {
-            ResetGesture(); ClearSelection();
+            ResetGesture();
         }
         private void Request(int from, int to)
         {
-            ClearSelection(); if (SwapRequested != null) SwapRequested(from, to);
+            if (SwapRequested != null) SwapRequested(from, to);
         }
         private int Hit(Vector2 screen)
         {
@@ -428,52 +461,64 @@ namespace Hexrota.UnityClient.Presentation
             }
             return result;
         }
-        private void Select(int index)
-        {
-            ClearSelection(); selected = index;
-            if (index < 0) return;
-            selection = Make(assets == null ? null : assets.selectionEffect, "Selection", effectRoot);
-            selection.transform.position = positions[index] + Vector3.back * .135f;
-            Tint(selection, new Color(1, .91f, .47f));
-        }
-        private void ClearSelection()
-        {
-            selected = -1;
-            if (selection != null) { selection.SetActive(false); Destroy(selection); }
-            selection = null;
-        }
         private void PaintStone(int i, int? value)
         {
             stones[i].SetActive(value.HasValue);
-            if (numbers[i] != null) numbers[i].text = value.HasValue ? value.Value.ToString() : "";
             if (!value.HasValue) return;
-            var tile = stones[i].GetComponent<CastleBoardTile>();
-            if (tile != null && tile.Show(value.Value - 1))
+            int slot = value.Value - 1;
+            var art = stones[i].transform.Find("Model");
+            var sprite = stoneSprites != null && slot >= 0 && slot < stoneSprites.Length ? stoneSprites[slot] : null;
+            if (art != null)
             {
-                Tint(stones[i], Color.white);
-                return;
+                var renderer = art.GetComponent<SpriteRenderer>();
+                renderer.sprite = sprite;
+                renderer.color = Color.white;
             }
-            int palette = (value.Value % Colors.Length + Colors.Length) % Colors.Length;
-            if (numbers[i] != null) numbers[i].color = Inks[palette];
-            Tint(stones[i], Colors[palette], Edges[palette], .037f);
+            Tint(stones[i], Color.white);
+            var number = numbers[i];
+            if (number == null) return;
+            string text = value.Value.ToString();
+            foreach (var label in number.GetComponentsInChildren<TextMesh>(true)) label.text = text;
+            Vector2 centre = digitCentres != null && slot >= 0 && slot < digitCentres.Length ? digitCentres[slot] : Vector2.zero;
+            number.transform.localPosition = new Vector3(centre.x, centre.y, -.02f);
         }
+
+        // Temporary code-drawn soil (no cell art is coming): two layers are dark brown with cracks,
+        // one layer is light brown and a cleared cell is grass. A layer that breaks bursts into crumbs.
         private void PaintFloor(int index, int layers)
         {
-            bool green = layers == 0, partial = !green && layers < initialLayers[index];
-            float mark = green ? 3 : initialLayers[index] == 2 ? layers : 0;
+            bool broke = shownLayers != null && shownLayers[index] >= 0 && layers < shownLayers[index];
+            Color before = broke ? SoilColour(shownLayers[index]) : Color.clear;
+            if (shownLayers != null) shownLayers[index] = layers;
             var tile = grounds[index].GetComponent<CastleBoardTile>();
-            if (tile != null && tile.Show(green ? 2 : partial ? 1 : 0))
-            {
-                floorEdges[index] = Color.white;
-                Tint(cells[index], floorEdges[index]);
-                Tint(grounds[index], Color.white, mark:mark);
-                return;
-            }
-            Color fill = green ? new Color32(118,217,67,255) : partial ? new Color32(134,119,72,255) : new Color32(83,75,60,255);
-            floorEdges[index] = green ? new Color32(183,250,126,255) : partial ? new Color32(223,196,127,255) : new Color32(141,123,90,255);
-            Tint(cells[index], floorEdges[index]); Tint(grounds[index],fill,mark:mark);
+            if (tile != null) tile.Show(0);
+            floorEdges[index] = tile != null ? Color.white : Color.Lerp(SoilColour(layers), Color.white, .3f);
+            Tint(cells[index], floorEdges[index]);
+            Tint(grounds[index], SoilColour(layers), cracks: layers >= 2 ? 1f : 0f, plain: true);
+            if (broke) Crumble(index, before);
         }
-        private void Tint(GameObject obj, Color color, Color rim = default(Color), float width = 0, float mark = 0)
+
+        internal Color SoilColour(int layers)
+        {
+            var ui = assets != null ? assets.ui : null;
+            if (ui == null) return layers <= 0 ? Color.green : layers == 1 ? new Color(.6f, .45f, .3f) : new Color(.35f, .22f, .14f);
+            return layers <= 0 ? ui.grass : layers == 1 ? ui.soil : ui.soilDeep;
+        }
+
+        private Material crumbMaterial;
+
+        private void Crumble(int index, Color colour)
+        {
+            var motion = assets != null ? assets.motion : null;
+            if (motion == null || ReducedMotion || world == null || positions == null) return;
+            if (crumbMaterial == null)
+                crumbMaterial = new Material(Resources.Load<Shader>("PhoneArt/BoardStone")) { name = "Soil crumbs" };
+            // Under the board root, not the effects root: a redraw clears effects but must not cut a burst short.
+            var crumbs = SoilCrumbs.Burst(world, positions[index] + Vector3.back * .3f, colour, motion, crumbMaterial, 3);
+            crumbs.name = "Crumbs_" + index;
+        }
+        private void Tint(GameObject obj, Color color, Color rim = default(Color), float width = 0, float mark = 0,
+            float cracks = 0, bool plain = false)
         {
             if (obj == null || tint == null) return;
             foreach (Renderer renderer in obj.GetComponentsInChildren<Renderer>())
@@ -482,6 +527,12 @@ namespace Hexrota.UnityClient.Presentation
                 renderer.GetPropertyBlock(tint); tint.SetColor("_Color", color); tint.SetColor("_BaseColor", color);
                 tint.SetColor("_RimColor",rim); tint.SetFloat("_RimWidth",width);
                 tint.SetFloat("_FloorMark",mark);
+                tint.SetFloat("_Cracks",cracks);
+                if (plain)
+                {
+                    tint.SetTexture("_MainTex", Texture2D.whiteTexture);
+                    if (assets != null && assets.ui != null) tint.SetColor("_CrackColor", assets.ui.soilCrack);
+                }
                 renderer.SetPropertyBlock(tint);
             }
         }
@@ -493,7 +544,6 @@ namespace Hexrota.UnityClient.Presentation
         {
             if (effectRoot == null) return;
             foreach (Transform child in effectRoot) Destroy(child.gameObject);
-            selection = null;
         }
         private void ClearModels()
         {
@@ -512,6 +562,8 @@ namespace Hexrota.UnityClient.Presentation
             cells.Clear(); grounds.Clear(); stones.Clear(); numbers.Clear(); positions = null;
             Font.textureRebuilt -= RefreshDigitAtlas;
             if (digitsMaterial != null) Destroy(digitsMaterial);
+            if (stoneMaterial != null) Destroy(stoneMaterial);
+            if (crumbMaterial != null) Destroy(crumbMaterial);
             if (world != null) Destroy(world.gameObject);
             world = null; effectRoot = null; BoardCamera = null; tint = null;
         }

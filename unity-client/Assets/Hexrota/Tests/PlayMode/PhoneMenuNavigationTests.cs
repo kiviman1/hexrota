@@ -14,7 +14,7 @@ using UnityEngine.UI;
 
 namespace Hexrota.UnityClientTests
 {
-    public sealed class PhoneMenuNavigationTests
+    public sealed class PhoneMenuNavigationTests : PlayModeTest
     {
         private Func<UnityGameSession> old;
         private FirstPlayableController controller;

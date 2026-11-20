@@ -17,8 +17,19 @@ namespace Hexrota.UnityClient
         {
             var timer=System.Diagnostics.Stopwatch.StartNew();
             playtest=new LocalPlaytest(storage,clock.NowUtcMilliseconds,milliseconds??(()=>timer.ElapsedMilliseconds));
+#if HEXROTA_PLAYTEST
+            EnablePlaytestRecording();
+#endif
             if(playtest.Enabled)nextObservedEvent=W.Integer(controller.EventSave["nextSequence"]);
         }
+#if HEXROTA_PLAYTEST
+        // Playtest players (ClientBuild.Profile.Playtest) record the local log from the first launch;
+        // nothing leaves the device, and Settings keeps the switch and the JSON export.
+        private void EnablePlaytestRecording()
+        {
+            if(!playtest.Enabled)playtest.SetEnabled(true);
+        }
+#endif
         public void SetPlaytestEnabled(bool value)
         {
             nextObservedEvent=W.Integer(controller.EventSave["nextSequence"]);

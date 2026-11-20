@@ -13,7 +13,7 @@ using UnityEngine.TestTools;
 
 namespace Hexrota.UnityClientTests
 {
-    public sealed class HexBoardLifecycleTests
+    public sealed class HexBoardLifecycleTests : PlayModeTest
     {
         private sealed class Clock : IUtcClock
         {

@@ -11,7 +11,7 @@
 - Bir şey başarısız olursa nedeni ayır: oyun kodu mu, test mi, CI mı? Raporda hangisi olduğunu yaz.
 - Secrets (lisans, anahtar, parola, token) hiçbir dosyaya, commit'e, PR'a ya da loga yazılmaz.
 - Her hafta sonunda kısa rapor: ne bitti, ne kaldı, riskler (docs/plan/reports/hafta-N.md).
-- Geliştirici araçları yalnız `UNITY_EDITOR || DEVELOPMENT_BUILD` altında derlenir; release build'de olmadıklarını DevelopmentToolsReleaseTests doğrular.
+- Geliştirici araçları yalnız `UNITY_EDITOR || HEXROTA_DEV_TOOLS` altında derlenir. Bayrağı yalnız Development build profili ekler (ClientBuild); release, playtest ve web build eklemez. DevelopmentToolsReleaseTests bunu derleyerek doğrular. `DEVELOPMENT_BUILD` araç açmak için kullanılmaz.
 
 ## Tasarım
 - Ürün ve kapsam için tek kaynak: docs/design/PRODUCT.md. Görsel ve hareket kuralları: docs/design/style-guide/. docs/design/archive/ geçersizdir.

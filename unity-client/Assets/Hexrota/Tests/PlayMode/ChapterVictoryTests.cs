@@ -15,7 +15,7 @@ using W = Hexrota.Contracts.Wire;
 
 namespace Hexrota.UnityClientTests
 {
-    public sealed class ChapterVictoryTests
+    public sealed class ChapterVictoryTests : PlayModeTest
     {
         private Func<UnityGameSession> original;
         private FirstPlayableController game;
@@ -41,7 +41,7 @@ namespace Hexrota.UnityClientTests
                 preparer.CompletePresentation();
             }
             last = route.Last();
-            preparer.ReturnToMenu();
+            preparer.Suspend(); // saved one move before the win
             FirstPlayableController.SessionFactory = () => new UnityGameSession(data, storage, new SystemUtcClock());
             yield return SceneManager.LoadSceneAsync("FirstPlayable");
             game = UnityEngine.Object.FindAnyObjectByType<FirstPlayableController>();
@@ -155,6 +155,45 @@ namespace Hexrota.UnityClientTests
             game.ReturnToMenu();
             Assert.That(flight.IsPlaying, Is.False, "The same verified win must only be presented once.");
             Assert.That(session.ReadPhoneWallet().Gold, Is.EqualTo(wallet.Gold));
+        }
+
+        [UnityTest]
+        public IEnumerator FullMotionWinRewardIconsFlyAcrossTheScreenAndLandOnTheCounters()
+        {
+            yield return Win("full");
+            var earned = session.ReadEarnedResult();
+            var wallet = session.ReadPhoneWallet();
+            float resultBy = Time.unscaledTime + 8;
+            while (game.CurrentScreen != "result" && Time.unscaledTime < resultBy)
+            {
+                var victory = UnityEngine.Object.FindAnyObjectByType<ChapterVictoryView>();
+                if (victory != null && victory.gameObject.activeInHierarchy)
+                    ExecuteEvents.Execute(victory.gameObject, new PointerEventData(EventSystem.current), ExecuteEvents.pointerClickHandler);
+                yield return null;
+            }
+            Assert.That(game.CurrentScreen, Is.EqualTo("result"));
+            game.GetComponentsInChildren<Button>().Single(button => button.name == "Ana menü").onClick.Invoke();
+
+            var flight = game.GetComponentInChildren<RewardFlight>();
+            var gold = Counter("GoldValue");
+            Assert.That(flight.IsPlaying, Is.True, "A verified win starts the reward flight on the home screen.");
+            Assert.That(gold.text, Is.EqualTo(Turkish(wallet.Gold - earned.Gold)));
+
+            // Icons appear and actually travel: an active icon moves between frames.
+            float deadline = Time.unscaledTime + 3;
+            while (flight.ActiveIconCount == 0 && flight.IsPlaying && Time.unscaledTime < deadline) yield return null;
+            Assert.That(flight.ActiveIconCount, Is.Positive, "Full motion launches visible reward icons.");
+            Image Moving() => game.GetComponentsInChildren<Image>().FirstOrDefault(i => i.name == "RewardIcon");
+            var icon = Moving();
+            Assert.That(icon, Is.Not.Null);
+            Vector2 from = icon.rectTransform.anchoredPosition;
+            yield return null; yield return null;
+            Assert.That(icon.rectTransform.anchoredPosition, Is.Not.EqualTo(from), "The icon flies instead of standing still.");
+
+            yield return WaitForFlight(flight);
+            Assert.That(gold.text, Is.EqualTo(Turkish(wallet.Gold)), "Every coin lands on the counter.");
+            Assert.That(session.ReadPhoneWallet().Gold, Is.EqualTo(wallet.Gold), "The flight is presentation only.");
+            LogAssert.NoUnexpectedReceived();
         }
 
         [UnityTest]

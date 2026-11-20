@@ -19,9 +19,9 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22.22.2'
           cache: npm
@@ -36,13 +36,13 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22.22.2'
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '8.0.x'
       - name: Compile C# 7.3 and compare JavaScript reward outputs
@@ -54,13 +54,13 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22.22.2'
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '8.0.x'
       - name: Compile C# 7.3 and compare every gameplay wave and save
@@ -72,9 +72,9 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22.22.2'
           cache: npm
@@ -97,9 +97,9 @@ jobs:
         browser: [chromium, webkit]
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22.22.2'
           cache: npm
@@ -115,7 +115,7 @@ jobs:
           HEXROTA_BROWSER: ${{ matrix.browser }}
       - name: Keep idle hint mobile geometry, screenshots and timing evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: idle-hints-${{ matrix.browser }}
           path: test-results/idle-hints-${{ matrix.browser }}
@@ -142,7 +142,7 @@ jobs:
           HEXROTA_WELCOME_VISUAL_SCREENSHOT_DIR: test-results/welcome-visual-${{ matrix.browser }}
       - name: Keep welcome coin layering and halo pixel evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: welcome-visual-${{ matrix.browser }}
           path: test-results/welcome-visual-${{ matrix.browser }}
@@ -150,7 +150,7 @@ jobs:
           retention-days: 7
       - name: Keep welcome reward and reset screenshots
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: welcome-reset-${{ matrix.browser }}
           path: test-results/welcome-reset-${{ matrix.browser }}
@@ -158,7 +158,7 @@ jobs:
           retention-days: 7
       - name: Keep first-opening screenshots and browser results
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: first-play-${{ matrix.browser }}
           path: test-results/first-play-${{ matrix.browser }}
@@ -191,7 +191,7 @@ jobs:
           HEXROTA_HINT_INTEGRITY_SCREENSHOT_DIR: test-results/hint-integrity-${{ matrix.browser }}
       - name: Keep verified hint worker and fallback evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: hint-integrity-${{ matrix.browser }}
           path: test-results/hint-integrity-${{ matrix.browser }}
@@ -199,7 +199,7 @@ jobs:
           retention-days: 7
       - name: Keep recovery fault, retry and reload evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: board-recovery-${{ matrix.browser }}
           path: test-results/board-recovery-${{ matrix.browser }}
@@ -223,7 +223,7 @@ jobs:
           HEXROTA_SCENE_TRACE: '1'
       - name: Keep Tavik scene screenshots and browser results
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: tavik-scene-${{ matrix.browser }}
           path: test-results/scene-${{ matrix.browser }}
@@ -231,7 +231,7 @@ jobs:
           retention-days: 7
       - name: Keep Comic Adventure screenshots and browser results
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: comic-ui-${{ matrix.browser }}
           path: test-results/comic-${{ matrix.browser }}
@@ -239,7 +239,7 @@ jobs:
           retention-days: 7
       - name: Keep garden screenshots and browser results
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: garden-mobile-${{ matrix.browser }}
           path: test-results/garden-${{ matrix.browser }}
@@ -247,7 +247,7 @@ jobs:
           retention-days: 7
       - name: Keep economy screenshots and browser results
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: economy-mobile-${{ matrix.browser }}
           path: test-results/economy-${{ matrix.browser }}
@@ -255,7 +255,7 @@ jobs:
           retention-days: 7
       - name: Keep rescue safety and receipt compatibility evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: rescue-safety-${{ matrix.browser }}
           path: test-results/rescue-safety-${{ matrix.browser }}
@@ -263,7 +263,7 @@ jobs:
           retention-days: 7
       - name: Keep swap screenshots and pixel report
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: swap-visual-${{ matrix.browser }}
           path: test-results/swap-${{ matrix.browser }}
@@ -276,9 +276,9 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22.22.2'
       - name: Check hidden-information independence and reproduce all audit trials
@@ -290,13 +290,13 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22.22.2'
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '8.0.x'
       - name: Compile C# 7.3 and compare catalogs, selections and replay saves
@@ -308,13 +308,13 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22.22.2'
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '8.0.x'
       - name: Compile C# 7.3 and compare hints with node and injected clock budgets
@@ -328,13 +328,13 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22.22.2'
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '8.0.x'
       - name: Compile C# 7.3 and compare life transitions, migrations and errors
@@ -346,14 +346,14 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22.22.2'
           cache: npm
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '8.0.x'
       - name: Install test dependencies
@@ -367,13 +367,13 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22.22.2'
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '8.0.x'
       - name: Compile C# 7.3 and compare permanent progression and wallet ledgers
@@ -385,13 +385,13 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22.22.2'
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '8.0.x'
       - name: Compile C# 7.3 and compare every assisted command and intermediate wave
@@ -403,13 +403,13 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22.22.2'
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '8.0.x'
       - name: Compile C# 7.3 and compare rescue claims, receipts, quotas and clock recovery
@@ -421,9 +421,9 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Check out integrated game
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22.22.2'
           cache: npm
@@ -432,7 +432,7 @@ jobs:
       - name: Install actual Chromium and WebKit
         run: npx playwright install --with-deps chromium webkit
       - name: Check out unmerged Lab only as a pinned isolated test fixture
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: 85bc092d4d2e0dc01e91527b92a1d8cbf4664ca1
           path: .lab-compat-fixture
@@ -451,7 +451,7 @@ jobs:
           HEXROTA_LAB_ECONOMY_REPORT_DIR: test-results/lab-economy-webkit
       - name: Keep isolated Lab screenshots and privacy reports
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: balance-lab-economy-isolation
           path: test-results/lab-economy-*
@@ -468,9 +468,9 @@ jobs:
         browser: [chromium, webkit]
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22.22.2'
           cache: npm
@@ -490,7 +490,7 @@ jobs:
           HEXROTA_F01_SCREENSHOT_DIR: test-results/f01-browser-${{ matrix.browser }}
       - name: Keep application state transition evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: application-state-${{ matrix.browser }}
           path: test-results/state-${{ matrix.browser }}
@@ -503,7 +503,7 @@ jobs:
           HEXROTA_PIPELINE_SCREENSHOT_DIR: test-results/animation-pipeline-${{ matrix.browser }}
       - name: Keep animation phase, identity and mobile screenshot evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: animation-pipeline-${{ matrix.browser }}
           path: test-results/animation-pipeline-${{ matrix.browser }}
@@ -511,7 +511,7 @@ jobs:
           retention-days: 7
       - name: Keep F-01 native input, write-count and rendering evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: f01-presentation-${{ matrix.browser }}
           path: test-results/f01-browser-${{ matrix.browser }}
@@ -527,12 +527,12 @@ jobs:
       matrix:
         browser: [chromium, webkit]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: '22.22.2'
           cache: npm
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '8.0.x'
       - run: npm ci
@@ -551,7 +551,7 @@ jobs:
         env:
           HEXROTA_BROWSER: ${{ matrix.browser }}
           HEXROTA_OBSTACLES_SCREENSHOT_DIR: test-results/obstacles-${{ matrix.browser }}
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         if: always()
         with:
           name: obstacles-9-12-${{ matrix.browser }}
@@ -570,8 +570,8 @@ jobs:
       matrix:
         browser: [chromium, webkit]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: '22.22.2'
           cache: npm
@@ -582,7 +582,7 @@ jobs:
         env:
           HEXROTA_BROWSER: ${{ matrix.browser }}
           HEXROTA_SMART_IDLE_SCREENSHOT_DIR: test-results/idle-hints-9-12-${{ matrix.browser }}
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         if: always()
         with:
           name: idle-hints-9-12-${{ matrix.browser }}
@@ -598,12 +598,12 @@ jobs:
       matrix:
         browser: [chromium, webkit]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: '22.22.2'
           cache: npm
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '8.0.x'
       - run: npm ci
@@ -614,7 +614,7 @@ jobs:
         env:
           HEXROTA_BROWSER: ${{ matrix.browser }}
           HEXROTA_MATERIAL_SCREENSHOT_DIR: test-results/materials-9-14-${{ matrix.browser }}
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         if: always()
         with:
           name: materials-9-14-${{ matrix.browser }}
@@ -630,12 +630,12 @@ jobs:
       matrix:
         browser: [chromium, webkit]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: '22.22.2'
           cache: npm
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '8.0.x'
       - run: npm ci
@@ -646,7 +646,7 @@ jobs:
         env:
           HEXROTA_BROWSER: ${{ matrix.browser }}
           HEXROTA_STORY_SCREENSHOT_DIR: test-results/story-9-15-${{ matrix.browser }}
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         if: always()
         with:
           name: story-9-15-${{ matrix.browser }}

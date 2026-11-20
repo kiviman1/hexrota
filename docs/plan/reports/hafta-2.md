@@ -1,6 +1,6 @@
 # Hafta 2 raporu — Akışı onar
 
-20 Kasım 2026. Dal: `feat/hafta-2-akis`, tek PR. Kapsam, 20 Kasım kararıyla daraltılmış hafta 2'dir: V5 takviyeleri ve kurtarma, oyun ekranından çanta, uçtan uca PlayMode testi, Android test build'i.
+20 Kasım 2026. Dal: `feat/hafta-2-akis`, tek PR: [#57](https://github.com/kiviman1/hexrota/pull/57), birleştirildi. Kapsam, 20 Kasım kararıyla daraltılmış hafta 2'dir: V5 takviyeleri ve kurtarma, oyun ekranından çanta, uçtan uca PlayMode testi, Android test build'i.
 
 ## Ne bitti
 
@@ -30,7 +30,13 @@ Yerelde gerçek Unity 6000.6.9f1 ile (açık editöre dokunmadan, projenin kopya
 | Eski C#↔JS karşılaştırmaları (classic-v4) | komut 2952, kurtarma 376, oynanış paritesi birebir geçti |
 | sync-unity-client --check, check-unity-client | geçti |
 
-PR'daki CI sonucu PR'a ve bu rapora eklenecek.
+PR #57 CI sonucu, [çalıştırma 44779363106](https://github.com/kiviman1/hexrota/actions/runs/44779363106), ilk denemede üçü de yeşil:
+
+| Kontrol | Sonuç | Süre |
+| --- | --- | --- |
+| editor-tests | Geçti: EditMode 119/119, PlayMode 92/92 (`EndToEndFlowTests` ve `V5AssistanceTests` dahil), atlanan yok | 11 dk 13 sn |
+| runtime-host | Geçti | 29 sn |
+| source-and-scene-integrity | Geçti | 23 sn |
 
 ## Android test build'i
 

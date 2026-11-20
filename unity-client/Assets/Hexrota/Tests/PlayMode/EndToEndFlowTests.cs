@@ -20,7 +20,7 @@ namespace Hexrota.UnityClientTests
     // first chapter with its lesson -> (chapters 2-5 prepared) -> V5 chapter 6: bag from the HUD ->
     // Green Brush -> loss -> TEST rescue ad (+5) -> loss -> retry -> win -> reward -> coop upgrade ->
     // next chapter. Chapters 2-5 are won through the session only to reach a V5 chapter with boosters.
-    public sealed class EndToEndFlowTests
+    public sealed class EndToEndFlowTests : PlayModeTest
     {
         private Func<UnityGameSession> original;
         private FirstPlayableController game;
