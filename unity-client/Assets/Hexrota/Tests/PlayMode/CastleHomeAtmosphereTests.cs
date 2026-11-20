@@ -118,7 +118,8 @@ namespace Hexrota.UnityClientTests
                 // The coop stands on the plot; the bar sits below the plot, right of the stone path, above Play.
                 Rect coop = ScreenRect(screen, (RectTransform)layers.CoopPlot.Find("PlotCoop"));
                 Assert.That(coop.center.x, Is.EqualTo(plot.center.x).Within(1f));
-                Assert.That(coop.yMin, Is.GreaterThan(plot.yMin).And.LessThan(plot.center.y), "The coop base is on the plot.");
+                Assert.That(coop.yMin, Is.EqualTo(Mathf.Lerp(plot.yMin, plot.yMax, home.GetComponentInChildren<CoopSpriteView>().Look.diskCentre.y)).Within(1f),
+                    "The coop stands on the disk-centre point of the plot.");
                 Rect ArtRect(float left, float top, float right, float bottom) => Rect.MinMaxRect(
                     frame.xMin + left / layers.ArtSize.x * frame.width, frame.yMax - bottom / layers.ArtSize.y * frame.height,
                     frame.xMin + right / layers.ArtSize.x * frame.width, frame.yMax - top / layers.ArtSize.y * frame.height);
@@ -132,9 +133,11 @@ namespace Hexrota.UnityClientTests
                 Assert.That(barAll.Overlaps(play), Is.False, "Bar does not cover Play.");
                 Assert.That(barAll.xMax, Is.LessThanOrEqualTo(display.xMax), "Bar stays on screen.");
 
-                // Every coop level grows but stays on the plot, clear of Play and the bar, on one ground point.
+                // Every coop level grows but stays on the plot, clear of Play and the bar. Its base disk is
+                // CoopLook.diskFraction of the plot width and its centre sits on the plot centre.
                 var view = home.GetComponentInChildren<CoopSpriteView>();
-                Vector2 ground = default;
+                var look = view.Look;
+                Assert.That(look, Is.Not.Null, "Per-level sizes come from the CoopLook asset.");
                 float lastWidth = 0;
                 for (int level = 0; level < view.LevelCount; level++)
                 {
@@ -150,9 +153,18 @@ namespace Hexrota.UnityClientTests
                     Assert.That(sprite.width, Is.GreaterThan(lastWidth), name + " is bigger than the level before.");
                     lastWidth = sprite.width;
                     var rt = view.Image.rectTransform;
-                    Vector2 foot = screen.InverseTransformPoint(rt.TransformPoint(Vector3.zero));
-                    if (level == 0) ground = foot;
-                    else Assert.That(Vector2.Distance(foot, ground), Is.LessThan(.5f), name + " stands on the same point.");
+                    float disk = sprite.width * view.DiskPixels(level) / view.Image.sprite.rect.width;
+                    Assert.That(disk / plot.width, Is.EqualTo(look.diskFraction[level]).Within(.005f), name + " disk diameter.");
+                    Vector2 centre = screen.InverseTransformPoint(rt.TransformPoint(Vector3.zero));
+                    Vector2 plotCentre = new Vector2(Mathf.Lerp(plot.xMin, plot.xMax, look.diskCentre.x), Mathf.Lerp(plot.yMin, plot.yMax, look.diskCentre.y));
+                    Assert.That(Vector2.Distance(centre, plotCentre), Is.LessThan(1f), name + " disk centre on the plot centre.");
+                    // Contact shadow: wider than the disk, shifted right and down (light from the upper left).
+                    Rect shadow = ScreenRect(screen, view.Shadow.rectTransform);
+                    Assert.That(shadow.width * CoopSpriteView.ShadowHalfRadius, Is.EqualTo(disk * look.shadowScale).Within(1f), name + " shadow width.");
+                    Assert.That(shadow.center.x, Is.GreaterThan(centre.x), name + " shadow shifted right.");
+                    Assert.That(shadow.center.y, Is.LessThan(centre.y), name + " shadow shifted down.");
+                    Assert.That(view.Shadow.color, Is.EqualTo(look.shadowColor));
+                    Assert.That(view.Shadow.rectTransform.GetSiblingIndex(), Is.LessThan(rt.GetSiblingIndex()), "The shadow draws under the coop.");
                 }
             }
             finally { Object.Destroy(canvas.gameObject); }

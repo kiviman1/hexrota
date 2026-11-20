@@ -25,8 +25,6 @@ namespace Hexrota.UnityClient.Editor
         // Retired placeholders (the old 2D coop drawing and the level-0 fence stakes): kept, hidden.
         public const string RetiredDrawing = "CoopDrawing", RetiredStakes = "EmptyPlot";
         private const string DisplayFont = "Assets/Hexrota/Art/CastleHomeType/LilitaOne-Regular.ttf";
-        // Where the coop's ground point (bottom-centre of its base disk) sits on the plot.
-        private static readonly Vector2 Ground = new Vector2(.5f, .12f);
         private const int DustPuffs = 20;
 
         [MenuItem("Hexrota/Home/Rebuild Coop Controls")]
@@ -65,15 +63,16 @@ namespace Hexrota.UnityClient.Editor
                     if (old != null) UnityEngine.Object.DestroyImmediate(old.gameObject);
                 }
 
-                // The coop sprite (Coop_L0 foundation .. Coop_L4) stands on the plot: this rect's pivot is
-                // the ground point. It is part of the background, so every UI control keeps tap priority.
-                // Eggs fly to it and the upgrade squash scales it from the ground.
-                var coop = NewRect(plot, PlotCoop, new Vector2(.1f, Ground.y), new Vector2(.9f, 1.5f), Vector2.zero, Vector2.zero);
+                // The coop sprite (Coop_L0 foundation .. Coop_L4) stands on the plot: this rect's pivot is the
+                // disk centre point (CoopLook.diskCentre). It is part of the background, so every UI control
+                // keeps tap priority. Eggs fly to it and the upgrade squash scales it from that point.
+                var centre = sprites.Look.diskCentre;
+                var coop = NewRect(plot, PlotCoop, new Vector2(centre.x - .4f, centre.y), new Vector2(centre.x + .4f, centre.y + 1.2f), Vector2.zero, Vector2.zero);
                 coop.pivot = new Vector2(.5f, 0);
                 coop.SetAsLastSibling();
                 var visual = NewRect(coop, "CoopVisual", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
                 visual.pivot = new Vector2(.5f, 0);
-                var shadowImage = Simple(NewRect(visual, "Shadow", Vector2.zero, Vector2.zero, Vector2.zero, Vector2.zero), sprites.Shadow, ui.contactShadow);
+                var shadowImage = Simple(NewRect(visual, "Shadow", Vector2.zero, Vector2.zero, Vector2.zero, Vector2.zero), sprites.Shadow, sprites.Look.shadowColor);
                 shadowImage.preserveAspect = false;
                 var previous = Simple(NewRect(visual, "PreviousSprite", Vector2.zero, Vector2.zero, Vector2.zero, Vector2.zero), sprites.Levels[0], Color.white);
                 previous.preserveAspect = false;
@@ -82,16 +81,19 @@ namespace Hexrota.UnityClient.Editor
                 current.preserveAspect = false;
                 var spriteView = visual.gameObject.AddComponent<CoopSpriteView>();
                 var spriteData = new SerializedObject(spriteView);
-                Set(spriteData, "ui", ui);
+                Set(spriteData, "look", sprites.Look);
                 var levels = spriteData.FindProperty("levels");
                 var disks = spriteData.FindProperty("diskPixels");
-                levels.arraySize = disks.arraySize = sprites.Levels.Length;
+                var depths = spriteData.FindProperty("diskHeightPixels");
+                levels.arraySize = disks.arraySize = depths.arraySize = sprites.Levels.Length;
                 for (int i = 0; i < sprites.Levels.Length; i++)
                 {
                     levels.GetArrayElementAtIndex(i).objectReferenceValue = sprites.Levels[i];
                     disks.GetArrayElementAtIndex(i).floatValue = sprites.DiskPixels[i];
+                    depths.GetArrayElementAtIndex(i).floatValue = sprites.DiskHeightPixels[i];
                 }
                 Set(spriteData, "plot", plot);
+                Set(spriteData, "stand", coop);
                 Set(spriteData, "image", current);
                 Set(spriteData, "previous", previous);
                 Set(spriteData, "shadow", shadowImage);
