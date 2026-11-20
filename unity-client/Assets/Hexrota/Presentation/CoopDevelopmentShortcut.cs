@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace Hexrota.UnityClient.Presentation
 {
-    // Development shortcut for the coop art (Editor and Development builds only; release builds compile
+    // Development shortcut for the coop art (Editor and HEXROTA_DEV_TOOLS players only; release and playtest builds compile
     // the body out and never add it). On the home screen:
     //   keys 0-4  show that coop level at once          R  replay the upgrade transition into it
     //   on a device, two small TEST buttons do the same: "KÜMES n" cycles the level, "GEÇİŞ" replays.
@@ -11,7 +11,7 @@ namespace Hexrota.UnityClient.Presentation
     [AddComponentMenu("")]
     public sealed class CoopDevelopmentShortcut : MonoBehaviour
     {
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
+#if UNITY_EDITOR || HEXROTA_DEV_TOOLS
         public const string LevelButtonName = "DevelopmentCoopLevel", ReplayButtonName = "DevelopmentCoopReplay";
         private CoopUpgradeSequence sequence;
         private CoopSpriteView sprite;

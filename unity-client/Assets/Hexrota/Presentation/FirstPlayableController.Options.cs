@@ -163,7 +163,7 @@ namespace Hexrota.UnityClient.Presentation
             bool vibration=SystemInfo.supportsVibration;
             OptionSwitch("Titreşim","Titreşim",vibration?"Eşleşmelerde kısa dokunma geri bildirimi.":"Bu cihaz titreşimi desteklemiyor.",480,Session.HapticsEnabled,on=>Session.SetPreferences(haptics:on),vibration);
             float next=565;
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
+#if UNITY_EDITOR || HEXROTA_DEV_TOOLS
             next=DrawDeveloperSettings(next);
 #endif
             DrawPlaytestSettings(next);
@@ -172,8 +172,8 @@ namespace Hexrota.UnityClient.Presentation
             OptionButton("İlerlemeyi sıfırla",18,next+352,316,46,ConfirmOpenReset);
         }
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-        // Editor and Development builds only: the release player never compiles these controls
+#if UNITY_EDITOR || HEXROTA_DEV_TOOLS
+        // Editor and HEXROTA_DEV_TOOLS players only: release and playtest players never compile these controls
         // (DevelopmentToolsReleaseTests compiles a release player and checks for them).
         private const float DevelopmentSettingsHeight=555;
         private const float SettingsAfterDevelopment=565+DevelopmentSettingsHeight;

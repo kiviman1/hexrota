@@ -25,8 +25,8 @@ namespace Hexrota.UnityClient
         public const string DevelopmentLifeProduct = "test_gold_300";
         public Dictionary<string, object> LifeStatus { get { return W.Map(controller.View()["life"]); } }
         public int TestGold { get { return W.Int32(W.Required(W.Required(controller.EnergySave, "testWallet"), "gold")); } }
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-        // Development tools: compiled only into the Editor and Development builds. A release build
+#if UNITY_EDITOR || HEXROTA_DEV_TOOLS
+        // Development tools: compiled only into the Editor and HEXROTA_DEV_TOOLS players. A release build
         // has no way to bypass lives, toggle test ads or wipe the profile (see DevelopmentToolsReleaseTests).
         public bool LifeTestAds { get { return (bool)W.Required(W.Required(controller.EnergySave,"provider"),"adAvailable"); } }
         public bool RescueTestAds { get { return (bool)W.Required(W.Required(W.Required(controller.GameSave,"rescue"),"provider"),"adAvailable"); } }
@@ -43,7 +43,7 @@ namespace Hexrota.UnityClient
             return true;
         }
 #else
-        // A release build never keeps a lives bypass that a Development build saved on this device.
+        // A player without HEXROTA_DEV_TOOLS never keeps a lives bypass a development player saved on this device.
         private void ClearDevelopmentOverrides()
         {
             if (W.Equal(LifeStatus["developerBypass"], true)) Apply(() => controller.SetDeveloperBypass(false, Command()), observe: false);
@@ -54,7 +54,7 @@ namespace Hexrota.UnityClient
         public Dictionary<string, object> LifeProduct(string product) { return controller.LifeProductOffer(product); }
         public string BeginLifeProduct(string product)
         {
-#if !(UNITY_EDITOR || DEVELOPMENT_BUILD)
+#if !(UNITY_EDITOR || HEXROTA_DEV_TOOLS)
             if (product == DevelopmentLifeProduct) { LastError = "unknown_product"; return null; }
 #endif
             string id = null;

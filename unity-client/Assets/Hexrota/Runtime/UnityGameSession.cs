@@ -258,7 +258,7 @@ namespace Hexrota.UnityClient
                 "hexrota-unity-test", data.RewardRules, economyConfig: data.EconomyConfig,
                 rescueReceiptVerifier: new Hexrota.Rescue.DevelopmentRescueReceiptVerifier(), onboardingInFirstChapter: true);
             StartPlaytestObservation(storage, clock, playtestMilliseconds);
-#if !(UNITY_EDITOR || DEVELOPMENT_BUILD)
+#if !(UNITY_EDITOR || HEXROTA_DEV_TOOLS)
             ClearDevelopmentOverrides();
 #endif
         }

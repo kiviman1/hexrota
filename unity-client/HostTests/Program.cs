@@ -194,7 +194,7 @@ internal static class Program
         }
         Need(observed, "Deterministic legal-move sample did not produce a loss; add an explicit real-board loss vector");
     }
-    // The host compiles Runtime without UNITY_EDITOR or DEVELOPMENT_BUILD, exactly like a release player.
+    // The host compiles Runtime without UNITY_EDITOR or HEXROTA_DEV_TOOLS, exactly like a release player.
     private static void ReleaseHasNoDevelopmentTools()
     {
         var type = typeof(UnityGameSession);

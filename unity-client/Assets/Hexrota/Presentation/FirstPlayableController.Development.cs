@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace Hexrota.UnityClient.Presentation
 {
-    // Development builds and the Editor only: one tap wins the open chapter. The stored solution is
+    // Editor and HEXROTA_DEV_TOOLS players only: one tap wins the open chapter. The stored solution is
     // played through the real session, then the last move goes through the normal swap path, so the
     // celebration, result screen, rewards and home reward flight all run as after a real win.
     public sealed partial class FirstPlayableController
@@ -12,9 +12,9 @@ namespace Hexrota.UnityClient.Presentation
         private const string DevelopmentWinLabel = "TEST: KAZAN";
         private Button developmentWin;
 
-        /// <summary>True in the Editor and in Development builds; release builds never show the shortcut.</summary>
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-        public static bool DevelopmentToolsEnabled => Debug.isDebugBuild;
+        /// <summary>True in the Editor and in players built with HEXROTA_DEV_TOOLS (the Development profile); release and playtest players never show the shortcut.</summary>
+#if UNITY_EDITOR || HEXROTA_DEV_TOOLS
+        public static bool DevelopmentToolsEnabled => true;
 #else
         public static bool DevelopmentToolsEnabled => false;
 #endif
@@ -52,7 +52,7 @@ namespace Hexrota.UnityClient.Presentation
             rect.SetAsLastSibling();
         }
 
-        /// <summary>Wins the open chapter with its stored solution (Editor and Development builds only).</summary>
+        /// <summary>Wins the open chapter with its stored solution (Editor and HEXROTA_DEV_TOOLS players only).</summary>
         public void DevelopmentCompleteStage()
         {
             if (!DevelopmentToolsEnabled || !ready || !HasInterface || CurrentScreen != "playing" || Board == null ||

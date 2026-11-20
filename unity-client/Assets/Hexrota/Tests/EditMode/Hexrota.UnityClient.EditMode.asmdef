@@ -4,7 +4,8 @@
     "Hexrota.Core",
     "Hexrota.UnityClient.Runtime",
     "Hexrota.UnityClient.Presentation",
-    "Hexrota.UnityClient.Runtime.Unity"
+    "Hexrota.UnityClient.Runtime.Unity",
+    "Hexrota.UnityClient.Editor"
   ],
   "includePlatforms": [
     "Editor"

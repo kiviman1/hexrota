@@ -14,19 +14,47 @@ namespace Hexrota.UnityClient.Editor
         public const string RequiredVersion = "6000.6.9f1";
         public const string ScenePath = "Assets/Hexrota/Scenes/FirstPlayable.unity";
 
+        /// <summary>
+        /// Compiles the development tools (lives bypass, test ad toggles, Test Gold, full reset,
+        /// TEST win and coop shortcuts). The Editor always has them (UNITY_EDITOR); a player has them
+        /// only when its build profile adds this define. Release and playtest players never do.
+        /// </summary>
+        public const string DevToolsDefine = "HEXROTA_DEV_TOOLS";
+
+        /// <summary>The player build profiles and what each compiles.</summary>
+        public enum Profile
+        {
+            /// <summary>Development player with the development tools: for the team.</summary>
+            Development,
+            /// <summary>Player for human playtests: no development tools, no Development watermark.</summary>
+            Playtest
+        }
+
+        public static BuildOptions Options(Profile profile) =>
+            profile == Profile.Development ? BuildOptions.Development | BuildOptions.StrictMode : BuildOptions.StrictMode;
+
+        public static string[] Defines(Profile profile) =>
+            profile == Profile.Development ? new[] { DevToolsDefine } : new string[0];
+
         [MenuItem("Hexrota/Build Android Development Player")]
         public static void BuildAndroid()
         {
-            BuildNative(BuildTarget.Android, NamedBuildTarget.Android, "Builds/Android/Hexrota.apk");
+            BuildNative(BuildTarget.Android, NamedBuildTarget.Android, "Builds/Android/Hexrota.apk", Profile.Development);
+        }
+
+        [MenuItem("Hexrota/Build Android Playtest Player")]
+        public static void BuildAndroidPlaytest()
+        {
+            BuildNative(BuildTarget.Android, NamedBuildTarget.Android, "Builds/Android/Hexrota-playtest.apk", Profile.Playtest);
         }
 
         [MenuItem("Hexrota/Export iOS Development Project")]
         public static void BuildIOS()
         {
-            BuildNative(BuildTarget.iOS, NamedBuildTarget.iOS, "Builds/iOS");
+            BuildNative(BuildTarget.iOS, NamedBuildTarget.iOS, "Builds/iOS", Profile.Development);
         }
 
-        private static void BuildNative(BuildTarget target, NamedBuildTarget namedTarget, string output)
+        private static void BuildNative(BuildTarget target, NamedBuildTarget namedTarget, string output, Profile profile)
         {
             if (UnityEngine.Application.unityVersion != RequiredVersion)
                 throw new BuildFailedException("Install exact Unity " + RequiredVersion);
@@ -39,7 +67,7 @@ namespace Hexrota.UnityClient.Editor
             PlayerSettings.SetApiCompatibilityLevel(namedTarget, ApiCompatibilityLevel.NET_Standard);
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions {
                 scenes = scenes, locationPathName = output, target = target,
-                options = BuildOptions.Development | BuildOptions.StrictMode
+                options = Options(profile), extraScriptingDefines = Defines(profile)
             });
             if (report.summary.result != BuildResult.Succeeded)
                 throw new BuildFailedException(target + " build result: " + report.summary.result);
@@ -65,7 +93,8 @@ namespace Hexrota.UnityClient.Editor
             var output = Environment.GetEnvironmentVariable("HEXROTA_WEB_OUTPUT") ?? "Builds/WebGL";
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions {
                 scenes = scenes, locationPathName = output, target = BuildTarget.WebGL,
-                options = BuildOptions.StrictMode
+                // The web preview is a public playable build: no development tools.
+                options = BuildOptions.StrictMode, extraScriptingDefines = new string[0]
             });
             if (report.summary.result != BuildResult.Succeeded)
                 throw new BuildFailedException("Unity build result: " + report.summary.result);
