@@ -23,6 +23,11 @@ namespace Hexrota.UnityClient
             internal SwapResult Effect;
             public int ScoreGain { get { return Effect.scoreGain; } }
             public bool WillReshuffle { get { return Effect.reshuffled; } }
+            /// <summary>Crate hits the booster's matches cause (classic-v5 boards); 0 elsewhere.</summary>
+            public int CrateHits
+            {
+                get { int hits = 0; foreach (var frame in Effect.frames) if (frame.blockerHits != null) hits += frame.blockerHits.Length; return hits; }
+            }
             public int LayersRemoved { get; internal set; }
             public bool WillWin { get; internal set; }
         }
@@ -31,13 +36,13 @@ namespace Hexrota.UnityClient
         // needs model fields, but simulating the next swap must replay the journal.
         private static GameSnapshot ReadBoardForDisplay(object wire)
         {
-            var board = LevelCatalog.ReadSnapshot(wire);
-            if (board.rulesVersion == AssistedGame.RulesVersion)
-            {
-                board.rulesVersion = (string)W.Required(wire, "baseRulesVersion");
-                board.version = 4;
-            }
-            return board;
+            if (!W.Equal(W.Get(wire, "rulesVersion"), AssistedGame.RulesVersion)) return LevelCatalog.ReadSnapshot(wire);
+            // The envelope carries the base board fields (and crate/region state on classic-v5).
+            var board = W.Copy(wire);
+            string baseRules = (string)W.Required(wire, "baseRulesVersion");
+            board["rulesVersion"] = baseRules;
+            board["version"] = baseRules == "classic-v5" ? 5L : 4L;
+            return LevelCatalog.ReadSnapshot(board);
         }
 
         private HexMatch ProjectBoard()
@@ -52,7 +57,7 @@ namespace Hexrota.UnityClient
 
         public bool InventoryAvailable
         {
-            get { return HasAttempt && !IsTutorial && !IsPresenting && Status == "playing" && Level.rulesVersion == "classic-v4"; }
+            get { return HasAttempt && !IsTutorial && !IsPresenting && Status == "playing" && AssistedGame.Supports(Level); }
         }
 
         public ItemOffer InventoryOffer(string item)

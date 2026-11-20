@@ -314,28 +314,23 @@ namespace Hexrota.UnityClientTests
             }
         }
 
-        [Test] public void MaskedCampaignLossOffersNoAssistanceAndStartsFreshOnReentry()
+        [Test] public void MaskedCampaignOffersBoostersAndRescueAndRetryStartsFresh()
         {
+            // Chapter 6 is a classic-v5 board. Boosters, booster purchase and the +5 move
+            // rescue are available there (V5AssistanceTests covers their board rules).
             int sixth = session.TutorialCount + 5;
             CompleteStagesBefore(sixth);
             Assert.That(session.EnterStage(sixth), Is.True, session.LastError);
             Assert.That(session.UsesNineByNineFrame, Is.True);
-            var profile = storage.Read(ProfileRepository.ProfileKey);
-            Assert.That(session.InventoryAvailable, Is.False);
-            Assert.That(session.PreviewInventoryItem("greenBrush", 0, null), Is.Null);
-            Assert.That(session.BuyInventoryItem("greenBrush", session.Revision), Is.False);
-            Assert.That(W.Equal(profile, storage.Read(ProfileRepository.ProfileKey)), Is.True);
+            Assert.That(session.InventoryAvailable, Is.True);
+            Assert.That(session.InventoryOffer("greenBrush").CanUse, Is.True);
+            int stock = session.InventoryOffer("greenBrush").Stock;
+            Assert.That(session.BuyInventoryItem("greenBrush", session.Revision), Is.True, session.LastError);
+            Assert.That(session.InventoryOffer("greenBrush").Stock, Is.EqualTo(stock + 1));
             PlayALosingRoute();
             string lostAttempt = session.AttemptId;
-            profile = storage.Read(ProfileRepository.ProfileKey);
-            Assert.That(session.GetGoldRescueOffer(), Is.Null);
-            Assert.That(session.ReadRescueAd(), Is.Null);
-            Assert.That(session.BeginMobileRescueAd(), Is.Null);
-            Assert.That(session.GetChapterPreview(sixth).Rescue, Is.False);
-            Assert.That(W.Equal(profile, storage.Read(ProfileRepository.ProfileKey)), Is.True);
-            session.ReturnToMenu();
-            session = new UnityGameSession(data, storage, new Clock());
-            Assert.That(session.EnterStage(sixth), Is.True, session.LastError);
+            Assert.That(session.ReadRescueAd(), Is.Not.Null, "The rescue sheet is offered on a V5 loss.");
+            Assert.That(session.Retry(), Is.True, session.LastError);
             Assert.That(session.AttemptId, Is.Not.EqualTo(lostAttempt));
             Assert.That(session.Snapshot.turn, Is.Zero);
             Assert.That(session.UsesNineByNineFrame, Is.True);
