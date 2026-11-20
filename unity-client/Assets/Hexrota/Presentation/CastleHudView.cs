@@ -66,6 +66,17 @@ namespace Hexrota.UnityClient.Presentation
             return button;
         }
 
+        /// <summary>How far the visible bag hangs below the HUD, as a share of the HUD height (0 when hidden).</summary>
+        internal float BagOverhang
+        {
+            get
+            {
+                if (bag == null || !bag.gameObject.activeSelf) return 0f;
+                var rect = (RectTransform)bag.transform;
+                return Mathf.Max(0f, -rect.anchorMin.y);
+            }
+        }
+
         /// <summary>The bag shows once a booster is unlocked and is usable whenever a booster can be used.</summary>
         internal void ShowBag(bool visible, bool usable)
         {

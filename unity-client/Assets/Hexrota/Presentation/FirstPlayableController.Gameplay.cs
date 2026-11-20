@@ -66,10 +66,11 @@ namespace Hexrota.UnityClient.Presentation
             if (Board == null || Session == null || !Session.HasAttempt) return;
             bool lesson = Session.IsTutorial;
             float aspect = safeRect.width * Screen.width / Mathf.Max(1,safeRect.height * Screen.height);
-            var layout = new MobileLayout.GameRegions(aspect,lesson);
+            RefreshBag();
+            // The bag hangs under the settings button; the board starts below it.
+            var layout = new MobileLayout.GameRegions(aspect,lesson,castleHud.BagOverhang);
             Place((RectTransform)castleHud.transform,0,1-layout.Header,1,1);
             PlaceDevelopmentWinButton(1-layout.Header);
-            RefreshBag();
             gameTools.FitRegions(layout);
             var area = layout.Board;
             Place(boardInput,area.xMin,area.yMin,area.xMax,area.yMax);
@@ -93,7 +94,10 @@ namespace Hexrota.UnityClient.Presentation
         {
             if (castleHud == null || Session == null || !Session.HasAttempt) return;
             bool unlocked = Session.InventoryOffer("greenBrush").Unlocked || Session.InventoryOffer("colorKey").Unlocked;
+            float overhang = castleHud.BagOverhang;
             castleHud.ShowBag(!Session.IsTutorial && unlocked, Session.InventoryAvailable);
+            // Showing or hiding the bag moves the board's top edge.
+            if (castleHud.BagOverhang != overhang && safe != null) UpdateLayout();
         }
 
         private void RenderLessonCard(bool showCopy)
