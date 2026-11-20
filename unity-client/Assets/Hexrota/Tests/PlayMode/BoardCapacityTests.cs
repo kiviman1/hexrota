@@ -109,6 +109,7 @@ namespace Hexrota.UnityClientTests
             while (board.IsAnimating && Time.realtimeSinceStartup < deadline) yield return null;
             Assert.That(board.IsAnimating, Is.False);
             Assert.That(changedDuringWave, Is.True, "The crates and floor must update as stones start falling.");
+            Assert.That(intactCrate.transform.Find("Durability_" + damaged.cell).GetComponent<TextMesh>().text, Is.EqualTo("1"));
             Assert.That(root.Find("Stone_" + opened).gameObject.activeSelf, Is.True);
             Assert.That(TapTarget(xy), Is.EqualTo(opened));
         }
@@ -147,6 +148,13 @@ namespace Hexrota.UnityClientTests
                 {
                     var crate = root.Find("Obstacles/Crate_" + level.obstacles.blockers[b].cell).GetComponent<SpriteRenderer>();
                     Assert.That(crate.sprite.name, Is.EqualTo(snapshot.blockerHp[b] > 1 ? "AreaCrate_HP02" : "AreaCrate_HP01"));
+                    // A large durability numeral sits on every crate, bigger than a stone's numeral.
+                    var durability = crate.transform.Find("Durability_" + level.obstacles.blockers[b].cell).GetComponent<TextMesh>();
+                    Assert.That(durability.text, Is.EqualTo(snapshot.blockerHp[b].ToString()));
+                    Assert.That(durability.color, Is.EqualTo(Color.white));
+                    Assert.That(durability.GetComponentsInChildren<TextMesh>(), Has.Length.GreaterThan(1), "The numeral has an outline.");
+                    var stoneNumeral = root.GetComponentsInChildren<TextMesh>().First(t => t.name.StartsWith("Value_"));
+                    Assert.That(durability.characterSize, Is.GreaterThan(stoneNumeral.characterSize));
                 }
             }
         }
