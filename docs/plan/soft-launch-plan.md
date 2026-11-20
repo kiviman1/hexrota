@@ -47,7 +47,7 @@ Her hafta bir çıktı ve bir "bitti" ölçütü. Ölçüt sağlanmadan sonraki 
 
 | Hafta | Odak | Çıktı | Bitti sayılır | Durum |
 | --- | --- | --- | --- | --- |
-| 1 | Temizlik | Belgeler tekleşti; geliştirici araçları yalnız dev build'de; CI testleri PR'da koşuyor; V5 akış haritası | Release build'de dev menüsü yok, tek tasarım kaynağı var | PR açık, CI bekleniyor ([rapor](reports/hafta-1.md)) |
+| 1 | Temizlik | Belgeler tekleşti; geliştirici araçları yalnız dev build'de; CI testleri PR'da koşuyor; V5 akış haritası | Release build'de dev menüsü yok, tek tasarım kaynağı var | Tamamlandı ([rapor](reports/hafta-1.md)) |
 | 2 | Akışı onar | V5'te fırça, anahtar, +5 hamle; çanta HUD'dan açılıyor; okunabilirlik minimumu; geçici sesler | Öğretici → bölüm → takviye → kayıp/kurtarma → ödül → kümes → sonraki bölüm, gerçek arayüzden kesintisiz | Bekliyor |
 | 3 | İnsan testi | 8–12 yeni oyuncu gözlemi; ilk 10 bölüm düzeltmesi | Oyuncular iki hedefi kendi sözleriyle anlatıyor | Bekliyor |
 | 4 | Ölçüm | Analitik + çökme takibi; olay şeması | Bölüm, deneme, kayıp nedeni, tek hücre kaybı, D1/D7 görülüyor | Bekliyor |
