@@ -8,13 +8,12 @@ Shader "Hexrota/BoardDigit"
     }
     SubShader
     {
-        // Write only the numeral's ink into depth before the hexagons. In a
-        // faded tutorial tile this reproduces SVG group opacity in one blend.
-        Tags { "Queue"="Geometry-10" "RenderType"="TransparentCutout" }
+        // Numerals are drawn after the 2D stone sprites (renderer sorting order), white over a dark outline.
+        Tags { "Queue"="Transparent" "RenderType"="Transparent" "IgnoreProjector"="True" }
         Pass
         {
             Cull Off
-            ZWrite On
+            ZWrite Off
             Blend SrcAlpha OneMinusSrcAlpha
             CGPROGRAM
             #pragma vertex vert
@@ -34,7 +33,7 @@ Shader "Hexrota/BoardDigit"
             fixed4 frag(vertexData i) : SV_Target
             {
                 fixed alpha = tex2D(_MainTex,i.uv).a;
-                clip(min(alpha - .18, _MotionOpacity - .005));
+                clip(min(alpha - .02, _MotionOpacity - .005));
                 clip(_SpawnCeiling - i.worldY);
                 return fixed4(i.color.rgb, i.color.a*alpha*_MotionOpacity);
             }

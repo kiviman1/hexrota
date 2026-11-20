@@ -141,7 +141,7 @@ namespace Hexrota.UnityClientTests
             try
             {
                 var board = holder.AddComponent<HexBoardView>();
-                var catalog = Resources.FindObjectsOfTypeAll<HexrotaAssetCatalog>().First(c => c.stone != null);
+                var catalog = Resources.FindObjectsOfTypeAll<HexrotaAssetCatalog>().First(c => c.stoneSprites != null && c.stoneSprites.Length == 5 && c.stoneSprites[0] != null);
                 board.Initialize(null, catalog);
                 board.Build(level, before);
                 var segment = holder.scene.GetRootGameObjects().Single(obj => obj.name == world.name && obj.transform != world).transform;
@@ -153,7 +153,7 @@ namespace Hexrota.UnityClientTests
                 var block = new MaterialPropertyBlock();
                 board.WaveProgress += (frame, ordinal, progress) => {
                     if (!top.gameObject.activeSelf) return;
-                    var surface = top.Find("Model").GetComponent<MeshRenderer>();
+                    var surface = top.Find("Model").GetComponent<Renderer>();
                     surface.GetPropertyBlock(block);
                     if (Mathf.Abs(block.GetFloat("_SpawnCeiling") - ceiling) > .001f) return;
                     seenInFlight = true;

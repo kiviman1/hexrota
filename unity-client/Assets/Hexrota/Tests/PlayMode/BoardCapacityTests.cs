@@ -35,7 +35,7 @@ namespace Hexrota.UnityClientTests
             camera = new GameObject("Capacity camera").AddComponent<Camera>();
             camera.transform.SetParent(holder.transform, false);
             camera.orthographic = true;
-            board.Initialize(camera, Resources.FindObjectsOfTypeAll<HexrotaAssetCatalog>().First(c => c.stone != null));
+            board.Initialize(camera, Resources.FindObjectsOfTypeAll<HexrotaAssetCatalog>().First(c => c.stoneSprites != null && c.stoneSprites.Length == 5 && c.stoneSprites[0] != null));
             board.SetCameraArea(new Rect(.02f, .05f, .96f, .72f));
         }
 

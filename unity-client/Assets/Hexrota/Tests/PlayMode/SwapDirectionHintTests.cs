@@ -125,7 +125,7 @@ namespace Hexrota.UnityClientTests
                 Assert.That(peakAlpha - initialAlpha, Is.GreaterThan(.15f));
                 Assert.That(game.Session.Snapshot.turn, Is.EqualTo(turn));
                 Assert.That(game.Session.Revision, Is.EqualTo(revision));
-                var modelRenderer = source.GetComponentInChildren<MeshRenderer>();
+                var modelRenderer = source.Find("Model").GetComponent<Renderer>();
                 var properties = new MaterialPropertyBlock();
                 modelRenderer.GetPropertyBlock(properties);
                 Assert.That(properties.GetFloat("_IdleOutline"), Is.GreaterThan(0f));
