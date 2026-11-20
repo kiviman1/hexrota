@@ -153,7 +153,7 @@ namespace Hexrota.UnityClient.Presentation
             if (activeSession != null)
             {
                 var wallet = activeSession.ReadPhoneWallet();
-                if (Start(kind == RewardKind.GoldenEgg ? amount : 0, kind == RewardKind.Gold ? amount : 0,
+                if (Launch(kind == RewardKind.GoldenEgg ? amount : 0, kind == RewardKind.Gold ? amount : 0,
                     fromScreenPoint, wallet, 0, onComplete)) return;
             }
             onComplete?.Invoke();
@@ -161,19 +161,21 @@ namespace Hexrota.UnityClient.Presentation
 
         internal void PlayWin(Vector2 source, int eggs, int coins, UnityGameSession.PhoneWallet wallet)
         {
-            Start(eggs, coins, source, wallet, motion.rewardStartDelay, null);
+            Launch(eggs, coins, source, wallet, motion.rewardStartDelay, null);
         }
 
 #if UNITY_EDITOR
         public void PlayDebug()
         {
             if (controller == null || controller.Session == null || controller.CurrentScreen != "menu") return;
-            Start(1, 20, controller.HomeRewardSource, controller.Session.ReadPhoneWallet(), motion.rewardStartDelay, null,
+            Launch(1, 20, controller.HomeRewardSource, controller.Session.ReadPhoneWallet(), motion.rewardStartDelay, null,
                 preview: true);
         }
 #endif
 
-        private bool Start(int eggs, int coins, Vector2 source, UnityGameSession.PhoneWallet wallet,
+        // Not "Start": Unity treats a MonoBehaviour method named Start as its lifecycle message
+        // and rejects one that takes parameters.
+        private bool Launch(int eggs, int coins, Vector2 source, UnityGameSession.PhoneWallet wallet,
             float startDelay, Action callback, bool preview = false)
         {
             if (eggs <= 0 && coins <= 0) return false;
