@@ -51,7 +51,8 @@ namespace Hexrota.UnityClient.Presentation
             [Tooltip("How far the strip's centre line sits outside the disk edge, in reference units.")]
             [Range(-4, 4)] public float contactOutset = .5f;
             // contactDepth and contactWidth describe the rim's real lower outline, which differs from the
-            // measured disk ellipse per sprite; the asset values were fitted to each sprite's alpha edge.
+            // measured disk ellipse per sprite. cut_sprites.py fits them to each sprite's alpha edge and
+            // Reimport Coop Sprites copies them here, so edit the sprite, not these two values.
             [Tooltip("Height of the arc as a share of the disk height, with its lowest point kept on the disk's bottom.")]
             [Range(.4f, 2)] public float contactDepth = .8f;
             [Tooltip("Width of the arc as a share of the measured disk diameter: the grass lip at the top of the disk is wider than the rim at its bottom.")]

@@ -10,7 +10,7 @@ namespace Hexrota.UnityClientTests
     {
         private const string Folder = "Assets/Hexrota/Art/Coop2D/";
 
-        [Serializable] private sealed class Entry { public int level; public string file; public float[] pivot; public float diskWidth; public float diskHeight; public int width; public int height; }
+        [Serializable] private sealed class Entry { public int level; public string file; public float[] pivot; public float diskWidth; public float diskHeight; public int width; public int height; public float contactWidth; public float contactDepth; }
         [Serializable] private sealed class Manifest { public Entry[] levels; }
 
         private static Manifest Load()
@@ -74,6 +74,48 @@ namespace Hexrota.UnityClientTests
                 Assert.That(tinted, Is.Zero, tinted + " of " + edge + " edge pixels still lean blue.");
             }
             finally { UnityEngine.Object.DestroyImmediate(texture); }
+        }
+
+        [Test]
+        public void NoOpaqueSkyBounceIsLeftOnTheDiskOutline([Values(0, 1, 2, 3, 4)] int level)
+        {
+            // The disk's rim is painted with an opaque sky bounce; cut_sprites.py removes it up to the top
+            // face of the disk. An opaque pixel near the outline whose blue clearly leads red and green is
+            // a leftover (the cyan sliver on Coop_L0's right edge); grey and lilac stone lead by < 25.
+            var entry = Load().levels[level];
+            var texture = new Texture2D(2, 2);
+            Assert.That(texture.LoadImage(System.IO.File.ReadAllBytes(Folder + entry.file)), Is.True);
+            try
+            {
+                int w = texture.width, h = texture.height, band = 6, left = 0;
+                var pixels = texture.GetPixels32();
+                bool Clear(int x, int y) => x < 0 || y < 0 || x >= w || y >= h || pixels[y * w + x].a < 128;
+                for (int y = 0; y < h * .45f; y++)
+                    for (int x = 0; x < w; x++)
+                    {
+                        var p = pixels[y * w + x];
+                        if (p.a < 240 || p.b < Mathf.Max(p.r, p.g) + 40) continue;
+                        bool outline = false;
+                        for (int d = 1; d <= band && !outline; d++)
+                            outline = Clear(x - d, y) || Clear(x + d, y) || Clear(x, y - d) || Clear(x, y + d);
+                        if (outline) left++;
+                    }
+                Assert.That(left, Is.LessThanOrEqualTo(4), left + " opaque sky-blue pixels left on the disk outline.");
+            }
+            finally { UnityEngine.Object.DestroyImmediate(texture); }
+        }
+
+        [Test]
+        public void TheCoopLookContactArcMatchesTheFittedRim([Values(0, 1, 2, 3, 4)] int level)
+        {
+            // cut_sprites.py fits the rim's lower outline per sprite; Reimport Coop Sprites copies it to CoopLook.
+            var entry = Load().levels[level];
+            Assert.That(entry.contactWidth, Is.InRange(.8f, 1.2f), "Fitted arc width.");
+            Assert.That(entry.contactDepth, Is.InRange(.4f, 2f), "Fitted arc depth.");
+            var look = AssetDatabase.LoadAssetAtPath<Hexrota.UnityClient.Presentation.CoopLook>("Assets/Hexrota/Presentation/Theme/CoopLook.asset");
+            var shadow = look.Shadow(level);
+            Assert.That(shadow.contactWidth, Is.EqualTo(entry.contactWidth).Within(.0005f));
+            Assert.That(shadow.contactDepth, Is.EqualTo(entry.contactDepth).Within(.0005f));
         }
 
         [Test]
