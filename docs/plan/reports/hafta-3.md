@@ -1,6 +1,6 @@
 # Hafta 3 raporu — Okunabilirlik ve ses
 
-20 Kasım 2026. Dal: `feat/hafta-3-okunabilirlik`, tek PR: PR_LINK. Kapsam: haftanın ilk yarısındaki temizlik (ödül uçuşu, geliştirici bayrağı, konsol hatası denetimi, CI'ın Node 24'e geçişi), geçici sesler, sonra 20 Kasım istemindeki sekiz iş.
+20 Kasım 2026. Dal: `feat/hafta-3-okunabilirlik`, tek PR: [#58](https://github.com/kiviman1/hexrota/pull/58). Kapsam: haftanın ilk yarısındaki temizlik (ödül uçuşu, geliştirici bayrağı, konsol hatası denetimi, CI'ın Node 24'e geçişi), geçici sesler, sonra 20 Kasım istemindeki sekiz iş.
 
 ## Ne bitti
 
@@ -50,7 +50,15 @@ Yol boyunca düşen testlerin nedeni:
 - **Test:** eski kuralları (dokunarak seçim, menüden dönünce devam, 3D taş `MeshRenderer`'ı, doku adıyla zemin) varsayan testler yeni kurallara çevrildi. Hiçbiri atlanmadı, devre dışı bırakılmadı.
 - **Yerel altyapı:** bir koşuda `DevelopmentToolsReleaseTests` yerel kopyanın bozuk Burst önbelleği yüzünden düştü (`EndOfStreamException`). Önbellek silindi, sonraki koşuda geçti. Oyun kodu ve CI ile ilgisi yok.
 
-PR CI sonucu aşağıya, PR açıldıktan sonra eklenecek.
+PR #58 CI sonucu, [çalıştırma 44816363933](https://github.com/kiviman1/hexrota/actions/runs/44816363933), ilk denemede üçü de yeşil:
+
+| Kontrol | Sonuç | Süre |
+| --- | --- | --- |
+| editor-tests | Geçti: EditMode 134/134, PlayMode 109/109, atlanan yok | 12 dk 9 sn |
+| runtime-host | Geçti | 34 sn |
+| source-and-scene-integrity | Geçti | 10 sn |
+
+Node 20 uyarısı yok. Tek not, lisans dosyasının makine bağı uyuşmadığı için Unity hesabıyla etkinleştirmeye geçildiğini söylüyor. Bu bilinen bir CI ortam notu; test sonucunu etkilemiyor.
 
 ## Build
 
