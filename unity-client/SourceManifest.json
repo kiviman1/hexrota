@@ -16,7 +16,7 @@
     {
       "source": "unity/Application/GameSessionController.Assistance.cs",
       "destination": "unity-client/Assets/Hexrota/Core/Application/GameSessionController.Assistance.cs",
-      "sha256": "dd6e09101997943582c3882cbe9270e47f10a94cbeb84a6ed7f1618b3013ddcd"
+      "sha256": "e0b66c220f0aa15733fcd5d967bc3996f39325bc1b4535ad93e5d85b0e4d2979"
     },
     {
       "source": "unity/Application/GameSessionController.Preferences.cs",
@@ -26,7 +26,7 @@
     {
       "source": "unity/Application/GameSessionController.Rescue.cs",
       "destination": "unity-client/Assets/Hexrota/Core/Application/GameSessionController.Rescue.cs",
-      "sha256": "90049a315cb05494c58674160883d740ce6a5d0add3f0fc7ee51dbca4c614701"
+      "sha256": "4bfb9a39bd93108bc04b24ed8b258b84468480e358ad404d4b955754033c617b"
     },
     {
       "source": "unity/Application/GameSessionController.cs",
@@ -71,12 +71,12 @@
     {
       "source": "unity/Commands/AssistedGame.cs",
       "destination": "unity-client/Assets/Hexrota/Core/Commands/AssistedGame.cs",
-      "sha256": "eaba4e05d8fa840786ec4633d6fce4d03ff96a900f64b4581c8bb0f4a203487f"
+      "sha256": "f1e5eb06a6cb7543a6215a81ad5de997dbd16a7004dc784c2fd73721600110a6"
     },
     {
       "source": "unity/Commands/CommandWire.cs",
       "destination": "unity-client/Assets/Hexrota/Core/Commands/CommandWire.cs",
-      "sha256": "d8ca8bdc630091b5711ccd02791b358db12f0391a5543cf25fa35bc1273b1e2d"
+      "sha256": "7ea00187733df93da06bdd5d74870e14d5ab269b2f315dc5193483106956e121"
     },
     {
       "source": "unity/Contracts/Wire.cs",
@@ -121,7 +121,7 @@
     {
       "source": "unity/Gameplay/HexMatch.cs",
       "destination": "unity-client/Assets/Hexrota/Core/Gameplay/HexMatch.cs",
-      "sha256": "bb47fc06349fdf4fc3742646612e63fcafbeb24b06cf2ee7d601229f207ee184"
+      "sha256": "f2c8eb2d4086170b5aa5ce2863006972d6644141b4be8977223f340302b39300"
     },
     {
       "source": "unity/Hints/HintSolver.cs",

@@ -304,6 +304,18 @@ namespace Hexrota.Gameplay
             Exchange(a, b); int[] matched = FindMatches();
             if (matched.Length == 0) { Exchange(a, b); return Invalid("no-match"); }
             movesLeft--; turn++; history.Add(new[] { a, b });
+            return Resolve(matched);
+        }
+        // Resolves whatever the current board matches with the same wave rules as a swap
+        // (layers, crates, regions, column flow, materials, refill and recovery). Commands
+        // that edit the board without a swap use this so every match follows one rule set.
+        public SwapResult ResolveBoard()
+        {
+            if (Status != "playing") return Invalid(Status);
+            return Resolve(FindMatches());
+        }
+        private SwapResult Resolve(int[] matched)
+        {
             var frames = new List<WaveFrame>(); int totalGain = 0; bool safetyReset = false;
             while (matched.Length != 0)
             {

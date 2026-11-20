@@ -68,6 +68,7 @@ namespace Hexrota.UnityClient.Presentation
             var layout = new MobileLayout.GameRegions(aspect,lesson);
             Place((RectTransform)castleHud.transform,0,1-layout.Header,1,1);
             PlaceDevelopmentWinButton(1-layout.Header);
+            RefreshBag();
             gameTools.FitRegions(layout);
             var area = layout.Board;
             Place(boardInput,area.xMin,area.yMin,area.xMax,area.yMax);
@@ -82,6 +83,16 @@ namespace Hexrota.UnityClient.Presentation
         {
             if (!Session.HasAttempt) return;
             castleHud.ShowStage(Session.Level.target, Session.Snapshot);
+            RefreshBag();
+        }
+
+        // The booster bag sits in the HUD from the first booster unlock (after chapter 3).
+        // A new player's first chapters keep the HUD to the settings button only.
+        private void RefreshBag()
+        {
+            if (castleHud == null || Session == null || !Session.HasAttempt) return;
+            bool unlocked = Session.InventoryOffer("greenBrush").Unlocked || Session.InventoryOffer("colorKey").Unlocked;
+            castleHud.ShowBag(!Session.IsTutorial && unlocked, Session.InventoryAvailable);
         }
 
         private void RenderLessonCard(bool showCopy)

@@ -9,12 +9,15 @@ namespace Hexrota.Commands
 {
     // Pure mechanical commands. The host authorizes inventory, economy, receipts and
     // attempts and atomically persists their state together with this checkpoint.
+    // Supports classic-v4 boards and classic-v5 boards with crates and regions. A board
+    // match made by a command follows the same wave rules as a swap (see PRODUCT.md).
     public sealed class AssistedGame
     {
         public const string RulesVersion = "assisted-v1";
         public const int Version = 1, CommandsVersion = 1, MaxCommands = 512;
-        private static readonly string[] StateKeys = { "values", "layers", "score", "movesLeft", "turn", "rngState", "history" };
-        private static readonly string[] SnapshotKeys = { "version", "rulesVersion", "commandsVersion", "baseRulesVersion", "levelId", "attemptId", "limits", "usage", "bonusMoves", "assisted", "commands", "values", "layers", "score", "movesLeft", "turn", "rngState", "history" };
+        private static readonly string[] ClassicStateKeys = { "values", "layers", "score", "movesLeft", "turn", "rngState", "history" };
+        private static readonly string[] ObstacleStateKeys = { "obstacleVersion", "blockerHp", "regionOpen" };
+        private static readonly string[] EnvelopeKeys = { "version", "rulesVersion", "commandsVersion", "baseRulesVersion", "levelId", "attemptId", "limits", "usage", "bonusMoves", "assisted", "commands" };
         private static readonly Regex TokenPattern = new Regex("\\A[A-Za-z0-9_.:-]{1,180}\\z", RegexOptions.CultureInvariant);
         private HexMatch model;
         private Dictionary<string, object> limits, usage;
@@ -36,16 +39,35 @@ namespace Hexrota.Commands
         public AssistedGame(LevelConfig level, string attemptId, object limits = null, object snapshot = null)
         {
             if (!Token(attemptId) || level == null || (!(level.id is string) && !Wire.IsSafeInteger(level.id))) throw new ArgumentException("Invalid assisted identity");
+            if (!Supports(level)) throw new ArgumentException("Assisted commands do not support " + level.rulesVersion);
             Level = level; AttemptId = attemptId; this.limits = ReadLimits(limits ?? DefaultLimits);
             usage = Wire.Obj("greenBrush", 0, "colorKey", 0, "rescue", 0); commands = new List<object>();
             results = new Dictionary<string, object>(StringComparer.Ordinal); model = new HexMatch(level);
             if (snapshot != null)
             {
-                if (Wire.Equal(Wire.Get(snapshot, "version"), 4) && Wire.Equal(Wire.Get(snapshot, "rulesVersion"), "classic-v4")) ImportClassic(snapshot);
+                if (Wire.Equal(Wire.Get(snapshot, "version"), BaseVersion(model)) && Wire.Equal(Wire.Get(snapshot, "rulesVersion"), BaseRulesVersion(model))) ImportClassic(snapshot);
                 else Restore(snapshot, limits);
             }
         }
         private AssistedGame(LevelConfig level, string attemptId) { Level = level; AttemptId = attemptId; }
+        /// <summary>Material (classic-v6) boards are not supported; their objectives have no command rules yet.</summary>
+        public static bool Supports(LevelConfig level)
+        {
+            return level != null && (level.rulesVersion == null || level.rulesVersion == "classic-v4" || level.rulesVersion == "classic-v5");
+        }
+        private static string BaseRulesVersion(HexMatch board) { return board.HasObstacles ? "classic-v5" : "classic-v4"; }
+        private static int BaseVersion(HexMatch board) { return board.HasObstacles ? 5 : 4; }
+        // The board fields stored in the envelope: classic fields, plus crate and region state on v5.
+        private string[] StateKeys()
+        {
+            var keys = new List<string>(ClassicStateKeys);
+            if (model.HasObstacles) { keys.AddRange(ObstacleStateKeys); if (model.HasColumnFlow) keys.Add("cellOpen"); }
+            return keys.ToArray();
+        }
+        private string[] SnapshotKeys()
+        {
+            var keys = new List<string>(EnvelopeKeys); keys.AddRange(StateKeys()); return keys.ToArray();
+        }
         private static bool Exact(object value, params string[] keys)
         {
             if (!Wire.IsMap(value) || Wire.Map(value).Count != keys.Length) return false;
@@ -84,12 +106,12 @@ namespace Hexrota.Commands
         }
         public object Snapshot()
         {
-            var snapshot = Wire.Obj("version", Version, "rulesVersion", RulesVersion, "commandsVersion", CommandsVersion, "baseRulesVersion", "classic-v4", "levelId", Wire.Clone(Level.id), "attemptId", AttemptId, "limits", Wire.Clone(limits), "usage", Wire.Clone(usage), "bonusMoves", BonusMoves, "assisted", Assisted, "commands", Wire.Clone(commands));
-            var board = Wire.Map(PresentationSnapshot()); foreach (string key in StateKeys) snapshot.Add(key, board[key]); return snapshot;
+            var snapshot = Wire.Obj("version", Version, "rulesVersion", RulesVersion, "commandsVersion", CommandsVersion, "baseRulesVersion", BaseRulesVersion(model), "levelId", Wire.Clone(Level.id), "attemptId", AttemptId, "limits", Wire.Clone(limits), "usage", Wire.Clone(usage), "bonusMoves", BonusMoves, "assisted", Assisted, "commands", Wire.Clone(commands));
+            var board = Wire.Map(PresentationSnapshot()); foreach (string key in StateKeys()) snapshot.Add(key, board[key]); return snapshot;
         }
         public object ClassicSnapshot()
         {
-            if (Assisted) throw new InvalidOperationException("Assisted state is not a classic-v4 checkpoint");
+            if (Assisted) throw new InvalidOperationException("Assisted state is not a classic checkpoint");
             return CatalogWire.Snapshot(model.Snapshot());
         }
         public AssistedGame Clone()
@@ -108,7 +130,7 @@ namespace Hexrota.Commands
         }
         private void Restore(object snapshot, object requestedLimits)
         {
-            if (!Exact(snapshot, SnapshotKeys) || !Wire.Equal(Wire.Get(snapshot, "version"), Version) || !Wire.Equal(Wire.Get(snapshot, "rulesVersion"), RulesVersion) || !Wire.Equal(Wire.Get(snapshot, "commandsVersion"), CommandsVersion) || !Wire.Equal(Wire.Get(snapshot, "baseRulesVersion"), "classic-v4") || !Wire.Equal(Wire.Get(snapshot, "attemptId"), AttemptId) || !Wire.Equal(Wire.Get(snapshot, "levelId"), Level.id) || !Wire.IsList(Wire.Get(snapshot, "commands")) || Wire.List(Wire.Get(snapshot, "commands")).Count > MaxCommands) throw new ArgumentException("Invalid assisted checkpoint");
+            if (!Exact(snapshot, SnapshotKeys()) || !Wire.Equal(Wire.Get(snapshot, "version"), Version) || !Wire.Equal(Wire.Get(snapshot, "rulesVersion"), RulesVersion) || !Wire.Equal(Wire.Get(snapshot, "commandsVersion"), CommandsVersion) || !Wire.Equal(Wire.Get(snapshot, "baseRulesVersion"), BaseRulesVersion(model)) || !Wire.Equal(Wire.Get(snapshot, "attemptId"), AttemptId) || !Wire.Equal(Wire.Get(snapshot, "levelId"), Level.id) || !Wire.IsList(Wire.Get(snapshot, "commands")) || Wire.List(Wire.Get(snapshot, "commands")).Count > MaxCommands) throw new ArgumentException("Invalid assisted checkpoint");
             limits = ReadLimits(Wire.Get(snapshot, "limits"));
             if (requestedLimits != null && !Wire.Equal(ReadLimits(requestedLimits), limits)) throw new ArgumentException("Assisted limits do not match the checkpoint");
             foreach (object command in Wire.List(Wire.Get(snapshot, "commands")))
@@ -159,6 +181,9 @@ namespace Hexrota.Commands
             {
                 if (next.Status != "playing") return Invalid(command, next.Status);
                 int index = Used(command, "index"); if (index >= next.Total) return Invalid(command, "invalid_target");
+                // A crate cell and the ground still sealed behind a crate cannot be targeted:
+                // crates only take damage from matches.
+                if (next.HasObstacles && !next.IsPlayable(index)) return Invalid(command, "blocked");
                 if (type == "green_brush")
                 {
                     if (next.layers[index] == 0) return Invalid(command, "ground_empty");
@@ -171,7 +196,7 @@ namespace Hexrota.Commands
                     if (Array.IndexOf(Level.palette, value) < 0 || next.values[index] == value) return Invalid(command, "invalid_value");
                     if (Used(nextUsage, "colorKey") >= Used(limits, "colorKey")) return Invalid(command, "color_key_limit");
                     next.values[index] = value; nextUsage["colorKey"] = Used(nextUsage, "colorKey") + 1;
-                    mechanics = ResolveColorChange(next);
+                    mechanics = next.HasObstacles ? next.ResolveBoard() : ResolveColorChange(next);
                 }
             }
             var output = CommandWire.Result(mechanics); output.Add("commandId", id); output.Add("type", type); output.Add("duplicate", false);

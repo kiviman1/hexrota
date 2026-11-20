@@ -1,6 +1,6 @@
 # Hafta 1 raporu — Temizlik
 
-20 Kasım 2026. Dal: `chore/hafta-1-temizlik`, tek PR.
+20 Kasım 2026. Dal: `chore/hafta-1-temizlik`, tek PR: [#56](https://github.com/kiviman1/hexrota/pull/56), birleştirildi.
 
 ## Ne bitti
 
@@ -14,10 +14,19 @@
   - `editor-tests`: `DevelopmentToolsReleaseTests` oyuncu betiklerini Development bayrağı olmadan derliyor; Runtime ve Presentation derlemelerinde araçların ve etiketlerinin olmadığını, normal ayarların olduğunu (kontrol) doğruluyor.
 - **V5 akış haritası:** `docs/plan/v5-akis-haritasi.md`. Bölüm 6–10 V5. Takviye, takviye satın alma ve +5 hamle çekirdekte `HasObstacles` kapısıyla kapalı; Renk Anahtarı fiilen hiç kullanılamıyor; çantayı açan HUD düğmesi yok. Hafta 2 iş listesi ve büyüklükler belgede.
 
-## Ne kaldı / doğrulanmadı
+## CI sonucu
 
-- Testleri yerelde koşamadım: bu makinede `node` ve `dotnet` yok, Unity editörü proje açıkken çalışıyor. Doğrulamayı PR'daki CI yapacak. Bitti ölçütü ("release build'de dev menüsü yok") CI yeşil olunca sağlanmış sayılır.
-- `DevelopmentToolsReleaseTests` CI'daki etkin yapı hedefi için `PlayerBuildInterface.CompilePlayerScripts` kullanıyor. Linux runner'da o hedefin derlenmesi ilk kez deneniyor; başarısız olursa bu test altyapısı sorunudur, oyun kodu değil.
+PR #56, [çalıştırma 44775065795](https://github.com/kiviman1/hexrota/actions/runs/44775065795), ilk denemede üçü de yeşil:
+
+| Kontrol | Sonuç | Süre |
+| --- | --- | --- |
+| editor-tests | Geçti: EditMode 116/116, PlayMode 91/91, atlanan yok | 10 dk 34 sn |
+| runtime-host | Geçti (yeni "release compile has no development tools" grubu dahil) | 42 sn |
+| source-and-scene-integrity | Geçti | 15 sn |
+
+`DevelopmentToolsReleaseTests` iki testi de Linux runner'da gerçekten koştu ve geçti; altyapı düzeltmesi gerekmedi. Bitti ölçütü sağlandı: release derlemesinde geliştirici menüsü yok, tek tasarım kaynağı `PRODUCT.md`.
+
+## Ne kaldı
 - Can panelindeki "TEST reklamı" ve Test Altını fiyatlı can ürünleri yerinde: bunlar gerçek reklam SDK'sı gelene kadar (hafta 8) can akışının taklidi. Release'de hâlâ görünüyorlar.
 - Wireframe HTML'lerindeki Takım sekmesi düzeltilmedi; PRODUCT.md bunu geçersiz sayıyor.
 - Kök `docs/*.md` teknik raporları taranmadı; PRODUCT.md çelişkide kendisinin geçerli olduğunu söylüyor.

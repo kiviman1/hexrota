@@ -1,10 +1,10 @@
 ## Soft launch planı
-- Plan: docs/plan/soft-launch-plan.md (12 hafta).
+- Plan: docs/plan/soft-launch-plan.md (13 hafta; 20 Kasım güncellemesiyle bir hafta kaydı).
 - Her haftaya başlarken o haftanın istemini ve "Karar bekleyenler" bölümünü oku.
-- Hafta bitince plandaki 12 haftalık tabloya Durum sütununu ekle/güncelle ve hafta raporunu docs/plan/reports/hafta-N.md olarak kaydet.
+- Hafta bitince plandaki hafta tablosuna Durum sütununu ekle/güncelle ve hafta raporunu docs/plan/reports/hafta-N.md olarak kaydet.
 
 ## Çalışma kuralları (plan dönemi boyunca)
-- Yeni özellik ve görsel cila yok. Tek istisna okunabilirlik; görsel cila yalnız 11. haftada.
+- Yeni özellik ve görsel cila yok. Tek istisna okunabilirlik; görsel cila yalnız 12. haftada (cila haftası).
 - Her iş ayrı commit; haftada tek PR.
 - Üç zorunlu CI kontrolü (editor-tests, runtime-host, source-and-scene-integrity) yeşil olmadan birleştirme yok. Testleri atlayan, devre dışı bırakan ya da etkisizleştiren çözüm yok.
 - Yeni mekanik ve akış EditMode/PlayMode testiyle gelir.
