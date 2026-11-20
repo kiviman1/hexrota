@@ -45,20 +45,20 @@ Analiz büyük ölçüde doğru. Aşağıdaki ekler planı değiştiriyor.
 
 Her hafta bir çıktı ve bir "bitti" ölçütü. Ölçüt sağlanmadan sonraki haftaya geçilmez.
 
-| Hafta | Odak | Çıktı | Bitti sayılır |
-| --- | --- | --- | --- |
-| 1 | Temizlik | Belgeler tekleşti; geliştirici araçları yalnız dev build'de; CI testleri PR'da koşuyor; V5 akış haritası | Release build'de dev menüsü yok, tek tasarım kaynağı var |
-| 2 | Akışı onar | V5'te fırça, anahtar, +5 hamle; çanta HUD'dan açılıyor; okunabilirlik minimumu; geçici sesler | Öğretici → bölüm → takviye → kayıp/kurtarma → ödül → kümes → sonraki bölüm, gerçek arayüzden kesintisiz |
-| 3 | İnsan testi | 8–12 yeni oyuncu gözlemi; ilk 10 bölüm düzeltmesi | Oyuncular iki hedefi kendi sözleriyle anlatıyor |
-| 4 | Ölçüm | Analitik + çökme takibi; olay şeması | Bölüm, deneme, kayıp nedeni, tek hücre kaybı, D1/D7 görülüyor |
-| 5 | Üretim hattı | Bölüm şablonları, çözücü + görünür bilgi botu; 11–30. bölümler; 2. alan sanatına başlangıç | Yeni bir bölüm üretilip otomatik doğrulanabiliyor |
-| 6 | Mekanik deneyi | Dörtlü eşleşme → dar etkili yön taşı | Testte keyif artıyor; artmıyorsa atılır |
-| 7 | İçerik | Yaklaşık 60 bölüm; 2.–3. alan verisi ve yükseltme akışı | Birinci kümes bitince ulaşılabilir sonraki hedef var |
-| 8 | Ekonomi ve gelir | Altın dengesi; ödüllü reklam; kararla tek IAP | Takviye ve kurtarma kullanımı ölçülüyor |
-| 9 | Cihaz testi | Düşük/orta cihaz, arka plan, bağlantı kesilmesi, kayıt, güncelleme | İlerleme hiçbir senaryoda kaybolmuyor |
-| 10 | Kapalı test kohortu | D1/D7 ve kayıp analizi; darboğaz düzeltmeleri | Darboğaz bölümler düzeltildi |
-| 11 | Cila | Taş sprite'ları, oyun ekranı tam tasarımı, geçişler, ses, mağaza görselleri | Görsel tutarlılık kontrolü |
-| 12 | Soft launch | Android, sınırlı ülke; izleme açık | Sürüm yayında |
+| Hafta | Odak | Çıktı | Bitti sayılır | Durum |
+| --- | --- | --- | --- | --- |
+| 1 | Temizlik | Belgeler tekleşti; geliştirici araçları yalnız dev build'de; CI testleri PR'da koşuyor; V5 akış haritası | Release build'de dev menüsü yok, tek tasarım kaynağı var | PR açık, CI bekleniyor ([rapor](reports/hafta-1.md)) |
+| 2 | Akışı onar | V5'te fırça, anahtar, +5 hamle; çanta HUD'dan açılıyor; okunabilirlik minimumu; geçici sesler | Öğretici → bölüm → takviye → kayıp/kurtarma → ödül → kümes → sonraki bölüm, gerçek arayüzden kesintisiz | Bekliyor |
+| 3 | İnsan testi | 8–12 yeni oyuncu gözlemi; ilk 10 bölüm düzeltmesi | Oyuncular iki hedefi kendi sözleriyle anlatıyor | Bekliyor |
+| 4 | Ölçüm | Analitik + çökme takibi; olay şeması | Bölüm, deneme, kayıp nedeni, tek hücre kaybı, D1/D7 görülüyor | Bekliyor |
+| 5 | Üretim hattı | Bölüm şablonları, çözücü + görünür bilgi botu; 11–30. bölümler; 2. alan sanatına başlangıç | Yeni bir bölüm üretilip otomatik doğrulanabiliyor | Bekliyor |
+| 6 | Mekanik deneyi | Dörtlü eşleşme → dar etkili yön taşı | Testte keyif artıyor; artmıyorsa atılır | Bekliyor |
+| 7 | İçerik | Yaklaşık 60 bölüm; 2.–3. alan verisi ve yükseltme akışı | Birinci kümes bitince ulaşılabilir sonraki hedef var | Bekliyor |
+| 8 | Ekonomi ve gelir | Altın dengesi; ödüllü reklam; kararla tek IAP | Takviye ve kurtarma kullanımı ölçülüyor | Bekliyor |
+| 9 | Cihaz testi | Düşük/orta cihaz, arka plan, bağlantı kesilmesi, kayıt, güncelleme | İlerleme hiçbir senaryoda kaybolmuyor | Bekliyor |
+| 10 | Kapalı test kohortu | D1/D7 ve kayıp analizi; darboğaz düzeltmeleri | Darboğaz bölümler düzeltildi | Bekliyor |
+| 11 | Cila | Taş sprite'ları, oyun ekranı tam tasarımı, geçişler, ses, mağaza görselleri | Görsel tutarlılık kontrolü | Bekliyor |
+| 12 | Soft launch | Android, sınırlı ülke; izleme açık | Sürüm yayında | Bekliyor |
 
 Yön taşı deneyi tutmazsa 6. hafta ikinci bir mekanik aramaya harcanmaz, mevcut bölüm çeşitliliğine dönülür.
 
