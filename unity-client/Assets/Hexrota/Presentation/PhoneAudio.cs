@@ -15,6 +15,10 @@ namespace Hexrota.UnityClient.Presentation
         private bool unlocked, homePlaybackReady;
         private readonly Dictionary<string, AudioClip> clips = new Dictionary<string, AudioClip>();
 
+        /// <summary>The last sound effect played ("click", "wave", "win", "lose", "booster"); null before any.
+        /// Nothing is recorded while sound effects are off.</summary>
+        public string LastSound { get; private set; }
+
         private void Awake()
         {
             if (FindAnyObjectByType<AudioListener>() == null) gameObject.AddComponent<AudioListener>();
@@ -50,6 +54,28 @@ namespace Hexrota.UnityClient.Presentation
             }
             sfx.volume = session.Volume;
             sfx.PlayOneShot(click);
+            LastSound = "click";
+        }
+
+        // Temporary placeholder sounds (week 3): short synthesized notes, replaced by real audio in polish.
+        public void Win(UnityGameSession session) { Effect(session, "win", new[] { 523.25, 659.25, 783.99, 1046.5 }, .09, .34, .05, true); }
+        public void Lose(UnityGameSession session) { Effect(session, "lose", new[] { 329.63, 293.66, 246.94 }, .16, .42, .05, false); }
+        public void Booster(UnityGameSession session) { Effect(session, "booster", new[] { 659.25, 880, 1174.66 }, .05, .2, .04, true); }
+
+        private void Effect(UnityGameSession session, string name, double[] notes, double step, double length, double gain, bool bright)
+        {
+            if (session == null) return;
+            unlocked = true;
+            if (!session.SoundEnabled || sfx == null) return;
+            if (!clips.TryGetValue(name, out var clip))
+            {
+                var data = new float[(int)(Hz * (step * notes.Length + length))];
+                for (int i = 0; i < notes.Length; i++) Note(data, notes[i], i * step, length, gain, triangle: bright && i > 0);
+                clips[name] = clip = Clip(name, data);
+            }
+            sfx.volume = session.Volume;
+            sfx.PlayOneShot(clip);
+            LastSound = name;
         }
         public void Reward(UnityGameSession session, RewardCue cue)
         {
@@ -59,6 +85,7 @@ namespace Hexrota.UnityClient.Presentation
                 Vibrate(Math.Min(60,cue.hapticMs));
             if (!session.SoundEnabled) return;
             Reward(GetRewardClip(cue), session.Volume);
+            LastSound = "wave";
         }
 
         internal AudioClip PrepareHomeReward(RewardCue cue, float volume)

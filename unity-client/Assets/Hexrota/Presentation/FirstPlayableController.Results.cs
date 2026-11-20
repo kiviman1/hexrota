@@ -15,6 +15,7 @@ namespace Hexrota.UnityClient.Presentation
                 chapterVictory = Instantiate(prefab, safe.GetComponentInParent<Canvas>().rootCanvas.transform, false);
             }
             CurrentScreen = "celebration";
+            if (phoneAudio != null) phoneAudio.Win(Session);
             modal.SetActive(false);
             chapterVictory.Show(Session.ReducedMotion, FinishChapterVictory);
         }
@@ -160,7 +161,7 @@ namespace Hexrota.UnityClient.Presentation
         private void UseGoldRescue(UnityGameSession.GoldRescueOffer offer)
         {
             if(CurrentScreen!="result" || offer==null || !ready)return;
-            if(Session.AcceptGoldRescue(offer)) OpenCurrentBoard(false);
+            if(Session.AcceptGoldRescue(offer)) { phoneAudio.Booster(Session); OpenCurrentBoard(false); }
             else DrawLoss();
         }
         private void DrawRescueAd(UnityGameSession.RescueAdOffer offer)
@@ -172,7 +173,7 @@ namespace Hexrota.UnityClient.Presentation
                 "Bu yerel test gerçek reklam göstermez. Yalnız tamamladığında aynı tahtana "+offer.Moves+" hamle eklenir.";
             ShowPhoneSheet(offer.PendingDelivery?"Saklanan reklam ödülün":"TEST reklamı: +"+offer.Moves+" hamle",description,"GELİŞTİRME TESTİ",380,()=>{if(!offer.PendingDelivery)Session.CompleteMobileRescueAd(id,false);DrawLoss();});
             SheetButton(offer.PendingDelivery?"Ödülü kullanmayı dene":"TEST reklamını tamamla",22,158,316,48,()=>{
-                if(offer.PendingDelivery?Session.DeliverMobileRescueAd():Session.CompleteMobileRescueAd(id,true)) OpenCurrentBoard(false);
+                if(offer.PendingDelivery?Session.DeliverMobileRescueAd():Session.CompleteMobileRescueAd(id,true)) { phoneAudio.Booster(Session); OpenCurrentBoard(false); }
                 else DrawLoss();
             });
             SheetButton("Vazgeç",22,219,316,46,()=>{if(!offer.PendingDelivery)Session.CompleteMobileRescueAd(id,false);DrawLoss();},SheetStyle.Secondary);

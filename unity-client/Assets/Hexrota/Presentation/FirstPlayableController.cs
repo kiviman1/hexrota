@@ -220,6 +220,7 @@ namespace Hexrota.UnityClient.Presentation
                 return;
             }
             CurrentScreen = "result";
+            if (liveMove && phoneAudio != null) { if (Session.Status == "won") phoneAudio.Win(Session); else phoneAudio.Lose(Session); }
             if (Session.Status == "won") DrawWin(); else DrawLoss();
         }
 
@@ -463,12 +464,15 @@ namespace Hexrota.UnityClient.Presentation
         {
             return SheetButton(text, 22, 210 + slot * 58, 316, 48, action, slot == 0 ? SheetStyle.Primary : SheetStyle.Secondary);
         }
+        /// <summary>The temporary button tap sound (respects the sound effects setting).</summary>
+        public void PlayButtonSound() { if (phoneAudio != null) phoneAudio.Click(Session); }
+
         private Button MakeButton(string text,Transform parent,Vector2 min,Vector2 max,Action action)
         {
             var panel = Panel(text,parent,min,max,Gold);
             Round(panel);
             var button = panel.AddComponent<Button>(); button.targetGraphic = panel.GetComponent<Image>();
-            button.onClick.AddListener(() => action());
+            button.onClick.AddListener(() => { PlayButtonSound(); action(); });
             var textLabel = Label("Label",panel.transform,text,new Vector2(.025f,.05f),new Vector2(.975f,.95f),26,TextAnchor.MiddleCenter);
             textLabel.color = Ink; textLabel.fontStyle = FontStyle.Bold;
             return button;

@@ -38,9 +38,9 @@ namespace Hexrota.UnityClient.Presentation
 
         internal void Bind(FirstPlayableController game)
         {
-            if (settings != null) settings.onClick.AddListener(game.OpenMobileSettings);
+            if (settings != null) { settings.onClick.AddListener(game.PlayButtonSound); settings.onClick.AddListener(game.OpenMobileSettings); }
             if (bag == null && settings != null) bag = BuildBag(CastlePopupChrome.ChestIcon);
-            if (bag != null) bag.onClick.AddListener(game.OpenInventory);
+            if (bag != null) { bag.onClick.AddListener(game.PlayButtonSound); bag.onClick.AddListener(game.OpenInventory); }
         }
 
         // Same plate as the settings button, directly under it, with the bag (chest) icon.
