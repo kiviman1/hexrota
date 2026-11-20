@@ -124,7 +124,8 @@ namespace Hexrota.UnityClient.Presentation
         {
             if (!ready || !HasInterface || IsEnteringStage) return;
             bool inGame = (optionsShade == null ? CurrentScreen : optionsReturn) == "playing";
-            OptionsPanel("settings","Ayarlar","","",1800,inGame?1533:1495);
+            float shortfall=1120-SettingsAfterDevelopment;
+            OptionsPanel("settings","Ayarlar","","",1800-shortfall,(inGame?1533:1495)-shortfall);
             var controls=Rect("SettingsControls",optionContent,Vector2.zero,Vector2.one);
             controls.anchoredPosition=Vector2.up*(inGame?32:70);
             optionContent=controls;
@@ -161,22 +162,50 @@ namespace Hexrota.UnityClient.Presentation
             });
             bool vibration=SystemInfo.supportsVibration;
             OptionSwitch("Titreşim","Titreşim",vibration?"Eşleşmelerde kısa dokunma geri bildirimi.":"Bu cihaz titreşimi desteklemiyor.",480,Session.HapticsEnabled,on=>Session.SetPreferences(haptics:on),vibration);
-            OptionBox("Developer",18,565,316,540,"724d9e","53367f","a884be",15,1);
-            OptionText("DevBadge","GELİŞTİRME TESTİ",32,582,270,22,10,TextAnchor.MiddleLeft,true);
-            OptionSwitch("Can sınırı","Can sınırını kapat","Bölüm testinde can harcanmaz; bekleme gerekmez.",600,(bool)Session.LifeStatus["developerBypass"],on=>Session.SetLifeBypass(on),inset:true);
-            OptionSwitch("Test reklamı","Test reklamı kullanılabilir","Kapatarak reklam bulunamamasını deneyebilirsin.",677,Session.LifeTestAds,on=>Session.SetLifeTestAds(on),inset:true);
-            OptionSwitch("İkinci şans","TEST ikinci şans reklamı kullanılabilir","+5 hamle reklamının bulunamamasını ayrı olarak dene.",754,Session.RescueTestAds,on=>Session.SetRescueTestAds(on),inset:true);
-            OptionText("TestNote","Geliştirme içindir. Gerçek reklam veya para işlemi yoktur.",32,832,288,34,11);
-            OptionButton("300 Test Altını ekle",32,873,288,40,()=>OfferLifeProduct("test_gold_300"));
-            OptionText("ResetTitle","İlk açılışı tekrar dene",32,943,288,31,14,TextAnchor.MiddleLeft,true);
-            OptionText("ResetHelp","Öğreticiyi, hediyeyi ve bütün ilerlemeyi sıfırdan denemek için yeni oyuncu olarak başla.",32,978,288,45,12);
-            var reset=OptionButton("Test için her şeyi sıfırla",32,1041,288,48,ConfirmFullReset);
-            optionsChrome.Paint(reset.gameObject,CastlePopupChrome.Finish.Danger);
-            DrawPlaytestSettings(1120);
-            OptionText("Storage","Tercihlerin ve ilerlemen bu cihazda saklanır.",18,1355,316,44,12,TextAnchor.MiddleCenter);
-            OptionButton("Tamam",18,1410,316,50,CloseMobileOptions,true);
-            OptionButton("İlerlemeyi sıfırla",18,1472,316,46,ConfirmOpenReset);
+            float next=565;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            next=DrawDeveloperSettings(next);
+#endif
+            DrawPlaytestSettings(next);
+            OptionText("Storage","Tercihlerin ve ilerlemen bu cihazda saklanır.",18,next+235,316,44,12,TextAnchor.MiddleCenter);
+            OptionButton("Tamam",18,next+290,316,50,CloseMobileOptions,true);
+            OptionButton("İlerlemeyi sıfırla",18,next+352,316,46,ConfirmOpenReset);
         }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        // Editor and Development builds only: the release player never compiles these controls
+        // (DevelopmentToolsReleaseTests compiles a release player and checks for them).
+        private const float DevelopmentSettingsHeight=555;
+        private const float SettingsAfterDevelopment=565+DevelopmentSettingsHeight;
+        private float DrawDeveloperSettings(float y)
+        {
+            OptionBox("Developer",18,y,316,540,"724d9e","53367f","a884be",15,1);
+            OptionText("DevBadge","GELİŞTİRME TESTİ",32,y+17,270,22,10,TextAnchor.MiddleLeft,true);
+            OptionSwitch("Can sınırı","Can sınırını kapat","Bölüm testinde can harcanmaz; bekleme gerekmez.",y+35,(bool)Session.LifeStatus["developerBypass"],on=>Session.SetLifeBypass(on),inset:true);
+            OptionSwitch("Test reklamı","Test reklamı kullanılabilir","Kapatarak reklam bulunamamasını deneyebilirsin.",y+112,Session.LifeTestAds,on=>Session.SetLifeTestAds(on),inset:true);
+            OptionSwitch("İkinci şans","TEST ikinci şans reklamı kullanılabilir","+5 hamle reklamının bulunamamasını ayrı olarak dene.",y+189,Session.RescueTestAds,on=>Session.SetRescueTestAds(on),inset:true);
+            OptionText("TestNote","Geliştirme içindir. Gerçek reklam veya para işlemi yoktur.",32,y+267,288,34,11);
+            OptionButton("300 Test Altını ekle",32,y+308,288,40,()=>OfferLifeProduct(Hexrota.UnityClient.UnityGameSession.DevelopmentLifeProduct));
+            OptionText("ResetTitle","İlk açılışı tekrar dene",32,y+378,288,31,14,TextAnchor.MiddleLeft,true);
+            OptionText("ResetHelp","Öğreticiyi, hediyeyi ve bütün ilerlemeyi sıfırdan denemek için yeni oyuncu olarak başla.",32,y+413,288,45,12);
+            var reset=OptionButton("Test için her şeyi sıfırla",32,y+476,288,48,ConfirmFullReset);
+            optionsChrome.Paint(reset.gameObject,CastlePopupChrome.Finish.Danger);
+            return y+DevelopmentSettingsHeight;
+        }
+        private void ConfirmFullReset()
+        {
+            OptionsPanel("test-reset","Her şey sıfırlansın mı?","GELİŞTİRME TESTİ",
+                "Bu cihazdaki bölümler, öğreticiler, Altın, Altın Yumurtalar, kümes, çanta, canlar ve TEST işlemleri silinir. Bu işlem geri alınamaz.",365,365);
+            OptionButton("Evet, her şeyi sıfırla",18,205,316,46,()=>{
+                if(Session.ResetForDevelopmentTest())CloseOptionsToHome();
+                else OptionText("Failure","Sıfırlama kaydedilemedi. Tekrar deneyebilirsin.",18,312,316,28,12);
+            });
+            OptionButton("Vazgeç",18,261,316,46,OpenMobileSettings);
+        }
+
+#else
+        private const float SettingsAfterDevelopment=565;
+#endif
 
         private void ConfirmOpenReset()
         {
@@ -188,17 +217,6 @@ namespace Hexrota.UnityClient.Presentation
                 if(Session.ResetOpenAttempts(charge)){CloseOptionsToHome();return;}
                 if(Session.LastError=="confirmation_changed")ConfirmOpenReset();
                 else OptionText("Failure","İlerleme sıfırlanamadı.",18,312,316,28,12);
-            });
-            OptionButton("Vazgeç",18,261,316,46,OpenMobileSettings);
-        }
-
-        private void ConfirmFullReset()
-        {
-            OptionsPanel("test-reset","Her şey sıfırlansın mı?","GELİŞTİRME TESTİ",
-                "Bu cihazdaki bölümler, öğreticiler, Altın, Altın Yumurtalar, kümes, çanta, canlar ve TEST işlemleri silinir. Bu işlem geri alınamaz.",365,365);
-            OptionButton("Evet, her şeyi sıfırla",18,205,316,46,()=>{
-                if(Session.ResetForDevelopmentTest())CloseOptionsToHome();
-                else OptionText("Failure","Sıfırlama kaydedilemedi. Tekrar deneyebilirsin.",18,312,316,28,12);
             });
             OptionButton("Vazgeç",18,261,316,46,OpenMobileSettings);
         }

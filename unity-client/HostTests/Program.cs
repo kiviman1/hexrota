@@ -45,6 +45,7 @@ internal static class Program
         Group("file-backed session survives cancellation and reconstructs exact snapshot", FileResume);
         Group("one-time campaign completion rejects duplicate settlement and replay", Completion);
         Group("real losing game reaches terminal result and retries with new identity", Loss);
+        Group("release compile has no development tools and clears a saved lives bypass", ReleaseHasNoDevelopmentTools);
         Console.WriteLine("HOST_RESULT " + WireJsonCodec.Serialize(W.Obj("groups", groups, "assertions", assertions, "variants", variantCount, "winningRoutes", routes, "scope", "Real .NET runtime/core/file-storage execution; Unity resource seams only. No Unity Editor, PlayMode, IL2CPP, WebGL or device execution.")));
     }
     private static void Codec()
@@ -192,5 +193,20 @@ internal static class Program
             Need(W.List(W.Get(Economy(storage), "claimedLevelIds")).Count == 0, "Loss awarded campaign completion");
         }
         Need(observed, "Deterministic legal-move sample did not produce a loss; add an explicit real-board loss vector");
+    }
+    // The host compiles Runtime without UNITY_EDITOR or DEVELOPMENT_BUILD, exactly like a release player.
+    private static void ReleaseHasNoDevelopmentTools()
+    {
+        var type = typeof(UnityGameSession);
+        foreach (var name in new[] { "SetLifeBypass", "SetLifeTestAds", "SetRescueTestAds", "ResetForDevelopmentTest", "LifeTestAds", "RescueTestAds" })
+            Need(type.GetMember(name).Length == 0, "Release session still exposes development tool " + name);
+        var storage = new MemoryProfileStorage(); var session = New(storage);
+        Need(session.BeginLifeProduct(UnityGameSession.DevelopmentLifeProduct) == null && session.LastError == "unknown_product", "Release session granted Test Gold");
+        // A Development build may have saved the lives bypass on this device; a release build must drop it.
+        var developer = new GameSessionController(data.Catalog, data.Levels, data.TutorialCount, new ProfileRepository(storage), data.LifeConfig, new Clock(), 4303818,
+            "hexrota-unity-test", data.RewardRules, economyConfig: data.EconomyConfig, rescueReceiptVerifier: new Hexrota.Rescue.DevelopmentRescueReceiptVerifier(), onboardingInFirstChapter: true);
+        Need(W.Equal(W.Get(developer.SetDeveloperBypass(true), "ok"), true), "Could not seed a saved lives bypass");
+        Need(W.Equal(New(storage).LifeStatus["developerBypass"], false), "Release session kept a saved lives bypass");
+        Need(W.Equal(New(storage).LifeStatus["developerBypass"], false), "Lives bypass came back after reload");
     }
 }

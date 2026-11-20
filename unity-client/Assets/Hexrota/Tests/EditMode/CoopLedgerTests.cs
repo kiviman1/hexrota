@@ -34,7 +34,7 @@ namespace Hexrota.UnityClientTests
             Assert.That(shipped.Areas, Has.Count.EqualTo(1));
             Assert.That(shipped.First.Id, Is.EqualTo("farm-1"));
             // Four upgrades, one per coop sprite level (Coop_L1..Coop_L4), sized for the current
-            // 10-chapter campaign (10 eggs, 6 chickens); see docs/design/HANDOFF.md.
+            // 10-chapter campaign (10 eggs, 6 chickens); see docs/design/PRODUCT.md.
             Assert.That(shipped.First.Upgrades.Select(u => u.Cost), Is.EqualTo(new[] { 1, 2, 3, 4 }));
             Assert.That(shipped.First.Upgrades.Select(u => u.Cost).Sum(), Is.EqualTo(10));
             Assert.That(shipped.First.Upgrades.Select(u => u.Chickens), Is.EqualTo(new[] { 1, 1, 2, 2 }));
