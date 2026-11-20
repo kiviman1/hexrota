@@ -42,8 +42,11 @@ namespace Hexrota.UnityClient.Presentation
         private bool reduced, bound;
         private Vector3 coopScale;
         private int shownResidents;
+        // Development preview (CoopDevelopmentShortcut): the level shown instead of the saved one, or -1.
+        private int previewLevel = -1;
 
         public bool IsPlaying => step != Step.Idle;
+        internal UiTheme Theme => ui;
         public int VisibleResidents => shownResidents;
         public string Banner => levelBanner.gameObject.activeSelf ? levelBanner.text : null;
         /// <summary>The dust cloud is covering the building (the sprite changes at the end of this phase).</summary>
@@ -82,6 +85,7 @@ namespace Hexrota.UnityClient.Presentation
             var session = controller != null ? controller.Session : null;
             if (session == null || IsPlaying) return;
             var previous = session.ReadCoop();
+            previewLevel = -1;
             // Data first: the spend and the new level are durable before step 1 starts.
             if (!session.TryUpgradeCoop())
             {
@@ -250,12 +254,50 @@ namespace Hexrota.UnityClient.Presentation
                 // Step 6: the bar restarts from empty and fills toward the next cost (instant with reduced motion).
                 coopView.Show(saved, controller.Session.ReducedMotion);
                 SetResidents(saved.Usable ? saved.Chickens : 0);
+                if (previewLevel >= 0 && coopView.Sprite != null) coopView.Sprite.Show(previewLevel);
             }
             HideTransients();
             inputLock.SetActive(false);
             attention.Release(this);
             Finished?.Invoke();
         }
+
+        /// <summary>Development preview: shows a coop level at once; the save is not touched, and the next
+        /// home refresh shows the saved level again. Editor and Development builds only.</summary>
+        internal void DevelopmentShowLevel(int level)
+        {
+            if (!FirstPlayableController.DevelopmentToolsEnabled || coopView == null || coopView.Sprite == null) return;
+            if (IsPlaying) Finish();
+            previewLevel = Mathf.Clamp(level, 0, coopView.Sprite.LevelCount - 1);
+            coopView.Sprite.Show(previewLevel);
+        }
+
+        /// <summary>Development preview: plays the upgrade transition (dust, squash, sparkle, banner) into the
+        /// shown level from the one below it, without spending eggs or saving. Editor and Development builds only.</summary>
+        internal bool DevelopmentReplay()
+        {
+            if (!FirstPlayableController.DevelopmentToolsEnabled || IsPlaying || controller == null || controller.Session == null ||
+                coopView == null || coopView.Sprite == null) return false;
+            var saved = controller.Session.ReadCoop();
+            int target = Mathf.Clamp(previewLevel >= 0 ? previewLevel : coopView.Sprite.Level, 1, coopView.Sprite.LevelCount - 1);
+            before = Preview(saved, target - 1);
+            after = Preview(saved, target);
+            previewLevel = target;
+            reduced = controller.Session.ReducedMotion;
+            attention.TryAcquire(AttentionKind.CoopUpgrade, this);
+            coopView.Frozen = true;
+            inputLock.SetActive(true);
+            coopView.Sprite.Show(target - 1);
+            coopScale = coopView.CoopTarget.localScale;
+            Arrive();
+            return true;
+        }
+
+        private static UnityGameSession.CoopStatus Preview(UnityGameSession.CoopStatus saved, int level) => new UnityGameSession.CoopStatus
+        {
+            Usable = true, AreaId = saved.AreaId, Level = level, UpgradeCount = saved.UpgradeCount,
+            Chickens = saved.Chickens, Eggs = saved.Eggs, NextCost = saved.NextCost, NextChickens = saved.NextChickens,
+        };
 
         private void HideTransients()
         {
