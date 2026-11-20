@@ -28,6 +28,12 @@ namespace Hexrota.UnityClient.Presentation
         [Min(1f)] public float rewardIconSize;
         [Tooltip("Coop placeholder scale on the empty plot; it grows to 1 when the area is complete.")]
         [Range(0.1f, 1f)] public float coopScaleEmpty;
+
+        [Header("Tahta zemini (geçici, kodla çizilir)")]
+        [Tooltip("Two layers of soil left: dark brown with cracks.")] public Color soilDeep;
+        [Tooltip("One layer of soil left: light brown.")] public Color soil;
+        [Tooltip("No soil left: grass.")] public Color grass;
+        public Color soilCrack;
         [Range(0f, 1f)] public float coopRingOpacity;
     }
 }

@@ -84,7 +84,7 @@ namespace Hexrota.UnityClientTests
             var moves = labels.Single(label => label.name == "Moves");
             var green = labels.Single(label => label.name == "GroundCount");
             string initialGround = green.text;
-            string waveGround = frame.layers.Count(layer => layer == 0) + " / " + frame.layers.Length;
+            string waveGround = frame.layers.Sum().ToString(); // remaining soil layers
             bool groundOutOfSync = false;
             var firstDropPose = new Dictionary<int, float>();
             var columnStarts = new Dictionary<int, float>();

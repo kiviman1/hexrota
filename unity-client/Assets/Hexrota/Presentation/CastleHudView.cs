@@ -80,9 +80,10 @@ namespace Hexrota.UnityClient.Presentation
             groundRestScale = groundGoal.localScale;
         }
 
-        internal void ShowStage(int target, GameSnapshot snapshot)
+        internal void ShowStage(int target, GameSnapshot snapshot, int startingSoil)
         {
             ShowMoves(snapshot.movesLeft);
+            soilAtStart = startingSoil;
             ShowGround(snapshot.layers);
             scoreTarget = target;
             ShowScore(snapshot.score);
@@ -93,12 +94,23 @@ namespace Hexrota.UnityClient.Presentation
             remainingMoves.text = moves.ToString(CultureInfo.InvariantCulture);
         }
 
+        private int soilAtStart;
+
+        /// <summary>Remaining soil layers on the board; the counter reaches 0 when every cell is green.</summary>
+        internal static int RemainingSoil(int[] layers)
+        {
+            int remaining = 0;
+            foreach (int layer in layers) remaining += Mathf.Max(0, layer);
+            return remaining;
+        }
+
         internal void ShowGround(int[] layers)
         {
-            int green = 0;
-            foreach (int remaining in layers)
-                if (remaining == 0) green++;
-            ShowProgress(groundCount, groundProgress, green, layers.Length);
+            int remaining = RemainingSoil(layers);
+            groundCount.text = remaining.ToString(CultureInfo.InvariantCulture);
+            float cleared = soilAtStart > 0 ? Mathf.Clamp01(1f - (float)remaining / soilAtStart) : 1f;
+            groundProgress.anchorMax = new Vector2(cleared, groundProgress.anchorMax.y);
+            groundProgress.gameObject.SetActive(cleared > 0);
         }
 
         internal void ShowScore(int score)

@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -82,7 +83,7 @@ namespace Hexrota.UnityClient.Presentation
         private void RefreshCounters()
         {
             if (!Session.HasAttempt) return;
-            castleHud.ShowStage(Session.Level.target, Session.Snapshot);
+            castleHud.ShowStage(Session.Level.target, Session.Snapshot, Session.Level.cells.Sum(cell => cell.layers));
             RefreshBag();
         }
 

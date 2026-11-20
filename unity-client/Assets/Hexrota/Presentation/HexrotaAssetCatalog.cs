@@ -19,6 +19,9 @@ namespace Hexrota.UnityClient.Presentation
         public float[] stonePaintedHeights = new float[5];
         [Tooltip("The single font used for every stone numeral.")]
         public Font stoneDigitFont;
+        [Header("Tema")]
+        public UiTheme ui;
+        public MotionTheme motion;
         [Header("Kapalı alanlar")]
         public Sprite crateOneHit;
         public Sprite crateTwoHits;

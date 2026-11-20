@@ -52,7 +52,8 @@ namespace Hexrota.UnityClientTests
             var snapshot = game.Session.Snapshot;
             Assert.That(labels.Single(label => label.name == "Moves").text, Is.EqualTo(snapshot.movesLeft.ToString()));
             Assert.That(labels.Single(label => label.name == "Counters").text, Is.EqualTo(snapshot.score + " / " + game.Session.Level.target));
-            Assert.That(labels.Single(label => label.name == "GroundCount").text, Is.EqualTo(snapshot.layers.Count(layer => layer == 0) + " / " + snapshot.layers.Length));
+            // The ground counter shows the soil layers still to clear and counts down to 0.
+            Assert.That(labels.Single(label => label.name == "GroundCount").text, Is.EqualTo(snapshot.layers.Sum().ToString()));
             Assert.That(labels.Any(label => label.name == "StageTag" || label.name == "LevelTitle"), Is.False);
             for (int i = 0; i < snapshot.values.Length; i++)
             {
@@ -60,10 +61,14 @@ namespace Hexrota.UnityClientTests
                 Assert.That(snapshot.values[i].HasValue, Is.True, stone.name);
                 StoneArtAssertions.ShowsNumber(stone.transform, snapshot.values[i].Value);
                 var ground = GameObject.Find("Ground_" + i);
+                // Soil is drawn in code: grass, light brown (1 layer) or dark brown with cracks (2+).
                 var floor = ground.transform.Find("Model").GetComponent<MeshRenderer>();
-                string state = snapshot.layers[i] == 0 ? "Green" :
-                    snapshot.layers[i] < game.Session.Level.cells[i].layers ? "Partial" : "Soil";
-                Assert.That(floor.sharedMaterial.mainTexture.name, Does.Contain("HexFloor_" + state), ground.name);
+                var ui = Resources.FindObjectsOfTypeAll<HexrotaAssetCatalog>().First(c => c.ui != null).ui;
+                var block = new MaterialPropertyBlock();
+                floor.GetPropertyBlock(block);
+                Color expected = snapshot.layers[i] == 0 ? ui.grass : snapshot.layers[i] == 1 ? ui.soil : ui.soilDeep;
+                Assert.That(block.GetColor("_Color"), Is.EqualTo(expected), ground.name);
+                Assert.That(block.GetFloat("_Cracks"), Is.EqualTo(snapshot.layers[i] >= 2 ? 1f : 0f), ground.name);
             }
         }
 

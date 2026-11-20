@@ -171,7 +171,12 @@ namespace Hexrota.UnityClientTests
             Assert.That(stones.All(s => !s.gameObject.activeSelf), Is.True);
             board.SetEntranceSlide(1f);
             Assert.That(camera.transform.position, Is.EqualTo(home));
-            board.SetEntranceFill(.48f);
+            // The empty board shows first (MotionTheme.emptyBoardHold), then the stones fall.
+            float hold = board.EmptyBoardHold / board.EntranceFillSeconds;
+            Assert.That(board.EmptyBoardHold, Is.GreaterThan(0f));
+            board.SetEntranceFill(hold * .95f);
+            Assert.That(stones.All(s => !s.gameObject.activeSelf), Is.True, "Nothing falls during the empty-board hold.");
+            board.SetEntranceFill(hold + (1f - hold) * .48f);
             Assert.That(stones.Where((s, i) => s.gameObject.activeSelf && s.position.y > rest[i].y + .05f), Is.Not.Empty);
             for (int i = 0; i < stones.Length; i++)
             {

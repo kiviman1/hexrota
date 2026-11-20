@@ -13,6 +13,8 @@ Shader "Hexrota/Castle Board Facet"
         _SpawnCeiling ("Refill segment top (world Y)", Float) = 100000
         _GuideCutout ("Covered face during lesson fade", Float) = 0
         _FloorMark ("Floor indicator", Float) = 0
+        _Cracks ("Packed soil cracks", Float) = 0
+        _CrackColor ("Crack colour", Color) = (.17,.10,.05,1)
         _IdleOutline ("Hint edge", Float) = 0
         _IdleSheen ("Hint glint", Float) = 0
     }
@@ -27,7 +29,8 @@ Shader "Hexrota/Castle Board Facet"
             #pragma fragment frag
             #include "UnityCG.cginc"
             sampler2D _MainTex;
-            fixed4 _Pigment, _Color;
+            fixed4 _Pigment, _Color, _CrackColor;
+            half _Cracks;
             half _MotionOpacity, _MotionFlash;
             float _SpawnCeiling;
             half _Lustre, _GuideOpacity, _GuideCutout, _FloorMark, _IdleOutline, _IdleSheen, _VertexPigment;
@@ -68,6 +71,19 @@ Shader "Hexrota/Castle Board Facet"
                 lit += _Lustre * pow(saturate(dot(n,halfway)),30) * half3(1,.92,.74);
                 lit = lerp(lit,half3(1,.93,.60),
                     saturate((1-saturate(-n.z)) * _IdleOutline + _IdleSheen));
+                if (_Cracks > 0)
+                {
+                    // Three jagged cracks across the hex top.
+                    float2 c = i.plane;
+                    float d = segmentDistance(c, float2(-.31,.06), float2(-.13,-.01));
+                    d = min(d, segmentDistance(c, float2(-.13,-.01), float2(.01,.11)));
+                    d = min(d, segmentDistance(c, float2(.01,.11), float2(.20,.05)));
+                    d = min(d, segmentDistance(c, float2(-.13,-.01), float2(-.06,-.17)));
+                    d = min(d, segmentDistance(c, float2(-.06,-.17), float2(.04,-.29)));
+                    d = min(d, segmentDistance(c, float2(.13,-.20), float2(.27,-.09)));
+                    d = min(d, segmentDistance(c, float2(.08,.25), float2(.16,.33)));
+                    lit = lerp(lit, _CrackColor.rgb, _Cracks * (1 - smoothstep(.010, .019, d)));
+                }
                 if (_FloorMark > 0)
                 {
                     float2 at = i.plane - float2(0,-.383);

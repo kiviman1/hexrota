@@ -47,6 +47,7 @@ namespace Hexrota.UnityClient.Presentation
         private Font digitsFont;
         private bool authoredFloor;
         private Material stoneMaterial;
+        private int[] shownLayers;
         private Sprite[] stoneSprites;
         private Vector2[] digitCentres;
         /// <summary>Numeral height as a share of the stone's painted height.</summary>
@@ -106,6 +107,7 @@ namespace Hexrota.UnityClient.Presentation
             if (this == null || world == null || effectRoot == null) return;
             Cancel(null); ClearModels(); positions = new Vector3[level.cells.Length];
             initialLayers = new int[level.cells.Length]; floorEdges = new Color[level.cells.Length];
+            shownLayers = null; // the first paint of a board never crumbles
             tutorialLayout = level.id is string;
             this.frameNineByNine = frameNineByNine;
             for (int i = 0; i < level.cells.Length; i++)
@@ -124,6 +126,8 @@ namespace Hexrota.UnityClient.Presentation
                 numbers.Add(BuildStone(stone.transform, i));
             }
             frameBounds = CellFrame();
+            shownLayers = new int[level.cells.Length];
+            for (int i = 0; i < shownLayers.Length; i++) shownLayers[i] = -1;
             PrepareMotion(level);
             PrepareTerrain(level.obstacles);
             Render(snapshot); FitCamera();
@@ -479,23 +483,42 @@ namespace Hexrota.UnityClient.Presentation
             number.transform.localPosition = new Vector3(centre.x, centre.y, -.02f);
         }
 
+        // Temporary code-drawn soil (no cell art is coming): two layers are dark brown with cracks,
+        // one layer is light brown and a cleared cell is grass. A layer that breaks bursts into crumbs.
         private void PaintFloor(int index, int layers)
         {
-            bool green = layers == 0, partial = !green && layers < initialLayers[index];
-            float mark = green ? 3 : initialLayers[index] == 2 ? layers : 0;
+            bool broke = shownLayers != null && shownLayers[index] >= 0 && layers < shownLayers[index];
+            Color before = broke ? SoilColour(shownLayers[index]) : Color.clear;
+            if (shownLayers != null) shownLayers[index] = layers;
             var tile = grounds[index].GetComponent<CastleBoardTile>();
-            if (tile != null && tile.Show(green ? 2 : partial ? 1 : 0))
-            {
-                floorEdges[index] = Color.white;
-                Tint(cells[index], floorEdges[index]);
-                Tint(grounds[index], Color.white, mark:mark);
-                return;
-            }
-            Color fill = green ? new Color32(118,217,67,255) : partial ? new Color32(134,119,72,255) : new Color32(83,75,60,255);
-            floorEdges[index] = green ? new Color32(183,250,126,255) : partial ? new Color32(223,196,127,255) : new Color32(141,123,90,255);
-            Tint(cells[index], floorEdges[index]); Tint(grounds[index],fill,mark:mark);
+            if (tile != null) tile.Show(0);
+            floorEdges[index] = tile != null ? Color.white : Color.Lerp(SoilColour(layers), Color.white, .3f);
+            Tint(cells[index], floorEdges[index]);
+            Tint(grounds[index], SoilColour(layers), cracks: layers >= 2 ? 1f : 0f, plain: true);
+            if (broke) Crumble(index, before);
         }
-        private void Tint(GameObject obj, Color color, Color rim = default(Color), float width = 0, float mark = 0)
+
+        internal Color SoilColour(int layers)
+        {
+            var ui = assets != null ? assets.ui : null;
+            if (ui == null) return layers <= 0 ? Color.green : layers == 1 ? new Color(.6f, .45f, .3f) : new Color(.35f, .22f, .14f);
+            return layers <= 0 ? ui.grass : layers == 1 ? ui.soil : ui.soilDeep;
+        }
+
+        private Material crumbMaterial;
+
+        private void Crumble(int index, Color colour)
+        {
+            var motion = assets != null ? assets.motion : null;
+            if (motion == null || ReducedMotion || world == null || positions == null) return;
+            if (crumbMaterial == null)
+                crumbMaterial = new Material(Resources.Load<Shader>("PhoneArt/BoardStone")) { name = "Soil crumbs" };
+            // Under the board root, not the effects root: a redraw clears effects but must not cut a burst short.
+            var crumbs = SoilCrumbs.Burst(world, positions[index] + Vector3.back * .3f, colour, motion, crumbMaterial, 3);
+            crumbs.name = "Crumbs_" + index;
+        }
+        private void Tint(GameObject obj, Color color, Color rim = default(Color), float width = 0, float mark = 0,
+            float cracks = 0, bool plain = false)
         {
             if (obj == null || tint == null) return;
             foreach (Renderer renderer in obj.GetComponentsInChildren<Renderer>())
@@ -504,6 +527,12 @@ namespace Hexrota.UnityClient.Presentation
                 renderer.GetPropertyBlock(tint); tint.SetColor("_Color", color); tint.SetColor("_BaseColor", color);
                 tint.SetColor("_RimColor",rim); tint.SetFloat("_RimWidth",width);
                 tint.SetFloat("_FloorMark",mark);
+                tint.SetFloat("_Cracks",cracks);
+                if (plain)
+                {
+                    tint.SetTexture("_MainTex", Texture2D.whiteTexture);
+                    if (assets != null && assets.ui != null) tint.SetColor("_CrackColor", assets.ui.soilCrack);
+                }
                 renderer.SetPropertyBlock(tint);
             }
         }
@@ -534,6 +563,7 @@ namespace Hexrota.UnityClient.Presentation
             Font.textureRebuilt -= RefreshDigitAtlas;
             if (digitsMaterial != null) Destroy(digitsMaterial);
             if (stoneMaterial != null) Destroy(stoneMaterial);
+            if (crumbMaterial != null) Destroy(crumbMaterial);
             if (world != null) Destroy(world.gameObject);
             world = null; effectRoot = null; BoardCamera = null; tint = null;
         }
