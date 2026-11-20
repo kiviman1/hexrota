@@ -9,8 +9,6 @@ namespace Hexrota.UnityClient.Presentation
     public sealed partial class FirstPlayableController
     {
         public const string DevelopmentWinButtonName = "DevelopmentWin";
-        private const string DevelopmentWinLabel = "TEST: KAZAN";
-        private Button developmentWin;
 
         /// <summary>True in the Editor and in players built with HEXROTA_DEV_TOOLS (the Development profile); release and playtest players never show the shortcut.</summary>
 #if UNITY_EDITOR || HEXROTA_DEV_TOOLS
@@ -18,6 +16,11 @@ namespace Hexrota.UnityClient.Presentation
 #else
         public static bool DevelopmentToolsEnabled => false;
 #endif
+
+#if UNITY_EDITOR || HEXROTA_DEV_TOOLS
+        // Compiled only with the development tools: release and playtest players have no "TEST: KAZAN".
+        private const string DevelopmentWinLabel = "TEST: KAZAN";
+        private Button developmentWin;
 
         private void CreateDevelopmentWinButton()
         {
@@ -69,5 +72,9 @@ namespace Hexrota.UnityClient.Presentation
             }
             RequestSwap(last[0], last[1]);
         }
+#else
+        private void CreateDevelopmentWinButton() { }
+        private void PlaceDevelopmentWinButton(float hudBottom) { }
+#endif
     }
 }

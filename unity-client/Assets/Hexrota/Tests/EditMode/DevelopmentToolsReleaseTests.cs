@@ -18,8 +18,8 @@ namespace Hexrota.UnityClientTests
 
         // Member names live in the metadata string heap (UTF-8); visible labels in the user-string heap (UTF-16).
         private static readonly string[] RuntimeMembers = { "SetLifeBypass", "SetLifeTestAds", "SetRescueTestAds", "ResetForDevelopmentTest", "get_LifeTestAds", "get_RescueTestAds" };
-        private static readonly string[] PresentationMembers = { "DrawDeveloperSettings", "ConfirmFullReset" };
-        private static readonly string[] PresentationLabels = { "Can sınırını kapat", "Test reklamı kullanılabilir", "300 Test Altını ekle", "Test için her şeyi sıfırla" };
+        private static readonly string[] PresentationMembers = { "DrawDeveloperSettings", "ConfirmFullReset", "DevelopmentCompleteStage" };
+        private static readonly string[] PresentationLabels = { "Can sınırını kapat", "Test reklamı kullanılabilir", "300 Test Altını ekle", "Test için her şeyi sıfırla", "TEST: KAZAN" };
 
         private sealed class Player
         {
@@ -72,7 +72,8 @@ namespace Hexrota.UnityClientTests
         public void TheDevelopmentProfileAddsTheFlagAndThePlaytestProfileDoesNot()
         {
             CollectionAssert.AreEqual(new[] { "HEXROTA_DEV_TOOLS" }, ClientBuild.Defines(ClientBuild.Profile.Development));
-            Assert.That(ClientBuild.Defines(ClientBuild.Profile.Playtest), Is.Empty);
+            CollectionAssert.AreEqual(new[] { "HEXROTA_PLAYTEST" }, ClientBuild.Defines(ClientBuild.Profile.Playtest));
+            Assert.That(ClientBuild.Options(ClientBuild.Profile.Playtest) & BuildOptions.Development, Is.EqualTo(BuildOptions.None));
             Assert.That(ClientBuild.Options(ClientBuild.Profile.Development) & BuildOptions.Development, Is.Not.EqualTo(BuildOptions.None));
         }
 
@@ -87,6 +88,17 @@ namespace Hexrota.UnityClientTests
         {
             AssertRuntime(playtest, false, "playtest");
             AssertPresentation(playtest, false, "playtest");
+        }
+
+        [Test]
+        public void OnlyThePlaytestPlayerRecordsTheLocalLogFromTheFirstLaunchAndEveryPlayerCanExportIt()
+        {
+            foreach (var (player, name) in new[] { (release, "release"), (playtest, "playtest"), (development, "development") })
+            {
+                Assert.That(Has(player.Runtime, "EnablePlaytestRecording", Encoding.UTF8), Is.EqualTo(player == playtest), name);
+                Assert.That(Has(player.Runtime, "SavePlaytestExport", Encoding.UTF8), Is.True, name + " keeps the local export.");
+                Assert.That(Has(player.Presentation, "Test sonucunu JSON olarak kaydet", Encoding.Unicode), Is.True, name + " Settings export button.");
+            }
         }
 
         [Test]

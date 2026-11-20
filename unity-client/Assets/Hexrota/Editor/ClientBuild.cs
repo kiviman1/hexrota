@@ -20,13 +20,16 @@ namespace Hexrota.UnityClient.Editor
         /// only when its build profile adds this define. Release and playtest players never do.
         /// </summary>
         public const string DevToolsDefine = "HEXROTA_DEV_TOOLS";
+        /// <summary>Playtest players record the local playtest log from the first launch (export stays in Settings).</summary>
+        public const string PlaytestDefine = "HEXROTA_PLAYTEST";
 
         /// <summary>The player build profiles and what each compiles.</summary>
         public enum Profile
         {
             /// <summary>Development player with the development tools: for the team.</summary>
             Development,
-            /// <summary>Player for human playtests: no development tools, no Development watermark.</summary>
+            /// <summary>Player for human playtests: no development tools or "TEST: KAZAN", no Development watermark;
+            /// the local event log is on and can be exported from Settings.</summary>
             Playtest
         }
 
@@ -34,7 +37,7 @@ namespace Hexrota.UnityClient.Editor
             profile == Profile.Development ? BuildOptions.Development | BuildOptions.StrictMode : BuildOptions.StrictMode;
 
         public static string[] Defines(Profile profile) =>
-            profile == Profile.Development ? new[] { DevToolsDefine } : new string[0];
+            profile == Profile.Development ? new[] { DevToolsDefine } : new[] { PlaytestDefine };
 
         [MenuItem("Hexrota/Build Android Development Player")]
         public static void BuildAndroid()
@@ -45,7 +48,11 @@ namespace Hexrota.UnityClient.Editor
         [MenuItem("Hexrota/Build Android Playtest Player")]
         public static void BuildAndroidPlaytest()
         {
-            BuildNative(BuildTarget.Android, NamedBuildTarget.Android, "Builds/Android/Hexrota-playtest.apk", Profile.Playtest);
+            // Batch builds may name the APK: -hexrotaApk Builds/Android/Hexrota-playtest-hafta3.apk
+            var args = Environment.GetCommandLineArgs();
+            int at = Array.IndexOf(args, "-hexrotaApk");
+            string output = at >= 0 && at + 1 < args.Length ? args[at + 1] : "Builds/Android/Hexrota-playtest.apk";
+            BuildNative(BuildTarget.Android, NamedBuildTarget.Android, output, Profile.Playtest);
         }
 
         [MenuItem("Hexrota/Export iOS Development Project")]
