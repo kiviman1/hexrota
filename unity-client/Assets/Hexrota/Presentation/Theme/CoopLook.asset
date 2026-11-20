@@ -24,8 +24,8 @@ MonoBehaviour:
     contactThickness: 2
     contactSoftness: 1
     contactOutset: 0.5
-    contactDepth: 1.88
-    contactWidth: 1.13
+    contactDepth: 1.495
+    contactWidth: 1.0
     mainColor: {r: 0.290196078, g: 0.149019608, b: 0.08627451, a: 0.5}
     mainScale: 1.1
     mainOffset: {x: 0.035, y: -0.08}
@@ -38,8 +38,8 @@ MonoBehaviour:
     contactThickness: 2.5
     contactSoftness: 1
     contactOutset: 0.5
-    contactDepth: 0.74
-    contactWidth: 0.93
+    contactDepth: 0.87
+    contactWidth: 1.005
     mainColor: {r: 0.290196078, g: 0.149019608, b: 0.08627451, a: 0.5}
     mainScale: 1.1
     mainOffset: {x: 0.035, y: -0.08}
@@ -52,8 +52,8 @@ MonoBehaviour:
     contactThickness: 3
     contactSoftness: 1
     contactOutset: 0.5
-    contactDepth: 0.9
-    contactWidth: 0.985
+    contactDepth: 0.91
+    contactWidth: 1.0
     mainColor: {r: 0.290196078, g: 0.149019608, b: 0.08627451, a: 0.5}
     mainScale: 1.1
     mainOffset: {x: 0.035, y: -0.08}
@@ -66,8 +66,8 @@ MonoBehaviour:
     contactThickness: 3.5
     contactSoftness: 1
     contactOutset: 0.5
-    contactDepth: 1.24
-    contactWidth: 1.07
+    contactDepth: 0.955
+    contactWidth: 1.0
     mainColor: {r: 0.290196078, g: 0.149019608, b: 0.08627451, a: 0.5}
     mainScale: 1.1
     mainOffset: {x: 0.035, y: -0.08}
@@ -80,8 +80,8 @@ MonoBehaviour:
     contactThickness: 4
     contactSoftness: 1
     contactOutset: 0.5
-    contactDepth: 0.79
-    contactWidth: 0.94
+    contactDepth: 0.92
+    contactWidth: 1.0
     mainColor: {r: 0.290196078, g: 0.149019608, b: 0.08627451, a: 0.5}
     mainScale: 1.1
     mainOffset: {x: 0.035, y: -0.08}

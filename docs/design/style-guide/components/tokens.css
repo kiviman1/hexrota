@@ -1,0 +1,57 @@
+/* tokens.json'dan üretildi */
+:root{
+--panel:#5b2c83;
+--panel-deep:#3a1a58;
+--panel-inset:#46206a;
+--cream:#fff6e5;
+--ink:#2a1440;
+--ink-muted:#6b5480;
+--on-panel:#ffffff;
+--on-panel-muted:#d9c6ec;
+--cta:#5cc531;
+--cta-deep:#2e7a12;
+--cta-light:#a6ef6a;
+--gold:#ffc531;
+--gold-deep:#a86a00;
+--gold-light:#ffe89a;
+--sky:#3ba9f5;
+--sky-deep:#165fa0;
+--heart:#f0414f;
+--heart-deep:#9e1426;
+--rarity-common:#9aa7b4;
+--rarity-rare:var(--sky);
+--rarity-epic:#b067f2;
+--rarity-legendary:var(--gold);
+--disabled:#b8aec4;
+--disabled-deep:#7d7189;
+--world-sky:#8fd3f4;
+--world-grass:#7cc242;
+--world-wood:#b9773d;
+--world-roof:#d9534a;
+--world-stone:#eadbc3;
+--space-1:4px;
+--space-2:8px;
+--space-3:12px;
+--space-4:16px;
+--space-6:24px;
+--space-8:32px;
+--radius-s:10px;
+--radius-m:16px;
+--radius-l:24px;
+--radius-pill:999px;
+--stroke-ui:4px;
+--stroke-ui-s:3px;
+--stroke-label:6px;
+--bevel:6px;
+--shadow-drop:0 6px 12px rgba(42, 20, 64, 0.35);
+--shadow-panel:0 10px 0 #3a1a58, 0 18px 28px rgba(0, 0, 0, 0.35);
+--font-display:"Lilita One", "Arial Rounded MT Bold", system-ui, sans-serif;
+--font-body:"Nunito", system-ui, sans-serif;
+}
+.display-xl{font-family:var(--font-display);font-size:48px;line-height:52px;font-weight:400;}
+.display-l{font-family:var(--font-display);font-size:32px;line-height:36px;font-weight:400;}
+.display-m{font-family:var(--font-display);font-size:24px;line-height:28px;font-weight:400;}
+.display-s{font-family:var(--font-display);font-size:20px;line-height:24px;font-weight:400;}
+.body-l{font-family:var(--font-body);font-size:17px;line-height:24px;font-weight:800;}
+.body{font-family:var(--font-body);font-size:15px;line-height:21px;font-weight:700;}
+.caption{font-family:var(--font-body);font-size:13px;line-height:17px;font-weight:800;}

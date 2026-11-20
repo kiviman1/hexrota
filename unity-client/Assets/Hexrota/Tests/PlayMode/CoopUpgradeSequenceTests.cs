@@ -66,6 +66,33 @@ namespace Hexrota.UnityClientTests
         }
 
         [UnityTest]
+        public IEnumerator DevelopmentShortcutPreviewsLevelsAndReplaysTheTransitionWithoutSaving()
+        {
+            yield return OpenReadyHome("full");
+            var shortcut = game.GetComponentInChildren<CoopDevelopmentShortcut>();
+            Assert.That(shortcut, Is.Not.Null, "The coop shortcut is on the home in the Editor.");
+            Assert.That(game.transform.GetComponentsInChildren<Button>(true).Count(b => b.name == CoopDevelopmentShortcut.LevelButtonName), Is.EqualTo(1));
+            var saved = game.Session.ReadCoop();
+            var view = Coop.Sprite;
+            for (int level = 0; level < view.LevelCount; level++)
+            {
+                shortcut.ShowLevel(level);
+                Assert.That(view.Level, Is.EqualTo(level), "Shows level " + level + " at once.");
+            }
+            shortcut.ShowLevel(3);
+            Assert.That(shortcut.Replay(), Is.True);
+            Assert.That(Sequence.IsPlaying, Is.True);
+            Assert.That(view.Level, Is.EqualTo(2), "The transition starts from the level below.");
+            float deadline = Time.unscaledTime + 8;
+            while (Sequence.IsPlaying && Time.unscaledTime < deadline) yield return null;
+            Assert.That(Sequence.IsPlaying, Is.False);
+            Assert.That(view.Level, Is.EqualTo(3), "It ends on the previewed level.");
+            var after = game.Session.ReadCoop();
+            Assert.That(after.Level, Is.EqualTo(saved.Level), "A preview never saves a level.");
+            Assert.That(after.Eggs, Is.EqualTo(saved.Eggs), "A preview never spends eggs.");
+        }
+
+        [UnityTest]
         public IEnumerator SequenceSpendsTheEggsBuildsTheLevelAndHoldsAllOtherAttention()
         {
             yield return OpenReadyHome("full");

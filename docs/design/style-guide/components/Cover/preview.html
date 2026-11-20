@@ -1,0 +1,77 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html lang="tr">
+<head><link rel="stylesheet" href="../tokens.css"><link rel="stylesheet" href="../bundle.css">
+<meta charset="utf-8">
+<title>Hexrota</title>
+<style>
+  html, body { margin:0; height:100%; }
+  body { background:var(--cream); color:var(--ink); font-family:var(--font-body); overflow:hidden; }
+  .cover { position:relative; height:288px; overflow:hidden; }
+  .art { position:absolute; top:0; left:480px; width:480px; height:288px; overflow:hidden; }
+  .art svg { display:block; width:480px; height:288px; }
+  .plum { fill:var(--panel); }
+  .green { fill:var(--cta); }
+  .gold { fill:var(--gold); }
+  .sky { fill:var(--world-sky); }
+  .red { fill:var(--heart); }
+  .blk { rx:var(--radius-l); }
+  .blk-m { rx:var(--radius-m); }
+  .pill { rx:var(--radius-s); }
+  .hex { fill:var(--gold); }
+  .hex.cut { fill:var(--gold-light); }
+  .words { position:absolute; left:var(--space-8); bottom:var(--space-8); max-width:440px; }
+  .name { margin:0; font-family:var(--font-display); font-weight:400; font-size:104px; line-height:.92; color:var(--ink); }
+  .tag { margin:var(--space-2) 0 0 4px; font-size:14px; line-height:20px; font-weight:800; color:var(--ink-muted); }
+</style>
+</head>
+<body>
+<div class="cover">
+<div class="art" aria-hidden="true">
+<svg viewBox="0 0 480 288" width="480" height="288">
+<!--
+  blocks      panel 192x264 bled off the top (the identity: purple UI layer, largest) · gold 112x192 bleeding off the right (value, eggs) · cta 144x112 (the one green action) · world-sky 144x64 (the world tint) · heart 48x16 once (only ever a warning) — about 30% of 960x288
+  arrangement one tall plum slab with satellites, bottoms on one line at y=240, space-4 gutters
+  pattern     hexagons, from "Altıgen imzadır": a honeycomb of gold hexes (20x22, pitch space-6 across, 18 down) thinning upward over the plum slab, three gold-light hexes cut into the gold block
+  scales      sides in space-4 multiples; gutters space-4; corners radius-l, sky radius-m, heart pill radius-s
+-->
+<rect class="plum blk" x="16" y="-24" width="192" height="264" rx="24"/>
+<rect class="sky blk-m" x="224" y="48" width="144" height="64" rx="16"/>
+<rect class="green blk" x="224" y="128" width="144" height="112" rx="24"/>
+<rect class="red pill" x="224" y="256" width="48" height="16" rx="8"/>
+<rect class="gold blk" x="384" y="48" width="112" height="192" rx="24"/>
+<polygon class="hex" points="40.0,205.0 50.0,210.5 50.0,221.5 40.0,227.0 30.0,221.5 30.0,210.5"/>
+<polygon class="hex" points="64.0,205.0 74.0,210.5 74.0,221.5 64.0,227.0 54.0,221.5 54.0,210.5"/>
+<polygon class="hex" points="88.0,205.0 98.0,210.5 98.0,221.5 88.0,227.0 78.0,221.5 78.0,210.5"/>
+<polygon class="hex" points="112.0,205.0 122.0,210.5 122.0,221.5 112.0,227.0 102.0,221.5 102.0,210.5"/>
+<polygon class="hex" points="136.0,205.0 146.0,210.5 146.0,221.5 136.0,227.0 126.0,221.5 126.0,210.5"/>
+<polygon class="hex" points="160.0,205.0 170.0,210.5 170.0,221.5 160.0,227.0 150.0,221.5 150.0,210.5"/>
+<polygon class="hex" points="184.0,205.0 194.0,210.5 194.0,221.5 184.0,227.0 174.0,221.5 174.0,210.5"/>
+<polygon class="hex" points="52.0,187.0 62.0,192.5 62.0,203.5 52.0,209.0 42.0,203.5 42.0,192.5"/>
+<polygon class="hex" points="76.0,187.0 86.0,192.5 86.0,203.5 76.0,209.0 66.0,203.5 66.0,192.5"/>
+<polygon class="hex" points="100.0,187.0 110.0,192.5 110.0,203.5 100.0,209.0 90.0,203.5 90.0,192.5"/>
+<polygon class="hex" points="124.0,187.0 134.0,192.5 134.0,203.5 124.0,209.0 114.0,203.5 114.0,192.5"/>
+<polygon class="hex" points="148.0,187.0 158.0,192.5 158.0,203.5 148.0,209.0 138.0,203.5 138.0,192.5"/>
+<polygon class="hex" points="172.0,187.0 182.0,192.5 182.0,203.5 172.0,209.0 162.0,203.5 162.0,192.5"/>
+<polygon class="hex" points="64.0,169.0 74.0,174.5 74.0,185.5 64.0,191.0 54.0,185.5 54.0,174.5"/>
+<polygon class="hex" points="88.0,169.0 98.0,174.5 98.0,185.5 88.0,191.0 78.0,185.5 78.0,174.5"/>
+<polygon class="hex" points="112.0,169.0 122.0,174.5 122.0,185.5 112.0,191.0 102.0,185.5 102.0,174.5"/>
+<polygon class="hex" points="136.0,169.0 146.0,174.5 146.0,185.5 136.0,191.0 126.0,185.5 126.0,174.5"/>
+<polygon class="hex" points="76.0,151.0 86.0,156.5 86.0,167.5 76.0,173.0 66.0,167.5 66.0,156.5"/>
+<polygon class="hex" points="100.0,151.0 110.0,156.5 110.0,167.5 100.0,173.0 90.0,167.5 90.0,156.5"/>
+<polygon class="hex" points="124.0,151.0 134.0,156.5 134.0,167.5 124.0,173.0 114.0,167.5 114.0,156.5"/>
+<polygon class="hex" points="88.0,133.0 98.0,138.5 98.0,149.5 88.0,155.0 78.0,149.5 78.0,138.5"/>
+<polygon class="hex" points="112.0,133.0 122.0,138.5 122.0,149.5 112.0,155.0 102.0,149.5 102.0,138.5"/>
+<polygon class="hex" points="100.0,115.0 110.0,120.5 110.0,131.5 100.0,137.0 90.0,131.5 90.0,120.5"/>
+<polygon class="hex cut" points="432.0,85.0 442.0,90.5 442.0,101.5 432.0,107.0 422.0,101.5 422.0,90.5"/>
+<polygon class="hex cut" points="456.0,103.0 466.0,108.5 466.0,119.5 456.0,125.0 446.0,119.5 446.0,108.5"/>
+<polygon class="hex cut" points="432.0,121.0 442.0,126.5 442.0,137.5 432.0,143.0 422.0,137.5 422.0,126.5"/>
+</svg>
+</div>
+<div class="words">
+<h1 class="name">Hexrota</h1>
+<p class="tag">Geçici ad. Sıcak, parlak, derli toplu.</p>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,84 @@
+@import url("https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@700;800;900&display=swap");
+
+body { margin: 0; font-family: var(--font-body); background: var(--world-sky); color: var(--ink); }
+.hx-stage { min-height: 100vh; box-sizing: border-box; display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: center; justify-content: center; padding: var(--space-6) var(--space-4); background: var(--world-grass); }
+.hx-stage.sky { background: var(--world-sky); }
+.hx-label { font-family: var(--font-display); color: #fff; -webkit-text-stroke: var(--stroke-label) var(--_deep, var(--panel-deep)); paint-order: stroke fill; letter-spacing: .5px; }
+
+/* --- Button kit --- */
+.hx-btn { --_fill: var(--cta); --_deep: var(--cta-deep); --_light: var(--cta-light);
+  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  min-width: 140px; height: 56px; padding: 0 var(--space-6); border: var(--stroke-ui) solid var(--_deep); border-radius: var(--radius-m);
+  background: var(--_fill); box-shadow: 0 var(--bevel) 0 var(--_deep), var(--shadow-drop);
+  font-family: var(--font-display); font-size: 24px; line-height: 1; color: #fff;
+  -webkit-text-stroke: 5px var(--_deep); paint-order: stroke fill; cursor: pointer; overflow: hidden;
+  transition: transform .08s ease-out, box-shadow .08s ease-out; }
+.hx-btn::before { content: ""; position: absolute; left: 8px; right: 8px; top: 5px; height: 38%; border-radius: 10px 10px 18px 18px; background: var(--_light); opacity: .55; pointer-events: none; }
+.hx-btn > span { position: relative; }
+.hx-btn:active, .hx-btn.is-pressed { transform: translateY(4px); box-shadow: 0 2px 0 var(--_deep), var(--shadow-drop); }
+.hx-btn.secondary { --_fill: var(--sky); --_deep: var(--sky-deep); --_light: #9ad6ff; }
+.hx-btn.buy { --_fill: var(--gold); --_deep: var(--gold-deep); --_light: var(--gold-light); }
+.hx-btn.danger { --_fill: var(--heart); --_deep: var(--heart-deep); --_light: #ff9aa2; }
+.hx-btn.disabled, .hx-btn:disabled { --_fill: var(--disabled); --_deep: var(--disabled-deep); --_light: #ddd6e5; cursor: default; }
+.hx-btn.small { min-width: 0; height: 40px; padding: 0 var(--space-4); font-size: 18px; border-width: var(--stroke-ui-s); -webkit-text-stroke-width: 4px; border-radius: var(--radius-s); box-shadow: 0 4px 0 var(--_deep); }
+
+/* --- Play button (the one hero CTA) --- */
+.hx-play { min-width: 240px; height: 84px; border-radius: var(--radius-l); font-size: 44px; -webkit-text-stroke-width: var(--stroke-label); box-shadow: 0 8px 0 var(--_deep), var(--shadow-drop); }
+.hx-play::after { content: ""; position: absolute; top: -20%; bottom: -20%; width: 34px; left: -60px; background: rgba(255, 255, 255, .55); transform: skewX(-20deg); animation: hx-shine 4s ease-in-out infinite; pointer-events: none; }
+.hx-play.hard { box-shadow: 0 0 0 4px var(--rarity-epic), 0 8px 0 4px var(--_deep), var(--shadow-drop); }
+.hx-breathe { animation: hx-breathe 2.4s ease-in-out infinite; }
+@keyframes hx-shine { 0%, 70% { left: -60px; } 100% { left: 110%; } }
+@keyframes hx-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+@media (prefers-reduced-motion: reduce) { .hx-play::after, .hx-breathe { animation: none; } }
+
+/* --- Currency pill (top bar) --- */
+.hx-pill { position: relative; display: inline-flex; align-items: center; height: 38px; min-width: 112px; padding: 0 44px 0 40px;
+  background: var(--panel-deep); border: var(--stroke-ui-s) solid #ffffff33; border-radius: var(--radius-pill); box-shadow: var(--shadow-drop);
+  font-family: var(--font-display); font-size: 20px; color: var(--on-panel); box-sizing: border-box; }
+.hx-pill .ico { position: absolute; left: -10px; top: 50%; width: 46px; height: 46px; transform: translateY(-50%); }
+.hx-pill .plus { position: absolute; right: 3px; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 9px;
+  background: var(--cta); border: 2px solid var(--cta-deep); box-shadow: 0 3px 0 var(--cta-deep); display: grid; place-items: center;
+  color: #fff; font-size: 22px; -webkit-text-stroke: 3px var(--cta-deep); paint-order: stroke fill; }
+.hx-pill .timer { position: absolute; left: 40px; bottom: -16px; font-family: var(--font-body); font-weight: 800; font-size: 12px; color: var(--ink); background: var(--cream); padding: 0 6px; border-radius: 6px; }
+
+/* --- Panel / dialog --- */
+.hx-panel { position: relative; width: 320px; padding: 52px var(--space-4) var(--space-4); background: var(--panel); border: var(--stroke-ui) solid var(--panel-deep);
+  border-radius: var(--radius-l); box-shadow: var(--shadow-panel); color: var(--on-panel); box-sizing: border-box; }
+.hx-ribbon { position: absolute; left: 50%; top: -22px; transform: translateX(-50%); padding: 8px 28px; background: var(--gold); border: var(--stroke-ui) solid var(--gold-deep);
+  border-radius: var(--radius-m); box-shadow: 0 5px 0 var(--gold-deep); font-family: var(--font-display); font-size: 26px; color: #fff;
+  -webkit-text-stroke: 5px var(--gold-deep); paint-order: stroke fill; white-space: nowrap; }
+.hx-close { position: absolute; right: -12px; top: -12px; width: 40px; height: 40px; border-radius: 50%; background: var(--heart); border: var(--stroke-ui-s) solid var(--heart-deep);
+  box-shadow: 0 4px 0 var(--heart-deep); color: #fff; font: 22px/34px var(--font-display); text-align: center; -webkit-text-stroke: 4px var(--heart-deep); paint-order: stroke fill; }
+.hx-card { background: var(--cream); color: var(--ink); border-radius: var(--radius-m); padding: var(--space-4); }
+.hx-well { background: var(--panel-inset); border-radius: var(--radius-m); padding: var(--space-3); }
+.hx-muted { color: var(--ink-muted); }
+
+/* --- Hex badge --- */
+.hx-hex { --_fill: var(--heart); --_deep: var(--heart-deep); position: relative; display: inline-grid; place-items: center; width: 34px; height: 38px;
+  font-family: var(--font-display); font-size: 18px; color: #fff; -webkit-text-stroke: 4px var(--_deep); paint-order: stroke fill; }
+.hx-hex::before, .hx-hex::after { content: ""; position: absolute; clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); }
+.hx-hex::before { inset: 0; background: var(--_deep); }
+.hx-hex::after { inset: 3px; background: var(--_fill); }
+.hx-hex > span { position: relative; z-index: 1; }
+.hx-hex.gold { --_fill: var(--gold); --_deep: var(--gold-deep); }
+.hx-hex.green { --_fill: var(--cta); --_deep: var(--cta-deep); }
+.hx-hex.big { width: 64px; height: 72px; font-size: 30px; }
+
+/* --- Progress bar --- */
+.hx-progress { position: relative; height: 26px; border-radius: var(--radius-pill); background: var(--panel-deep); border: var(--stroke-ui-s) solid var(--panel-deep); overflow: hidden; }
+.hx-progress > i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: var(--radius-pill); background: var(--cta); box-shadow: inset 0 -5px 0 var(--cta-deep), inset 0 4px 0 var(--cta-light); }
+.hx-progress > b { position: absolute; inset: 0; display: grid; place-items: center; font: 16px/1 var(--font-display); color: #fff; -webkit-text-stroke: 4px var(--panel-deep); paint-order: stroke fill; }
+
+/* --- Chicken card --- */
+.hx-chick { --_frame: var(--rarity-common); width: 132px; border-radius: var(--radius-m); background: var(--cream); border: var(--stroke-ui) solid var(--_frame); box-shadow: 0 6px 0 var(--panel-deep);
+  overflow: hidden; text-align: center; font-family: var(--font-body); }
+.hx-chick .art { height: 104px; display: grid; place-items: end center; background: var(--world-sky); }
+.hx-chick .name { font: 18px/22px var(--font-display); color: var(--ink); margin: var(--space-2) 0 0; }
+.hx-chick .perk { font-size: 12px; line-height: 16px; font-weight: 800; color: var(--ink-muted); padding: 2px var(--space-2) var(--space-2); }
+.hx-chick .tag { display: block; background: var(--_frame); color: #fff; font: 13px/22px var(--font-display); -webkit-text-stroke: 3px rgba(0,0,0,.35); paint-order: stroke fill; }
+.hx-chick.rare { --_frame: var(--rarity-rare); }
+.hx-chick.epic { --_frame: var(--rarity-epic); }
+.hx-chick.legendary { --_frame: var(--rarity-legendary); box-shadow: 0 6px 0 var(--panel-deep), 0 0 0 4px var(--gold-light), 0 0 22px var(--gold); }
+.hx-chick.locked .art svg path:nth-of-type(1), .hx-chick.locked .art svg path { fill: var(--panel-deep); stroke: var(--panel-deep); }
+.hx-chick.locked .art svg circle { fill: var(--panel-deep); }
+.hx-chick.locked .tag { background: var(--disabled); }

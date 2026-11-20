@@ -29,7 +29,7 @@ namespace Hexrota.UnityClient.Editor
             public Material Multiply;
         }
 
-        [Serializable] private sealed class Entry { public int level; public string file; public float[] pivot; public float diskWidth; public float diskHeight; }
+        [Serializable] private sealed class Entry { public int level; public string file; public float[] pivot; public float diskWidth; public float diskHeight; public float contactWidth; public float contactDepth; }
         [Serializable] private sealed class Manifest { public Entry[] levels; public string[] dust; public string shadow; public string longShadow; }
 
         [MenuItem("Hexrota/Home/Reimport Coop Sprites")]
@@ -56,9 +56,31 @@ namespace Hexrota.UnityClient.Editor
             set.Multiply = MultiplyMaterialAsset();
             set.Look = AssetDatabase.LoadAssetAtPath<Presentation.CoopLook>(LookPath);
             if (set.Look == null) throw new InvalidOperationException("Missing " + LookPath);
+            CopyContactFit(set.Look, manifest.levels);
             for (int i = 0; i < Levels; i++)
                 if (set.Levels[i] == null) throw new InvalidOperationException("Missing coop level sprite " + i);
             return set;
+        }
+
+        // The contact line's arc (width and depth of the rim's real lower outline) is fitted per sprite by
+        // cut_sprites.py; it is copied into CoopLook so the asset always matches the sprites.
+        private static void CopyContactFit(Presentation.CoopLook look, Entry[] entries)
+        {
+            bool changed = false;
+            foreach (var entry in entries)
+            {
+                if (entry.contactWidth <= 0 || entry.contactDepth <= 0)
+                    throw new InvalidOperationException("Run art/coop-2d/cut_sprites.py: Coop_L" + entry.level + " has no contact fit.");
+                if (look.shadows == null || entry.level >= look.shadows.Length) continue;
+                var shadow = look.shadows[entry.level];
+                if (Mathf.Approximately(shadow.contactWidth, entry.contactWidth) && Mathf.Approximately(shadow.contactDepth, entry.contactDepth)) continue;
+                shadow.contactWidth = entry.contactWidth;
+                shadow.contactDepth = entry.contactDepth;
+                changed = true;
+            }
+            if (!changed) return;
+            EditorUtility.SetDirty(look);
+            AssetDatabase.SaveAssetIfDirty(look);
         }
 
         // The material asset is made once from the shader and kept, so the prefab references a stable asset.

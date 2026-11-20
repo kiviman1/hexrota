@@ -4,7 +4,9 @@
 """Cut the coop level images out of their flat background for Unity.
 
 Run from the repository root (uv installs the two dependencies on first use):
-    uv run art/coop-2d/cut_sprites.py
+    uv run art/coop-2d/cut_sprites.py              every source/Coop_L<n>.png
+    uv run art/coop-2d/cut_sprites.py --only 3     one level (the others keep their manifest entry)
+    uv run art/coop-2d/test_cut_sprites.py         the edge-cleaning tests
 
 Input:  art/coop-2d/source/Coop_L0.png .. Coop_L4.png (L0 = foundation, L1..L4 = coop levels),
         each on a flat light background (light blue or magenta; read from the image border).
@@ -14,7 +16,11 @@ Output: unity-client/Assets/Hexrota/Art/Coop2D/
         Shadow.png         soft elliptical blob for the main shadow (and the hens' contact shadows)
         ShadowLong.png     long soft building shadow: opaque at its base (left), fading to its tip (right)
         coop_sprites.json  per level: size, pivot (centre of the base disk), disk diameter and height,
-                           read by the Unity builder so every disk lands on the plot centre.
+                           read by the Unity builder so every disk lands on the plot centre, and
+                           contactWidth / contactDepth: the rim's real lower outline fitted as an
+                           ellipse (Unity copies them into CoopLook for the contact line).
+Every cut is checked: clearly opaque, non-sky content of the source must stay opaque in the sprite.
+Only the anti-aliased outline may change; a cleared patch above MAX_LOST_CLUSTER pixels stops the run.
 The source folder stays out of git; this script is the record of how the sprites are made.
     uv run art/coop-2d/cut_sprites.py --shadows   rewrites only the two shadow textures.
 """
@@ -31,9 +37,13 @@ LEVELS = 5
 # Colour distance (0..255) from the background where alpha starts / reaches full opacity.
 KEY_LOW, KEY_HIGH = 22.0, 70.0
 RIM_BAND, RIM_KEY_HIGH = 6, 120.0  # edge band (px) and its wider key for the sky-coloured rim
-RIM_COLD_BAND, COLD_LOW, COLD_HIGH = 14, 2.0, 16.0
+# Cold sky bounce/glow: how far the key channel (blue for a sky key) leads the larger of the two other
+# channels. Sky bounce leads by 30-60; grey and lilac stone by -20..24, so it is never treated as sky.
+RIM_COLD_BAND, LEAD_LOW, LEAD_HIGH = 14, 20.0, 40.0
+MAX_LOST_CLUSTER = 60  # a cleaning pass may nick the outline, but never clear a patch of solid paint this big
+GLOW_ALPHA = 0.95      # above the disk line only semi-transparent cold pixels (glow) are faded, never solid paint
 RIM_ALPHA_LOW, RIM_ALPHA_HIGH = 0.35, 0.8  # rim band edge ramp (drops the faint sky glow)
-TEAL_START = 0.55      # key/green ratio where a rim pixel starts to count as sky glow (grass is ~0.3)  # cold sky bounce on the disk rim: band (px) and coldness ramp
+TEAL_START = 0.55      # key/green ratio where a rim pixel starts to count as sky glow (grass is ~0.3)
 PADDING = 4            # transparent pixels kept round the crop
 DISK_BAND = 0.18       # the base disk is looked for in the bottom 18 % of the subject
 EDGE = 10              # pixels near transparency that get spill suppression (also the sky bounce on the disk rim)
@@ -109,9 +119,21 @@ def dilate(mask, steps):
     return out
 
 
-def cut(level):
-    image = Image.open(SOURCE / ("Coop_L%d.png" % level)).convert("RGB")
-    rgb = np.asarray(image, dtype=np.float64)
+def lead(colour, key):
+    """How far the key channel leads the larger of the two other channels."""
+    others = [c for c in range(3) if c != key]
+    return colour[..., key] - colour[..., others].max(axis=-1)
+
+
+def teal_measure(colour, key, ref):
+    """Sky glow that decontaminates to teal: key channel close to the reference (green), red low."""
+    t = (colour[..., key] - TEAL_START * colour[..., ref]) / np.maximum((1 - TEAL_START) * colour[..., ref], 1)
+    return np.clip(t, 0, 1) * (colour[..., ref] > colour[..., 3 - key - ref] + 8)
+
+
+def cut_image(rgb):
+    """Cuts one coop image off its flat background. Returns (fg, alpha, info): the decontaminated
+    colour and the alpha at source size, and the key data used (for the content check)."""
     bg, bg_colour = background_model(rgb)
     distance = np.linalg.norm(rgb - bg, axis=2)
     alpha = np.clip((distance - KEY_LOW) / (KEY_HIGH - KEY_LOW), 0, 1)
@@ -133,17 +155,21 @@ def cut(level):
     # (blue/key channel well above the warm channels) are faded out; content higher up is untouched.
     solid0 = alpha > 0.5
     rows0 = np.nonzero(solid0.any(axis=1))[0]
-    disk_line = int(rows0.max() - (rows0.max() - rows0.min()) * DISK_BAND * 1.5)  # up past the disk centre line
+    disk_line = int(rows0.max() - (rows0.max() - rows0.min()) * DISK_BAND * 2.4)  # up to the top face of the disk
     key = int(np.argmax(rgb[:8, :8].reshape(-1, 3).mean(axis=0) - rgb[:8, :8].mean()))
     # Compare the key channel with green (or, for a green key, the stronger other channel): sky-blue and
     # lavender rim pixels both have more blue than green, the warm soil and grass never do.
     ref = 1 if key != 1 else (0 if rgb[..., 0].mean() > rgb[..., 2].mean() else 2)
-    cold = np.clip((rgb[..., key] - rgb[..., ref] - COLD_LOW) / (COLD_HIGH - COLD_LOW), 0, 1)
+    cold = np.clip((lead(rgb, key) - LEAD_LOW) / (LEAD_HIGH - LEAD_LOW), 0, 1)
     rim_rows = np.zeros_like(alpha, bool)
     rim_rows[disk_line:, :] = True
-    band = dilate(alpha < 0.98, RIM_COLD_BAND) & (alpha > 0) & rim_rows
+    edge_band = dilate(alpha < 0.98, RIM_COLD_BAND) & (alpha > 0)
+    band = edge_band & rim_rows
     alpha = np.where(band, alpha * (1 - cold), alpha)
     rim_band = band
+    # Higher up, the sky glow beside the disk is soft (semi-transparent); it is judged after
+    # decontamination below, so a warm edge blended with the sky is not mistaken for glow.
+    glow_band = edge_band & ~rim_rows & (alpha < GLOW_ALPHA)
 
     # Decontaminate: on semi-transparent edge pixels, take the background colour back out,
     # C = (C_observed - (1 - a) * C_background) / a, with the colour sampled from the corners.
@@ -151,6 +177,8 @@ def cut(level):
     a = alpha[..., None]
     fg = np.where(a > 0.02, (rgb - (1 - a) * corner) / np.maximum(a, 0.02), rgb)
     fg = np.clip(fg, 0, 255)
+    glow = np.maximum(np.clip((lead(fg, key) - LEAD_LOW) / (LEAD_HIGH - LEAD_LOW), 0, 1), teal_measure(fg, key, ref))
+    alpha = np.where(glow_band, alpha * (1 - glow), alpha)
     # Spill: near the edge, no pixel may lean further toward the key colour than its own warm channels.
     near_edge = dilate(alpha < 0.98, EDGE) & (alpha > 0)
     key_channel = int(np.argmax(bg_colour - bg_colour.mean()))  # blue for sky blue, R/B pair for magenta
@@ -162,15 +190,84 @@ def cut(level):
     fg[..., key] = np.where(rim_band, np.minimum(fg[..., key], fg[..., ref]), fg[..., key])
     # The sky glow round the rim decontaminates to a teal tint (key ~ green, red low). Soil and grass
     # never carry that much key channel relative to green, so on the rim band it is faded out too.
-    teal = (fg[..., key] - TEAL_START * fg[..., ref]) / np.maximum((1 - TEAL_START) * fg[..., ref], 1)
-    teal = np.clip(teal, 0, 1) * (fg[..., ref] > fg[..., 3 - key - ref] + 8)
-    alpha = np.where(rim_band, alpha * (1 - teal), alpha)
+    alpha = np.where(rim_band & (alpha < GLOW_ALPHA), alpha * (1 - teal_measure(fg, key, ref)), alpha)
     # What is left of the glow is a long, faint fade; on the rim band the edge is kept to its
     # anti-aliasing (low alpha dropped, the rest re-ramped), elsewhere the soft edge stays as painted.
     hard = np.clip((alpha - RIM_ALPHA_LOW) / (RIM_ALPHA_HIGH - RIM_ALPHA_LOW), 0, 1)
     alpha = np.where(rim_band, hard * hard * (3 - 2 * hard), alpha)
     # Pull the alpha edge in by one pixel, so the outermost (most contaminated) ring is dropped.
     alpha = erode(alpha, 1)
+    return fg, alpha, {"distance": distance, "key": key, "bg": bg_colour}
+
+
+def lost_content(rgb, alpha, info, ring=2):
+    """Pixels that are clearly opaque, non-sky paint in the source (well away from the background
+    colour, no cold lead) and lie more than `ring` pixels inside that paint, but are no longer opaque.
+    The cleaning passes may only change the sky bounce, the glow and the anti-aliased outline."""
+    content = (info["distance"] > KEY_HIGH) & (lead(rgb, info["key"]) < LEAD_LOW)
+    inside = erode(content.astype(np.float64), ring) > 0
+    return inside & (alpha < 0.9)
+
+
+def clusters(mask):
+    """Sizes of the 8-connected clusters of a boolean mask, largest first."""
+    h, w = mask.shape
+    seen = np.zeros_like(mask)
+    sizes = []
+    for y0, x0 in zip(*np.nonzero(mask)):
+        if seen[y0, x0]:
+            continue
+        stack, size = [(y0, x0)], 0
+        seen[y0, x0] = True
+        while stack:
+            y, x = stack.pop()
+            size += 1
+            for ny in (y - 1, y, y + 1):
+                for nx in (x - 1, x, x + 1):
+                    if 0 <= ny < h and 0 <= nx < w and mask[ny, nx] and not seen[ny, nx]:
+                        seen[ny, nx] = True
+                        stack.append((ny, nx))
+        sizes.append(size)
+    return sorted(sizes, reverse=True)
+
+
+def fit_rim(solid, pivot_x, centre_row, disk_width, disk_height):
+    """Fits the base disk's real lower outline with the arc CoopSpriteView draws: centred on the pivot,
+    its lowest point on the disk bottom (centre row + disk height / 2). Its half-width is the disk's
+    widest reach from the pivot below the centre row (so the arc ends where the rim does); its depth is
+    fitted to the lowest opaque pixel per column over the middle 90 % (median error, grid search).
+    Returns both as shares of the measured disk (CoopLook contactWidth / contactDepth)."""
+    lower = solid[centre_row:]
+    cols = np.nonzero(lower.any(axis=0))[0]
+    half = max(pivot_x - cols.min(), cols.max() - pivot_x)
+    xs, ys = [], []
+    for x in range(int(pivot_x - .9 * half), int(pivot_x + .9 * half) + 1, 2):
+        rows = np.nonzero(solid[:, x])[0] if 0 <= x < solid.shape[1] else []
+        if len(rows) and rows.max() > centre_row:
+            xs.append(x - pivot_x)
+            ys.append(rows.max() - centre_row)
+    x, y = np.asarray(xs, float), np.asarray(ys, float)
+    bottom = disk_height / 2
+    u = np.clip(x / half, -1, 1)
+    curve = np.sqrt(1 - u * u)
+
+    def error(d):
+        b = d * bottom
+        return np.median(np.abs(bottom - b + b * curve - y))
+
+    depth = min(np.arange(.3, 2.5, .005), key=error)
+    return round(float(2 * half / disk_width), 3), round(float(depth), 3)
+
+
+def cut(level):
+    image = Image.open(SOURCE / ("Coop_L%d.png" % level)).convert("RGB")
+    rgb = np.asarray(image, dtype=np.float64)
+    fg, alpha, info = cut_image(rgb)
+    lost = lost_content(rgb, alpha, info)
+    largest = clusters(lost)[:1] or [0]
+    if largest[0] > MAX_LOST_CLUSTER:
+        raise SystemExit("Coop_L%d: a patch of %d opaque content pixels was cleared (limit %d)" % (level, largest[0], MAX_LOST_CLUSTER))
+    bg_colour = info["bg"]
 
     ys, xs = np.nonzero(alpha > 0.01)
     y0, y1 = max(ys.min() - PADDING, 0), min(ys.max() + PADDING + 1, alpha.shape[0])
@@ -191,6 +288,9 @@ def cut(level):
     height, width = rgba.shape[:2]
     pivot = (centre / width, (height - 1 - best_row) / height)  # Unity sprite pivot: origin bottom-left
 
+    disk_height = int(2 * (bottom - best_row))
+    contact_width, contact_depth = fit_rim(solid, centre, best_row, best_span, disk_height)
+
     name = "Coop_L%d.png" % level
     Image.fromarray(np.round(rgba).astype(np.uint8), "RGBA").save(OUT / name, optimize=True)
     return {
@@ -198,7 +298,8 @@ def cut(level):
         "pivot": [round(float(pivot[0]), 4), round(float(pivot[1]), 4)],
         "diskWidth": int(best_span), "diskRow": int(best_row),
         # The disk reaches as far below its centre line as above it (top face + rim).
-        "diskHeight": int(2 * (bottom - best_row)),
+        "diskHeight": disk_height,
+        "contactWidth": contact_width, "contactDepth": contact_depth,
         "background": [int(round(c)) for c in bg_colour],
     }
 
@@ -263,13 +364,20 @@ def main():
         with open(OUT / "coop_sprites.json", "w", encoding="utf-8") as f:
             json.dump(manifest, f, indent=2)
         return
-    levels = [cut(level) for level in range(LEVELS)]
+    found = sorted(int(path.stem.split("_L")[1]) for path in SOURCE.glob("Coop_L*.png"))
+    only = int(sys.argv[sys.argv.index("--only") + 1]) if "--only" in sys.argv else None
+    previous = {}
+    if (OUT / "coop_sprites.json").exists():
+        with open(OUT / "coop_sprites.json", encoding="utf-8") as f:
+            previous = {entry["level"]: entry for entry in json.load(f)["levels"]}
+    levels = [cut(level) if only is None or level == only else previous[level] for level in found]
     puffs = [dust(i) for i in range(3)]
     blob, long_blob = shadow(), long_shadow()
     with open(OUT / "coop_sprites.json", "w", encoding="utf-8") as f:
         json.dump({"levels": levels, "dust": puffs, "shadow": blob, "longShadow": long_blob}, f, indent=2)
     for entry in levels:
-        print("Coop_L%(level)d: %(width)dx%(height)d pivot %(pivot)s disk %(diskWidth)dx%(diskHeight)dpx bg %(background)s" % entry)
+        print("Coop_L%(level)d: %(width)dx%(height)d pivot %(pivot)s disk %(diskWidth)dx%(diskHeight)dpx "
+              "contact %(contactWidth)s x %(contactDepth)s bg %(background)s" % entry)
 
 
 if __name__ == "__main__":

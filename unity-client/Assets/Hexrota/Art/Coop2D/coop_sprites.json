@@ -3,15 +3,17 @@
     {
       "level": 0,
       "file": "Coop_L0.png",
-      "width": 1200,
-      "height": 941,
+      "width": 1171,
+      "height": 943,
       "pivot": [
-        0.4817,
-        0.1828
+        0.4923,
+        0.1835
       ],
-      "diskWidth": 1072,
-      "diskRow": 768,
-      "diskHeight": 336,
+      "diskWidth": 1071,
+      "diskRow": 769,
+      "diskHeight": 338,
+      "contactWidth": 1.0,
+      "contactDepth": 1.495,
       "background": [
         166,
         219,
@@ -22,14 +24,16 @@
       "level": 1,
       "file": "Coop_L1.png",
       "width": 1139,
-      "height": 1220,
+      "height": 1219,
       "pivot": [
         0.4987,
-        0.1574
+        0.16
       ],
       "diskWidth": 1126,
-      "diskRow": 1027,
-      "diskHeight": 376,
+      "diskRow": 1023,
+      "diskHeight": 382,
+      "contactWidth": 1.005,
+      "contactDepth": 0.87,
       "background": [
         134,
         209,
@@ -40,14 +44,16 @@
       "level": 2,
       "file": "Coop_L2.png",
       "width": 1024,
-      "height": 1143,
+      "height": 1146,
       "pivot": [
         0.4995,
-        0.175
+        0.1789
       ],
       "diskWidth": 1015,
-      "diskRow": 942,
-      "diskHeight": 392,
+      "diskRow": 940,
+      "diskHeight": 400,
+      "contactWidth": 1.0,
+      "contactDepth": 0.91,
       "background": [
         164,
         220,
@@ -57,15 +63,17 @@
     {
       "level": 3,
       "file": "Coop_L3.png",
-      "width": 1149,
+      "width": 1150,
       "height": 1166,
       "pivot": [
-        0.4987,
+        0.4983,
         0.1827
       ],
       "diskWidth": 1138,
       "diskRow": 952,
       "diskHeight": 418,
+      "contactWidth": 1.0,
+      "contactDepth": 0.955,
       "background": [
         165,
         221,
@@ -76,14 +84,16 @@
       "level": 4,
       "file": "Coop_L4.png",
       "width": 1219,
-      "height": 1160,
+      "height": 1161,
       "pivot": [
         0.5,
-        0.1698
+        0.1766
       ],
       "diskWidth": 1209,
-      "diskRow": 962,
-      "diskHeight": 386,
+      "diskRow": 955,
+      "diskHeight": 402,
+      "contactWidth": 1.0,
+      "contactDepth": 0.92,
       "background": [
         164,
         219,
