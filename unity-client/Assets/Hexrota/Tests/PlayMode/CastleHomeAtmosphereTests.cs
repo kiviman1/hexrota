@@ -12,7 +12,7 @@ using UnityEngine.UI;
 namespace Hexrota.UnityClientTests
 {
     // Home background from the painted layers in art/HomeBackground (sky → clouds → ground → coop slot → UI).
-    public sealed class CastleHomeAtmosphereTests
+    public sealed class CastleHomeAtmosphereTests : PlayModeTest
     {
         // Points in the 1170 x 2532 painting (top-left origin) that must stay on screen.
         private static readonly (string name, Vector2 point)[] Landmarks =

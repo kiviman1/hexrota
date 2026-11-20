@@ -14,7 +14,7 @@ using UnityEngine.TestTools;
 
 namespace Hexrota.UnityClientTests
 {
-    public sealed class BoardMotionTests
+    public sealed class BoardMotionTests : PlayModeTest
     {
         private Func<UnityGameSession> original;
         private FirstPlayableController game;

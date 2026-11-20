@@ -14,7 +14,7 @@ using UnityEngine.UI;
 
 namespace Hexrota.UnityClientTests
 {
-    public sealed class MatchScoreFlightTests
+    public sealed class MatchScoreFlightTests : PlayModeTest
     {
         private Func<UnityGameSession> original;
         private FirstPlayableController game;

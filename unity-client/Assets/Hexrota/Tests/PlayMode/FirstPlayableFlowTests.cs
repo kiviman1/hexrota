@@ -14,7 +14,7 @@ using UnityEngine.TestTools;
 
 namespace Hexrota.UnityClientTests
 {
-    public sealed class FirstPlayableFlowTests
+    public sealed class FirstPlayableFlowTests : PlayModeTest
     {
         private sealed class Clock : IUtcClock
         {

@@ -14,7 +14,7 @@ using W = Hexrota.Contracts.Wire;
 
 namespace Hexrota.UnityClientTests
 {
-    public sealed class OpeningLessonFeedbackTests
+    public sealed class OpeningLessonFeedbackTests : PlayModeTest
     {
         private Func<UnityGameSession> factory;
         private FirstPlayableController game;

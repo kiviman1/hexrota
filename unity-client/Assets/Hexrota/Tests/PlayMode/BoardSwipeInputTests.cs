@@ -13,7 +13,7 @@ using UnityEngine.TestTools;
 
 namespace Hexrota.UnityClientTests
 {
-    public sealed class BoardSwipeInputTests
+    public sealed class BoardSwipeInputTests : PlayModeTest
     {
         private Func<UnityGameSession> originalFactory;
         private FirstPlayableController game;

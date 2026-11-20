@@ -11,7 +11,7 @@ using UnityEngine.TestTools;
 
 namespace Hexrota.UnityClientTests
 {
-    public sealed class ChapterEntranceFlowTests
+    public sealed class ChapterEntranceFlowTests : PlayModeTest
     {
         private Func<UnityGameSession> factory;
         private FirstPlayableController game;

@@ -15,7 +15,7 @@ using W = Hexrota.Contracts.Wire;
 
 namespace Hexrota.UnityClientTests
 {
-    public sealed class InventoryFlowTests
+    public sealed class InventoryFlowTests : PlayModeTest
     {
         private Func<UnityGameSession> originalFactory;
         private FirstPlayableController view;

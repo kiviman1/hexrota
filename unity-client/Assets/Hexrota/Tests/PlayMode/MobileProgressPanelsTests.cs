@@ -14,7 +14,7 @@ using UnityEngine.UI;
 
 namespace Hexrota.UnityClientTests
 {
-    public sealed class MobileProgressPanelsTests
+    public sealed class MobileProgressPanelsTests : PlayModeTest
     {
         private Func<UnityGameSession> original;
         private FirstPlayableController scene;

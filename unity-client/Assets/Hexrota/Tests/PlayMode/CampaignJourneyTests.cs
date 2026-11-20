@@ -13,7 +13,7 @@ using W = Hexrota.Contracts.Wire;
 
 namespace Hexrota.UnityClientTests
 {
-    public sealed class CampaignJourneyTests
+    public sealed class CampaignJourneyTests : PlayModeTest
     {
         private Func<UnityGameSession> original;
         private FirstPlayableController controller;

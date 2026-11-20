@@ -12,7 +12,7 @@ using UnityEngine.UI;
 
 namespace Hexrota.UnityClientTests
 {
-    public sealed class CastleGameplayFlowTests
+    public sealed class CastleGameplayFlowTests : PlayModeTest
     {
         private Func<UnityGameSession> originalFactory;
         private FirstPlayableController game;

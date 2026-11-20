@@ -11,7 +11,7 @@ using UnityEngine.UI;
 
 namespace Hexrota.UnityClientTests
 {
-    public sealed class PhoneOptionsTests
+    public sealed class PhoneOptionsTests : PlayModeTest
     {
         [UnityTest]
         public IEnumerator BoardSettingsPersistAndTestCreditRequiresConfirmation()

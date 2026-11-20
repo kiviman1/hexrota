@@ -14,7 +14,7 @@ using UnityEngine.UI;
 
 namespace Hexrota.UnityClientTests
 {
-    public sealed class SwapDirectionHintTests
+    public sealed class SwapDirectionHintTests : PlayModeTest
     {
         // Exercise the actual rendered triangle, including all reverse directions.
         // Only the arrowhead ends in a point. A symmetric connector cannot pass.

@@ -15,7 +15,7 @@ using W = Hexrota.Contracts.Wire;
 
 namespace Hexrota.UnityClientTests
 {
-    public sealed class BoardCapacityTests
+    public sealed class BoardCapacityTests : PlayModeTest
     {
         private Func<UnityGameSession> previous;
         private ClientGameData data;
