@@ -49,23 +49,78 @@ jobs:
             reports/unity-9-11/runtime-host.log
           if-no-files-found: warn
   editor-tests:
-    # Never executes untrusted PR code on a licensed self-hosted machine.
+    name: editor-tests
+    # PRs run in an ephemeral GitHub-hosted runner, never on the licensed self-hosted host.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check generated Unity files before launching the editor
+        run: |
+          node scripts/sync-unity-client.cjs --check
+          node scripts/check-unity-client.cjs
+      - name: Require a CI Unity license
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        shell: bash
+        run: |
+          if [[ -z "$UNITY_EMAIL" || -z "$UNITY_PASSWORD" || ( -z "$UNITY_LICENSE" && -z "$UNITY_SERIAL" ) ]]; then
+            echo 'Unity CI activation is not configured. Set UNITY_EMAIL, UNITY_PASSWORD, and UNITY_LICENSE (Personal) or UNITY_SERIAL (Pro) in repository Actions secrets.' >&2
+            echo 'Fork PRs do not receive secrets: review and run them in a trusted branch if editor tests are required.' >&2
+            exit 1
+          fi
+      - name: Run Unity EditMode and PlayMode tests
+        uses: game-ci/unity-test-runner@v4.4.0
+        id: unity-tests
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: unity-client
+          unityVersion: 6000.6.9f1
+          testMode: All
+          coverageEnabled: false
+          artifactsPath: test-results/unity-client
+      - name: Preserve actual Unity test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: unity-editor-pr-test-results
+          path: test-results/unity-client/
+          if-no-files-found: warn
+          retention-days: 7
+
+  editor-tests-manual:
+    name: editor-tests-manual
+    # Manual fallback only. Never execute untrusted PR code on a self-hosted runner.
     if: github.event_name == 'workflow_dispatch' && inputs.run_editor
     runs-on: [self-hosted, linux, x64, unity-6000.6.9f1]
     timeout-minutes: 45
     env:
       UNITY_EDITOR_PATH: ${{ vars.UNITY_EDITOR_PATH || '/opt/unity/Editor/Unity' }}
     steps:
-      - uses: actions/checkout@v4 # v4
-      - uses: actions/setup-node@v4 # v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - name: Run real EditMode and PlayMode tests
+      - name: Run real EditMode and PlayMode tests on the pre-activated host
         run: scripts/run-unity-client.sh tests
-      - name: Preserve actual test XML and logs
+      - name: Preserve manual test XML and logs
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: unity-editor-test-results
+          name: unity-editor-manual-test-results
           path: test-results/unity-client/
           if-no-files-found: warn
