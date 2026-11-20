@@ -30,3 +30,6 @@ art/HomeBackground/
 
 # Source images for the 2D coop sprites (cut by art/coop-2d/cut_sprites.py)
 art/coop-2d/source/
+
+# Tripo source models for the archived 3D coop (feature/coop-3d; processed by art/coop-3d/process_tripo.py)
+art/coop-3d/source/
