@@ -91,6 +91,8 @@ jobs:
           projectPath: unity-client
           unityVersion: 6000.6.9f1
           testMode: All
+          # GitHub Actions already publishes the editor-tests check; do not create a second Check Run.
+          githubToken: ''
           artifactsPath: test-results/unity-client
       - name: Preserve actual Unity test results
         if: always()
