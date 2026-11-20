@@ -1,5 +1,7 @@
 # Hexrota — stil kılavuzu
 
+> Ürün kararları ve kapsam için tek kaynak: [../PRODUCT.md](../PRODUCT.md). Bu kılavuz yalnız görsel kuralları tutar.
+>
 > **Taslak v0.1.** Oyunun adı, logosu ve bütün görseller geçicidir. Bu kılavuz isimden bağımsız kuralları sabitler: renk, ışık, kontur, yazı tipi, düğme ve panel kiti. İsim değişince yalnız logo ve kapak güncellenir.
 
 Hexrota, altıgen tahtada oynanan bir eşleştirme oyunu. Ana ekranın kalbi büyüyen bir **kümes** ve içinde yaşayan **tavuklar**. Ton sıcak, parlak ve oyuncak gibi; ama ekran her zaman derli toplu. Kıyas noktası Royal Match sadeliği ile Playrix'in karakter sıcaklığıdır.
@@ -15,11 +17,11 @@ Hexrota, altıgen tahtada oynanan bir eşleştirme oyunu. Ana ekranın kalbi bü
 
 | | Dünya (sahne) | Arayüz (UI) |
 |---|---|---|
-| Teknik | Orta plan gerçek zamanlı 3D (kümes, tavuklar, Tavik), arka plan 2D boyalı katmanlar | 2D sprite (9-slice) |
+| Teknik | El boyaması 2D: kümes, tavuklar ve Tavik sprite, arka plan boyalı katmanlar | 2D sprite (9-slice) |
 | Palet | `world-*` tokenları: gök, çimen, tahta, kiremit, taş | `panel`, `cta`, `gold`, `sky`, `heart` |
 | Doygunluk | Orta-yüksek | En yüksek: düğme her zaman sahneden daha parlak |
 | Kontur | Yok, en fazla çok ince ve koyu ton | Kalın: `stroke-ui` (4px), rengin kendi koyu tonu |
-| Gölge | Toon: 2–3 kademeli yumuşak gölge, mor tonlu | Sert bevel (`bevel`) + `shadow-drop` |
+| Gölge | Boyalı: 2–3 kademeli yumuşak gölge, mor tonlu | Sert bevel (`bevel`) + `shadow-drop` |
 
 Mor panel (`panel`) bilinçli bir seçim: yeşil-sarı dünyanın tamamlayıcısıdır. Paneller sahnenin üstünde hep "ayrı bir katman" gibi okunur. Royal Match'teki mavi-altın ikilisinin bizdeki karşılığı **mor-altın**dır.
 
@@ -76,7 +78,7 @@ Altın Yumurta, eski "yıldız"ın yerini alır ve parayla satılmaz. Böylece k
 3. **Yan raylar:** her yanda en fazla 3 ikon, fazlası "+" grubuna katlanır. İlk oturumda hiç yok.
 4. **Kümes düğmesi + ilerleme** (sol alt): `ProgressBar` ile "sonraki yükseltmeye 4 yumurta".
 5. **Oyna** (alt orta): `PlayButton`, "Bölüm 12".
-6. **Alt navigasyon:** Mağaza · Alanlar · **Ana** · Takım · Etkinlik. Kilitli sekmeler gri ve kilitli görünür.
+6. **Alt navigasyon:** Mağaza · Alanlar · **Ana** · Etkinlik. Takım sekmesi yok. Kilitli sekmeler gri ve kilitli görünür.
 
 ## Hareket bütçesi (özet)
 
@@ -92,11 +94,11 @@ Ayrıntılar, süreler ve sekanslar: **Hareket şartnamesi** bölümü. Temel ku
 
 **Kapsam kuralı: rakipler kadar sade.** Tek ilerleme döngüsü var: bölüm oyna → Altın Yumurta → kümesi büyüt. Tavuk satın alma, yumurta satışı ve kalıcı malzeme envanteri çıkışta yok; ileride canlı içerik olarak eklenebilir.
 
-- **Alan:** Her kümes bir alandır (~5 yükseltme, ~40–60 bölüm). Alan bitince Tavik oyuncuyu yeni bir yere taşır: değirmen, sahil, dağ çiftliği, kale avlusu… Çıkışta 3–4 alan; gerisi güncellemelerle.
+- **Alan:** Her kümes bir alandır: 4 yükseltme, maliyet 1/2/3/4 Altın Yumurta (toplam 10). Alan bitince Tavik oyuncuyu yeni bir yere taşır: değirmen, sahil, dağ çiftliği, kale avlusu… Soft launch'ta 2–3 alan; gerisi güncellemelerle.
 - Kümes seviyeleri görsel olarak **büyür**; her yükseltme uzaktan fark edilir bir siluet değişimidir.
 - **Tavuklar satın alınmaz, kümesle gelir.** Bazı yükseltmeler yeni bir sakin getirir; bazıları mevcut sakini büyütür (civciv → piliç → tavuk). Bir alanda en fazla 6–8 sakin; ana ekran yalnız şu anki alanı gösterir.
 - Her alanın kendine has 2–3 tavuk cinsi vardır. Eski alanlar ve sakinleri alt menüdeki **Alanlar** sekmesinden ziyaret edilir.
-- Her tavuk aynı 3D iskelet üzerine kurulur (renk, tüy, aksesuar değişir). Ayrıntılar: **3D sanat şartnamesi** bölümü.
+- Tavuklar el boyaması 2D sprite'tır; cinsler aynı çizim kalıbında renk, tüy ve aksesuarla ayrılır.
 
 ## Yapma
 

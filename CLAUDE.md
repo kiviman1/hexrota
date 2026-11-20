@@ -4,7 +4,8 @@
 - Hafta bitince plandaki 12 haftalık tabloya Durum sütununu ekle/güncelle ve hafta raporunu docs/plan/reports/hafta-N.md olarak kaydet.
 
 ## Tasarım
-- Görsel yön, ana ekran ve hareket kuralları: docs/design/HANDOFF.md ve docs/design/style-guide/
+- Ürün ve kapsam için tek kaynak: docs/design/PRODUCT.md. Görsel ve hareket kuralları: docs/design/style-guide/. docs/design/archive/ geçersizdir.
+- Sanat el boyaması 2D; 3D yok.
 - Kapsam sade: tek döngü (bölüm → Altın Yumurta → kümes). Tavuk satışı, sepet, malzeme envanteri çıkışta yok.
 - Süre ve renkler kodda sabit yazılmaz: UiTheme / MotionTheme.
 - Aynı anda tek dikkat animasyonu (AttentionDirector).
