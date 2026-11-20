@@ -42,7 +42,7 @@ namespace Hexrota.UnityClientTests
                 Assert.That(preparer.TrySwap(step[0], step[1]).Ok, Is.True, preparer.LastError);
                 preparer.CompletePresentation();
             }
-            preparer.ReturnToMenu();
+            preparer.Suspend(); // saved as the app leaves it
             return route.Last();
         }
 

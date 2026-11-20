@@ -43,6 +43,16 @@ Asıl tasarım sorusu: oyuncu yüksek puan ile kalan toprağa erişim arasında 
 | **Altın** | Bölüm ilk kazanımı, günlük ödül ve etkinlikler, satın alma | Takviyeler ve +5 hamle |
 | **Altın Yumurta** | **Yalnız** bir bölümün ilk kazanımı (1 yumurta) | **Yalnız** kümes yükseltmesi |
 
+### Can kuralı
+
+Karar: 20 Kasım 2026.
+
+- Ana bölüm başlarken **bir can ayrılır** (can sayacı hemen düşer, yenilenme sayacı başlar).
+- **Kazanınca ayrılan can geri verilir**; can doluysa sayaç durur. +5 hamleyle kurtarılıp kazanılan bölüm de canı geri verir.
+- **Kaybedince, bir hamleden sonra bölümden çıkınca ya da uygulama bölüm ortasında kapanınca** ayrılan can harcanmış olur; o deneme biter, bölüme yeniden girilince yeni tahta açılır. Çıkış bir onayla sorulur.
+- Hiç hamle yapmadan çıkılırsa can geri verilir ve aynı tahta korunur; geri dönünce can yeniden ayrılır.
+- Öğretici bölümler can harcamaz.
+
 - Altın Yumurta parayla satılmaz; günlük ödül ve etkinlikler yumurta değil Altın ya da takviye verir. Böylece kümes ilerlemesi hep oynamaya bağlı kalır.
 - Eski "yıldız" kaldırıldı; yerini Altın Yumurta aldı.
 - Tahtadaki malzemeler (Tahta, Çivi… 9.14) yalnız bölüm içi hedeftir, envantere girmez.

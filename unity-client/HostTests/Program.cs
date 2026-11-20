@@ -99,9 +99,14 @@ internal static class Program
         Same(LevelCatalog.SnapshotWire(clone.Snapshot()), LevelCatalog.SnapshotWire(move.After), "Presentation differs from authoritative core");
         revision = session.Revision; Need(!session.TrySwap(pair[0], pair[1]).Ok, "Animation lock failed"); Need(session.Revision == revision, "Animation lock mutated save");
         string after = Snap(session); session.CancelPresentation(); Need(!session.IsPresenting && Snap(session) == after, "Cancellation changed committed board");
-        var identity = Metadata(storage); session.Suspend(); session.ReturnToMenu();
-        Need(!session.HasAttempt, "Menu left input enabled");
+        var identity = Metadata(storage); session.Suspend();
         var restored = New(storage); Need(restored.EnterLevelOne() && Snap(restored) == after, "Resume changed snapshot/RNG/history"); Same(identity, Metadata(storage), "Resume selected a different attempt");
+        // Leaving an open chapter after a move ends the attempt; the life reserved at its start stays spent.
+        int lives = restored.ReadPhoneWallet().Lives; Need(lives == 4 && restored.LeavingSpendsLife, "Starting a chapter did not reserve a life");
+        restored.ReturnToMenu(); Need(!restored.HasAttempt, "Menu left input enabled");
+        Need(restored.ReadPhoneWallet().Lives == lives, "Leaving refunded or charged the reserved life again");
+        Need(restored.EnterLevelOne() && restored.Snapshot.turn == 0 && !W.Equal(identity["attemptId"], Metadata(storage)["attemptId"]), "Leaving kept the abandoned attempt");
+        Need(restored.ReadPhoneWallet().Lives == lives - 1, "The new attempt did not reserve a life"); identity = Metadata(storage);
         Need(restored.Restart(), "Restart failed"); Need(restored.Snapshot.turn == 0 && !restored.IsPresenting, "Restart left presentation state");
         Need(!W.Equal(identity["attemptId"], Metadata(storage)["attemptId"]), "Restart reused attempt identity");
     }

@@ -120,7 +120,7 @@ namespace Hexrota.UnityClientTests
         }
 
         [UnityTest]
-        public IEnumerator TopSettingsKeepsOneHudAndTheCommittedMoveOnReturnToTheLevel()
+        public IEnumerator TopSettingsKeepsOneHudAndLeavingAfterAMoveStartsANewBoard()
         {
             Click("PlayButton");
             yield return ChapterEntryWait.Ready(game);
@@ -137,6 +137,8 @@ namespace Hexrota.UnityClientTests
             CheckHudAndBoard();
             Click("Ayarlar");
             Click("Bölümden çık");
+            Assert.That(game.CurrentScreen, Is.Not.EqualTo("menu"), "Leaving after a move spends a life and is confirmed.");
+            Click("Çık, can harcansın");
             Assert.That(game.CurrentScreen, Is.EqualTo("menu"));
             Assert.That(game.GetComponentInChildren<CastleHudView>(), Is.Null);
             Assert.That(game.GetComponentInChildren<CoopSceneArt>().GetComponentsInChildren<Transform>()
@@ -144,7 +146,7 @@ namespace Hexrota.UnityClientTests
             Click("PlayButton");
             yield return ChapterEntryWait.Ready(game);
             Assert.That(game.CurrentScreen, Is.EqualTo("playing"));
-            Assert.That(game.Session.Snapshot.turn, Is.EqualTo(1));
+            Assert.That(game.Session.Snapshot.turn, Is.EqualTo(0), "The left attempt is over; a new board opens.");
             Assert.That(game.GetComponentsInChildren<CastleHudView>(true), Has.Length.EqualTo(1));
             CheckHudAndBoard();
         }

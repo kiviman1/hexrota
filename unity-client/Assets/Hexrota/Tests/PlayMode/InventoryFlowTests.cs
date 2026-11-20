@@ -90,7 +90,7 @@ namespace Hexrota.UnityClientTests
             Assert.That(session.TrySwap(opening[0], opening[1]).Ok, Is.True);
             session.CompletePresentation();
             string attemptId = session.AttemptId;
-            session.ReturnToMenu();
+            session.Suspend(); // saved mid-chapter; leaving through the menu would end the attempt
             data = ClientGameData.FromResources();
             session = new UnityGameSession(data, storage, new SystemUtcClock());
             view.ConfigureSession(session);
@@ -133,7 +133,7 @@ namespace Hexrota.UnityClientTests
             Assert.That(session.Snapshot.movesLeft, Is.EqualTo(moves));
 
             var expected = session.Snapshot;
-            view.ReturnToMenu();
+            session.Suspend(); // the save keeps the boosted board; leaving through the menu would end the attempt
             var restored = new UnityGameSession(data, storage, new SystemUtcClock());
             Assert.That(restored.EnterStage(seventh), Is.True, restored.LastError);
             CollectionAssert.AreEqual(expected.values, restored.Snapshot.values);

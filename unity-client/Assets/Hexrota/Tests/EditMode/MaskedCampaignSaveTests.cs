@@ -63,7 +63,7 @@ namespace Hexrota.UnityClientTests
             }
             var snapshot = session.Snapshot;
             string attemptId = session.AttemptId;
-            session.ReturnToMenu();
+            session.Suspend(); // a saved attempt in progress (leaving through the menu would end it)
             var current = ClientGameData.FromResources();
             session = new UnityGameSession(current, profile, clock);
             Assert.That(session.GetChapterPreview(sixth).Cells, Is.EqualTo(snapshot.values.Length));
@@ -80,7 +80,7 @@ namespace Hexrota.UnityClientTests
             session.CompletePresentation();
             var expected = LevelCatalog.SnapshotWire(session.Snapshot);
             attemptId = session.AttemptId;
-            session.ReturnToMenu();
+            session.Suspend();
             session = new UnityGameSession(current, profile, clock);
             Assert.That(session.GetChapterPreview(sixth).Cells, Is.EqualTo(43));
             Assert.That(session.EnterStage(sixth), Is.True, session.LastError);

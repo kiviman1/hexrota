@@ -415,14 +415,15 @@ namespace Hexrota.UnityClientTests
             Assert.That(session.Status, Is.EqualTo("lost"));
             Assert.That(session.Snapshot.movesLeft, Is.Zero);
             var afterLoss = storage.Read(ProfileRepository.ProfileKey);
-            Assert.That(W.Integer(W.Get(W.Get(W.Get(afterLoss, "energy"), "life"), "lives")), Is.EqualTo(initialLives - 1));
+            // The life was reserved when the chapter started; the loss keeps it spent and charges nothing more.
+            Assert.That(W.Integer(W.Get(W.Get(W.Get(afterLoss, "energy"), "life"), "lives")), Is.EqualTo(initialLives));
             session.Suspend();
             Assert.That(session.Retry(), Is.True, session.LastError);
             Assert.That(session.Status, Is.EqualTo("playing"));
             Assert.That(session.Snapshot.turn, Is.Zero);
             var afterRetry = storage.Read(ProfileRepository.ProfileKey);
             Assert.That(W.Integer(W.Get(W.Get(W.Get(afterRetry, "energy"), "life"), "lives")), Is.EqualTo(initialLives - 1),
-                "Suspend and retry must not charge the same failed attempt twice.");
+                "Retry reserves one life for the new attempt and never charges the failed attempt twice.");
             string retriedAttempt = (string)W.Get(W.Get(W.Get(W.Get(afterRetry, "game"), "attempts"), "2"), "attemptId");
             Assert.That(retriedAttempt, Is.Not.EqualTo(initialAttempt));
             var reopened = new UnityGameSession(data, storage, new Clock());

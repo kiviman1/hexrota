@@ -41,7 +41,7 @@ namespace Hexrota.UnityClientTests
                 preparer.CompletePresentation();
             }
             last = route.Last();
-            preparer.ReturnToMenu();
+            preparer.Suspend(); // saved one move before the win
             FirstPlayableController.SessionFactory = () => new UnityGameSession(data, storage, new SystemUtcClock());
             yield return SceneManager.LoadSceneAsync("FirstPlayable");
             game = UnityEngine.Object.FindAnyObjectByType<FirstPlayableController>();

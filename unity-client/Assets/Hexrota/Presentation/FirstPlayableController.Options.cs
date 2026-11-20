@@ -130,7 +130,7 @@ namespace Hexrota.UnityClient.Presentation
             controls.anchoredPosition=Vector2.up*(inGame?32:70);
             optionContent=controls;
             if (optionsReturn == "playing")
-                OptionButton("Bölümden çık",18,121,316,44,CloseOptionsToHome);
+                OptionButton("Bölümden çık",18,121,316,44,ConfirmLeaveChapter);
             OptionBox("Ses",18,169,316,220,"724d9e","53367f","a884be",15,.8f);
             OptionSwitch("Efektler","Ses efektleri","Eşleşmelerin ve hamlelerin sesi",175,Session.SoundEnabled,on=>Session.SetPreferences(sound:on));
             OptionSwitch("Müzik","Müzik","Arka planda sakin bir melodi",243,Session.MusicEnabled,on=>Session.SetPreferences(music:on));
@@ -218,6 +218,15 @@ namespace Hexrota.UnityClient.Presentation
                 if(Session.LastError=="confirmation_changed")ConfirmOpenReset();
                 else OptionText("Failure","İlerleme sıfırlanamadı.",18,312,316,28,12);
             });
+            OptionButton("Vazgeç",18,261,316,46,OpenMobileSettings);
+        }
+
+        // Leaving after a move spends the chapter's reserved life, so the player confirms first.
+        private void ConfirmLeaveChapter()
+        {
+            if(!Session.LeavingSpendsLife){CloseOptionsToHome();return;}
+            OptionsPanel("leave","Bölümden çıkılsın mı?","","Bu bölüm için ayrılan can harcanacak. Bölüme yeniden girersen yeni bir tahta açılır.",365,365);
+            OptionButton("Çık, can harcansın",18,205,316,46,CloseOptionsToHome);
             OptionButton("Vazgeç",18,261,316,46,OpenMobileSettings);
         }
 

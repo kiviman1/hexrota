@@ -50,7 +50,7 @@ namespace Hexrota.UnityClientTests
         }
 
         [UnityTest]
-        public IEnumerator HomePlayTeachesOnChapterOneAndTheSameSavedBoardWinsAndLeadsToChapterTwo()
+        public IEnumerator HomePlayTeachesOnChapterOneAndTheSavedBoardWinsAfterAnInterruptionAndLeadsToChapterTwo()
         {
             Assert.That(controller.Session.FirstOpening, Is.True);
             Click("PlayButton");
@@ -69,7 +69,7 @@ namespace Hexrota.UnityClientTests
             var route = openings.First(line => line[0].OrderBy(i => i).SequenceEqual(pair.OrderBy(i => i)));
             yield return ChapterEntryWait.PlayOpeningMove(controller);
             var checkpoint = controller.Session.Snapshot;
-            controller.ReturnToMenu();
+            controller.Session.Suspend(); // the save survives an interruption (the app-open policy is in LifeReservationTests)
             yield return Load();
             Click("PlayButton");
             yield return ChapterEntryWait.Ready(controller);
