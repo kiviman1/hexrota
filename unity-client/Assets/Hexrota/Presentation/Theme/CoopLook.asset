@@ -19,6 +19,77 @@ MonoBehaviour:
   - 0.68
   - 0.78
   diskCentre: {x: 0.5, y: 0.5}
-  shadowColor: {r: 0.22745098, g: 0.101960786, b: 0.15686275, a: 0.35}
-  shadowScale: 1.08
-  shadowOffset: {x: 0.035, y: -0.08}
+  shadows:
+  - contactColor: {r: 0.180392157, g: 0.094117647, b: 0.062745098, a: 0.7}
+    contactThickness: 2
+    contactSoftness: 1
+    contactOutset: 0.5
+    contactDepth: 1.88
+    contactWidth: 1.13
+    mainColor: {r: 0.290196078, g: 0.149019608, b: 0.08627451, a: 0.5}
+    mainScale: 1.1
+    mainOffset: {x: 0.035, y: -0.08}
+    buildingColor: {r: 0.290196078, g: 0.149019608, b: 0.08627451, a: 0.3}
+    buildingLength: 0.75
+    buildingWidth: 0.5
+    buildingAngle: 20
+    buildingOrigin: {x: 0.22, y: -0.08}
+  - contactColor: {r: 0.180392157, g: 0.094117647, b: 0.062745098, a: 0.7}
+    contactThickness: 2.5
+    contactSoftness: 1
+    contactOutset: 0.5
+    contactDepth: 0.74
+    contactWidth: 0.93
+    mainColor: {r: 0.290196078, g: 0.149019608, b: 0.08627451, a: 0.5}
+    mainScale: 1.1
+    mainOffset: {x: 0.035, y: -0.08}
+    buildingColor: {r: 0.290196078, g: 0.149019608, b: 0.08627451, a: 0.3}
+    buildingLength: 0.75
+    buildingWidth: 0.5
+    buildingAngle: 20
+    buildingOrigin: {x: 0.22, y: -0.08}
+  - contactColor: {r: 0.180392157, g: 0.094117647, b: 0.062745098, a: 0.7}
+    contactThickness: 3
+    contactSoftness: 1
+    contactOutset: 0.5
+    contactDepth: 0.9
+    contactWidth: 0.985
+    mainColor: {r: 0.290196078, g: 0.149019608, b: 0.08627451, a: 0.5}
+    mainScale: 1.1
+    mainOffset: {x: 0.035, y: -0.08}
+    buildingColor: {r: 0.290196078, g: 0.149019608, b: 0.08627451, a: 0.3}
+    buildingLength: 0.75
+    buildingWidth: 0.5
+    buildingAngle: 20
+    buildingOrigin: {x: 0.22, y: -0.08}
+  - contactColor: {r: 0.180392157, g: 0.094117647, b: 0.062745098, a: 0.7}
+    contactThickness: 3.5
+    contactSoftness: 1
+    contactOutset: 0.5
+    contactDepth: 1.24
+    contactWidth: 1.07
+    mainColor: {r: 0.290196078, g: 0.149019608, b: 0.08627451, a: 0.5}
+    mainScale: 1.1
+    mainOffset: {x: 0.035, y: -0.08}
+    buildingColor: {r: 0.290196078, g: 0.149019608, b: 0.08627451, a: 0.3}
+    buildingLength: 0.75
+    buildingWidth: 0.5
+    buildingAngle: 20
+    buildingOrigin: {x: 0.22, y: -0.08}
+  - contactColor: {r: 0.180392157, g: 0.094117647, b: 0.062745098, a: 0.7}
+    contactThickness: 4
+    contactSoftness: 1
+    contactOutset: 0.5
+    contactDepth: 0.79
+    contactWidth: 0.94
+    mainColor: {r: 0.290196078, g: 0.149019608, b: 0.08627451, a: 0.5}
+    mainScale: 1.1
+    mainOffset: {x: 0.035, y: -0.08}
+    buildingColor: {r: 0.290196078, g: 0.149019608, b: 0.08627451, a: 0.3}
+    buildingLength: 0.75
+    buildingWidth: 0.5
+    buildingAngle: 20
+    buildingOrigin: {x: 0.22, y: -0.08}
+  chickenShadowColor: {r: 0.290196078, g: 0.149019608, b: 0.08627451, a: 0.35}
+  chickenShadowSize: {x: 0.62, y: 0.16}
+  chickenShadowOffset: {x: 0.04, y: 0.03}

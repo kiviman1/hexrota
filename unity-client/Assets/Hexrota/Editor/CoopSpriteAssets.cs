@@ -15,6 +15,7 @@ namespace Hexrota.UnityClient.Editor
         /// <summary>Largest source is about 1.2k px wide; 2048 keeps it at full resolution.</summary>
         public const int MaxSize = 2048;
         public const string LookPath = "Assets/Hexrota/Presentation/Theme/CoopLook.asset";
+        public const string MultiplyShader = Folder + "ShadowMultiply.shader", MultiplyMaterial = Folder + "ShadowMultiply.mat";
 
         public sealed class Set
         {
@@ -23,11 +24,13 @@ namespace Hexrota.UnityClient.Editor
             public float[] DiskHeightPixels = new float[CoopSpriteAssets.Levels];
             public Presentation.CoopLook Look;
             public Sprite[] Dust;
-            public Sprite Shadow;
+            public Sprite Shadow, LongShadow;
+            /// <summary>UI multiply material for the ground shadows (Hexrota/UI/ShadowMultiply).</summary>
+            public Material Multiply;
         }
 
         [Serializable] private sealed class Entry { public int level; public string file; public float[] pivot; public float diskWidth; public float diskHeight; }
-        [Serializable] private sealed class Manifest { public Entry[] levels; public string[] dust; public string shadow; }
+        [Serializable] private sealed class Manifest { public Entry[] levels; public string[] dust; public string shadow; public string longShadow; }
 
         [MenuItem("Hexrota/Home/Reimport Coop Sprites")]
         private static void Reimport() => Prepare();
@@ -48,11 +51,27 @@ namespace Hexrota.UnityClient.Editor
             foreach (var file in manifest.dust) dust.Add(Configure(Folder + file, new Vector2(.5f, .5f), 512));
             set.Dust = dust.ToArray();
             set.Shadow = Configure(Folder + manifest.shadow, new Vector2(.5f, .5f), 512);
+            if (string.IsNullOrEmpty(manifest.longShadow)) throw new InvalidOperationException("Run art/coop-2d/cut_sprites.py --shadows: no longShadow in the manifest.");
+            set.LongShadow = Configure(Folder + manifest.longShadow, new Vector2(0, .5f), 512);
+            set.Multiply = MultiplyMaterialAsset();
             set.Look = AssetDatabase.LoadAssetAtPath<Presentation.CoopLook>(LookPath);
             if (set.Look == null) throw new InvalidOperationException("Missing " + LookPath);
             for (int i = 0; i < Levels; i++)
                 if (set.Levels[i] == null) throw new InvalidOperationException("Missing coop level sprite " + i);
             return set;
+        }
+
+        // The material asset is made once from the shader and kept, so the prefab references a stable asset.
+        private static Material MultiplyMaterialAsset()
+        {
+            var material = AssetDatabase.LoadAssetAtPath<Material>(MultiplyMaterial);
+            if (material != null) return material;
+            var shader = AssetDatabase.LoadAssetAtPath<Shader>(MultiplyShader);
+            if (shader == null) throw new InvalidOperationException("Missing " + MultiplyShader);
+            material = new Material(shader) { name = "ShadowMultiply" };
+            AssetDatabase.CreateAsset(material, MultiplyMaterial);
+            AssetDatabase.SaveAssets();
+            return material;
         }
 
         private static Sprite Configure(string path, Vector2 pivot, int maxSize = MaxSize)

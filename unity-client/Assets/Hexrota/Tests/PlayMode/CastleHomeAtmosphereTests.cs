@@ -118,8 +118,12 @@ namespace Hexrota.UnityClientTests
                 // The coop stands on the plot; the bar sits below the plot, right of the stone path, above Play.
                 Rect coop = ScreenRect(screen, (RectTransform)layers.CoopPlot.Find("PlotCoop"));
                 Assert.That(coop.center.x, Is.EqualTo(plot.center.x).Within(1f));
-                Assert.That(coop.yMin, Is.EqualTo(Mathf.Lerp(plot.yMin, plot.yMax, home.GetComponentInChildren<CoopSpriteView>().Look.diskCentre.y)).Within(1f),
-                    "The coop stands on the disk-centre point of the plot.");
+                var shownView = home.GetComponentInChildren<CoopSpriteView>();
+                shownView.Refresh();
+                var diskImage = shownView.Image.rectTransform;
+                Vector2 diskBottom = screen.InverseTransformPoint(diskImage.TransformPoint(new Vector3(0, -shownView.ShownDiskHeight / 2)));
+                Assert.That(coop.yMin, Is.EqualTo(diskBottom.y).Within(1f),
+                    "The coop's pivot is the bottom of its disk, half a disk below the plot's disk-centre point.");
                 Rect ArtRect(float left, float top, float right, float bottom) => Rect.MinMaxRect(
                     frame.xMin + left / layers.ArtSize.x * frame.width, frame.yMax - bottom / layers.ArtSize.y * frame.height,
                     frame.xMin + right / layers.ArtSize.x * frame.width, frame.yMax - top / layers.ArtSize.y * frame.height);
@@ -130,6 +134,16 @@ namespace Hexrota.UnityClientTests
                                              Mathf.Max(bar.xMax, egg.xMax), Mathf.Max(bar.yMax, egg.yMax));
                 Assert.That(barAll.yMax, Is.LessThanOrEqualTo(ArtRect(0, 1640, 1170, 1660).yMin), "Bar stays below the plot.");
                 Assert.That(barAll.xMin, Is.GreaterThanOrEqualTo(ArtRect(30, 1670, 420, 1990).xMax), "Bar stays right of the stone path.");
+                // The ready pulse grows the bar from its egg end, so the egg never moves toward the stones.
+                var barRect = (RectTransform)home.transform.Find("MenuLayout/CoopProgress");
+                Assert.That(barRect.pivot.x, Is.EqualTo(0), "The bar beats from its egg end.");
+                float pulse = Resources.FindObjectsOfTypeAll<MotionTheme>().First().coopPulseScale;
+                barRect.localScale = new Vector3(pulse, pulse, 1);
+                var beatingEgg = ScreenRect(screen, (RectTransform)home.transform.Find("MenuLayout/CoopProgress/Egg"));
+                var beatingBar = ScreenRect(screen, barRect);
+                barRect.localScale = Vector3.one;
+                Assert.That(beatingEgg.xMin, Is.GreaterThanOrEqualTo(ArtRect(30, 1670, 420, 1990).xMax), "The beating bar's egg stays right of the stone path.");
+                Assert.That(beatingBar.xMax, Is.LessThanOrEqualTo(display.xMax), "The beating bar stays on screen.");
                 Assert.That(barAll.Overlaps(play), Is.False, "Bar does not cover Play.");
                 Assert.That(barAll.xMax, Is.LessThanOrEqualTo(display.xMax), "Bar stays on screen.");
 
@@ -158,13 +172,31 @@ namespace Hexrota.UnityClientTests
                     Vector2 centre = screen.InverseTransformPoint(rt.TransformPoint(Vector3.zero));
                     Vector2 plotCentre = new Vector2(Mathf.Lerp(plot.xMin, plot.xMax, look.diskCentre.x), Mathf.Lerp(plot.yMin, plot.yMax, look.diskCentre.y));
                     Assert.That(Vector2.Distance(centre, plotCentre), Is.LessThan(1f), name + " disk centre on the plot centre.");
-                    // Contact shadow: wider than the disk, shifted right and down (light from the upper left).
+                    // Main shadow: wider than the disk, shifted right and down (light from the upper left), multiplied.
+                    var shadowLook = look.Shadow(level);
                     Rect shadow = ScreenRect(screen, view.Shadow.rectTransform);
-                    Assert.That(shadow.width * CoopSpriteView.ShadowHalfRadius, Is.EqualTo(disk * look.shadowScale).Within(1f), name + " shadow width.");
+                    Assert.That(shadow.width * CoopSpriteView.ShadowHalfRadius, Is.EqualTo(disk * shadowLook.mainScale).Within(1f), name + " shadow width.");
                     Assert.That(shadow.center.x, Is.GreaterThan(centre.x), name + " shadow shifted right.");
                     Assert.That(shadow.center.y, Is.LessThan(centre.y), name + " shadow shifted down.");
-                    Assert.That(view.Shadow.color, Is.EqualTo(look.shadowColor));
-                    Assert.That(view.Shadow.rectTransform.GetSiblingIndex(), Is.LessThan(rt.GetSiblingIndex()), "The shadow draws under the coop.");
+                    Assert.That(view.Shadow.color, Is.EqualTo(shadowLook.mainColor));
+                    Assert.That(view.Shadow.material.shader.name, Is.EqualTo("Hexrota/UI/ShadowMultiply"), name + " main shadow multiplies.");
+                    // Building shadow: runs to the lower right, as long as the sprite is tall times buildingLength.
+                    var building = view.BuildingShadow.rectTransform;
+                    Assert.That(building.sizeDelta.x, Is.EqualTo(view.ShownHeightAboveDisk * shadowLook.buildingLength).Within(.5f), name + " building shadow length.");
+                    Vector2 tip = screen.InverseTransformPoint(building.TransformPoint(new Vector3(building.rect.xMax, 0)));
+                    Assert.That(tip.x, Is.GreaterThan(centre.x), name + " building shadow runs right.");
+                    Assert.That(tip.y, Is.LessThan(centre.y), name + " building shadow runs down.");
+                    Assert.That(view.BuildingShadow.material.shader.name, Is.EqualTo("Hexrota/UI/ShadowMultiply"));
+                    // Contact line: on the lower half of the disk edge.
+                    var line = view.ContactLine;
+                    Assert.That(line.Radii.x * 2, Is.EqualTo(view.ShownDiskWidth * shadowLook.contactWidth).Within(.5f), name + " contact line follows the disk.");
+                    Assert.That(line.Thickness, Is.EqualTo(shadowLook.contactThickness));
+                    Assert.That(line.PointAt(.5f, out _).y, Is.LessThan(0), name + " contact line is on the lower half.");
+                    Assert.That(line.color, Is.EqualTo(shadowLook.contactColor));
+                    int sprite0 = rt.GetSiblingIndex();
+                    Assert.That(building.GetSiblingIndex(), Is.LessThan(view.Shadow.rectTransform.GetSiblingIndex()), "Building shadow under the main shadow.");
+                    Assert.That(view.Shadow.rectTransform.GetSiblingIndex(), Is.LessThan(line.rectTransform.GetSiblingIndex()), "Main shadow under the contact line.");
+                    Assert.That(line.rectTransform.GetSiblingIndex(), Is.LessThan(sprite0), "The shadows draw under the coop.");
                 }
             }
             finally { Object.Destroy(canvas.gameObject); }

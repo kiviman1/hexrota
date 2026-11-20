@@ -26,6 +26,9 @@ namespace Hexrota.UnityClient.Editor
         public const string RetiredDrawing = "CoopDrawing", RetiredStakes = "EmptyPlot";
         private const string DisplayFont = "Assets/Hexrota/Art/CastleHomeType/LilitaOne-Regular.ttf";
         private const int DustPuffs = 20;
+        // Bar left end from the screen centre and width (390 reference): the egg icon clears the top
+        // stepping stone by about 14 px, also while the bar beats.
+        private const float BarLeft = -21, BarWidth = 188;
 
         [MenuItem("Hexrota/Home/Rebuild Coop Controls")]
         public static void Rebuild()
@@ -64,16 +67,25 @@ namespace Hexrota.UnityClient.Editor
                 }
 
                 // The coop sprite (Coop_L0 foundation .. Coop_L4) stands on the plot: this rect's pivot is the
-                // disk centre point (CoopLook.diskCentre). It is part of the background, so every UI control
-                // keeps tap priority. Eggs fly to it and the upgrade squash scales it from that point.
+                // bottom of the base disk, whose centre is on CoopLook.diskCentre (CoopSpriteView places it).
+                // It is part of the background, so every UI control keeps tap priority. Eggs fly to it and
+                // the upgrade squash scales it from that point.
                 var centre = sprites.Look.diskCentre;
                 var coop = NewRect(plot, PlotCoop, new Vector2(centre.x - .4f, centre.y), new Vector2(centre.x + .4f, centre.y + 1.2f), Vector2.zero, Vector2.zero);
                 coop.pivot = new Vector2(.5f, 0);
                 coop.SetAsLastSibling();
                 var visual = NewRect(coop, "CoopVisual", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
                 visual.pivot = new Vector2(.5f, 0);
-                var shadowImage = Simple(NewRect(visual, "Shadow", Vector2.zero, Vector2.zero, Vector2.zero, Vector2.zero), sprites.Shadow, sprites.Look.shadowColor);
+                // Shadow layers under the sprite, back to front: building shadow, main ellipse, contact line.
+                var firstShadow = sprites.Look.Shadow(0);
+                var buildingShadow = Simple(NewRect(visual, "BuildingShadow", Vector2.zero, Vector2.zero, Vector2.zero, Vector2.zero), sprites.LongShadow, firstShadow.buildingColor);
+                buildingShadow.preserveAspect = false;
+                buildingShadow.material = sprites.Multiply;
+                var shadowImage = Simple(NewRect(visual, "Shadow", Vector2.zero, Vector2.zero, Vector2.zero, Vector2.zero), sprites.Shadow, firstShadow.mainColor);
                 shadowImage.preserveAspect = false;
+                shadowImage.material = sprites.Multiply;
+                var contactLine = NewRect(visual, "ContactLine", Vector2.zero, Vector2.zero, Vector2.zero, Vector2.zero).gameObject.AddComponent<CoopContactLine>();
+                contactLine.raycastTarget = false;
                 var previous = Simple(NewRect(visual, "PreviousSprite", Vector2.zero, Vector2.zero, Vector2.zero, Vector2.zero), sprites.Levels[0], Color.white);
                 previous.preserveAspect = false;
                 previous.gameObject.SetActive(false);
@@ -97,6 +109,8 @@ namespace Hexrota.UnityClient.Editor
                 Set(spriteData, "image", current);
                 Set(spriteData, "previous", previous);
                 Set(spriteData, "shadow", shadowImage);
+                Set(spriteData, "buildingShadow", buildingShadow);
+                Set(spriteData, "contactLine", contactLine);
                 spriteData.ApplyModifiedPropertiesWithoutUndo();
 
                 // Dust for the upgrade transition: a pool of soft puffs over the building.
@@ -135,9 +149,11 @@ namespace Hexrota.UnityClient.Editor
                 Set(badgeData, "badge", badge);
                 badgeData.ApplyModifiedPropertiesWithoutUndo();
 
-                // Progress bar: in the empty meadow right of the stone path, between the plot and Play.
+                // Progress bar: in the empty meadow right of the stone path, between the plot and Play. Its
+                // pivot is the egg end, so the ready pulse grows it to the right, away from the stones.
                 float playY = playArea.anchorMin.y;
-                var bar = NewRect(layout, "CoopProgress", new Vector2(.5f, playY), new Vector2(.5f, playY), new Vector2(67, 64), new Vector2(200, 24));
+                var bar = NewRect(layout, "CoopProgress", new Vector2(.5f, playY), new Vector2(.5f, playY), new Vector2(BarLeft, 64), new Vector2(BarWidth, 24));
+                bar.pivot = new Vector2(0, .5f);
                 bar.SetSiblingIndex(playArea.GetSiblingIndex());
                 var track = Sliced(NewRect(bar, "Track", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero), rounded, ui.panelDeep);
                 var fill = NewRect(bar, "Fill", Vector2.zero, new Vector2(0, 1), Vector2.zero, Vector2.zero);

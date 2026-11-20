@@ -11,10 +11,12 @@ Input:  art/coop-2d/source/Coop_L0.png .. Coop_L4.png (L0 = foundation, L1..L4 =
 Output: unity-client/Assets/Hexrota/Art/Coop2D/
         Coop_L<n>.png      RGBA, background removed, halo and colour spill cleaned, cropped
         Dust_<n>.png       three soft dust puffs for the upgrade transition
-        Shadow.png         soft elliptical blob for the contact shadow
+        Shadow.png         soft elliptical blob for the main shadow (and the hens' contact shadows)
+        ShadowLong.png     long soft building shadow: opaque at its base (left), fading to its tip (right)
         coop_sprites.json  per level: size, pivot (centre of the base disk), disk diameter and height,
                            read by the Unity builder so every disk lands on the plot centre.
 The source folder stays out of git; this script is the record of how the sprites are made.
+    uv run art/coop-2d/cut_sprites.py --shadows   rewrites only the two shadow textures.
 """
 import json
 import pathlib
@@ -232,13 +234,40 @@ def shadow(width=512, height=256):
     return "Shadow.png"
 
 
+def long_shadow(width=512, height=192):
+    """Building shadow cast along +x: pivot at the left middle (the coop), full strength over the
+    first fifth, then fading smoothly to nothing at the tip. It narrows to 55 % towards the tip and
+    has soft sides and a rounded base. White, tinted at runtime."""
+    gy, gx = np.mgrid[0:height, 0:width]
+    u = (gx + .5) / width
+    v = (gy + .5) / height * 2 - 1
+    half = 1 - .45 * u
+    across = np.clip((1 - np.abs(v) / (half * .92)) / .55, 0, 1)
+    across = across * across * (3 - 2 * across)
+    along = np.clip((1 - u) / .8, 0, 1)
+    along = along * along * (3 - 2 * along)
+    base = np.clip(u / .06, 0, 1)
+    alpha = across * along * (.35 + .65 * base)
+    rgba = np.dstack([np.full((height, width, 3), 255.0), alpha * 255])
+    Image.fromarray(np.round(rgba).astype(np.uint8), "RGBA").save(OUT / "ShadowLong.png", optimize=True)
+    return "ShadowLong.png"
+
+
 def main():
+    import sys
     OUT.mkdir(parents=True, exist_ok=True)
+    if "--shadows" in sys.argv:
+        with open(OUT / "coop_sprites.json", encoding="utf-8") as f:
+            manifest = json.load(f)
+        manifest["shadow"], manifest["longShadow"] = shadow(), long_shadow()
+        with open(OUT / "coop_sprites.json", "w", encoding="utf-8") as f:
+            json.dump(manifest, f, indent=2)
+        return
     levels = [cut(level) for level in range(LEVELS)]
     puffs = [dust(i) for i in range(3)]
-    blob = shadow()
+    blob, long_blob = shadow(), long_shadow()
     with open(OUT / "coop_sprites.json", "w", encoding="utf-8") as f:
-        json.dump({"levels": levels, "dust": puffs, "shadow": blob}, f, indent=2)
+        json.dump({"levels": levels, "dust": puffs, "shadow": blob, "longShadow": long_blob}, f, indent=2)
     for entry in levels:
         print("Coop_L%(level)d: %(width)dx%(height)d pivot %(pivot)s disk %(diskWidth)dx%(diskHeight)dpx bg %(background)s" % entry)
 

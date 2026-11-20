@@ -15,6 +15,9 @@ namespace Hexrota.UnityClient.Editor
         private const string Prefab = "Assets/Hexrota/Resources/CastleHome/CastleHome.prefab";
         private const string Theme = "Assets/Hexrota/Presentation/Theme/";
         private const string Resident = "Assets/Hexrota/Resources/CastleHome/Characters/Hen.png";
+        private const string LookPath = "Assets/Hexrota/Presentation/Theme/CoopLook.asset";
+        private const string ShadowSprite = "Assets/Hexrota/Art/Coop2D/Shadow.png";
+        private const string MultiplyMaterial = "Assets/Hexrota/Art/Coop2D/ShadowMultiply.mat";
         private static readonly string[] Owned = { "CoopResidents", "CoopBurst", "CoopLevelBanner", "CoopInputLock" };
         // Up to eight residents (the area maximum), alternating around the coop door.
         private static readonly Vector2[] Spots =
@@ -30,6 +33,9 @@ namespace Hexrota.UnityClient.Editor
             var motion = Load<MotionTheme>(Theme + "MotionTheme.asset");
             var burstSprite = Load<Sprite>(Theme + "RewardBurst.png");
             var hen = Load<Sprite>(Resident);
+            var look = Load<CoopLook>(LookPath);
+            var shadowSprite = Load<Sprite>(ShadowSprite);
+            var multiply = Load<Material>(MultiplyMaterial);
             var root = PrefabUtility.LoadPrefabContents(Prefab);
             try
             {
@@ -60,8 +66,19 @@ namespace Hexrota.UnityClient.Editor
                 {
                     spots[i] = Rect(residents, "Resident" + (i + 1), new Vector2(.5f, .5f), new Vector2(.5f, .5f), Spots[i], new Vector2(38, 44));
                     spots[i].pivot = new Vector2(.5f, 0);
-                    var image = spots[i].gameObject.AddComponent<Image>();
+                    // A small oval contact shadow under the feet, then the hen; both pop in with the spot.
+                    var shadow = Rect(spots[i], "Shadow", new Vector2(.5f, 0), new Vector2(.5f, 0), Vector2.zero, Vector2.zero);
+                    var shadowImage = shadow.gameObject.AddComponent<Image>();
+                    shadowImage.sprite = shadowSprite; shadowImage.preserveAspect = false; shadowImage.raycastTarget = false;
+                    shadowImage.material = multiply;
+                    var image = Rect(spots[i], "Hen", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero).gameObject.AddComponent<Image>();
                     image.sprite = hen; image.preserveAspect = true; image.raycastTarget = false;
+                    var shadowLook = shadow.gameObject.AddComponent<CoopResidentShadow>();
+                    var shadowData = new SerializedObject(shadowLook);
+                    Set(shadowData, "look", look);
+                    Set(shadowData, "hen", image);
+                    shadowData.ApplyModifiedPropertiesWithoutUndo();
+                    shadowLook.Apply();
                     spots[i].gameObject.SetActive(false);
                 }
 

@@ -96,5 +96,6 @@
     "Dust_1.png",
     "Dust_2.png"
   ],
-  "shadow": "Shadow.png"
+  "shadow": "Shadow.png",
+  "longShadow": "ShadowLong.png"
 }

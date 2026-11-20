@@ -7,8 +7,12 @@ namespace Hexrota.UnityClient.Presentation
     // Every sprite's pivot is the centre of its base disk. The disk diameter measured in each sprite
     // (coop_sprites.json) is scaled to CoopLook.diskFraction[level] of the plot width, and the disk
     // centre lands on CoopLook.diskCentre in the plot, so the coop grows with each level without
-    // leaving the plot. A soft warm shadow sits under the disk, offset away from the upper-left light,
-    // and scales with the sprite. Reduced motion swaps levels with a short cross-fade.
+    // leaving the plot. The shadow has three layers from CoopLook.shadows[level], drawn under the sprite:
+    // a long soft building shadow cast to the lower right (its length follows the sprite's height above
+    // the disk), the main warm ellipse under the disk (both multiplied onto the ground) and a thin dark
+    // contact line along the lower edge of the disk. The stand's pivot is the bottom of the disk, so the
+    // upgrade squash and the ready pulse scale the coop and all its shadows from the ground contact.
+    // Reduced motion swaps levels with a short cross-fade.
     [DisallowMultipleComponent]
     public sealed class CoopSpriteView : MonoBehaviour
     {
@@ -23,6 +27,9 @@ namespace Hexrota.UnityClient.Presentation
         [Tooltip("The coop's stand on the plot (its pivot is put on the disk centre point).")]
         [SerializeField] private RectTransform stand;
         [SerializeField] private Image image, previous, shadow;
+        [Tooltip("Long building shadow (ShadowLong.png, pivot at its base).")]
+        [SerializeField] private Image buildingShadow;
+        [SerializeField] private CoopContactLine contactLine;
         [Tooltip("Ready badge, kept at the top-right of the shown sprite (fraction of its size from the pivot).")]
         [SerializeField] private RectTransform badge;
         [SerializeField] private Vector2 badgeAt = new Vector2(.34f, .82f);
@@ -36,9 +43,15 @@ namespace Hexrota.UnityClient.Presentation
         public int LevelCount => levels.Length;
         public Image Image => image;
         public Image Shadow => shadow;
+        public Image BuildingShadow => buildingShadow;
+        public CoopContactLine ContactLine => contactLine;
         public CoopLook Look => look;
         /// <summary>On-screen disk diameter of the shown level, in this view's units.</summary>
         public float ShownDiskWidth => shown >= 0 ? DiskWidth(shown) : 0;
+        /// <summary>On-screen disk height (its ellipse's minor axis) of the shown level, in this view's units.</summary>
+        public float ShownDiskHeight => shown >= 0 ? DiskHeight(shown) : 0;
+        /// <summary>On-screen height of the shown sprite above its disk centre, in this view's units.</summary>
+        public float ShownHeightAboveDisk => shown >= 0 ? HeightAboveDisk(shown) : 0;
         /// <summary>The shadow's visible size reaches half opacity at this fraction of its rect (Shadow.png falloff).</summary>
         public const float ShadowHalfRadius = .85f;
         public bool Fading => previous != null && previous.gameObject.activeSelf;
@@ -56,7 +69,6 @@ namespace Hexrota.UnityClient.Presentation
 
         private void Awake()
         {
-            if (shadow != null && look != null) shadow.color = look.shadowColor;
             if (previous != null) previous.gameObject.SetActive(false);
             if (shown < 0) Show(0);
         }
@@ -103,31 +115,66 @@ namespace Hexrota.UnityClient.Presentation
             var size = SizeOf(level);
             rect.anchorMin = rect.anchorMax = new Vector2(.5f, 0);
             rect.pivot = new Vector2(sprite.pivot.x / sprite.rect.width, sprite.pivot.y / sprite.rect.height);
-            rect.anchoredPosition = Vector2.zero;
+            // The stand's pivot is the bottom of the shown disk, so the disk centre is half a disk above it.
+            var centre = new Vector2(0, shown >= 0 ? DiskHeight(shown) / 2 : 0);
+            rect.anchoredPosition = centre;
             rect.sizeDelta = size;
-            if (target == image) PlaceStand();
-            if (target == image && shadow != null && look != null)
-            {
-                // Soft ellipse under the disk: its half-opacity edge is shadowScale x the disk, shifted
-                // right and down, away from the upper-left light. It is a sibling under the same
-                // (pulsing, squashing) parent, so it scales with the sprite.
-                float disk = DiskWidth(level), depth = DiskHeight(level);
-                var s = shadow.rectTransform;
-                s.anchorMin = s.anchorMax = new Vector2(.5f, 0);
-                s.pivot = new Vector2(.5f, .5f);
-                s.sizeDelta = new Vector2(disk, depth) * (look.shadowScale / ShadowHalfRadius);
-                s.anchoredPosition = Vector2.Scale(new Vector2(disk, depth), look.shadowOffset);
-                shadow.color = look.shadowColor;
-            }
-            if (target == image && badge != null)
+            if (target != image) return;
+            PlaceStand(DiskHeight(level));
+            if (look != null) PlaceShadows(level, centre);
+            if (badge != null)
             {
                 badge.anchorMin = badge.anchorMax = new Vector2(.5f, 0);
-                badge.anchoredPosition = Vector2.Scale(size, badgeAt);
+                badge.anchoredPosition = centre + Vector2.Scale(size, badgeAt);
             }
         }
 
-        // The stand's pivot (and so the disk centre) sits on CoopLook.diskCentre of the plot.
-        private void PlaceStand()
+        // All three layers are siblings under the same (pulsing, squashing) parent as the sprite, so
+        // they scale with it from the bottom of the disk.
+        private void PlaceShadows(int level, Vector2 centre)
+        {
+            var layers = look.Shadow(level);
+            float disk = DiskWidth(level), depth = DiskHeight(level);
+            var diskSize = new Vector2(disk, depth);
+            if (shadow != null)
+            {
+                // Main: soft ellipse whose half-opacity edge is mainScale x the disk, shifted right and down.
+                var s = Anchor(shadow.rectTransform, new Vector2(.5f, .5f));
+                s.sizeDelta = diskSize * (layers.mainScale / ShadowHalfRadius);
+                s.anchoredPosition = centre + Vector2.Scale(diskSize, layers.mainOffset);
+                shadow.color = layers.mainColor;
+            }
+            if (buildingShadow != null)
+            {
+                // Building: starts under the disk and runs to the lower right; its length follows the
+                // sprite's height above the disk, and it fades out at the tip (ShadowLong.png).
+                var s = Anchor(buildingShadow.rectTransform, new Vector2(0, .5f));
+                s.sizeDelta = new Vector2(HeightAboveDisk(level) * layers.buildingLength, disk * layers.buildingWidth);
+                s.anchoredPosition = centre + Vector2.Scale(diskSize, layers.buildingOrigin);
+                s.localRotation = Quaternion.Euler(0, 0, -layers.buildingAngle);
+                buildingShadow.color = layers.buildingColor;
+            }
+            if (contactLine != null)
+            {
+                // Contact: thin dark strip along the lower half of the disk edge.
+                // The arc keeps the disk's lowest point but is flatter (contactDepth), like the rim's outline.
+                var s = Anchor(contactLine.rectTransform, new Vector2(.5f, .5f));
+                float k = Mathf.Clamp(layers.contactDepth, .1f, 2);
+                s.anchoredPosition = centre - new Vector2(0, depth * (1 - k) / 2);
+                contactLine.Set(new Vector2(disk * layers.contactWidth, depth * k) / 2, layers.contactThickness, layers.contactSoftness, layers.contactOutset, layers.contactColor);
+            }
+        }
+
+        private static RectTransform Anchor(RectTransform rect, Vector2 pivot)
+        {
+            rect.anchorMin = rect.anchorMax = new Vector2(.5f, 0);
+            rect.pivot = pivot;
+            return rect;
+        }
+
+        // The disk centre sits on CoopLook.diskCentre of the plot; the stand's pivot is the bottom of the
+        // disk (half a disk height lower), so squash and pulse scale from the ground contact.
+        private void PlaceStand(float diskHeight)
         {
             if (stand == null || look == null) return;
             var c = look.diskCentre;
@@ -135,7 +182,7 @@ namespace Hexrota.UnityClient.Presentation
             stand.anchorMin = new Vector2(c.x - halfWidth, c.y);
             stand.anchorMax = new Vector2(c.x + halfWidth, c.y + height);
             stand.pivot = new Vector2(.5f, 0);
-            stand.anchoredPosition = Vector2.zero;
+            stand.anchoredPosition = new Vector2(0, -diskHeight / 2);
         }
 
         private float DiskWidth(int level) => (plot != null ? plot.rect.width : 300f) * (look != null ? look.Fraction(level) : .5f);
@@ -149,6 +196,8 @@ namespace Hexrota.UnityClient.Presentation
 
         private float DiskHeight(int level) =>
             (level < diskHeightPixels.Length && diskHeightPixels[level] > 0 ? diskHeightPixels[level] : levels[level].rect.width * .3f) * Scale(level);
+
+        private float HeightAboveDisk(int level) => (levels[level].rect.height - levels[level].pivot.y) * Scale(level);
 
         /// <summary>On-screen size of a level's sprite, in this view's units.</summary>
         public Vector2 SizeOf(int level) => levels[level].rect.size * Scale(level);
