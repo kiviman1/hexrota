@@ -19,6 +19,16 @@ Engeller: toprak katmanları ve kasa (dayanımı olan engel). Bölüm içi yard�
 | Renk Anahtarı | Seçili taşı oyuncunun seçtiği başka izinli rakama çevirir |
 | +5 hamle (kurtarma) | Hamle bitince bölümü 5 hamleyle sürdürür; Altın ya da ödüllü reklamla |
 
+### Takviyeler ve engeller (kasa, kapalı alan)
+
+Karar: 20 Kasım 2026. Takviyeler engelli (classic-v5) bölümlerde de kullanılır; özel istisna yoktur.
+
+- **Takviyeden doğan her eşleşme ve zincir normal eşleşmeyle aynı kurala uyar.** Renk Anahtarı'nın değiştirdiği taş eşleşme açarsa o dalga, bir takasın dalgasıyla aynı şekilde çözülür: toprak katmanı, kasaya komşu eşleşmede **bir kat hasar**, kasa kırılınca açılan sütun ve alan, düşme ve yeni taş.
+- **Kasa yalnız eşleşmeyle kırılır.** Yeşil Fırça eşleşme üretmez; kasalı hücreye ve kasanın arkasında henüz kapalı kalan hücreye kullanılamaz. Yalnız açık ve toprak katı olan hücrede bir katı siler.
+- Renk Anahtarı da yalnız açık hücredeki taşa kullanılır.
+- **+5 hamle** aynı tahtayı, kasaların ve alanların durumunu koruyarak sürdürür.
+- Takviyeler hamle harcamaz. Malzemeli bölümler (classic-v6) kampanyada yok ve takviyeleri desteklemez.
+
 Asıl tasarım sorusu: oyuncu yüksek puan ile kalan toprağa erişim arasında seçim yapmaktan keyif alıyor mu? Ölçümler bu soruya bağlanır (plan, "Ölçülecekler").
 
 ## 2. Tek ilerleme döngüsü
