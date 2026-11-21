@@ -32,6 +32,10 @@ namespace Hexrota.UnityClientTests
                     Is.TypeOf<Sprite>(), field);
                 Assert.That(node.GetComponent("Text"), Is.Null, field);
             }
+            // The second goal counts the soil layers left, so it is labelled "Toprak", not "Alan".
+            var labels = hud.GetComponentsInChildren<UnityEngine.UI.Text>(true).Select(text => text.text).ToArray();
+            Assert.That(labels, Does.Contain("Toprak"));
+            Assert.That(labels, Does.Not.Contain("Alan"));
             var portrait = nodes.Single(node => node.name == "TavikPortrait").GetComponent<UnityEngine.UI.RawImage>();
             Assert.That(portrait.texture, Is.Not.Null);
             Assert.That(portrait.raycastTarget, Is.False);
