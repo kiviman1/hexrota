@@ -1,6 +1,6 @@
 # Hafta 3 raporu — Okunabilirlik ve ses
 
-20 Kasım 2026. Dal: `feat/hafta-3-okunabilirlik`, tek PR: [#58](https://github.com/kiviman1/hexrota/pull/58). Kapsam: haftanın ilk yarısındaki temizlik (ödül uçuşu, geliştirici bayrağı, konsol hatası denetimi, CI'ın Node 24'e geçişi), geçici sesler, sonra 20 Kasım istemindeki sekiz iş.
+20 Kasım 2026. Dal: `feat/hafta-3-okunabilirlik`, tek PR: [#58](https://github.com/kiviman1/hexrota/pull/58), birleştirildi (`632c523`; son commit'in CI koşusu [44818434414](https://github.com/kiviman1/hexrota/actions/runs/44818434414) da üçü yeşil). Kapsam: haftanın ilk yarısındaki temizlik (ödül uçuşu, geliştirici bayrağı, konsol hatası denetimi, CI'ın Node 24'e geçişi), geçici sesler, sonra 20 Kasım istemindeki sekiz iş.
 
 ## Ne bitti
 

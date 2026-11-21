@@ -22,6 +22,12 @@ namespace Hexrota.UnityClient.Presentation
         [Tooltip("Crumbs that burst from a cell when a soil layer breaks.")]
         public Timing soilCrumbs;
         [Range(1, 24)] public int soilCrumbCount;
+        [Tooltip("A hit crate's top plank spins off and falls.")]
+        public Timing cratePlankFall;
+        [Tooltip("The last hit breaks the crate into pieces.")]
+        public Timing crateShatter;
+        [Tooltip("A closed cell's fog and lock lift away when its area opens.")]
+        public Timing regionOpen;
         [Tooltip("Progress bar growth.")]
         public Timing fill;
         [Tooltip("Horizontal shake of a button that cannot be used.")]
