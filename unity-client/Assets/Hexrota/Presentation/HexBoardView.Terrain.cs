@@ -12,6 +12,9 @@ namespace Hexrota.UnityClient.Presentation
         private bool[] closedCells;
         private GameObject terrainRoot;
         private Sprite[] crateFragments;
+        private GameObject[] lockedMarks;
+        private bool[] shownLocked;
+        private static Sprite fogSprite, lockSprite;
         /// <summary>Plank shadow offset from its plank, world units (down and to the right).</summary>
         private static readonly Vector3 PlankShadowOffset = new Vector3(.012f, -.02f, .004f);
 
@@ -25,10 +28,12 @@ namespace Hexrota.UnityClient.Presentation
                 Destroy(terrainRoot);
             }
             terrain = config;
-            if (config == null) { closedCells = null; crates = null; shownCrateHp = null; return; }
+            if (config == null) { closedCells = null; crates = null; shownCrateHp = null; lockedMarks = null; shownLocked = null; return; }
             terrainRoot = new GameObject("Obstacles");
             terrainRoot.transform.SetParent(world, false);
             closedCells = new bool[positions.Length];
+            lockedMarks = new GameObject[positions.Length];
+            shownLocked = null; // the first paint never animates
             crates = new SpriteRenderer[config.blockers.Length];
             shownCrateHp = new int[config.blockers.Length];
             for (int i = 0; i < crates.Length; i++)
@@ -112,14 +117,107 @@ namespace Hexrota.UnityClient.Presentation
                 }
                 if (hp[i] > 0) closedCells[cell] = true;
             }
+            var ui = assets != null ? assets.ui : null;
+            bool first = shownLocked == null;
+            if (first) shownLocked = new bool[closedCells.Length];
             for (int i = 0; i < closedCells.Length; i++)
             {
+                // A cell still closed behind crates is dark and fogged with a lock; a crate cell shows its crate.
+                bool locked = closedCells[i] && !CrateOn(i, hp);
+                if (!locked && shownLocked[i] && !first) OpenRegionCell(i);
+                shownLocked[i] = locked;
+                SetLockedMark(i, locked);
                 if (!closedCells[i]) continue;
                 // A recessed, shaded floor is still real terrain. Voids have no floor at all.
-                Tint(grounds[i], new Color32(117, 123, 159, 255));
+                Tint(grounds[i], ui != null ? ui.lockedFloor : new Color32(52, 46, 70, 255));
                 floorEdges[i] = new Color32(146, 135, 163, 255);
                 Tint(cells[i], floorEdges[i]);
             }
+        }
+
+        private bool CrateOn(int cell, int[] hp)
+        {
+            for (int b = 0; b < terrain.blockers.Length; b++) if (terrain.blockers[b].cell == cell && hp[b] > 0) return true;
+            return false;
+        }
+
+        private void SetLockedMark(int cell, bool locked)
+        {
+            if (lockedMarks == null) return;
+            if (lockedMarks[cell] == null)
+            {
+                if (!locked) return;
+                lockedMarks[cell] = BuildLockedMark(cell);
+            }
+            lockedMarks[cell].SetActive(locked);
+        }
+
+        // Fog over the cell and the lock symbol from the icon atlas, both tinted from UiTheme.
+        private GameObject BuildLockedMark(int cell)
+        {
+            var ui = assets != null ? assets.ui : null;
+            var mark = new GameObject("Locked_" + cell);
+            mark.transform.SetParent(terrainRoot.transform, false);
+            mark.transform.position = positions[cell] + Vector3.back * .3f;
+            var fog = new GameObject("Fog").AddComponent<SpriteRenderer>();
+            fog.transform.SetParent(mark.transform, false);
+            fog.sprite = FogSprite();
+            fog.color = ui != null ? ui.lockedFog : new Color(.8f, .8f, .9f, .4f);
+            fog.sortingOrder = 1;
+            var lockIcon = new GameObject("Lock").AddComponent<SpriteRenderer>();
+            lockIcon.transform.SetParent(mark.transform, false);
+            lockIcon.transform.localPosition = Vector3.back * .01f;
+            lockIcon.sprite = LockSprite();
+            lockIcon.color = ui != null ? ui.lockedMark : Color.white;
+            lockIcon.sortingOrder = 2;
+            return mark;
+        }
+
+        /// <summary>A soft hexagon-sized cloud, white so UiTheme tints it.</summary>
+        private static Sprite FogSprite()
+        {
+            if (fogSprite != null) return fogSprite;
+            const int size = 64;
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false) { name = "Locked fog", wrapMode = TextureWrapMode.Clamp };
+            var pixels = new Color32[size * size];
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                {
+                    float u = (x + .5f) / size * 2 - 1, v = (y + .5f) / size * 2 - 1;
+                    float d = Mathf.Sqrt(u * u + v * v);
+                    // Dense centre, soft edge, a little cloudy variation.
+                    float cloud = .85f + .15f * Mathf.Sin(u * 7.1f + v * 3.3f) * Mathf.Cos(v * 5.7f - u * 2.1f);
+                    float a = Mathf.Clamp01((1f - Mathf.SmoothStep(.55f, 1f, d)) * cloud);
+                    pixels[y * size + x] = new Color32(255, 255, 255, (byte)(a * 255));
+                }
+            texture.SetPixels32(pixels);
+            texture.Apply(false, true);
+            fogSprite = Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(.5f, .5f), size / 1.05f);
+            return fogSprite;
+        }
+
+        /// <summary>The "lock" symbol from the shared icon atlas (PhoneArt/Icons, 8 x 4 grid).</summary>
+        private static Sprite LockSprite()
+        {
+            if (lockSprite != null) return lockSprite;
+            var atlas = Resources.Load<Texture2D>("PhoneArt/Icons");
+            var names = Resources.Load<TextAsset>("PhoneArt/IconNames").text.Trim().Split('\n');
+            int index = Array.FindIndex(names, name => name.TrimEnd('\r') == "lock");
+            float tile = atlas.width / 8f, tall = atlas.height / 4f;
+            var rect = new Rect(index % 8 * tile, atlas.height - (index / 8 + 1) * tall, tile, tall);
+            lockSprite = Sprite.Create(atlas, rect, new Vector2(.5f, .5f), tile / .34f);
+            lockSprite.name = "Lock";
+            return lockSprite;
+        }
+
+        // The fog and lock lift away as the cell's area opens (MotionTheme.regionOpen).
+        private void OpenRegionCell(int cell)
+        {
+            var motion = assets != null ? assets.motion : null;
+            if (motion == null || ReducedMotion || world == null || lockedMarks == null || lockedMarks[cell] == null) return;
+            var effect = new GameObject("RegionOpen_" + cell).AddComponent<RegionOpenEffect>();
+            effect.transform.SetParent(world, false);
+            effect.Play(lockedMarks[cell].transform, motion.regionOpen.seconds);
         }
 
         // The plank spins off the crate and falls (MotionTheme.cratePlankFall).

@@ -38,6 +38,11 @@ namespace Hexrota.UnityClient.Presentation
         [Header("Kasa")]
         [Tooltip("Multiplies the planks so they stand apart from the crate.")] public Color cratePlankTint;
         [Tooltip("Thin shadow under each plank.")] public Color cratePlankShadow;
+
+        [Header("Kilitli bölge")]
+        [Tooltip("Floor of a cell that is still closed behind crates.")] public Color lockedFloor;
+        [Tooltip("Fog over a closed cell.")] public Color lockedFog;
+        [Tooltip("Lock mark over a closed cell.")] public Color lockedMark;
         [Range(0f, 1f)] public float coopRingOpacity;
     }
 }

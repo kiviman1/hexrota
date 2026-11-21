@@ -26,6 +26,8 @@ namespace Hexrota.UnityClient.Presentation
         public Timing cratePlankFall;
         [Tooltip("The last hit breaks the crate into pieces.")]
         public Timing crateShatter;
+        [Tooltip("A closed cell's fog and lock lift away when its area opens.")]
+        public Timing regionOpen;
         [Tooltip("Progress bar growth.")]
         public Timing fill;
         [Tooltip("Horizontal shake of a button that cannot be used.")]
