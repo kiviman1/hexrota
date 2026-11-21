@@ -36,8 +36,16 @@ MonoBehaviour:
   stoneDigitFont: {fileID: 12800000, guid: b0763e95d0a251668b2df80808cd0ff8, type: 3}
   ui: {fileID: 11400000, guid: c1e48484201f5258a838f49953dca332, type: 2}
   motion: {fileID: 11400000, guid: 4baaa2da55c65945ad71c69f982f6fee, type: 2}
-  crateOneHit: {fileID: 21300000, guid: 9f33df43342c487098116adc78786c5d, type: 3}
-  crateTwoHits: {fileID: 21300000, guid: 24a9a8e8d7a7409f9eaa6e34d48afff5, type: 3}
+  crateBase: {fileID: 21300000, guid: 4b14cb4a85556c74184c8b6106e51416, type: 3}
+  cratePlanks:
+  - sprite: {fileID: 21300000, guid: b3f56b69f6fc6b6428dc8b5940ebd020, type: 3}
+    offset: {x: -0.00091516273, y: -0.13441329}
+    rotation: -10.751404
+    scale: 0.75292367
+  - sprite: {fileID: 21300000, guid: e3275531ce885aa429b8a283792879ed, type: 3}
+    offset: {x: 0.0023246924, y: -0.13404593}
+    rotation: 11.023041
+    scale: 0.78985727
   selectionEffect: {fileID: 100000, guid: 4999dfeeca0070d06d49d00d194f3117, type: 3}
   matchEffect: {fileID: 100000, guid: 5d4b3b62db4777772ff7d615c7f54cd0, type: 3}
   fallEffect: {fileID: 100000, guid: 569508d2344d1cfc902b56893d9e440e, type: 3}

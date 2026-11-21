@@ -116,7 +116,7 @@
     {
       "source": "unity/Gameplay/HexMatch.Obstacles.cs",
       "destination": "unity-client/Assets/Hexrota/Core/Gameplay/HexMatch.Obstacles.cs",
-      "sha256": "2ce3d0f918c8a63193fbeb3b317c9335492aaee0bbb282fee1fe07caeac8e5e0"
+      "sha256": "2286005d31ce8268913a7a917db3ee27d1c15d6dc034874a2f2a6c8baa7e0e7b"
     },
     {
       "source": "unity/Gameplay/HexMatch.cs",

@@ -82,6 +82,7 @@ namespace Hexrota.UnityClientTests
             var damaged = wave.blockerHits.First(hit => hit.beforeHp == 2 && hit.hp == 1);
             var broken = wave.blockerHits.First(hit => hit.hp == 0);
             var intactCrate = root.Find("Obstacles/Crate_" + damaged.cell).GetComponent<SpriteRenderer>();
+            bool PlankA() => intactCrate.transform.Find("Plank_A").gameObject.activeSelf;
             var brokenCrate = root.Find("Obstacles/Crate_" + broken.cell);
             int opened = wave.openedCells.First(i => !level.obstacles.blockers.Any(crate => crate.cell == i));
             var xy = MobileLayout.Axial(level.cells[opened].q, level.cells[opened].r);
@@ -95,12 +96,13 @@ namespace Hexrota.UnityClientTests
             Color shaded = FloorTint();
             board.InputEnabled = true;
             Assert.That(TapTarget(xy), Is.EqualTo(-1));
-            Assert.That(intactCrate.sprite.name, Is.EqualTo("AreaCrate_HP02"));
+            Assert.That(intactCrate.sprite.name, Is.EqualTo("Crate_Base"));
+            Assert.That(PlankA(), Is.True, "Durability 2 shows the crate with plank A.");
             Assert.That(brokenCrate.gameObject.activeSelf, Is.True);
             bool changedDuringWave = false;
             board.WaveProgress += (frame, ordinal, progress) => {
                 if (ordinal == 1 && progress >= .35f)
-                    changedDuringWave |= intactCrate.sprite.name == "AreaCrate_HP01" &&
+                    changedDuringWave |= !PlankA() &&
                         !brokenCrate.gameObject.activeSelf && FloorTint() != shaded;
             };
             board.Present(new MovePresentation { Ok = true, A = first[0], B = first[1], Before = before,
@@ -109,7 +111,7 @@ namespace Hexrota.UnityClientTests
             while (board.IsAnimating && Time.realtimeSinceStartup < deadline) yield return null;
             Assert.That(board.IsAnimating, Is.False);
             Assert.That(changedDuringWave, Is.True, "The crates and floor must update as stones start falling.");
-            Assert.That(intactCrate.transform.Find("Durability_" + damaged.cell).GetComponent<TextMesh>().text, Is.EqualTo("1"));
+            Assert.That(intactCrate.gameObject.activeSelf && !PlankA(), Is.True, "Durability 1 is the crate alone.");
             Assert.That(root.Find("Stone_" + opened).gameObject.activeSelf, Is.True);
             Assert.That(TapTarget(xy), Is.EqualTo(opened));
         }
@@ -147,14 +149,11 @@ namespace Hexrota.UnityClientTests
                 for (int b = 0; b < level.obstacles.blockers.Length; b++)
                 {
                     var crate = root.Find("Obstacles/Crate_" + level.obstacles.blockers[b].cell).GetComponent<SpriteRenderer>();
-                    Assert.That(crate.sprite.name, Is.EqualTo(snapshot.blockerHp[b] > 1 ? "AreaCrate_HP02" : "AreaCrate_HP01"));
-                    // A large durability numeral sits on every crate, bigger than a stone's numeral.
-                    var durability = crate.transform.Find("Durability_" + level.obstacles.blockers[b].cell).GetComponent<TextMesh>();
-                    Assert.That(durability.text, Is.EqualTo(snapshot.blockerHp[b].ToString()));
-                    Assert.That(durability.color, Is.EqualTo(Color.white));
-                    Assert.That(durability.GetComponentsInChildren<TextMesh>(), Has.Length.GreaterThan(1), "The numeral has an outline.");
-                    var stoneNumeral = root.GetComponentsInChildren<TextMesh>().First(t => t.name.StartsWith("Value_"));
-                    Assert.That(durability.characterSize, Is.GreaterThan(stoneNumeral.characterSize));
+                    Assert.That(crate.sprite.name, Is.EqualTo("Crate_Base"));
+                    // Durability shows as planks, never as a numeral.
+                    Assert.That(crate.GetComponentsInChildren<TextMesh>(true), Is.Empty);
+                    Assert.That(crate.transform.Find("Plank_A").gameObject.activeSelf, Is.EqualTo(snapshot.blockerHp[b] >= 2));
+                    Assert.That(crate.transform.Find("Plank_B").gameObject.activeSelf, Is.EqualTo(snapshot.blockerHp[b] >= 3));
                 }
             }
         }

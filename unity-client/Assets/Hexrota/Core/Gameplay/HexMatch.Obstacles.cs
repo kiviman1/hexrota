@@ -7,6 +7,8 @@ namespace Hexrota.Gameplay
     // participate in damage, geometry, RNG, or restoration decisions.
     public sealed partial class HexMatch
     {
+        /// <summary>Highest crate durability a level may set: the crate and up to two planks.</summary>
+        public const int MaxBlockerHp = 3;
         private static bool ValidObstacleId(string id)
         {
             if (id == null || id.Length < 1 || id.Length > 80) return false;
@@ -30,7 +32,7 @@ namespace Hexrota.Gameplay
             for (int b = 0; b < data.blockers.Length; b++)
             {
                 BlockerConfig box = data.blockers[b];
-                if (box == null || !ValidObstacleId(box.id) || ids.ContainsKey(box.id) || box.cell < 0 || box.cell >= level.cells.Length || !occupied.Add(box.cell) || box.hp < 1 || box.hp > 2) throw new ArgumentException(error);
+                if (box == null || !ValidObstacleId(box.id) || ids.ContainsKey(box.id) || box.cell < 0 || box.cell >= level.cells.Length || !occupied.Add(box.cell) || box.hp < 1 || box.hp > MaxBlockerHp) throw new ArgumentException(error);
                 ids.Add(box.id, b);
             }
             foreach (RegionConfig region in data.regions)

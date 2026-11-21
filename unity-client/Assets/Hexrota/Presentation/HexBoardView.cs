@@ -564,6 +564,7 @@ namespace Hexrota.UnityClient.Presentation
             if (digitsMaterial != null) Destroy(digitsMaterial);
             if (stoneMaterial != null) Destroy(stoneMaterial);
             if (crumbMaterial != null) Destroy(crumbMaterial);
+            if (crateFragments != null) foreach (var fragment in crateFragments) if (fragment != null) Destroy(fragment);
             if (world != null) Destroy(world.gameObject);
             world = null; effectRoot = null; BoardCamera = null; tint = null;
         }

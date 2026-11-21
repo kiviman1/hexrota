@@ -34,6 +34,10 @@ namespace Hexrota.UnityClient.Presentation
         [Tooltip("One layer of soil left: light brown.")] public Color soil;
         [Tooltip("No soil left: grass.")] public Color grass;
         public Color soilCrack;
+
+        [Header("Kasa")]
+        [Tooltip("Multiplies the planks so they stand apart from the crate.")] public Color cratePlankTint;
+        [Tooltip("Thin shadow under each plank.")] public Color cratePlankShadow;
         [Range(0f, 1f)] public float coopRingOpacity;
     }
 }

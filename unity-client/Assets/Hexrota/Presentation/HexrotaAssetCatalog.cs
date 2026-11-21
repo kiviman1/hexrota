@@ -23,8 +23,19 @@ namespace Hexrota.UnityClient.Presentation
         public UiTheme ui;
         public MotionTheme motion;
         [Header("Kapalı alanlar")]
-        public Sprite crateOneHit;
-        public Sprite crateTwoHits;
+        [Tooltip("The crate (art/crates/source, Hexrota/Art/Import Crate). Durability 1 shows the crate alone.")]
+        public Sprite crateBase;
+        [Tooltip("Planks laid across the crate's front face: [0] A shows from durability 2, [1] B on top from durability 3. The top plank falls first.")]
+        public CratePlank[] cratePlanks = new CratePlank[2];
+
+        [System.Serializable]
+        public struct CratePlank
+        {
+            public Sprite sprite;
+            [Tooltip("Sprite centre relative to the crate centre, world units.")] public Vector2 offset;
+            [Tooltip("Degrees that turn the drawn plank onto the face diagonal.")] public float rotation;
+            public float scale;
+        }
         public GameObject selectionEffect;
         public GameObject matchEffect;
         public GameObject fallEffect;
